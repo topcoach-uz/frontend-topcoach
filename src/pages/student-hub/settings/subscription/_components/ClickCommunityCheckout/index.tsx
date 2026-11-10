@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import { Alert, Button, Modal, Select, Space, message } from "antd";
-import { isAxiosError } from "axios";
-import { useTranslation } from "react-i18next";
-import { paymentRedirectWithTimeout } from "src/app/services/paymentRedirect";
-import { PAYMENT_MERCHANT_RETURN_ORIGIN } from "src/constants/paymentMerchantReturn";
-import type { PlanDto, SubscriptionDto } from "../../types";
-import styles from "../../subscription.module.scss";
+import { useEffect, useState } from 'react';
+import { Alert, Button, Modal, Select, message } from 'antd';
+import { isAxiosError } from 'axios';
+import { useTranslation } from 'react-i18next';
+import { paymentRedirectWithTimeout } from 'src/app/services/paymentRedirect';
+import { PAYMENT_MERCHANT_RETURN_ORIGIN } from 'src/constants/paymentMerchantReturn';
+import type { PlanDto, SubscriptionDto } from '../../types';
+import styles from '../../subscription.module.scss';
 
 type Props = {
   plans: PlanDto[];
@@ -18,18 +18,18 @@ export default function ClickCommunityCheckout({
   subscription,
   onRefresh,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [planId, setPlanId] = useState<string>();
   const [opening, setOpening] = useState(false);
   const [returned] = useState(
     () =>
-      new URLSearchParams(window.location.search).get("clickCheckout") ===
-      "returned",
+      new URLSearchParams(window.location.search).get('clickCheckout') ===
+      'returned',
   );
   const paid =
-    subscription?.autoRenew === false && subscription.status === "active";
+    subscription?.autoRenew === false && subscription.status === 'active';
   const available = plans.filter(
-    (plan) => plan.name === "community" && plan.priceUzs > 0,
+    (plan) => plan.name === 'community' && plan.priceUzs > 0,
   );
   const selected = available.find((plan) => plan.id === planId) ?? available[0];
 
@@ -49,16 +49,16 @@ export default function ClickCommunityCheckout({
     setOpening(true);
     try {
       const returnUrl = `${PAYMENT_MERCHANT_RETURN_ORIGIN}/student-hub?section=account&target=settings&tab=subscription&clickCheckout=returned`;
-      const result = await paymentRedirectWithTimeout("click", {
+      const result = await paymentRedirectWithTimeout('click', {
         planId: selected.id,
         returnUrl,
       });
-      const destination = new URL(result.url ?? result.redirectUrl ?? "");
+      const destination = new URL(result.url ?? result.redirectUrl ?? '');
       if (
-        destination.origin !== "https://my.click.uz" ||
-        destination.pathname !== "/services/pay"
+        destination.origin !== 'https://my.click.uz' ||
+        destination.pathname !== '/services/pay'
       ) {
-        throw new Error("Invalid Click payment link");
+        throw new Error('Invalid Click payment link');
       }
       const open = () => window.location.assign(destination.toString());
       // An existing prepared order retains its original server price.
@@ -68,17 +68,17 @@ export default function ClickCommunityCheckout({
       ) {
         Modal.confirm({
           title: t(
-            "settings.subscription.click.confirmPrice",
-            "Confirm payment amount",
+            'settings.subscription.click.confirmPrice',
+            'Confirm payment amount',
           ),
           content: t(
-            "settings.subscription.click.pendingPrice",
-            "Click will charge {{amount}} UZS for this purchase. Continue?",
+            'settings.subscription.click.pendingPrice',
+            'Click will charge {{amount}} UZS for this purchase. Continue?',
             { amount: result.amountUzs.toLocaleString() },
           ),
           okText: t(
-            "settings.subscription.click.continue",
-            "Continue to Click",
+            'settings.subscription.click.continue',
+            'Continue to Click',
           ),
           onOk: open,
           onCancel: () => setOpening(false),
@@ -89,10 +89,10 @@ export default function ClickCommunityCheckout({
         ? error.response?.data?.message
         : undefined;
       message.error(
-        (Array.isArray(detail) ? detail.join(" · ") : detail) ??
+        (Array.isArray(detail) ? detail.join(' · ') : detail) ??
           t(
-            "settings.subscription.click.failed",
-            "Could not open Click checkout. Please try again.",
+            'settings.subscription.click.failed',
+            'Could not open Click checkout. Please try again.',
           ),
       );
       setOpening(false);
@@ -100,72 +100,101 @@ export default function ClickCommunityCheckout({
   };
 
   if (subscription && subscription.autoRenew !== false) return null;
-  if (!available.length) return null;
+  if (!available.length && !paid) return null;
 
+  const accessDate = subscription?.currentPeriodEnd
+    ? new Date(subscription.currentPeriodEnd).toLocaleDateString(
+        i18n?.language,
+        { day: 'numeric', month: 'long', year: 'numeric' },
+      )
+    : '';
   return (
     <section
-      className={styles.compactSection}
-      aria-label={t("settings.subscription.click.title", "Pay with Click")}
+      className={styles.membershipCard}
+      aria-label={t('accountNav.community', 'Community membership')}
     >
-      <h2 className={styles.subSectionTitle}>
-        {t("settings.subscription.click.title", "Pay with Click")}
-      </h2>
-      <p className={styles.compactHint}>
-        {t(
-          "settings.subscription.click.description",
-          "Pay for one Community period on Click’s page. Access starts after payment. No automatic renewal or free trial.",
+      <div className={styles.membershipHeader}>
+        <h2 className={styles.subSectionTitle}>
+          {t('accountNav.community', 'Community membership')}
+        </h2>
+        {paid && (
+          <span className={styles.activeBadge}>
+            {t('accountNav.active', 'Active')}
+          </span>
         )}
-      </p>
+      </div>
       {paid ? (
-        <Alert
-          type="success"
-          showIcon
-          message={t(
-            "settings.subscription.click.active",
-            "Your Community access is paid through {{date}}.",
-            {
-              date: subscription.currentPeriodEnd
-                ? new Date(subscription.currentPeriodEnd).toLocaleDateString()
-                : "",
-            },
-          )}
-        />
+        <>
+          <div>
+            <p className={styles.compactHint}>
+              {t('accountNav.accessUntil', 'Access until')}
+            </p>
+            <p className={styles.membershipDate}>{accessDate}</p>
+          </div>
+          <p className={styles.compactHint}>
+            {t(
+              'accountNav.noRenewal',
+              'Paid with Click. Your access will not renew automatically.',
+            )}
+          </p>
+        </>
       ) : (
         <>
-          <Space wrap>
-            <Select
-              aria-label={t(
-                "settings.subscription.click.period",
-                "Community access period",
-              )}
-              value={selected?.id}
-              onChange={setPlanId}
-              disabled={opening}
-              options={available.map((plan) => ({
-                value: plan.id,
-                label: `${plan.billingPeriodDays} ${t("settings.subscription.click.days", "days")} · ${Math.round(plan.priceUzs).toLocaleString()} UZS`,
-              }))}
-            />
+          <p className={styles.compactHint}>
+            {t(
+              'accountNav.checkoutHint',
+              'Choose your access period. You’ll pay securely on Click’s page, and access starts after payment is confirmed.',
+            )}
+          </p>
+          <div className={styles.checkoutControls}>
+            <label>
+              <span>
+                {t(
+                  'settings.subscription.click.period',
+                  'Community access period',
+                )}
+              </span>
+              <Select
+                aria-label={t(
+                  'settings.subscription.click.period',
+                  'Community access period',
+                )}
+                value={selected?.id}
+                onChange={setPlanId}
+                disabled={opening}
+                options={available.map((plan) => ({
+                  value: plan.id,
+                  label: `${plan.billingPeriodDays} ${t('settings.subscription.click.days', 'days')} · ${Math.round(plan.priceUzs).toLocaleString()} UZS`,
+                }))}
+              />
+            </label>
             <Button
               type="primary"
               onClick={purchase}
               loading={opening}
               disabled={!selected}
             >
-              {t("settings.subscription.click.continue", "Continue to Click")}
+              {t('settings.subscription.click.continue', 'Continue to Click')}
             </Button>
-          </Space>
+          </div>
+          <p className={styles.compactHint}>
+            {t(
+              'accountNav.onePeriod',
+              'One payment for one period. No automatic renewal.',
+            )}
+          </p>
           {returned && (
             <Alert
               type="info"
               showIcon
+              role="status"
               message={t(
-                "settings.subscription.click.checking",
-                "Checking payment confirmation. Access activates after Click confirms payment.",
+                'settings.subscription.click.checking',
+                'Checking payment confirmation. Access activates after Click confirms payment.',
               )}
               action={
                 <Button onClick={() => void onRefresh()}>
-                  {t("settings.subscription.click.refresh", "Refresh status")}
+                  {t('settings.subscription.click.refresh', 'Refresh status')}
                 </Button>
               }
             />

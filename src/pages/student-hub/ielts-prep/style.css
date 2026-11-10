@@ -6,7 +6,7 @@
   font-display: swap;
 }
 .ielts-workspace {
-  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  font-family: "TopCoach IELTS Inter", Arial, sans-serif;
   color: #101211;
   background: #fff;
   font-synthesis: none;
@@ -2200,36 +2200,3 @@
  .ielts-workspace .header-actions .avatar { width: 30px; height: 30px; }
  .ielts-workspace .clock { order: 3; width: 100%; justify-content: center; }
 }
-
-/* Carry the hub's visual system through the focused practice and review screens. */
-.ielts-workspace:not(.dark):not(.ielts-browse) {
-  --fg: #302b28;
-  --muted: #655c55;
-  --line: #e7e2dc;
-  --soft: #fbf9f6;
-  --red: #8b0000;
-  color: var(--fg);
-  background: #fbf9f6;
-}
-.ielts-workspace:not(.dark):not(.ielts-browse) :is(h1, h2, h3) { font-weight: 500; }
-.ielts-workspace:not(.dark):not(.ielts-browse) :is(button, input, textarea, select) { border-radius: 8px; }
-.ielts-workspace:not(.dark):not(.ielts-browse) :is(input, textarea):focus {
-  border-color: #8b0000;
-  outline: 2px solid #8b000024;
-}
-.ielts-workspace:not(.dark):not(.ielts-browse) :is(.pill, .solid) {
-  background: #8b0000;
-  border-color: #8b0000;
-  color: #fff;
-}
-.ielts-workspace:not(.dark):not(.ielts-browse) .blue-chip {
-  background: #f6e8e7;
-  color: #8b0000;
-}
-.ielts-workspace:not(.dark) .score-grid article {
-  background: #fff;
-  border: 1px solid #e7e2dc;
-  border-radius: 16px;
-  box-shadow: none;
-}
-.ielts-workspace:not(.dark) .score-grid strong { color: #8b0000; font-weight: 500; }

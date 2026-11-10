@@ -454,3 +454,11 @@ $st-brand-soft: rgba(123, 31, 47, 0.08);
     flex-direction: column;
   }
 }
+
+.page { min-width: 0; max-width: 100%; }
+.tabs { flex-wrap: wrap; overflow: visible; gap: 0.25rem 0.75rem; }
+.tab { display: inline-flex; align-items: center; min-height: 44px; margin-right: 0; padding: 0.75rem 0.4rem; text-decoration: none; color: $st-muted; line-height: 1.35; font-size: 0.9rem; }
+.tabActive { color: $st-ink; }
+.tab:focus-visible { outline: 2px solid $st-brand; outline-offset: 2px; border-radius: 4px; }
+.tab:active { background: $st-brand-soft; }
+@media (prefers-reduced-motion: reduce) { .tab { transition: none; } }

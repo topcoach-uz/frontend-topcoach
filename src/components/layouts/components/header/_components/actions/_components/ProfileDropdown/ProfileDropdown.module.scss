@@ -37,3 +37,24 @@
     stroke: $colorTextLight;
   }
 }
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 44px;
+  padding: 2px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  flex-shrink: 0;
+  &:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 4px;
+  }
+  &:active {
+    background: rgba(255, 255, 255, 0.14);
+  }
+}

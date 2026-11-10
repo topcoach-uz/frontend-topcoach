@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Modal, Skeleton, message } from 'antd';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +10,6 @@ import {
   useGetCurrentSubscriptionQuery,
   useGetPaymentMethodsQuery,
   useGetSubscriptionPlansQuery,
-  useStartSubscriptionMutation,
 } from 'src/app/services/subscription';
 import {
   FIXTURE_BILLING_HISTORY,
@@ -30,11 +29,8 @@ import PolarCommunityPass from './_components/PolarCommunityPass';
 import ClickCommunityCheckout from './_components/ClickCommunityCheckout';
 import AvailablePlans from './_components/AvailablePlans';
 import PaymentMethods from './_components/PaymentMethods';
-import BillingHistory, {
-  BillingHistoryHeaderActions,
-} from './_components/BillingHistory';
+import BillingHistory from './_components/BillingHistory';
 import { formatLongDate } from './_components/format';
-import ConfettiCelebration from 'src/components/confetti';
 import styles from './subscription.module.scss';
 
 const VALID_STATES: SubscriptionState[] = [
@@ -47,7 +43,9 @@ const VALID_STATES: SubscriptionState[] = [
   'none',
 ];
 
-const isSubscriptionState = (value: string | null): value is SubscriptionState =>
+const isSubscriptionState = (
+  value: string | null,
+): value is SubscriptionState =>
   !!value && (VALID_STATES as string[]).includes(value);
 
 /**
@@ -76,11 +74,22 @@ export default function SubscriptionTab() {
 
   // Live RTK queries. `skip: mockMode` keeps the network quiet when
   // demoing the mocked variants offline.
-  const plansQuery = useGetSubscriptionPlansQuery(undefined, { skip: mockMode });
-  const subscriptionQuery = useGetCurrentSubscriptionQuery(undefined, { skip: mockMode });
-  const paymentMethodsQuery = useGetPaymentMethodsQuery(undefined, { skip: mockMode });
-  const billingHistoryQuery = useGetBillingHistoryQuery(undefined, { skip: mockMode });
-  const { data: studentOrgMemberships } = useGetMyOrgMembershipQuery(undefined, { skip: mockMode });
+  const plansQuery = useGetSubscriptionPlansQuery(undefined, {
+    skip: mockMode,
+  });
+  const subscriptionQuery = useGetCurrentSubscriptionQuery(undefined, {
+    skip: mockMode,
+  });
+  const paymentMethodsQuery = useGetPaymentMethodsQuery(undefined, {
+    skip: mockMode,
+  });
+  const billingHistoryQuery = useGetBillingHistoryQuery(undefined, {
+    skip: mockMode,
+  });
+  const { data: studentOrgMemberships } = useGetMyOrgMembershipQuery(
+    undefined,
+    { skip: mockMode },
+  );
 
   // After Atmos's hosted bind page finishes, the user lands back here
   // with `?atmosBind=success`. The server-to-server callback that flips
@@ -124,6 +133,12 @@ export default function SubscriptionTab() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mockMode]);
 
+  const refreshCheckout = useCallback(
+    () =>
+      Promise.all([subscriptionQuery.refetch(), billingHistoryQuery.refetch()]),
+    [subscriptionQuery.refetch, billingHistoryQuery.refetch],
+  );
+
   const isLoading =
     !mockMode &&
     (plansQuery.isLoading ||
@@ -140,9 +155,7 @@ export default function SubscriptionTab() {
 
   // Resolve the data source. In mock mode we fall back to fixtures so
   // the page stays demoable without the backend.
-  const plans: PlanDto[] = mockMode
-    ? FIXTURE_PLANS
-    : (plansQuery.data ?? []);
+  const plans: PlanDto[] = mockMode ? FIXTURE_PLANS : (plansQuery.data ?? []);
   const subscription: SubscriptionDto | null = mockMode
     ? FIXTURES_BY_STATE[mockState]
     : (subscriptionQuery.data ?? null);
@@ -165,132 +178,31 @@ export default function SubscriptionTab() {
   }, [subscription, paymentMethods]);
 
   const isEmpty = subscription === null;
-  const communityOrganization = hasActiveCommunityOrgMembership(studentOrgMemberships)
-    ? studentOrgMemberships?.find((member) =>
-        member.role === 'student' && member.status === 'active' && member.organization?.status === 'active',
+  const communityOrganization = hasActiveCommunityOrgMembership(
+    studentOrgMemberships,
+  )
+    ? studentOrgMemberships?.find(
+        (member) =>
+          member.role === 'student' &&
+          member.status === 'active' &&
+          member.organization?.status === 'active',
       )?.organization.name
     : undefined;
 
-  // Trial-start flow. Two paths:
-  //   (a) User has a default card → call /subscriptions/start with
-  //       paymentMethodId; backend transitions straight to trialing.
-  //   (b) No default card → open AddCardModal, then on success call
-  //       /start with the freshly-bound card. We persist the picked
-  //       plan in state across the modal's lifetime.
-  const [pendingTrialPlan, setPendingTrialPlan] = useState<PlanDto | null>(null);
-  const [addCardOpen, setAddCardOpen] = useState(false);
-  // Confirm-before-change modal: when set, we render a Modal asking the
-  // user to confirm the (irreversible-until-period-end) plan switch.
+  // Existing recurring subscribers can still manage their current agreement.
+  // Every new purchase uses the hosted Click checkout above.
   const [planChangeConfirm, setPlanChangeConfirm] = useState<PlanDto | null>(
     null,
   );
   const [planChanging, setPlanChanging] = useState(false);
-  // Confirm-before-start modal: when set, we ask the user to confirm
-  // before kicking off the 7-day trial / first charge. Without this
-  // the click on a plan card silently fires `/subscriptions/start`
-  // and users land in a paid state before they realised they
-  // committed.
-  const [planStartConfirm, setPlanStartConfirm] = useState<PlanDto | null>(
-    null,
-  );
-  const [planStarting, setPlanStarting] = useState(false);
-  const paymentMethodsRef = useRef<HTMLElement | null>(null);
   const planPickerRef = useRef<HTMLElement | null>(null);
-
-  const [startSubscription] = useStartSubscriptionMutation();
   const [changePlan] = useChangeSubscriptionPlanMutation();
-  // Celebration overlay: appears for ~7s after the trial actually starts
-  // (i.e. the /subscriptions/start call returns 2xx). Drives the
-  // "card added → trial active → community unlocked" feel that was
-  // missing before, the silent message.success toast was the only
-  // signal of success and the sidebar locks confused users into
-  // thinking nothing had happened.
-  const [showTrialCelebration, setShowTrialCelebration] = useState(false);
-
-  const startTrialWithCard = async (planId: string, paymentMethodId: string) => {
-    try {
-      await startSubscription({ planId, paymentMethodId }).unwrap();
-      // Fire the confetti before the toast, the toast disappears in 3s
-      // but the celebration runs ~7s so the user actually notices.
-      setShowTrialCelebration(true);
-      message.success(
-        t(
-          'settings.subscription.toast.trialStarted',
-          'Your free trial has started.',
-        ),
-      );
-    } catch (err) {
-      const anyErr = err as { data?: { message?: string | string[] } };
-      const m = anyErr?.data?.message;
-      const text = Array.isArray(m) ? m.join(' • ') : m;
-      message.error(
-        text ??
-          t(
-            'settings.subscription.toast.startFailed',
-            "Couldn't start your trial. Please try again.",
-          ),
-      );
-    }
-  };
-
-  const handleSelectPlan = async (plan: PlanDto) => {
-    if (mockMode) {
-      // Demo mode, no backend; preserve the previous "open form" UX
-      // so designers can still flip through fixtures.
-      setPendingTrialPlan(plan);
-      setAddCardOpen(true);
-      requestAnimationFrame(() => {
-        paymentMethodsRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        });
-      });
-      return;
-    }
-
-    // Active subscription? Open the confirm modal instead of firing
-    // change-plan immediately. The actual call lives in
-    // `confirmScheduledPlanChange`.
-    //
-    // Effective-plan rule: while a switch is queued, the *scheduled*
-    // plan is what the user has chosen, that's what the picker labels
-    // "Current plan" and what the status banner reads. Clicking the
-    // other card during a scheduled switch is therefore an UNDO (the
-    // target equals the live plan id; the backend accepts same-plan
-    // when there's a pending change). Clicking the effective-current
-    // card (the scheduled one) is a no-op.
-    if (subscription) {
-      const effectiveCurrentId =
-        subscription.scheduledPlan?.id ?? subscription.plan.id;
-      if (effectiveCurrentId === plan.id) return;
-      setPlanChangeConfirm(plan);
-      return;
-    }
-
-    const defaultCard = paymentMethods.find((pm) => pm.isDefault);
-    if (defaultCard) {
-      // User has a card on file, open the confirm modal instead of
-      // firing /subscriptions/start straight away. The actual call
-      // happens in `confirmPlanStart` after the user clicks OK.
-      setPlanStartConfirm(plan);
-      return;
-    }
-
-    // No card → open the add-card modal and pin the plan so we can
-    // chain into /start once the card is bound.
-    setPendingTrialPlan(plan);
-    setAddCardOpen(true);
-    requestAnimationFrame(() => {
-      paymentMethodsRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
-  };
-
-  const handleAddCardClose = () => {
-    setAddCardOpen(false);
-    setPendingTrialPlan(null);
+  const legacyRecurring = !!subscription && subscription.autoRenew !== false;
+  const handleSelectPlan = (plan: PlanDto) => {
+    if (!legacyRecurring || !subscription) return;
+    const effectiveCurrentId =
+      subscription.scheduledPlan?.id ?? subscription.plan.id;
+    if (effectiveCurrentId !== plan.id) setPlanChangeConfirm(plan);
   };
 
   /**
@@ -343,41 +255,6 @@ export default function SubscriptionTab() {
     }
   };
 
-  /**
-   * Fires `/subscriptions/start` after the user clicks the confirm
-   * button in the start-plan modal. Uses the default card already on
-   * file (the modal only opens when there's one). Closes the modal on
-   * success; the celebration overlay + toast take over from there.
-   */
-  const confirmPlanStart = async () => {
-    if (!planStartConfirm) return;
-    const defaultCard = paymentMethods.find((pm) => pm.isDefault);
-    if (!defaultCard) {
-      // Edge case: card was removed between opening the modal and
-      // clicking confirm. Drop into the add-card flow.
-      setPendingTrialPlan(planStartConfirm);
-      setPlanStartConfirm(null);
-      setAddCardOpen(true);
-      return;
-    }
-    setPlanStarting(true);
-    try {
-      await startTrialWithCard(planStartConfirm.id, defaultCard.id);
-      setPlanStartConfirm(null);
-    } finally {
-      setPlanStarting(false);
-    }
-  };
-
-  const handleCardAdded = async (card: { id: string }) => {
-    // If the user came in via a "Start trial" CTA, finish the flow now.
-    // Otherwise (just adding a card from the section), do nothing,
-    // the modal already shows the success state.
-    if (!pendingTrialPlan || mockMode) return;
-    await startTrialWithCard(pendingTrialPlan.id, card.id);
-    setPendingTrialPlan(null);
-  };
-
   if (isLoading) {
     return (
       <div className={styles.page}>
@@ -399,15 +276,6 @@ export default function SubscriptionTab() {
 
   return (
     <div className={styles.page}>
-      <ConfettiCelebration
-        show={showTrialCelebration}
-        onComplete={() => setShowTrialCelebration(false)}
-        title={t('settings.subscription.celebration.title', '🎉 You\'re in! 🎉')}
-        subtitle={t(
-          'settings.subscription.celebration.subtitle',
-          'Welcome to Community, your free trial is active and the full TopCoach journey is unlocked.',
-        )}
-      />
       {errorAny && (
         <Alert
           type="error"
@@ -426,7 +294,10 @@ export default function SubscriptionTab() {
         <Alert
           type="success"
           showIcon
-          message={t('settings.subscription.organizationAccess.title', 'Community access is included')}
+          message={t(
+            'settings.subscription.organizationAccess.title',
+            'Community access is included',
+          )}
           description={t(
             'settings.subscription.organizationAccess.description',
             'Your membership with {{organization}} gives you full Community access. You do not need to buy a plan while that membership is active.',
@@ -441,7 +312,7 @@ export default function SubscriptionTab() {
         <ClickCommunityCheckout
           plans={plans}
           subscription={subscription}
-          onRefresh={subscriptionQuery.refetch}
+          onRefresh={refreshCheckout}
         />
       )}
 
@@ -466,7 +337,7 @@ export default function SubscriptionTab() {
         />
       )}
 
-      {plans.length > 0 && subscription?.autoRenew !== false && (
+      {plans.length > 0 && legacyRecurring && (
         <section className={styles.heroPicker} ref={planPickerRef}>
           {/* One quiet subhead instead of the previous eyebrow + serif
               title + subtitle stack. The page-level "Settings · Manage
@@ -482,7 +353,10 @@ export default function SubscriptionTab() {
           <header className={styles.compactHead}>
             <h3 className={styles.subSectionTitle}>
               {isEmpty
-                ? t('settings.subscription.choosePlanHeader', 'Choose your plan')
+                ? t(
+                    'settings.subscription.choosePlanHeader',
+                    'Choose your plan',
+                  )
                 : t('settings.subscription.availablePlans', 'Available plans')}
             </h3>
           </header>
@@ -499,48 +373,26 @@ export default function SubscriptionTab() {
       {/* Payment methods + Billing history live in a tighter two-column
           grid below the hero so the page reads top-down: pick → pay →
           history. Empty states stay subtle (no giant dashed cards).  */}
-      <div className={styles.bottomGrid}>
-        <section
-          className={styles.compactSection}
-          ref={paymentMethodsRef}
-        >
-          <header className={styles.compactHead}>
-            <h3 className={styles.subSectionTitle}>
-              {t('settings.subscription.paymentMethods', 'Payment methods')}
-            </h3>
-            <p className={styles.compactHint}>
-              {t(
-                'settings.subscription.paymentMethodsHint',
-                'Cards used for subscription, sessions, and event passes.',
-              )}
-            </p>
-          </header>
-          {pendingTrialPlan && (
-            <Alert
-              type="info"
-              showIcon
-              className={styles.trialBanner}
-              message={t(
-                'settings.subscription.trialBanner',
-                'Add a card to start your {{plan}} · {{period}} {{days}}-day free trial. You won’t be charged until {{days}} days from today.',
-                {
-                  plan:
-                    pendingTrialPlan.displayName.en ?? pendingTrialPlan.name,
-                  period:
-                    pendingTrialPlan.period === 'yearly' ? 'Yearly' : 'Monthly',
-                  days: pendingTrialPlan.trialDays,
-                },
-              )}
+      <div className={`${styles.bottomGrid} ${!legacyRecurring ? styles.singleColumn : ''}`}>
+        {legacyRecurring && (
+          <section className={styles.compactSection}>
+            <header className={styles.compactHead}>
+              <h3 className={styles.subSectionTitle}>
+                {t('settings.subscription.paymentMethods', 'Payment methods')}
+              </h3>
+              <p className={styles.compactHint}>
+                {t(
+                  'settings.subscription.paymentMethodsHint',
+                  'Cards used for subscription, sessions, and event passes.',
+                )}
+              </p>
+            </header>
+            <PaymentMethods
+              paymentMethods={paymentMethods}
+              subscription={subscription}
             />
-          )}
-          <PaymentMethods
-            paymentMethods={paymentMethods}
-            subscription={subscription}
-            forceAddOpen={addCardOpen}
-            onAddCardClose={handleAddCardClose}
-            onCardAdded={handleCardAdded}
-          />
-        </section>
+          </section>
+        )}
 
         <section className={styles.compactSection}>
           <header className={styles.compactHead}>
@@ -548,12 +400,12 @@ export default function SubscriptionTab() {
               <h3 className={styles.subSectionTitle}>
                 {t('settings.subscription.billingHistory', 'Billing history')}
               </h3>
-              {billingHistory.length > 0 && <BillingHistoryHeaderActions />}
+
             </div>
             <p className={styles.compactHint}>
               {t(
-                'settings.subscription.billingHistoryHint',
-                'Receipts auto-emailed. Click any line to download a PDF.',
+                'accountNav.historyHint',
+                'Confirmed payments and transaction references.',
               )}
             </p>
           </header>
@@ -666,68 +518,6 @@ export default function SubscriptionTab() {
           </Modal>
         );
       })()}
-
-      {/* Confirm-before-start modal, mirrors the change-plan modal
-          above so the two flows feel like one editorial system. Only
-          opens when the user already has a card on file; the no-card
-          path still routes through AddCardModal. */}
-      <Modal
-        open={!!planStartConfirm}
-        title={
-          planStartConfirm
-            ? t(
-                'settings.subscription.confirmStart.title',
-                'Start your {{plan}} plan?',
-                {
-                  plan: `${planStartConfirm.displayName.en} · ${
-                    planStartConfirm.period === 'yearly' ? 'Yearly' : 'Monthly'
-                  }`,
-                },
-              )
-            : ''
-        }
-        okText={
-          planStartConfirm && planStartConfirm.trialDays > 0
-            ? t(
-                'settings.subscription.confirmStart.okTrial',
-                'Start {{days}}-day free trial',
-                { days: planStartConfirm.trialDays },
-              )
-            : t('settings.subscription.confirmStart.ok', 'Start subscription')
-        }
-        cancelText={t('settings.subscription.confirmStart.cancel', 'Not yet')}
-        okButtonProps={{ loading: planStarting, type: 'primary' }}
-        onOk={confirmPlanStart}
-        onCancel={() => setPlanStartConfirm(null)}
-        destroyOnClose
-      >
-        {planStartConfirm && (
-          <div style={{ lineHeight: 1.55, color: '#4b463f' }}>
-            <p style={{ marginBottom: 10 }}>
-              {planStartConfirm.trialDays > 0
-                ? t(
-                    'settings.subscription.confirmStart.bodyTrial',
-                    'Your {{days}}-day free trial starts today. After it ends we will charge your default card ${{price}} USD per {{period}}. You can cancel anytime from this page before the trial ends and you will not be charged.',
-                    {
-                      days: planStartConfirm.trialDays,
-                      price: planStartConfirm.priceUsd.toFixed(2),
-                      period:
-                        planStartConfirm.period === 'yearly' ? 'year' : 'month',
-                    },
-                  )
-                : t(
-                    'settings.subscription.confirmStart.body',
-                    'We will charge your default card ${{price}} USD per {{period}} and unlock the full Community immediately.',
-                    {
-                      price: planStartConfirm.priceUsd.toFixed(2),
-                      period:
-                        planStartConfirm.period === 'yearly' ? 'year' : 'month',
-                    },
-                  )}
-            </p>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }

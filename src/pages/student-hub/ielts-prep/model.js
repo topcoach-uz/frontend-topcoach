@@ -1,8 +1,15 @@
 export const skills = ["listening", "reading", "writing", "speaking"];
+export function practicePartCount(r) {
+  if (r.skill === "listening") return 4;
+  if (r.skill === "writing") return 2;
+  if (r.type === "general-training" && r.skill === "reading")
+    return String(r.book) === "17" && Number(r.test) === 1 ? 6 : 5;
+  return 3;
+}
 export function route(path) {
   path = path.split("?")[0];
   const m = path.match(
-    /^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/(listening|reading|writing|speaking|score)(?:\/([1-5]))?$/,
+    /^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/(listening|reading|writing|speaking|score)(?:\/([1-6]))?$/,
   );
   const validBook =
     m &&
@@ -10,14 +17,7 @@ export function route(path) {
       ? ["eg", "og"].includes(m[2]) || (+m[2] >= 1 && +m[2] <= 21)
       : (+m[2] >= 14 && +m[2] <= 21) || m[2] === "10");
   const validSkill = !!m;
-  const maxPart =
-    m?.[4] === "listening"
-      ? 4
-      : m?.[4] === "writing"
-        ? 2
-        : m?.[1] === "general-training" && m?.[4] === "reading"
-          ? 5
-          : 3;
+  const maxPart = practicePartCount({ type: m?.[1], book: m?.[2], test: Number(m?.[3]), skill: m?.[4] });
   return m &&
     validBook &&
     validSkill &&
@@ -82,7 +82,9 @@ export function partRange(r) {
           [30, 40],
         ]
       : r.type === "general-training"
-        ? [
+        ? String(r.book) === "17" && Number(r.test) === 1
+          ? [[0, 5], [5, 10], [10, 14], [14, 20], [20, 27], [27, 40]]
+          : [
             [0, 7],
             [7, 14],
             [14, 20],
@@ -97,8 +99,7 @@ export function partRange(r) {
   return ranges[r.part - 1] || [0, 0];
 }
 export function partForQuestion(r, number) {
-  const count =
-    r.skill === "listening" ? 4 : r.type === "general-training" ? 5 : 3;
+  const count = practicePartCount(r);
   for (let part = 1; part <= count; part++) {
     const [start, end] = partRange({ ...r, part });
     if (number > start && number <= end) return part;
