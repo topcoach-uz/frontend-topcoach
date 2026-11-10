@@ -12,10 +12,12 @@ for(const [name,body] of Object.entries(snapshot.files)){
  }visit(sf);
  let out=body;
  if(provider && provider.getText(sf).includes('const __learningAccess=')){
-  const [query,auth]=provider.body.statements;
-  if(!query.getText(sf).startsWith('const __learningAccess=')||!auth.getText(sf).includes('.auth.isAuthenticated'))throw Error('Unexpected query repair layout');
-  out=body.slice(0,auth.end)+query.getText(sf)+body.slice(auth.end);
-  out=out.slice(0,query.getStart(sf))+out.slice(query.end);
+  const [first,second]=provider.body.statements;
+  if(first.getText(sf).startsWith('const __learningAccess=')){
+   if(!second.getText(sf).includes('.auth.isAuthenticated'))throw Error('Missing authentication before query repair');
+   out=body.slice(0,second.end)+first.getText(sf)+body.slice(second.end);
+   out=out.slice(0,first.getStart(sf))+out.slice(first.end);
+  } else if(!first.getText(sf).includes('.auth.isAuthenticated')||!second.getText(sf).startsWith('const __learningAccess='))throw Error('Unexpected entitlement query order');
   providers++;
  } else if(provider){
   let api;
@@ -33,13 +35,13 @@ for(const [name,body] of Object.entries(snapshot.files)){
   for(const edit of edits.sort((a,b)=>b.start-a.start))out=out.slice(0,edit.start)+edit.text+out.slice(edit.end);
   providers++;
  }
- const old='"/student-hub?section=my-learning"';
- // Match the My Programs module, leaving unrelated legacy redirects alone.
- if(out.includes('Open My Learning')&&out.includes(old)){
-  const count=out.split(old).length-1;if(count!==1)throw Error('Ambiguous program learning link');
-  out=out.replace(old,'"/student-hub?section=learning&tab=admissions"');links++;
+ // Use the existing Admissions sidebar destination.
+ if(out.includes('Open My Learning')){
+  const routes=['"/student-hub?section=my-learning"','"/student-hub?section=learning&tab=admissions"'];
+  const old=routes.find(route=>out.includes(route));
+  if(old){if(out.split(old).length!==2)throw Error('Ambiguous program link');out=out.replace(old,'"/student-hub?section=admissions-program"');links++;}
+  else if(out.includes('"/student-hub?section=admissions-program"'))links++;
  }
- if(out.includes('Open My Learning')&&out.includes('"/student-hub?section=learning&tab=admissions"')&&!body.includes(old))links++;
  if(out!==body)changed[name]=out;
 }
 if(providers!==1||links!==1)throw Error(`Expected one policy and link, found ${providers}/${links}`);
