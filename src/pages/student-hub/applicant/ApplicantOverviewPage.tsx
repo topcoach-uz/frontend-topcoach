@@ -659,10 +659,7 @@ export default function ApplicantOverviewPage() {
                 <TextLink to="/mentors">{t('applicant.findMentor')}</TextLink>
               </div>
             ) : (
-              <>
-                <p className="applicant-muted">{t('applicant.noSessions')}</p>
-                <TextLink to="/mentors">{t('applicant.findMentor')}</TextLink>
-              </>
+              <p className="applicant-muted">{t('applicant.noSessions')}</p>
             )}
             {unratedSession && (
               <p className="applicant-muted">
@@ -672,7 +669,12 @@ export default function ApplicantOverviewPage() {
                 </Link>
               </p>
             )}
-            <TextLink to={applicantLinks.sessions}>View all sessions</TextLink>
+            <div className="applicant-link-stack">
+              {sessions && !next && (
+                <TextLink to="/mentors">{t('applicant.findMentor')}</TextLink>
+              )}
+              <TextLink to={applicantLinks.sessions}>View all sessions</TextLink>
+            </div>
           </section>
 
           <section className="applicant-card">

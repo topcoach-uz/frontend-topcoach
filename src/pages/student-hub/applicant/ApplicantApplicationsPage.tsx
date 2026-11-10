@@ -1,8 +1,8 @@
 import { useGetUniversityDetailQuery } from 'src/app/services/universities';
 import { useGetUndergraduateDegreesQuery } from 'src/app/services/undergraduateDegreesApi';
 import { useEffect, useState } from "react";
-import { Alert, Button, Checkbox, Form, Input, Modal, Select, message } from "antd";
-import { ArrowRight, Plus, ClipboardList, Building2, FileText, ListChecks, ExternalLink } from "lucide-react";
+import { Alert, Button, Checkbox, Form, Input, Modal, Select, Tooltip, message } from "antd";
+import { Archive, ArrowRight, ArrowUpRight, Plus, ClipboardList, Building2, FileText, ListChecks, ExternalLink } from "lucide-react";
 import {
   Link,
   useNavigate,
@@ -33,6 +33,7 @@ import {
   UniversityIdentity,
   displayDate,
   applicationStatusLabels,
+  applicationTitle,
 } from "./ApplicantPage";
 import ScholarshipManagement from "./ScholarshipManagement";
 import ApplicationRequirements from './ApplicationRequirements';
@@ -108,12 +109,13 @@ export default function ApplicantApplicationsPage() {
             .filter(Boolean)
             .join(" · ")}
         />
-        <div>
-          <span>{applicationStatusLabels[app.status] ?? app.status}</span>
-          <small>My planning deadline</small>
-          <small>{displayDate(app.deadline)}</small>
+        <div className="applicant-list__cell">
+          <span className={`applicant-list__status applicant-list__status--${app.status}`}>
+            {applicationStatusLabels[app.status] ?? app.status}
+          </span>
+          <small>Planning deadline · {displayDate(app.deadline)}</small>
         </div>
-        <div>
+        <div className="applicant-list__cell">
           {tasks.isError ? (
             <small>Tasks unavailable</small>
           ) : nextTask ? (
@@ -131,28 +133,43 @@ export default function ApplicantApplicationsPage() {
             </small>
           )}
         </div>
-        <Button
-          type={app.status === "researching" ? "default" : "primary"}
-          onClick={() =>
-            navigate(`/student-hub/applications/${encodeURIComponent(app.id)}`)
-          }
-        >
-          Open workspace <ArrowRight size={14} />
-        </Button>
-        <Button loading={archiveState.isLoading} onClick={() => Modal.confirm({
-          title: 'Archive this application?',
-          content: 'The application and its linked planning tasks will leave active lists and the timeline. Writing and documents stay saved. You can restore it from Archived applications.',
-          okText: 'Archive application',
-          onOk: async () => { try { await archive(app.id).unwrap(); message.success('Application archived.'); } catch { message.error('Could not archive this application.'); throw new Error('Archive failed'); } },
-        })}>Archive</Button>
-        {isMasters && app.status === "researching" && (
-          <Checkbox
-            checked={comparedIds.includes(app.id)}
-            onChange={(event) => toggleComparison(app.id, event.target.checked)}
-          >
-            Compare
-          </Checkbox>
-        )}
+        <div className="applicant-list__actions">
+          {isMasters && app.status === "researching" && (
+            <Checkbox
+              checked={comparedIds.includes(app.id)}
+              onChange={(event) => toggleComparison(app.id, event.target.checked)}
+            >
+              Compare
+            </Checkbox>
+          )}
+          <Tooltip title="Archive">
+            <Button
+              className="applicant-list__icon-btn"
+              shape="circle"
+              aria-label={`Archive ${applicationTitle(app)}`}
+              icon={<Archive size={16} />}
+              loading={archiveState.isLoading && archiveState.originalArgs === app.id}
+              onClick={() => Modal.confirm({
+                title: 'Archive this application?',
+                content: 'The application and its linked planning tasks will leave active lists and the timeline. Writing and documents stay saved. You can restore it from Archived applications.',
+                okText: 'Archive application',
+                onOk: async () => { try { await archive(app.id).unwrap(); message.success('Application archived.'); } catch { message.error('Could not archive this application.'); throw new Error('Archive failed'); } },
+              })}
+            />
+          </Tooltip>
+          <Tooltip title="Open workspace">
+            <Button
+              className="applicant-list__icon-btn"
+              shape="circle"
+              type={app.status === "researching" ? "default" : "primary"}
+              aria-label={`Open workspace for ${applicationTitle(app)}`}
+              icon={<ArrowUpRight size={17} />}
+              onClick={() =>
+                navigate(`/student-hub/applications/${encodeURIComponent(app.id)}`)
+              }
+            />
+          </Tooltip>
+        </div>
       </div>
     );
   };
