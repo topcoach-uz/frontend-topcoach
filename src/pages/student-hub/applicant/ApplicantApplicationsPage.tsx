@@ -2,7 +2,7 @@ import { useGetUniversityDetailQuery } from 'src/app/services/universities';
 import { useGetUndergraduateDegreesQuery } from 'src/app/services/undergraduateDegreesApi';
 import { useEffect, useState } from "react";
 import { Alert, Button, Checkbox, Form, Input, Modal, Select, Tooltip, message } from "antd";
-import { Archive, ArrowRight, ArrowUpRight, Plus, ClipboardList, Building2, FileText, Info, ListChecks, ExternalLink } from "lucide-react";
+import { Archive, ArrowRight, ArrowUpRight, Plus, ClipboardList, Building2, FileText, Info, ListChecks, ExternalLink, Trash2 } from "lucide-react";
 import {
   Link,
   useNavigate,
@@ -13,6 +13,7 @@ import {
   useGetArchivedCollegeApplicationsQuery,
   useArchiveCollegeApplicationMutation,
   useRestoreCollegeApplicationMutation,
+  useDeleteCollegeApplicationMutation,
   useGetCollegeApplicationsQuery,
   useGetCollegeApplicationQuery,
   useGetApplicationTasksQuery,
@@ -48,6 +49,20 @@ export default function ApplicantApplicationsPage() {
   const archived = useGetArchivedCollegeApplicationsQuery(undefined, { skip: !showArchived });
   const [archive, archiveState] = useArchiveCollegeApplicationMutation();
   const [restore, restoreState] = useRestoreCollegeApplicationMutation();
+  const [deleteApplication, deleteState] = useDeleteCollegeApplicationMutation();
+  // Deleting is permanent from the student's side (archive is the reversible
+  // option), so it always asks first and says what is kept.
+  const confirmDelete = (app: CollegeApplication) => Modal.confirm({
+    title: app.universityName || app.major ? `Delete ${app.universityName || app.major}?` : 'Delete this application?',
+    content: 'It will be removed from your College List and won’t appear in Archived. Your writing and documents stay saved. To keep it for later, archive it instead.',
+    okText: 'Delete',
+    okButtonProps: { danger: true },
+    cancelText: 'Cancel',
+    onOk: async () => {
+      try { await deleteApplication(app.id).unwrap(); message.success('Application deleted.'); }
+      catch { message.error('Could not delete this application. Please try again.'); throw new Error('Delete failed'); }
+    },
+  });
   const page = Math.max(1, Number(listParams.get("page")) || 1);
   const query = useGetCollegeApplicationsQuery({ page, limit: 100 }, {pollingInterval:10000,refetchOnMountOrArgChange:true,refetchOnFocus:true});
   // Comparison uses a stable query independent of the list URL's page parameter.
@@ -158,6 +173,16 @@ export default function ApplicantApplicationsPage() {
               })}
             />
           </Tooltip>
+          <Tooltip title="Delete">
+            <Button
+              className="applicant-list__icon-btn applicant-list__icon-btn--danger"
+              shape="circle"
+              aria-label={`Delete ${applicationTitle(app)}`}
+              icon={<Trash2 size={16} />}
+              loading={deleteState.isLoading && deleteState.originalArgs === app.id}
+              onClick={() => confirmDelete(app)}
+            />
+          </Tooltip>
           <Tooltip title="Open workspace">
             <Button
               className="applicant-list__icon-btn"
@@ -196,6 +221,16 @@ export default function ApplicantApplicationsPage() {
                 try { await restore(app.id).unwrap(); message.success('Application restored with its planning tasks.'); }
                 catch { message.error('Could not restore this application. Please try again.'); }
               }}>Restore</Button>
+              <Tooltip title="Delete">
+                <Button
+                  className="applicant-list__icon-btn applicant-list__icon-btn--danger"
+                  shape="circle"
+                  aria-label={`Delete ${applicationTitle(app)}`}
+                  icon={<Trash2 size={16} />}
+                  loading={deleteState.isLoading && deleteState.originalArgs === app.id}
+                  onClick={() => confirmDelete(app)}
+                />
+              </Tooltip>
             </div>
           </div>)}
         </div>

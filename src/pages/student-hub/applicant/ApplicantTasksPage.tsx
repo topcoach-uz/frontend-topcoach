@@ -203,143 +203,144 @@ export default function ApplicantTasksPage() {
       }
     >
       <Breadcrumb>Tasks</Breadcrumb>
-      <div className="task-workspace-sources" role="group" aria-label="Task type">
-        {[['all','All tasks'],['assigned','Assigned to you'],['personal','Personal tasks']].map(([value,label]) => <Button key={value} type={source===value?'primary':'default'} aria-pressed={source===value} onClick={() => { const next=new URLSearchParams(params); next.set('source',value); next.delete('mentorTask'); next.delete('page'); setParams(next); }}>{label}</Button>)}
-      </div>
-      {source !== 'personal' && <MentorAssignedTasks selectedTaskId={params.get("mentorTask")} />}
-      {showPersonal && <>
-      <h2>Personal tasks</h2>
-      <p className="task-workspace-hint">Your own reminders. Mark them complete when done; mentor assignments require submission and review.</p>
-      <div className="applicant-filters applicant-panel">
-        <label>
-          Status
-          <Select
-            value={status}
-            onChange={(value) => setFilter("status", value)}
-            options={[
-              { value: "open", label: "Open tasks" },
-              { value: "completed", label: "Completed" },
-              { value: "cancelled", label: "Cancelled" },
-              { value: "all", label: "All tasks" },
-            ]}
-          />
-        </label>
-        <label>
-          Application
-          <Select
-            value={application}
-            loading={applicationsQuery.isLoading}
-            status={applicationsQuery.isError ? "error" : undefined}
-            disabled={applicationsQuery.isError}
-            onChange={(value) => setFilter("application", value)}
-            options={[
-              {
-                value: "all",
-                label: applicationsQuery.isError
-                  ? "Applications unavailable"
-                  : "All applications",
-              },
-              ...applications.map((item) => ({
-                value: item.id,
-                label: <RelatedApplicationLabel application={item} />,
-              })),
-            ]}
-          />
-        </label>
-        <label>
-          Sort
-          <Select
-            value={sort}
-            onChange={(value) => setFilter("sort", value)}
-            options={[
-              { value: "due", label: "Due date" },
-              { value: "priority", label: "Priority" },
-              { value: "recent", label: "Recently added" },
-            ]}
-          />
-        </label>
-      </div>
-      <QueryState
-        loading={tasksQuery.isLoading}
-        error={tasksQuery.isError}
-        retry={tasksQuery.refetch}
-      >
-        <div className="applicant-panel">
-          {!visible.length ? (
-            <div className="applicant-empty">
-              <h2>{tasks.length ? "No tasks match these filters." : "No tasks here yet."}</h2>
-              <p>
-                {tasks.length
-                  ? "Try another status or application to find your tasks."
-                  : "Add a task when you want a reminder tied to your preparation."}
-              </p>
-              {tasks.length > 0 && <Button onClick={() => {
-                const next = new URLSearchParams(params);
-                next.set("status", "all");
-                next.delete("application");
-                next.delete("page");
-                setParams(next);
-              }}>Show all tasks</Button>}
-            </div>
-          ) : (
-            visible.map((task) => (
-              <div
-                className={`applicant-task${task.status === "completed" ? " applicant-task--complete" : ""}`}
-                key={task.id}
-              >
-                <Checkbox
-                  disabled={changingIds.has(task.id)}
-                  checked={task.status === "completed"}
-                  onChange={(event) => toggle(task, event.target.checked)}
-                  aria-label={`Mark ${task.title} complete`}
-                />
-                <div>
-                  <strong>{task.title}</strong>
-                  <small>
-                    {task.description ||
-                      (task.collegeApplicationId
-                        ? applicationLookup.get(task.collegeApplicationId)
-                          ? <RelatedApplicationLabel application={applicationLookup.get(task.collegeApplicationId)!} />
-                          : applicationsQuery.isError
-                            ? "Related application unavailable"
-                            : "Related application"
-                        : "Personal task")}
-                  </small>
-                </div>
-                <span>
-                  {task.dueDate ? displayDate(task.dueDate) : "No due date"}
-                </span>
-                <span className="applicant-status">{task.priority}</span>
-                <Button
-                  aria-label={`Edit ${task.title}`}
-                  icon={<MoreHorizontal size={18} />}
-                  onClick={() => open(task)}
-                />
-              </div>
-            ))
-          )}
+      <div className="task-page">
+        <div className="task-segmented" role="group" aria-label="Show tasks">
+          {([['all', 'All'], ['assigned', 'Assigned to you'], ['personal', 'Personal']] as const).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              className={source === value ? 'is-active' : undefined}
+              aria-pressed={source === value}
+              onClick={() => { const next = new URLSearchParams(params); next.set('source', value); next.delete('mentorTask'); next.delete('page'); setParams(next); }}
+            >
+              {label}
+            </button>
+          ))}
         </div>
-        {(tasksQuery.data?.totalPages ?? 1) > 1 && (
-          <div className="applicant-actions applicant-actions--end">
-            <Button
-              disabled={page <= 1}
-              onClick={() => setFilter("page", String(page - 1))}
+        {source !== 'personal' && <MentorAssignedTasks selectedTaskId={params.get("mentorTask")} />}
+        {showPersonal && (
+          <section className="task-card" aria-label="Personal tasks">
+            <header className="task-card__head">
+              <div>
+                <h2>Personal tasks <span className="task-count">{tasksQuery.isLoading ? '–' : visible.length}</span></h2>
+                <p>Your own reminders. Tick them off when they’re done.</p>
+              </div>
+            </header>
+            <div className="task-toolbar">
+              <Select
+                aria-label="Task status"
+                value={status}
+                onChange={(value) => setFilter("status", value)}
+                options={[
+                  { value: "open", label: "Open" },
+                  { value: "completed", label: "Completed" },
+                  { value: "cancelled", label: "Cancelled" },
+                  { value: "all", label: "All statuses" },
+                ]}
+              />
+              <Select
+                aria-label="Related application"
+                value={application}
+                loading={applicationsQuery.isLoading}
+                status={applicationsQuery.isError ? "error" : undefined}
+                disabled={applicationsQuery.isError}
+                onChange={(value) => setFilter("application", value)}
+                popupMatchSelectWidth={false}
+                options={[
+                  {
+                    value: "all",
+                    label: applicationsQuery.isError ? "Applications unavailable" : "All applications",
+                  },
+                  ...applications.map((item) => ({
+                    value: item.id,
+                    label: <RelatedApplicationLabel application={item} />,
+                  })),
+                ]}
+              />
+              <Select
+                aria-label="Sort tasks"
+                value={sort}
+                onChange={(value) => setFilter("sort", value)}
+                options={[
+                  { value: "due", label: "Sort: Due date" },
+                  { value: "priority", label: "Sort: Priority" },
+                  { value: "recent", label: "Sort: Newest" },
+                ]}
+              />
+            </div>
+            <QueryState
+              loading={tasksQuery.isLoading}
+              error={tasksQuery.isError}
+              retry={tasksQuery.refetch}
             >
-              Previous
-            </Button>
-            <span>
-              Page {page} of {tasksQuery.data?.totalPages}
-            </span>
-            <Button
-              disabled={page >= (tasksQuery.data?.totalPages ?? 1)}
-              onClick={() => setFilter("page", String(page + 1))}
-            >
-              Next
-            </Button>
-          </div>
+              {!visible.length ? (
+                <div className="task-empty">
+                  <strong>{tasks.length ? "No tasks match these filters." : "No personal tasks yet."}</strong>
+                  <p>
+                    {tasks.length
+                      ? "Try another status or application."
+                      : "Add a reminder for anything you need to prepare, like a recommendation letter or a test date."}
+                  </p>
+                  {tasks.length > 0 ? (
+                    <Button onClick={() => {
+                      const next = new URLSearchParams(params);
+                      next.set("status", "all");
+                      next.delete("application");
+                      next.delete("page");
+                      setParams(next);
+                    }}>Show all tasks</Button>
+                  ) : (
+                    <Button icon={<Plus size={15} />} onClick={() => open()}>Add task</Button>
+                  )}
+                </div>
+              ) : (
+                <ul className="task-list">
+                  {visible.map((task) => {
+                    const done = task.status === "completed";
+                    const overdue = !done && !!task.dueDate && dayjs(task.dueDate).isBefore(dayjs(), "day");
+                    const related = task.collegeApplicationId ? applicationLookup.get(task.collegeApplicationId) : undefined;
+                    return (
+                      <li className={`task-row${done ? " is-done" : ""}`} key={task.id}>
+                        <Checkbox
+                          disabled={changingIds.has(task.id)}
+                          checked={done}
+                          onChange={(event) => toggle(task, event.target.checked)}
+                          aria-label={`Mark ${task.title} complete`}
+                        />
+                        <div className="task-row__main">
+                          <strong>{task.title}</strong>
+                          <small>
+                            {related ? <RelatedApplicationLabel application={related} /> : task.collegeApplicationId ? (applicationsQuery.isError ? "Related application unavailable" : "Related application") : "Personal"}
+                            {task.description && task.description.trim() !== task.title.trim() && <> · {task.description}</>}
+                          </small>
+                        </div>
+                        <span className={`task-due${overdue ? " is-overdue" : ""}`}>
+                          {task.dueDate ? `${overdue ? "Overdue · " : ""}${displayDate(task.dueDate)}` : "No date"}
+                        </span>
+                        <span className={`task-priority task-priority--${task.priority}`}>{task.priority}</span>
+                        <Button
+                          type="text"
+                          className="task-row__more"
+                          aria-label={`Edit ${task.title}`}
+                          icon={<MoreHorizontal size={18} />}
+                          onClick={() => open(task)}
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              {(tasksQuery.data?.totalPages ?? 1) > 1 && (
+                <div className="task-pager">
+                  <Button size="small" disabled={page <= 1} onClick={() => setFilter("page", String(page - 1))}>Previous</Button>
+                  <span>Page {page} of {tasksQuery.data?.totalPages}</span>
+                  <Button size="small" disabled={page >= (tasksQuery.data?.totalPages ?? 1)} onClick={() => setFilter("page", String(page + 1))}>Next</Button>
+                </div>
+              )}
+            </QueryState>
+          </section>
         )}
-      </QueryState>
-      </>}
+      </div>
       <Modal
         rootClassName="applicant-modal"
         title={action === "edit" ? "Edit task" : "Add task"}

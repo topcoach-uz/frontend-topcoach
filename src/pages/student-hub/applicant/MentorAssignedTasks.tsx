@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Alert, Button, Input, Modal, Select, Upload, message } from "antd";
 import type { UploadFile } from "antd";
-import { Paperclip } from "lucide-react";
+import { Paperclip, Search } from "lucide-react";
 import {
   useGetMenteeTasksQuery,
   useSubmitMenteeTaskMutation,
@@ -155,25 +155,21 @@ export function AssignedTaskList({
 
   return (
     <section
-      className="applicant-panel mentor-assigned-tasks"
+      className="task-card mentor-assigned-tasks"
       aria-label="Assigned tasks"
     >
-      <div className="mentor-assigned-tasks__head">
+      <header className="task-card__head">
         <div>
-          <h2>Assigned to you</h2>
-          <p>
-            Submit your work here and check feedback from your counselor or
-            mentor.
-          </p>
+          <h2>Assigned to you <span className="task-count">{isLoading ? "–" : tasks.length}</span></h2>
+          <p>Work from your counselor or mentor. Submit it here and read their feedback.</p>
         </div>
-        <span>
-          {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
-        </span>
-      </div>
-      <div className="assigned-task-controls">
+      </header>
+      <div className="task-toolbar">
         <Input
+          className="task-toolbar__search"
           aria-label="Search assigned tasks"
-          placeholder="Search tasks or mentor"
+          placeholder="Search tasks or mentors"
+          prefix={<Search size={15} aria-hidden />}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           allowClear
@@ -182,9 +178,10 @@ export function AssignedTaskList({
           aria-label="Assigned task status"
           value={status}
           onChange={setStatus}
+          popupMatchSelectWidth={false}
           options={[
-            { value: "open", label: "Outstanding" },
-            { value: "all", label: "All assigned tasks" },
+            { value: "open", label: "To do" },
+            { value: "all", label: "All statuses" },
             ...Object.entries(statusLabels).map(([value, label]) => ({
               value,
               label,
@@ -193,7 +190,7 @@ export function AssignedTaskList({
         />
       </div>
       {isLoading ? (
-        <p>Loading assigned tasks…</p>
+        <p className="task-loading">Loading assigned tasks…</p>
       ) : isError ? (
         <Alert
           type="error"
@@ -201,34 +198,29 @@ export function AssignedTaskList({
           action={<Button onClick={() => refetch?.()}>Retry</Button>}
         />
       ) : visible.length === 0 ? (
-        <p className="mentor-assigned-tasks__empty">
-          {tasks.length
-            ? "No assigned tasks match these filters."
-            : "No tasks assigned yet. Tasks from your counselor or mentor will appear here."}
-        </p>
+        <div className="task-empty">
+          <strong>{tasks.length ? "No assigned tasks match these filters." : "Nothing assigned yet."}</strong>
+          <p>{tasks.length ? "Try another status or clear the search." : "When your counselor or mentor gives you work, it appears here."}</p>
+        </div>
       ) : (
-        visible.map((task) => (
+        <div className="task-assigned-list">
+        {visible.map((task) => (
           <article
             id={`mentor-task-${task.id}`}
             key={task.id}
-            className={`mentor-assigned-tasks__item${task.id === selectedTaskId ? " is-selected" : ""}`}
+            className={`mentor-assigned-tasks__item task-assigned${task.id === selectedTaskId ? " is-selected" : ""}`}
           >
-            <div className="mentor-assigned-tasks__top">
-              <div>
-                <h3>{task.task}</h3>
-                <p>
-                  From {task.mentorName || "your advisor"} · Due{" "}
-                  {readableDeadline(task.deadline)}
-                </p>
-              </div>
-              <strong
-                className={`mentor-assigned-tasks__status mentor-assigned-tasks__status--${task.status}`}
-              >
+            <div className="task-assigned__top">
+              <h3>{task.task}</h3>
+              <span className={`task-status task-status--${task.status}`}>
                 {statusLabels[task.status] || "To do"}
-              </strong>
+              </span>
             </div>
-            {task.description && (
-              <p className="mentor-assigned-tasks__description">
+            <p className="task-assigned__meta">
+              From {task.mentorName || "your advisor"} · Due {readableDeadline(task.deadline)}
+            </p>
+            {task.description && task.description.trim() !== task.task.trim() && (
+              <p className="task-assigned__description">
                 {task.description}
               </p>
             )}
@@ -313,14 +305,17 @@ export function AssignedTaskList({
             ))}
             {(task.status === "assigned" ||
               task.status === "revision_requested") && (
-              <Button type="primary" onClick={() => setActive(task)}>
-                {task.status === "revision_requested"
-                  ? "Submit revision"
-                  : "Submit work"}
-              </Button>
+              <div className="task-assigned__actions">
+                <Button type="primary" onClick={() => setActive(task)}>
+                  {task.status === "revision_requested"
+                    ? "Submit revision"
+                    : "Submit work"}
+                </Button>
+              </div>
             )}
           </article>
-        ))
+        ))}
+        </div>
       )}
       <Modal
         title={active ? `Submit: ${active.task}` : "Submit work"}

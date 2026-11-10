@@ -141,6 +141,7 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
                 onClick={requiresEnrollment ? onUnlock : onStart}
               >
                 <span>{actionLabel}</span>
+                <ArrowRight size={18} aria-hidden />
               </button>
               <p className="mm3-motion-intro__scope">
                 <span>{t("majorMatch3.intro.estimatedTime", "10 minutes")}</span>
