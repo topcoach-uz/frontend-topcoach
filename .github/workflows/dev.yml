@@ -154,7 +154,7 @@ jobs:
             🧹 Preview environment removed.
 
   promote-full-support:
-    if: (github.event_name == 'workflow_dispatch' && !inputs.workspace_mode && !inputs.shared_applications_mode && !inputs.schedule_filter_mode && !inputs.course_schedule_mode && !inputs.my_programs_mode) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[preserve-dev-runtime]') && !contains(github.event.head_commit.message, '[workspace-promotion]'))
+    if: (github.event_name == 'workflow_dispatch' && !inputs.workspace_mode && !inputs.shared_applications_mode && !inputs.schedule_filter_mode && !inputs.course_schedule_mode && !inputs.my_programs_mode) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[preserve-dev-runtime]') && !contains(github.event.head_commit.message, '[workspace-promotion]') && !contains(github.event.head_commit.message, '[learning-access-fix]'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

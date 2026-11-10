@@ -4,6 +4,7 @@ import {
   useGetUserPreferencesQuery,
   useUpdateUserPreferencesMutation,
 } from 'src/app/services/student-hub/dashboardApi';
+import { useGetEnrollmentStatusQuery } from 'src/app/services/courses';
 import { useGetCurrentSubscriptionQuery } from 'src/app/services/subscription';
 import { useTypedSelector } from 'src/app/store';
 import { useGetMyOrgMembershipQuery } from 'src/app/services/student-hub/orgMembershipApi';
@@ -22,7 +23,7 @@ type JourneyExperienceValue = {
   isCommunityEnrolled: boolean;
   setCommunityEnrolled: (value: boolean) => void;
   /**
-   * True while preferences, subscription, or organization membership are loading
+   * True while preferences, subscription, organization membership, or program access are loading
    * and no entitlement has been confirmed yet.
    * Consumers that route/redirect based on isCommunityEnrolled should
    * wait for this to go false — otherwise an enrolled user on a fresh
@@ -60,6 +61,15 @@ export function JourneyExperienceProvider({ children }: { children: React.ReactN
       refetchOnReconnect: true,
       pollingInterval: 60_000,
     });
+  // The backend includes Full Support and other program grants in this policy.
+  // A course purchase alone does not imply Community access.
+  const { data: learningAccess, isLoading: learningAccessLoading } =
+    useGetEnrollmentStatusQuery('admissions', {
+      skip: !isAuthenticated,
+      refetchOnFocus: true,
+      refetchOnReconnect: true,
+      pollingInterval: 30_000,
+    });
   const [createUserPreferences] = useCreateUserPreferencesMutation();
   const [updateUserPreferences] = useUpdateUserPreferencesMutation();
   // Local storage is never an entitlement: an organization can revoke a seat
@@ -84,10 +94,10 @@ export function JourneyExperienceProvider({ children }: { children: React.ReactN
     subscription?.status === 'active' || subscription?.status === 'trialing';
 
   const isCommunityEnrolled = preferenceMode || hasEntitlingSubscription ||
-    hasActiveCommunityOrgMembership(orgMemberships);
+    hasActiveCommunityOrgMembership(orgMemberships) || learningAccess?.communityIncluded === true;
   // Only an unconfirmed entitlement needs the loading state.
   const isEntitlementLoading =
-    !isCommunityEnrolled && (preferencesLoading || subscriptionLoading || orgMembershipsLoading);
+    !isCommunityEnrolled && (preferencesLoading || subscriptionLoading || orgMembershipsLoading || learningAccessLoading);
 
   const setCommunityEnrolled = useCallback((value: boolean) => {
     setState(value);

@@ -29,6 +29,7 @@ export interface CourseEnrollmentStatusDto {
   isEnrolled: boolean;
   enrollment?: CourseEnrollmentDto;
   canAccessLearning: boolean;
+  communityIncluded?: boolean;
 }
 
 export interface CoursePricingDto {
