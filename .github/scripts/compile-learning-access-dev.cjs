@@ -35,12 +35,16 @@ for(const [name,body] of Object.entries(snapshot.files)){
   for(const edit of edits.sort((a,b)=>b.start-a.start))out=out.slice(0,edit.start)+edit.text+out.slice(edit.end);
   providers++;
  }
- // Use the existing Admissions sidebar destination.
+ // Match the link by its visible label, since other routes share the same URL.
  if(out.includes('Open My Learning')){
-  const routes=['"/student-hub?section=my-learning"','"/student-hub?section=learning&tab=admissions"'];
-  const old=routes.find(route=>out.includes(route));
-  if(old){if(out.split(old).length!==2)throw Error('Ambiguous program link');out=out.replace(old,'"/student-hub?section=admissions-program"');links++;}
-  else if(out.includes('"/student-hub?section=admissions-program"'))links++;
+  const ast=parse(name,out),edits=[];
+  function link(n){if(ts.isObjectLiteralExpression(n)&&n.properties.some(p=>ts.isPropertyAssignment(p)&&p.name.getText(ast)==='children'&&ts.isStringLiteral(p.initializer)&&p.initializer.text==='Open My Learning →')){
+   const to=n.properties.find(p=>ts.isPropertyAssignment(p)&&p.name.getText(ast)==='to');
+   if(!to||!ts.isStringLiteral(to.initializer))throw Error('Program link destination missing');
+   edits.push({start:to.initializer.getStart(ast),end:to.initializer.end});
+  }ts.forEachChild(n,link)}link(ast);
+  if(edits.length!==1)throw Error('Expected one program learning link');
+  const edit=edits[0];out=out.slice(0,edit.start)+'"/student-hub?section=admissions-program"'+out.slice(edit.end);links++;
  }
  if(out!==body)changed[name]=out;
 }
