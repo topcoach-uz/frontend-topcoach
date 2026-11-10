@@ -2,7 +2,7 @@ import { useGetUniversityDetailQuery } from 'src/app/services/universities';
 import { useGetUndergraduateDegreesQuery } from 'src/app/services/undergraduateDegreesApi';
 import { useEffect, useState } from "react";
 import { Alert, Button, Checkbox, Form, Input, Modal, Select, Tooltip, message } from "antd";
-import { Archive, ArrowRight, ArrowUpRight, Plus, ClipboardList, Building2, FileText, ListChecks, ExternalLink } from "lucide-react";
+import { Archive, ArrowRight, ArrowUpRight, Plus, ClipboardList, Building2, FileText, Info, ListChecks, ExternalLink } from "lucide-react";
 import {
   Link,
   useNavigate,
@@ -29,6 +29,7 @@ import { getTranslation } from "src/lib/i18n/translationUtils";
 import {
   ApplicantPage,
   Breadcrumb,
+  CollegeListTabs,
   QueryState,
   UniversityIdentity,
   displayDate,
@@ -174,26 +175,41 @@ export default function ApplicantApplicationsPage() {
     );
   };
   if (showScholarships) return <ScholarshipManagement />;
-  if (showArchived) return <ApplicantPage title="Archived applications" subtitle="Restore an application to resume planning. Writing and documents are retained." actions={<Button onClick={() => navigate('/student-hub/applications')}>View active applications</Button>}>
+  if (showArchived) return <ApplicantPage title="Archived applications" subtitle="Restore an application to resume planning. Writing and documents are retained.">
+    <Breadcrumb><Link to="/student-hub/applications">College List</Link><span>/</span>Archived</Breadcrumb>
+    <CollegeListTabs current="archived" masters={isMasters} />
     <QueryState loading={archived.isLoading} error={archived.isError} retry={archived.refetch}>
-      {!archived.data?.data.length ? <p>No archived applications.</p> : archived.data.data.map(app => <div className="applicant-panel" key={app.id}>
-        <UniversityIdentity id={app.universityId} name={app.universityName} subtitle={app.major} />
-        <p>{applicationStatusLabels[app.status] ?? app.status}</p>
-        <Button loading={restoreState.isLoading} onClick={async () => {
-          try { await restore(app.id).unwrap(); message.success('Application restored with its planning tasks.'); }
-          catch { message.error('Could not restore this application. Please try again.'); }
-        }}>Restore application</Button>
-      </div>)}
+      {!archived.data?.data.length ? (
+        <div className="applicant-panel applicant-empty">
+          <Archive size={32} aria-hidden />
+          <h2>Nothing archived.</h2>
+          <p>Applications you archive from your College List appear here, ready to restore.</p>
+        </div>
+      ) : (
+        <div className="applicant-panel applicant-list applicant-list--archived">
+          {archived.data.data.map(app => <div className="applicant-list__row" key={app.id}>
+            <UniversityIdentity id={app.universityId} name={app.universityName} subtitle={app.major} />
+            <div className="applicant-list__cell"><span className={`applicant-list__status applicant-list__status--${app.status}`}>{applicationStatusLabels[app.status] ?? app.status}</span></div>
+            <div className="applicant-list__cell" />
+            <div className="applicant-list__actions">
+              <Button loading={restoreState.isLoading && restoreState.originalArgs === app.id} onClick={async () => {
+                try { await restore(app.id).unwrap(); message.success('Application restored with its planning tasks.'); }
+                catch { message.error('Could not restore this application. Please try again.'); }
+              }}>Restore</Button>
+            </div>
+          </div>)}
+        </div>
+      )}
     </QueryState>
   </ApplicantPage>;
   if (showTimeline) {
     return (
       <ApplicantPage
-        title="Deadline timeline"
+        title="Deadlines"
         subtitle="Application deadlines and planned tasks, ordered by date."
-        actions={<Button onClick={() => navigate("/student-hub/applications")}>View applications</Button>}
       >
-        <Breadcrumb>Timeline</Breadcrumb>
+        <Breadcrumb><Link to="/student-hub/applications">College List</Link><span>/</span>Deadlines</Breadcrumb>
+        <CollegeListTabs current="deadlines" masters={isMasters} />
         <QueryState
           loading={query.isLoading || tasks.isLoading || scholarships.isLoading || assignedTasks.isLoading || mentorPlans.isLoading}
           error={query.isError || tasks.isError || scholarships.isError || assignedTasks.isError || mentorPlans.isError}
@@ -213,8 +229,8 @@ export default function ApplicantApplicationsPage() {
             <div className="applicant-panel applicant-empty">
               <ClipboardList size={36} />
               <h2>No deadlines yet.</h2>
-              <p>Add an application deadline or a dated task to see it here.</p>
-              <Button onClick={() => navigate("/student-hub/applications/new")}>Add application</Button>
+              <p>Add a planning deadline or a dated task to an application to see it here.</p>
+              <Button onClick={() => navigate("/student-hub/applications")}>Open College List</Button>
             </div>
           )}
         </QueryState>
@@ -286,20 +302,21 @@ export default function ApplicantApplicationsPage() {
         <Button onClick={() => navigate("/student-hub/applications?view=shortlist")}>View shortlist <ArrowRight size={16} /></Button>
       ) : applications.length > 0 ? (
         <Button
+          type="primary"
           onClick={() => navigate("/student-hub/applications/new")}
           icon={<Plus size={16} />}
         >
-          Add application
+          {isMasters ? "Add program" : "Add university"}
         </Button>
       ) : undefined}
     >
-      <div className="applicant-actions"><Link to="/student-hub/applications?tab=timeline">View deadlines →</Link><Button onClick={() => navigate("/student-hub/applications?view=archived")}>Archived applications</Button><Link to="/student-hub/applications?tab=scholarships">Manage scholarships</Link></div>
       {mentorPlans.isError && <Alert type="warning" message="Mentor plans are temporarily unavailable." action={<Button onClick={() => void mentorPlans.refetch()}>Retry</Button>} />}
       {!!mentorPlans.data?.data.length && <details className="applicant-panel" aria-label="Earlier mentor notes">
         <summary>Earlier mentor notes</summary><p>These older notes are awaiting review by your application mentor. Once converted, they appear in your application list.</p>
         {mentorPlans.data.data.map(plan => <div key={plan.id} className="applicant-list__row"><strong>{plan.program}</strong><span>{plan.stage} · {plan.status}</span><span>{displayDate(plan.deadline)}</span></div>)}
       </details>}
-      {!isMasters && <Breadcrumb>College List</Breadcrumb>}
+      <Breadcrumb>College List</Breadcrumb>
+      <CollegeListTabs current="applications" masters={isMasters} />
       <QueryState
         loading={query.isLoading}
         error={query.isError}
@@ -324,17 +341,20 @@ export default function ApplicantApplicationsPage() {
                 {isMasters ? "Find programs" : "Find universities"} <ArrowRight size={16} />
               </Button>
               <Button onClick={() => navigate("/student-hub/applications/new")}>
-                Add an application
+                {isMasters ? "Add a program" : "Add a university"}
               </Button>
             </div>
           </div>
         ) : (
           <>
-            <div className="applicant-page__heading">
-              <h3>{active.length} {isMasters ? "program applications" : "applications"} in preparation on this page</h3>
-              <Link to="/student-hub/applications?tab=scholarships">Scholarships →</Link>
-
+            <div className="applicant-section-title">
+              <h2>In preparation <span>{active.length}</span></h2>
             </div>
+            {!active.length && (
+              <p className="applicant-section-empty">
+                Nothing in preparation yet. Open a saved {isMasters ? "program" : "university"} to start planning its application.
+              </p>
+            )}
             {!!active.length && (
               <div className="applicant-panel applicant-list">
                 <div className="applicant-list__head">
@@ -348,8 +368,8 @@ export default function ApplicantApplicationsPage() {
             )}
             {!!saved.length && (
               <>
-                <div className="applicant-page__heading">
-                  <h2>Saved {isMasters ? "programs" : "universities"} · {saved.length}</h2>
+                <div className="applicant-section-title">
+                  <h2>Saved for later <span>{saved.length}</span></h2>
                   {isMasters && comparedIds.length >= 2 && (
                     <Button type="primary" onClick={() => { const next = new URLSearchParams(listParams); next.set("view", "compare"); setListParams(next); }}>
                       Compare selected ({comparedIds.length})
@@ -388,9 +408,9 @@ export default function ApplicantApplicationsPage() {
                 </Button>
               </div>
             )}
-            <p>
-              Submit through the university’s official platform. Manage your
-              preparation here.
+            <p className="applicant-list-note">
+              <Info size={14} aria-hidden />
+              Plan and prepare here. Applications are submitted on each university’s official platform.
             </p>
           </>
         )}

@@ -16,7 +16,9 @@
   position: relative;
 }
 
-:global(header[data-applicant-workspace]) .link_active {
+// Top bar (every page): the active link is white text with a short white
+// underline. The vertical hamburger list keeps the filled pill below.
+.ul:not(.vertical) .link_active {
   color: white;
   background: transparent;
   position: relative;

@@ -1,4 +1,6 @@
 import { FC } from 'react';
+import { Select } from 'antd';
+import { Check, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -162,7 +164,7 @@ export const MM3Multi: FC<{
               onClick={() => !blocked && toggle(i)}
               onKeyDown={keyActivate(() => !blocked && toggle(i))}
             >
-              <span className="mm2-runner__option-dot mm3-dot--square" aria-hidden="true" />
+              <span className="mm2-runner__option-dot" aria-hidden="true" />
               <span className="mm2-runner__option-label">
                 {t(`${root}.opt.${i}`)}
                 {hint && <small className="mm3-hint">{hint}</small>}
@@ -247,25 +249,24 @@ const MM3FieldRow: FC<{
         {t(`${root}.label`)}
       </label>
       {field.kind === 'select' ? (
-        <select
+        <Select
           id={id}
-          className="mm3-field__control"
-          value={value}
-          required={required}
-          onChange={(e) => onChange(e.target.value)}
-        >
-          <option value="">{t('majorMatch3.field.choose', 'Choose…')}</option>
-          {Array.from({ length: field.optionCount ?? 0 }, (_, i) => {
+          className="mm3-select"
+          popupClassName="mm3-select-popup"
+          value={value || undefined}
+          placeholder={t('majorMatch3.field.choose', 'Choose…')}
+          aria-required={required}
+          onChange={(next: string) => onChange(next)}
+          suffixIcon={<ChevronDown size={16} aria-hidden />}
+          menuItemSelectedIcon={<Check size={16} aria-hidden />}
+          listHeight={320}
+          // Store the label, not the index — the LLM reads these verbatim
+          // and an index would be meaningless in the prompt.
+          options={Array.from({ length: field.optionCount ?? 0 }, (_, i) => {
             const label = t(`${root}.opt.${i}`);
-            // Store the label, not the index — the LLM reads these verbatim
-            // and an index would be meaningless in the prompt.
-            return (
-              <option key={i} value={label}>
-                {label}
-              </option>
-            );
+            return { value: label, label };
           })}
-        </select>
+        />
       ) : (
         <input
           id={id}

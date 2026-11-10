@@ -487,8 +487,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                           <InputNumber
                             min={200}
                             max={800}
-                            placeholder={t('studentHub.profile.mathSection', 'Math Section')}
+                            placeholder="200–800"
                             className="score-input"
+                            controls={false}
                           />
                         </Form.Item>
                       </Col>
@@ -500,8 +501,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                           <InputNumber
                             min={200}
                             max={800}
-                            placeholder={t('studentHub.profile.reading', 'Reading')}
+                            placeholder="200–800"
                             className="score-input"
+                            controls={false}
                           />
                         </Form.Item>
                       </Col>
@@ -513,8 +515,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                           <InputNumber
                             min={400}
                             max={1600}
-                            placeholder="Total Score"
+                            placeholder="Calculated automatically"
                             className="score-input"
+                            controls={false}
                             disabled
                           />
                         </Form.Item>
@@ -552,8 +555,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                           <InputNumber
                             min={1}
                             max={36}
-                            placeholder={t('studentHub.profile.compositeScore', 'Composite Score')}
+                            placeholder="1–36"
                             className="score-input"
+                            controls={false}
                           />
                         </Form.Item>
                       </Col>
@@ -565,8 +569,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                           <InputNumber
                             min={1}
                             max={36}
-                            placeholder={t('studentHub.profile.math', 'Math')}
+                            placeholder="1–36"
                             className="score-input"
+                            controls={false}
                           />
                         </Form.Item>
                       </Col>
@@ -578,8 +583,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                           <InputNumber
                             min={1}
                             max={36}
-                            placeholder={t('studentHub.profile.reading', 'Reading')}
+                            placeholder="1–36"
                             className="score-input"
+                            controls={false}
                           />
                         </Form.Item>
                       </Col>
@@ -591,8 +597,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                           <InputNumber
                             min={1}
                             max={36}
-                            placeholder={t('studentHub.profile.science', 'Science')}
+                            placeholder="1–36"
                             className="score-input"
+                            controls={false}
                           />
                         </Form.Item>
                       </Col>
@@ -604,8 +611,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                           <InputNumber
                             min={1}
                             max={36}
-                            placeholder={t('studentHub.profile.writing', 'Writing')}
+                            placeholder="1–36"
                             className="score-input"
+                            controls={false}
                           />
                         </Form.Item>
                       </Col>
@@ -641,8 +649,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                         min={0}
                         max={9}
                         step={0.5}
-                        placeholder={t('studentHub.profile.overallBandScore', 'Overall Band Score')}
+                        placeholder="0–9"
                         className="score-input"
+                            controls={false}
                       />
                     </Form.Item>
                     <Row gutter={[8, 8]}>
@@ -652,8 +661,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                             min={0}
                             max={9}
                             step={0.5}
-                            placeholder="L"
+                            placeholder="0–9"
                             className="score-input"
+                            controls={false}
                           />
                         </Form.Item>
                       </Col>
@@ -663,8 +673,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                             min={0}
                             max={9}
                             step={0.5}
-                            placeholder="R"
+                            placeholder="0–9"
                             className="score-input"
+                            controls={false}
                           />
                         </Form.Item>
                       </Col>
@@ -674,8 +685,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                             min={0}
                             max={9}
                             step={0.5}
-                            placeholder="W"
+                            placeholder="0–9"
                             className="score-input"
+                            controls={false}
                           />
                         </Form.Item>
                       </Col>
@@ -685,8 +697,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                             min={0}
                             max={9}
                             step={0.5}
-                            placeholder="S"
+                            placeholder="0–9"
                             className="score-input"
+                            controls={false}
                           />
                         </Form.Item>
                       </Col>
@@ -721,8 +734,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                       <InputNumber
                         min={0}
                         max={120}
-                        placeholder={t('studentHub.profile.totalScore', 'Total Score')}
+                        placeholder="0–120"
                         className="score-input"
+                            controls={false}
                       />
                     </Form.Item>
                     <Row gutter={[8, 8]}>
@@ -731,8 +745,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                           <InputNumber
                             min={0}
                             max={30}
-                            placeholder="R"
+                            placeholder="0–30"
                             className="score-input"
+                            controls={false}
                           />
                         </Form.Item>
                       </Col>
@@ -741,8 +756,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                           <InputNumber
                             min={0}
                             max={30}
-                            placeholder="L"
+                            placeholder="0–30"
                             className="score-input"
+                            controls={false}
                           />
                         </Form.Item>
                       </Col>
@@ -751,8 +767,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                           <InputNumber
                             min={0}
                             max={30}
-                            placeholder="S"
+                            placeholder="0–30"
                             className="score-input"
+                            controls={false}
                           />
                         </Form.Item>
                       </Col>
@@ -761,8 +778,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                           <InputNumber
                             min={0}
                             max={30}
-                            placeholder="W"
+                            placeholder="0–30"
                             className="score-input"
+                            controls={false}
                           />
                         </Form.Item>
                       </Col>
@@ -797,8 +815,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                       <InputNumber
                         min={10}
                         max={160}
-                        placeholder={t('studentHub.profile.overallScore', 'Overall Score')}
+                        placeholder="10–160"
                         className="score-input"
+                            controls={false}
                       />
                     </Form.Item>
                   </div>

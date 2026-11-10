@@ -262,3 +262,92 @@ $mm2-serif: "Iowan Old Style", "Charter", "Georgia", serif;
     justify-content: center;
   }
 }
+
+/* ===================================================================
+   Compact question card (2026-11-10): fit a full question plus its
+   actions on a laptop-height screen without scrolling. Scoped to the
+   MM3 question card only; the progress header is unchanged.
+   =================================================================== */
+.mm2-runner.mm3-runner .mm2-runner__card {
+  padding: 20px 36px 14px;
+
+  .mm3-runner__question-head {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+  }
+
+  .mm2-runner__question {
+    font-size: 1.75rem;
+    line-height: 1.15;
+    margin-bottom: 6px;
+  }
+
+  .mm3-runner__sub {
+    margin: 0;
+  }
+
+  .mm2-runner__options {
+    gap: 7px;
+  }
+
+  .mm2-runner__option {
+    min-height: 46px;
+    padding: 8px 16px;
+    gap: 12px;
+  }
+
+  .mm2-runner__option-label {
+    font-size: 0.95rem;
+    line-height: 1.35;
+  }
+
+  .mm2-runner__actions {
+    margin-top: 14px;
+    padding-top: 14px;
+  }
+
+  .mm2-runner__btn {
+    min-height: 46px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  // Form questions (GPA, test scores, English): fields share the 46px
+  // rhythm of the option rows, with labels sized as quiet captions.
+  .mm3-fields {
+    gap: 14px 16px;
+  }
+
+  .mm3-field__label {
+    margin-bottom: 6px;
+    font-size: 0.82rem;
+    line-height: 1.3;
+  }
+
+  input.mm3-field__control,
+  select.mm3-field__control,
+  .mm3-other-detail input {
+    height: 46px;
+    min-height: 46px;
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size: 0.95rem;
+    border-radius: 10px;
+  }
+
+  .mm3-other-detail {
+    margin-top: 12px;
+
+    label { margin-bottom: 6px; }
+  }
+
+  .mm3-scale__step {
+    min-height: 46px;
+    padding: 0 6px;
+  }
+
+  .mm3-count,
+  .mm3-hint {
+    margin-top: 8px;
+  }
+}

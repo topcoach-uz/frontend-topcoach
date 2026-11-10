@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Button, DatePicker, Form, Input, InputNumber, Modal, Select, message } from 'antd';
 import dayjs from 'dayjs';
 import { Link, useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { useDeleteScholarshipApplicationMutation, useGetScholarshipApplicationsQuery, useUpdateScholarshipApplicationMutation } from 'src/app/services/student-hub/applicationTrackingApi';
 import type { ScholarshipApplication } from 'src/app/services/student-hub/types';
-import { ApplicantPage, Breadcrumb, QueryState, displayDate } from './ApplicantPage';
+import { ApplicantPage, Breadcrumb, CollegeListTabs, QueryState, displayDate } from './ApplicantPage';
 
 const statuses = ['researching', 'eligible', 'applying', 'submitted', 'under_review', 'awarded', 'rejected', 'expired'] as const;
 const label = (value: string) => value.replaceAll('_', ' ').replace(/^./, c => c.toUpperCase());
@@ -32,8 +33,9 @@ export default function ScholarshipManagement() {
       setEditing(undefined); message.success('Scholarship updated.');
     } catch { message.error('Could not save this scholarship. Your changes remain here.'); }
   };
-  return <ApplicantPage title="Your scholarships" subtitle="Manage funding applications, decisions and deadlines." actions={<Button onClick={() => navigate('/student-hub/applications/scholarships/new')}>Add scholarship</Button>}>
+  return <ApplicantPage title="Your scholarships" subtitle="Manage funding applications, decisions and deadlines." actions={<Button type="primary" icon={<Plus size={16} />} onClick={() => navigate('/student-hub/applications/scholarships/new')}>Add scholarship</Button>}>
     <Breadcrumb><Link to="/student-hub/applications">College List</Link><span>/</span>Scholarships</Breadcrumb>
+    <CollegeListTabs current="scholarships" />
     <QueryState loading={query.isLoading} error={query.isError} retry={query.refetch}>
       {!query.data?.data.length ? <p>No scholarships saved yet.</p> : query.data.data.map(scholarship => <section key={scholarship.id} className="applicant-panel" aria-label={scholarship.scholarshipName}>
         <h2>{scholarship.scholarshipName || 'Scholarship'}</h2>

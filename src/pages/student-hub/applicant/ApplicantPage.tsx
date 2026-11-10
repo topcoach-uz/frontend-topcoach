@@ -104,6 +104,27 @@ export function RelatedApplicationLabel({ application }: { application: CollegeA
   const detail = isGraduate && application.major ? universityName : application.major;
   return <span>{name || "University"}{detail && detail !== name ? ` · ${detail}` : ""}</span>;
 }
+export type CollegeListView = "applications" | "deadlines" | "scholarships" | "archived";
+
+/** One switcher for every College List view, so they read as one place. */
+export function CollegeListTabs({ current, masters = false }: { current: CollegeListView; masters?: boolean }) {
+  const views: { key: CollegeListView; label: string; to: string }[] = [
+    { key: "applications", label: masters ? "Programs" : "Applications", to: "/student-hub/applications" },
+    { key: "deadlines", label: "Deadlines", to: "/student-hub/applications?tab=timeline" },
+    { key: "scholarships", label: "Scholarships", to: "/student-hub/applications?tab=scholarships" },
+    { key: "archived", label: "Archived", to: "/student-hub/applications?view=archived" },
+  ];
+  return (
+    <nav className="applicant-view-tabs" aria-label="College List views">
+      {views.map((view) => (
+        <Link key={view.key} to={view.to} className={view.key === current ? "is-active" : undefined} aria-current={view.key === current ? "page" : undefined}>
+          {view.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
 export function Breadcrumb({ children }: { children: ReactNode }) {
   return (
     <>

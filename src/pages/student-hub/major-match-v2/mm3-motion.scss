@@ -395,6 +395,18 @@
   }
 }
 
+// Fit the intro on one screen when it can: the hero keeps its 540px design
+// height on tall windows and gives up to 100px on short ones (or at browser
+// zoom), so the page only scrolls when the content genuinely needs it.
+// 380px ≈ top nav + breadcrumb + intro padding + the links/notice below the
+// hero + the shell's bottom padding. 440px is what the report visual needs.
+@media (min-width: 821px) {
+  .mm3-motion-intro__hero,
+  .mm3-motion-stage {
+    min-height: clamp(440px, calc(100vh - 380px), 540px);
+  }
+}
+
 @media (max-width: 820px) {
   .mm3-motion-intro {
     padding: 12px;
