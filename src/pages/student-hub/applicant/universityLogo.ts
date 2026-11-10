@@ -21,12 +21,21 @@ const LOCAL_LOGOS: Record<string, string> = {
 
 const catalogueLogosById = new Map(catalogueUniversityLogos.map((item) => [item.id, item]));
 
+// Catalogue entries store absolute production URLs, but every file is also
+// shipped in public/official-university-logos. Serve the bundled copy so logos
+// load on any host (local dev, staging, production) without a cross-site fetch.
+const BUNDLED_LOGO_PATH = /^https:\/\/(?:www\.)?topcoachuni\.com(\/official-university-logos\/[^?#]+)/;
+function toBundledLogoUrl(url: string): string {
+  const match = BUNDLED_LOGO_PATH.exec(url);
+  return match ? match[1] : url;
+}
+
 export function getUniversityLogoUrl(university: UniversityWithLogo): string | undefined {
   if (LOCAL_LOGOS[university.id]) return LOCAL_LOGOS[university.id];
   if ((university.logoUrl?.startsWith('https://') || university.logoUrl?.startsWith('/official-university-logos/')) && university.logoSourceUrl?.startsWith('https://') && university.logoVerifiedAt) return university.logoUrl;
   if (REVIEWED_LOGOS[university.id]) return REVIEWED_LOGOS[university.id];
   const catalogueLogo = catalogueLogosById.get(university.id);
-  if (catalogueLogo) return catalogueLogo.logoUrl;
+  if (catalogueLogo) return toBundledLogoUrl(catalogueLogo.logoUrl);
   return university.media?.find((item) => item.tags?.some((tag) => tag.toLowerCase() === 'official-logo'))?.url;
 }
 

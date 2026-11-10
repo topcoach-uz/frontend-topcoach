@@ -35,7 +35,8 @@
   }
 }
 
-.applicantHeader .container {
+// Every page uses the compact My Journey bar; the mentor console has its own.
+.header:not(.mentorHeader) .container {
   box-sizing: border-box;
   min-height: 72px;
   max-width: 1280px;

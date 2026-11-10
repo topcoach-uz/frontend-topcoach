@@ -47,6 +47,46 @@
   overflow-y: auto;
   padding: 1px 4px 16px;
   margin: -1px -4px 0;
+  // macOS-style overlay scrollbar: thin, no arrows or track, and only
+  // visible while the sidebar is hovered or focused. The gutter is reserved
+  // so the nav never shifts when the thumb appears.
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-button {
+    display: none;
+    height: 0;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 999px;
+  }
+  &:hover::-webkit-scrollbar-thumb,
+  &:focus-within::-webkit-scrollbar-thumb {
+    background: rgba(48, 43, 40, 0.22);
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(48, 43, 40, 0.38);
+  }
+}
+
+// Firefox has no ::-webkit-scrollbar; use the standard properties there only,
+// since in Chromium they would override the custom thumb above.
+@supports not selector(::-webkit-scrollbar) {
+  .applicant-sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    &:hover,
+    &:focus-within {
+      scrollbar-color: rgba(48, 43, 40, 0.22) transparent;
+    }
+  }
 }
 .applicant-summary {
   display: block;
