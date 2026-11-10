@@ -11,8 +11,9 @@
  * identity, so we keep this bar focused on navigation + progress.
  */
 
-import React from 'react';
-import { ArrowLeft, ChevronRight, FlaskConical, LayoutDashboard, BookOpen } from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import { ArrowLeft, Check, ChevronRight, FlaskConical, LayoutDashboard, Lock } from 'lucide-react';
+import type { ResearchWeek, WeekLockState } from 'src/app/services/research-prep/types';
 
 interface ResearchTopBarProps {
   view: 'overview' | 'module';
@@ -21,6 +22,9 @@ interface ResearchTopBarProps {
   weeksCompleted: number;
   totalWeeks: number;
   overallPercent: number;
+  weeks: ResearchWeek[];
+  lockState: WeekLockState[];
+  onOpenWeek: (weekNumber: number) => void;
   onSwitchView: (next: 'overview' | 'module') => void;
   onBackToMain: () => void;
 }
@@ -32,10 +36,19 @@ const ResearchTopBar: React.FC<ResearchTopBarProps> = ({
   weeksCompleted,
   totalWeeks,
   overallPercent,
+  weeks,
+  lockState,
+  onOpenWeek,
   onSwitchView,
   onBackToMain,
 }) => {
   const weekShort = selectedWeekTitle?.split(/[—:·]/)[0].trim();
+  const stripRef = useRef<HTMLDivElement>(null);
+  // Keep the open week visible when the strip is wider than the screen.
+  useEffect(() => {
+    const active = stripRef.current?.querySelector<HTMLElement>('.rp-tab--active.rp-week-tab');
+    active?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  }, [view, selectedWeekNumber]);
 
   return (
     <header className="rp-topbar" role="banner">
@@ -97,18 +110,29 @@ const ResearchTopBar: React.FC<ResearchTopBarProps> = ({
             <LayoutDashboard size={15} />
             <span>Overview</span>
           </button>
-          <button
-            type="button"
-            className={`rp-tab ${view === 'module' ? 'rp-tab--active' : ''} ${
-              !selectedWeekNumber ? 'rp-tab--disabled' : ''
-            }`}
-            onClick={() => selectedWeekNumber && onSwitchView('module')}
-            disabled={!selectedWeekNumber}
-            title={selectedWeekNumber ? '' : 'Pick a week from the dashboard first'}
-          >
-            <BookOpen size={15} />
-            <span>{selectedWeekNumber ? `Week ${selectedWeekNumber} Module` : 'Module'}</span>
-          </button>
+          <span className="rp-tab-divider" aria-hidden />
+          <div className="rp-week-strip" ref={stripRef} role="group" aria-label="Weeks">
+            {weeks.map((week) => {
+              const state = lockState.find((l) => l.weekNumber === week.weekNumber);
+              const locked = !!state?.weekLocked;
+              const done = !!state && state.assignment.submissionStatus !== 'none';
+              const active = view === 'module' && selectedWeekNumber === week.weekNumber;
+              return (
+                <button
+                  key={week.id}
+                  type="button"
+                  className={`rp-tab rp-week-tab${active ? ' rp-tab--active' : ''}${locked ? ' rp-tab--disabled' : ''}${done ? ' rp-week-tab--done' : ''}`}
+                  onClick={() => !locked && onOpenWeek(week.weekNumber)}
+                  disabled={locked}
+                  aria-current={active ? 'page' : undefined}
+                  title={locked ? `Finish Week ${week.weekNumber - 1} to unlock` : week.title}
+                >
+                  {done ? <Check size={14} aria-hidden /> : locked ? <Lock size={13} aria-hidden /> : null}
+                  <span>Week {week.weekNumber}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </nav>
     </header>

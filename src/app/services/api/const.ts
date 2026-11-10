@@ -76,4 +76,10 @@ export const apiTagTypes = [
   'MajorMatchV2Status',
   'MajorMatchV2Result',
   'MajorMatchMm3Latest',
+  // Research Prep (src/app/services/research-prep)
+  'ResearchPrepStructure',
+  'ResearchPrepProgress',
+  'ResearchPrepSubmissions',
+  'ResearchPrepGradingInbox',
+  'ResearchPrepAdmin',
 ];
