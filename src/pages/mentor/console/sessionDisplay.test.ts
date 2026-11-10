@@ -4,6 +4,7 @@ import type { MentorBooking } from './sessionSources';
 import {
   bookingDisplay,
   fullSupportDisplay,
+  groupStudentSessions,
   scheduleScopes,
 } from './sessionDisplay';
 
@@ -101,5 +102,25 @@ describe('Attendance display and pending queue', () => {
       attendance: 'Not recorded',
       actualMinutes: null,
     });
+  });
+});
+
+describe('groupStudentSessions', () => {
+  it('orders needs-action, upcoming and past, each in its own order', () => {
+    const groups = groupStudentSessions([
+      booking({ id: 'p1', status: 'completed', dateTime: '2026-10-01T10:00:00Z' }),
+      booking({ id: 'u2', status: 'upcoming', dateTime: '2026-10-25T10:00:00Z' }),
+      booking({ id: 'd1', status: 'report-due', dateTime: '2026-10-10T10:00:00Z' }),
+      booking({ id: 'p2', status: 'cancelled', dateTime: '2026-10-12T10:00:00Z' }),
+      booking({ id: 'u1', status: 'upcoming', dateTime: '2026-10-20T10:00:00Z' }),
+      booking({ id: 'd2', status: 'report-due', dateTime: '2026-10-15T10:00:00Z' }),
+    ]);
+    expect(groups.needsAction.map((b) => b.id)).toEqual(['d2', 'd1']);
+    expect(groups.upcoming.map((b) => b.id)).toEqual(['u1', 'u2']);
+    expect(groups.past.map((b) => b.id)).toEqual(['p2', 'p1']);
+  });
+
+  it('returns empty groups for no bookings', () => {
+    expect(groupStudentSessions([])).toEqual({ needsAction: [], upcoming: [], past: [] });
   });
 });

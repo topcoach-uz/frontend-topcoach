@@ -17,8 +17,6 @@ export default mergeConfig(
     cacheDir: "node_modules/.vite-ielts-preview",
     define: {
       "import.meta.env.VITE_API_HOST": JSON.stringify(""),
-      "import.meta.env.VITE_APPLICANT_WORKSPACE_ENABLED":
-        JSON.stringify("true"),
     },
     server: { host: "127.0.0.1", port: 5185, strictPort: true, proxy: {} },
     plugins: [

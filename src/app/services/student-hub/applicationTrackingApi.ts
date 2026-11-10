@@ -20,6 +20,28 @@ const asApiResponse = <T>(response: T | ApiResponse<T>): ApiResponse<T> =>
 
 export const applicationTrackingApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
+    getArchivedCollegeApplications: builder.query<PaginatedResponse<CollegeApplication>, void>({
+      query: () => '/application-tracking/college-applications/archived', providesTags: ['CollegeApplications'],
+    }),
+    archiveCollegeApplication: builder.mutation<CollegeApplication, string>({
+      query: id => ({ url: `/application-tracking/college-applications/${id}/archive`, method: 'POST' }),
+      invalidatesTags: ['CollegeApplications', 'ApplicationTasks'],
+    }),
+    restoreCollegeApplication: builder.mutation<CollegeApplication, string>({
+      query: id => ({ url: `/application-tracking/college-applications/${id}/restore`, method: 'POST' }),
+      invalidatesTags: ['CollegeApplications', 'ApplicationTasks'],
+    }),
+    getApplicationMentors: builder.query<{ data: Array<{ id: string; name: string }> }, void>({
+      query: () => '/application-tracking/mentors',
+    }),
+    updateMentorApplicationRequirements: builder.mutation<CollegeApplication, { studentUserId: string; id: string; requirements: Record<string, any>; expectedUpdatedAt?: string }>({
+      query: ({ studentUserId, id, requirements, expectedUpdatedAt }) => ({ url: `/application-tracking/mentor/students/${studentUserId}/applications/${id}/requirements`, method: 'PATCH', body: { requirements, expectedUpdatedAt } }),
+      invalidatesTags: ['CollegeApplications'],
+    }),
+    getMentorStudentApplications: builder.query<{ data: CollegeApplication[] }, string>({
+      query: studentUserId => `/application-tracking/mentor/students/${studentUserId}/applications`,
+      providesTags: ['CollegeApplications'],
+    }),
     // ========================================
     // 🎓 COLLEGE APPLICATIONS
     // ========================================
@@ -314,6 +336,12 @@ export const applicationTrackingApi = RtkApi.injectEndpoints({
 });
 
 export const {
+  useGetArchivedCollegeApplicationsQuery,
+  useArchiveCollegeApplicationMutation,
+  useRestoreCollegeApplicationMutation,
+  useGetApplicationMentorsQuery,
+  useUpdateMentorApplicationRequirementsMutation,
+  useGetMentorStudentApplicationsQuery,
   // College Applications
   useGetCollegeApplicationsQuery,
   useGetCollegeApplicationQuery,

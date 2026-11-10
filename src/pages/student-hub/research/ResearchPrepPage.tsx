@@ -24,6 +24,7 @@ import {
 import ResearchTopBar from './components/ResearchTopBar';
 import ResearchOverview from './components/ResearchOverview';
 import ResearchModuleView from './components/ResearchModuleView';
+import { computeResearchProgress } from './researchProgress';
 import '../applicant/applicantPages.scss';
 import './research-prep.scss';
 
@@ -91,6 +92,10 @@ const ResearchPrepPage: React.FC<ResearchPrepPageProps> = ({ isFullSupport = fal
     return lockState.find((l) => l.weekNumber === openWeekNumber);
   }, [lockState, openWeekNumber]);
 
+  // Progress comes from the same per-week lock state the module view uses, so
+  // the chip can never disagree with "Week N complete".
+  const progress = useMemo(() => computeResearchProgress(lockState), [lockState]);
+
   const nextWeek = useMemo(() => {
     if (!weeks || !openWeekNumber) return undefined;
     return weeks.find((w) => w.weekNumber === openWeekNumber + 1);
@@ -106,9 +111,8 @@ const ResearchPrepPage: React.FC<ResearchPrepPageProps> = ({ isFullSupport = fal
     );
   }
 
-  const weeksCompleted = summary?.weeksCompleted ?? 0;
-  const overallPercent = summary?.overallPercent ?? 0;
-  const currentWeekNumber = summary?.currentWeekNumber ?? 1;
+  const { weeksCompleted, overallPercent } = progress;
+  const currentWeekNumber = progress.currentWeekNumber || summary?.currentWeekNumber || 1;
 
   return (
     <div className="applicant-page applicant-specialist-page rp">
@@ -119,6 +123,9 @@ const ResearchPrepPage: React.FC<ResearchPrepPageProps> = ({ isFullSupport = fal
         weeksCompleted={weeksCompleted}
         totalWeeks={weeks.length}
         overallPercent={overallPercent}
+        weeks={weeks}
+        lockState={lockState}
+        onOpenWeek={handleOpenWeek}
         onSwitchView={handleSwitchView}
         onBackToMain={handleBackToMain}
       />
@@ -140,6 +147,7 @@ const ResearchPrepPage: React.FC<ResearchPrepPageProps> = ({ isFullSupport = fal
             mySubmissions={mySubmissions ?? []}
             isFullSupport={isFullSupport}
             onBookMentorReview={handleBookMentorReview}
+            onOpenWeek={handleOpenWeek}
           />
         )}
       </div>

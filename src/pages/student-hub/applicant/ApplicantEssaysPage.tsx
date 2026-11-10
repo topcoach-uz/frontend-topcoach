@@ -5,10 +5,11 @@ import {
   Form,
   Input,
   Modal,
+  Popconfirm,
   Select,
   message,
 } from "antd";
-import { History, Lightbulb, MessageSquareText, Plus, Save } from "lucide-react";
+import { History, Lightbulb, MessageSquareText, Plus, Save, Trash2 } from "lucide-react";
 import {
   Link,
   useLocation,
@@ -23,6 +24,7 @@ import {
   useGetEssayVersionsQuery,
   useGetEnhancedFeedbackQuery,
   useCreateEssayVersionMutation,
+  useDeleteStudentEssayMutation,
   useUpdateStudentEssayMutation,
 } from "src/app/services/student-hub/essayManagementApi";
 import { useGetCollegeApplicationsQuery } from "src/app/services/student-hub/applicationTrackingApi";
@@ -74,6 +76,24 @@ export default function ApplicantEssaysPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const [createEssay, createState] = useCreateStudentEssayMutation();
+  const [deleteEssay] = useDeleteStudentEssayMutation();
+  const [deletingId, setDeletingId] = useState<string>();
+  const removeEssay = async (essay: StudentEssay) => {
+    setDeletingId(essay.id);
+    try {
+      await deleteEssay(essay.id).unwrap();
+      try {
+        Object.keys(localStorage)
+          .filter((key) => key.startsWith("topcoach:essay-draft:") && key.endsWith(`:${essay.id}`))
+          .forEach((key) => localStorage.removeItem(key));
+      } catch { /* Local autosave cleanup is best effort. */ }
+      message.success("Draft deleted.");
+    } catch {
+      message.error("Could not delete this draft. Try again.");
+    } finally {
+      setDeletingId(undefined);
+    }
+  };
   const [form] = Form.useForm<CreateStudentEssayRequest>();
   const selectedEssayType = Form.useWatch("essayType", form);
   const promptRequired = Boolean(selectedEssayType && selectedEssayType !== "personal_statement");
@@ -150,27 +170,44 @@ export default function ApplicantEssaysPage() {
         ) : (
           <div className="applicant-panel applicant-card-grid">
             {query.data.data.map((essay) => (
-              <Link
-                className="applicant-writing-card"
-                to={`/student-hub/essays/${essay.id}`}
-                key={essay.id}
-              >
-                <span className="applicant-kicker">
-                  {writingTypes.find((type) => type.value === essay.essayType)
-                    ?.label ?? "Essay"}
-                </span>
-                <h2>{essay.title}</h2>
-                <p>{essay.prompt || "No prompt added"}</p>
-                <small>
-                  {essay.wordCount ?? 0} words · Updated{" "}
-                  {displayDate(essay.updatedAt)}
-                </small>
-                {getMentorFeedbackText(essay.mentorFeedback) && (
-                  <span className="applicant-feedback-badge">
-                    <MessageSquareText size={14} /> Mentor feedback available
+              <div className="applicant-writing-card-wrap" key={essay.id}>
+                <Link
+                  className="applicant-writing-card"
+                  to={`/student-hub/essays/${essay.id}`}
+                >
+                  <span className="applicant-kicker">
+                    {writingTypes.find((type) => type.value === essay.essayType)
+                      ?.label ?? "Essay"}
                   </span>
-                )}
-              </Link>
+                  <h2>{essay.title}</h2>
+                  <p>{essay.prompt || "No prompt added"}</p>
+                  <small>
+                    {essay.wordCount ?? 0} words · Updated{" "}
+                    {displayDate(essay.updatedAt)}
+                  </small>
+                  {getMentorFeedbackText(essay.mentorFeedback) && (
+                    <span className="applicant-feedback-badge">
+                      <MessageSquareText size={14} /> Mentor feedback available
+                    </span>
+                  )}
+                </Link>
+                <Popconfirm
+                  title="Delete this draft?"
+                  description="This removes the draft from your writing list."
+                  okText="Delete"
+                  okButtonProps={{ danger: true }}
+                  onConfirm={() => removeEssay(essay)}
+                >
+                  <Button
+                    className="applicant-writing-card__delete"
+                    danger
+                    type="text"
+                    aria-label={`Delete ${essay.title}`}
+                    icon={<Trash2 size={16} />}
+                    loading={deletingId === essay.id}
+                  />
+                </Popconfirm>
+              </div>
             ))}
           </div>
         )}
@@ -667,7 +704,7 @@ export function ApplicantEssayEditorPage() {
           onChange={setSelectedMentor}
           options={availableMentors.map((mentor) => ({
             value: mentor.id,
-            label: `${mentor.name} · ${mentor.source === "full_support" ? "Assigned mentor" : "1:1 mentor"}`,
+            label: `${mentor.name} · ${mentor.source !== "one_to_one" ? "Assigned mentor" : "1:1 mentor"}`,
           }))}
         />
         <label htmlFor="essay-review-note" style={{ display: "block", marginTop: 16 }}>Note for your mentor (optional)</label>

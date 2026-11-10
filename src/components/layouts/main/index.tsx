@@ -25,13 +25,15 @@ function Main() {
 
   if (pathname.startsWith('/student-hub/ielts-prep')) return <Outlet />;
   if (/^\/onboarding\/?$/.test(pathname)) return <Outlet />;
+  // The mentor console is a working app, not a marketing page — no site footer.
+  const isMentorConsole = pathname === '/mentor' || pathname.startsWith('/mentor/');
   return (
     <div className={styles.main}>
       <Header />
       <MentorPrefetch />
       <UniversityPrefetch />
       <Outlet />
-      {!isApplicantWorkspacePath(pathname) && <Footer />}
+      {!isApplicantWorkspacePath(pathname) && !isMentorConsole && <Footer />}
     </div>
   );
 }

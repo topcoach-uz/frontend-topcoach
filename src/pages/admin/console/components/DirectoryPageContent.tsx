@@ -267,12 +267,15 @@ export default function DirectoryPageContent({ variant }: { variant: DirectoryVa
     subtitle?: string;
   };
 
-  // Compact stat tiles per tab (only meaningful counts)
+  // Compact stat tiles per tab (only meaningful counts). Counts come from the
+  // backend over the whole filtered set; counting `rows` would only see the
+  // current page. The row-based fallback covers an older backend.
   const statTiles = ((): StatTile[] => {
     if (variant === 'admins') {
-      const owners = rows.filter((r) => r.managementRole === 'Owner').length;
-      const superAdmins = rows.filter((r) => r.managementRole === 'SuperAdmin').length;
-      const others = rows.length - owners - superAdmins;
+      const superAdmins =
+        viewData?.superAdminsTotal ??
+        rows.filter((r) => r.managementRole === 'SuperAdmin').length;
+      const others = total - superAdmins;
       return [
         { title: 'Total admins', value: total, color: 'var(--ac-text)' },
         { title: 'SuperAdmins', value: superAdmins, color: '#6ee7b7' },
@@ -285,8 +288,11 @@ export default function DirectoryPageContent({ variant }: { variant: DirectoryVa
       ];
     }
     if (variant === 'mentors') {
-      const admins = rows.filter((r) => r.managementRole != null).length;
-      const tiered = rows.filter((r) => r.mentorTier).length;
+      const admins =
+        viewData?.mentorsWithAdminRole ??
+        rows.filter((r) => r.managementRole != null).length;
+      const tiered =
+        viewData?.mentorsWithTier ?? rows.filter((r) => r.mentorTier).length;
       return [
         { title: 'Total mentors', value: total, color: 'var(--ac-text)' },
         { title: 'With admin role', value: admins, color: '#c4b5fd' },

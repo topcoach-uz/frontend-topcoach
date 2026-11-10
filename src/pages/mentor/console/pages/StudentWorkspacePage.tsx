@@ -3,7 +3,6 @@ import { ArrowLeft } from 'lucide-react';
 import { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
-  useGetMentorPipelineQuery,
   useGetMentorRosterQuery,
   useGetStudentGoalQuery,
 } from 'src/app/services/fullSupportApi';
@@ -17,7 +16,6 @@ export default function MentorStudentWorkspacePage() {
   const navigate = useNavigate();
   const { id = '' } = useParams<{ id: string }>();
   const { data, isLoading } = useGetMentorRosterQuery();
-  const { data: pipelineRes } = useGetMentorPipelineQuery();
   const { data: goalRes } = useGetStudentGoalQuery(id, { skip: !id });
   const { mentees, isLoading: menteesLoading } = useMentorMentees();
 
@@ -39,13 +37,6 @@ export default function MentorStudentWorkspacePage() {
           sessionsCount: mentee.sessionsCount,
         }
       : null;
-
-  // Mockup-style subtitle: "Oxford PPE · 9 sessions total" — the program comes
-  // from the student's first essays/applications row when one exists.
-  const program = useMemo(
-    () => (pipelineRes?.data ?? []).find((p) => p.studentUserId === id && p.program)?.program,
-    [pipelineRes?.data, id],
-  );
 
   // "Goal: <career goal(s)> · Majors: <intended majors>" — the student's
   // self-declared goal (personal_profiles), shown only when present.
@@ -111,9 +102,8 @@ export default function MentorStudentWorkspacePage() {
             )}
           </div>
           <div className="mc-ws-identity-meta">
-            {program ? `${program} · ` : ''}
             {student.sessionsCount} session{student.sessionsCount === 1 ? '' : 's'} total
-            {isFullSupport ? ` · ${student.used}h of ${student.allocated}h used` : ''}
+            {isFullSupport ? ` · ${student.used}h completed · ${student.scheduledHours ?? 0}h scheduled` : ''}
           </div>
           {goalSegments.length > 0 && (
             <div className="mc-ws-identity-goal">
@@ -128,7 +118,7 @@ export default function MentorStudentWorkspacePage() {
         </div>
       </div>
 
-      <StudentWorkspace student={student} isFullSupport={isFullSupport} />
+      <StudentWorkspace student={student} isFullSupport={isFullSupport} showStudentName={false} />
     </div>
   );
 }

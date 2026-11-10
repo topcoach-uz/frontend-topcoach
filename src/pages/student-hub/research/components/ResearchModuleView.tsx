@@ -11,7 +11,7 @@
  */
 
 import React from 'react';
-import { FileText, FlaskConical, Sparkles } from 'lucide-react';
+import { FileText, FlaskConical, Sparkles, ArrowRight } from 'lucide-react';
 import type {
   ResearchSubmission,
   ResearchWeek,
@@ -28,6 +28,8 @@ interface ResearchModuleViewProps {
   mySubmissions: ResearchSubmission[];
   isFullSupport: boolean;
   onBookMentorReview?: (submissionId: string) => void;
+  /** Opens another week (used by the "Go to Week N" button). */
+  onOpenWeek?: (weekNumber: number) => void;
 }
 
 
@@ -38,6 +40,7 @@ const ResearchModuleView: React.FC<ResearchModuleViewProps> = ({
   mySubmissions,
   isFullSupport,
   onBookMentorReview,
+  onOpenWeek,
 }) => {
   const totalResources = week.videoLessons.reduce((a, v) => a + v.attachments.length, 0);
   const isComplete = lock.assignment.submissionStatus !== 'none' && lock.assignment.submissionStatus !== 'returned_for_revision';
@@ -131,9 +134,14 @@ const ResearchModuleView: React.FC<ResearchModuleViewProps> = ({
               Week {week.weekNumber} complete. Open Week {nextWeek.weekNumber} to continue.
             </div>
           </div>
-          <span className="end-cta" style={{ background: '#1f7a3a', color: '#fff', borderColor: '#1f7a3a' }}>
-            Unlocked
-          </span>
+          <button
+            type="button"
+            className="end-cta end-cta--go"
+            onClick={() => onOpenWeek?.(nextWeek.weekNumber)}
+          >
+            Go to Week {nextWeek.weekNumber}
+            <ArrowRight size={15} aria-hidden />
+          </button>
         </div>
       )}
     </div>

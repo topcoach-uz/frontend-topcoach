@@ -1,3 +1,4 @@
+import AdminPanelRedirect from 'src/lib/adminPanel';
 import { Navigate } from 'react-router-dom';
 import { UserRole } from 'src/app/api/Api';
 import { useTypedSelector } from 'src/app/store';
@@ -19,7 +20,7 @@ export default function OnboardingWizardPage() {
   if (!isAuthenticated) return <Navigate to="/auth/signin" replace />;
   if (staffLoading) return <Loader height="100vh" />;
   if (isOrgStaff) return <Navigate to="/counselor-console" replace />;
-  if (isPlatformStaff) return <Navigate to="/new-admin" replace />;
+  if (isPlatformStaff) return <AdminPanelRedirect />;
   if (isLoading) return <Loader height="100vh" />;
   if (usesJuniorCommunity(studentProfile?.academicProfile)) {
     return <Navigate to="/student-hub?section=feed" replace />;

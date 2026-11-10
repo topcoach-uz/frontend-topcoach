@@ -1,3 +1,4 @@
+import { lessonMinutes, lessonOutcome } from './fullSupportLessons';
 import { useMemo } from 'react';
 import { SessionTypeEnum, type SessionsSchema } from 'src/app/api/Api';
 import {
@@ -5,6 +6,7 @@ import {
   type SessionLogDto,
 } from 'src/app/services/fullSupportApi';
 import { useGetMySessionsQuery } from 'src/app/services/sessions';
+import type { LiveClassSessionDto } from 'src/app/services/courses';
 
 export type SessionReport = {
   topicsCovered: string;
@@ -16,7 +18,7 @@ export type SessionReport = {
 
 export type MentorBooking = {
   id: string;
-  source: 'platform' | 'full-support';
+  source: 'platform' | 'full-support' | 'course-class';
   dateTime: string;
   durationLabel: string;
   durationMinutes: number;
@@ -30,7 +32,15 @@ export type MentorBooking = {
   report?: SessionReport | null;
   /** Student's "Notes for your mentor" left when confirming the booking. */
   studentNote?: string | null;
-  raw: SessionsSchema | SessionLogDto;
+  /** Set only for `course-class` bookings. */
+  courseClass?: {
+    lessonId: string;
+    lessonTitle: string;
+    lessonDuration: number;
+    moduleTitle: string;
+    courseName: string;
+  };
+  raw: SessionsSchema | SessionLogDto | LiveClassSessionDto;
 };
 
 /**
@@ -50,10 +60,7 @@ function durationFromSessionType(type: SessionTypeEnum | string | undefined): {
 }
 
 export function parseFullSupportDuration(raw: string | undefined | null): number {
-  // Full Support stores planned duration in hours (e.g. "1", "1h", "0.5").
-  const text = String(raw ?? '').trim();
-  const hours = Number.parseFloat(text) / (/m$/i.test(text) ? 60 : 1);
-  return Number.isFinite(hours) && hours > 0 ? Math.round(hours * 60) : 60;
+  return lessonMinutes(raw);
 }
 
 export function normalizePlatformBooking(s: SessionsSchema): MentorBooking {
@@ -108,7 +115,7 @@ export function normalizeFullSupportSession(
   let status: MentorBooking['status'];
   if (s.outcome === 'cancelled' || s.outcome === 'rescheduled') status = 'cancelled';
   else if (s.done || ['held', 'student_no_show', 'mentor_no_show'].includes(s.outcome)) status = 'completed';
-  else if (new Date(s.dateTime).getTime() <= now) status = 'report-due';
+  else if (new Date(s.dateTime).getTime() + minutes * 60_000 <= now) status = 'report-due';
   else status = 'upcoming';
 
   return {

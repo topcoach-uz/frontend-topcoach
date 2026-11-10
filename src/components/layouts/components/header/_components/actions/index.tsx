@@ -85,9 +85,12 @@ export default function Actions() {
         {isDark ? <SunIcon /> : <MoonIcon />}
       </button>
       */}
-      <Link to="/contact" className={styles.contactIcon}>
-        <Mail size={20} color="#fff" />
-      </Link>
+      {/* Public contact form — not useful to mentors, and easy to mistake for messages. */}
+      {userRole !== UserRole.Mentor && (
+        <Link to="/contact" className={styles.contactIcon}>
+          <Mail size={20} color="#fff" />
+        </Link>
+      )}
       <ChatIcon />
       {isAuthenticated && <NotificationBell />}
       <LanguageSelect />

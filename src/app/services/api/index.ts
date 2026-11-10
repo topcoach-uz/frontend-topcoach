@@ -1,4 +1,5 @@
-import { createApi, fetchBaseQuery, retry } from '@reduxjs/toolkit/query/react';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { withReadRecovery } from './readRecovery';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import { LANGUAGE } from 'src/constants/storage';
 import { apiTagTypes, baseUrl } from './const';
@@ -37,7 +38,7 @@ const videoUploadBaseQuery = fetchBaseQuery({
 
 export { baseQuery, videoUploadBaseQuery };
 
-const baseQueryWithRetry = retry(baseQuery, { maxRetries: 0 });
+const baseQueryWithReadRecovery = withReadRecovery(baseQuery);
 
 /**
  * Create a base API to inject endpoints into elsewhere.
@@ -57,7 +58,7 @@ export const RtkApi = createApi({
   /**
    * A bare bones base query would just be `baseQuery: fetchBaseQuery({ baseUrl: '/' })`
    */
-  baseQuery: baseQueryWithRetry,
+  baseQuery: baseQueryWithReadRecovery,
   /**
    * Tag types must be defined in the original API definition
    * for any tags that would be provided by injected endpoints

@@ -1499,3 +1499,88 @@
     }
   }
 }
+
+/* ─── Week strip: all 8 weeks in one scrollable tab row ───────────────── */
+.rp {
+  .rp-topbar-row-inner--tabs {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .rp-tab-divider {
+    flex-shrink: 0;
+    width: 1px;
+    height: 20px;
+    margin: 0 6px;
+    background: var(--rp-border, #e7e2dc);
+  }
+
+  .rp-week-strip {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+
+    &::-webkit-scrollbar { display: none; }
+  }
+
+  .rp-week-tab {
+    flex: 0 0 auto;
+    padding: 12px 14px;
+
+    svg { flex-shrink: 0; }
+  }
+
+  .rp-week-tab--done:not(.rp-tab--active) {
+    color: var(--rp-text);
+
+    svg { color: #1f7a3a; }
+  }
+
+  .rp-week-tab.rp-tab--disabled {
+    opacity: 0.45;
+  }
+
+  /* One submit button, full width. */
+  .rp-assignment-col .a-actions.a-actions--single {
+    grid-template-columns: 1fr;
+
+    button { padding: 12px 16px; font-size: 13.5px; }
+  }
+
+  /* "Go to Week N" — the next step once a week is done. */
+  .rp-upnext .end-cta--go {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border: 1px solid #1f7a3a;
+    border-radius: 999px;
+    background: #1f7a3a;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+
+    svg { transition: transform 0.15s ease; }
+
+    &:hover {
+      background: #186330;
+      border-color: #186330;
+      svg { transform: translateX(2px); }
+    }
+
+    &:focus-visible {
+      outline: 2px solid rgba(31, 122, 58, 0.4);
+      outline-offset: 2px;
+    }
+  }
+}

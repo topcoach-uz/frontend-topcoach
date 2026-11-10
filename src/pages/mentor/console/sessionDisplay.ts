@@ -65,12 +65,17 @@ export function fullSupportDisplay(
 }
 
 export function bookingDisplay(booking: MentorBooking, now = Date.now()): LessonDisplay {
+  if (booking.source === 'course-class') {
+    const labels = { 'report-due': 'Awaiting attendance', completed: 'Held', cancelled: 'Cancelled', upcoming: 'Upcoming' } as const;
+    const variants = { 'report-due': 'danger', completed: 'success', cancelled: 'neutral', upcoming: 'info' } as const;
+    return { label: labels[booking.status], variant: variants[booking.status], attendance: '', actualMinutes: null, notes: '' };
+  }
   if (booking.source === 'full-support') return fullSupportDisplay(booking.raw as SessionLogDto, now);
   return { label: booking.status === 'report-due' ? 'Report due' : booking.status === 'completed' ? 'Completed' : booking.status === 'cancelled' ? 'Cancelled' : 'Upcoming', variant: booking.status === 'report-due' ? 'danger' : booking.status === 'completed' ? 'success' : 'neutral', attendance: '', actualMinutes: null, notes: '' };
 }
 
-export function scheduleScopes(bookings: MentorBooking[], now = Date.now()) {
-  const asc = (a: MentorBooking, b: MentorBooking) =>
+export function scheduleScopes<T extends Pick<MentorBooking, 'dateTime' | 'status'>>(bookings: T[], now = Date.now()) {
+  const asc = (a: T, b: T) =>
     new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime();
   return {
     upcoming: bookings.filter((b) => b.status === 'upcoming').sort(asc),
@@ -83,5 +88,18 @@ export function scheduleScopes(bookings: MentorBooking[], now = Date.now()) {
     cancelled: bookings
       .filter((b) => b.status === 'cancelled')
       .sort((a, b) => -asc(a, b)),
+  };
+}
+
+export function groupStudentSessions(bookings: MentorBooking[]) {
+  const time = (b: MentorBooking) => new Date(b.dateTime).getTime();
+  const asc = (a: MentorBooking, b: MentorBooking) => time(a) - time(b);
+  const desc = (a: MentorBooking, b: MentorBooking) => time(b) - time(a);
+  return {
+    needsAction: bookings.filter((b) => b.status === 'report-due').sort(desc),
+    upcoming: bookings.filter((b) => b.status === 'upcoming').sort(asc),
+    past: bookings
+      .filter((b) => b.status === 'completed' || b.status === 'cancelled')
+      .sort(desc),
   };
 }

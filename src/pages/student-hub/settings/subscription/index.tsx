@@ -25,6 +25,7 @@ import type {
   SubscriptionDto,
 } from './types';
 import CurrentPlanCard from './_components/CurrentPlanCard';
+import PolarCommunityPass from './_components/PolarCommunityPass';
 import ClickCommunityCheckout from './_components/ClickCommunityCheckout';
 import AvailablePlans from './_components/AvailablePlans';
 import PaymentMethods from './_components/PaymentMethods';
@@ -304,6 +305,8 @@ export default function SubscriptionTab() {
           )}
         />
       )}
+
+      {!mockMode && <PolarCommunityPass />}
 
       {!mockMode && !isLoading && !errorAny && (
         <ClickCommunityCheckout

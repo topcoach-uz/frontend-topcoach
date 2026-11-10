@@ -57,6 +57,6 @@ describe('published onboarding route', () => {
   });
   it('keeps platform administrators out of student onboarding', () => {
     fixture.platformStaff = true;
-    expect(renderToStaticMarkup(<OnboardingWizardPage />)).toContain('/new-admin');
+    expect(renderToStaticMarkup(<OnboardingWizardPage />)).toContain('/panel');
   });
 });

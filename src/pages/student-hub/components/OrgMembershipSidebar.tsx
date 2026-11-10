@@ -19,7 +19,7 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Building2 } from 'lucide-react';
+import { Building2, Eye } from 'lucide-react';
 import { useGetMyOrgMembershipQuery } from '../../../app/services/student-hub/orgMembershipApi';
 import './OrgMembershipSidebar.scss';
 
@@ -37,13 +37,14 @@ const initials = (name: string): string =>
     .map((word) => word[0])
     .join('');
 
-/** "March 2026", or null when the backend has no join date on the row. */
+/** "Mar 2026", or null when the backend has no join date on the row. Short
+    month so "Member since …" fits one line in the narrow sidebar. */
 const joinedLabel = (joinedAt: string | null): string | null => {
   if (!joinedAt) return null;
   const date = new Date(joinedAt);
   if (Number.isNaN(date.getTime())) return null;
   return date.toLocaleDateString(undefined, {
-    month: 'long',
+    month: 'short',
     year: 'numeric',
   });
 };
@@ -105,33 +106,27 @@ const OrgMembershipSidebar: React.FC<OrgMembershipSidebarProps> = ({
                 </div>
               )}
               <div className="org-side-headtext">
-                <p className="org-side-eyebrow">
-                  {t(
-                    'studentHub.orgMembership.eyebrow',
-                    'Your organization',
-                  )}
-                </p>
                 <p className="org-side-name" title={org.name}>
                   {org.name}
+                </p>
+                <p className="org-side-meta">
+                  {joined
+                    ? t('studentHub.orgMembership.memberSince', 'Member since {{joined}}', { joined })
+                    : t('studentHub.orgMembership.eyebrow', 'Your organization')}
                 </p>
               </div>
             </div>
 
-            {/* Membership stated in full, plus what it means in practice. A
-                student should not have to infer that staff can see their
-                work. */}
+            {/* What membership means in practice. A student should not have
+                to infer that staff can see their work. */}
             <p className="org-side-body">
-              {joined
-                ? t(
-                    'studentHub.orgMembership.bodyWithDate',
-                    'You joined {{orgName}} in {{joined}}. Counselors there can see your progress, the programs you are enrolled in, and your tasks and sessions.',
-                    { orgName: org.name, joined },
-                  )
-                : t(
-                    'studentHub.orgMembership.body',
-                    'You are a member of {{orgName}}. Counselors there can see your progress, the programs you are enrolled in, and your tasks and sessions.',
-                    { orgName: org.name },
-                  )}
+              <Eye size={13} aria-hidden="true" />
+              <span>
+                {t(
+                  'studentHub.orgMembership.visibility',
+                  'Your counselors can see your progress, programs, tasks and sessions.',
+                )}
+              </span>
             </p>
           </div>
         );

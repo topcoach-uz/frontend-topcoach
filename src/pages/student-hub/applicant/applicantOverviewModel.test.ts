@@ -1,6 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   applicantDegree,
+  applicantDegreeOrNull,
   assessmentState,
   displayName,
   hasAssessmentDraft,
@@ -12,6 +13,7 @@ import type { MajorMatchStatusResponse } from 'src/app/services/student-hub/majo
 import {
   applicationWorkspaceLink,
   isOverviewLocation,
+  legacyWorkspaceRedirect,
 } from 'src/lib/applicantWorkspace';
 
 const status = {
@@ -34,6 +36,19 @@ describe('legacy applicant degree fallback', () => {
   });
   it('preserves an explicit Master’s selection', () => {
     expect(applicantDegree('master')).toBe('master');
+  });
+});
+
+describe('strict applicant degree', () => {
+  it.each([undefined, null, '', 'unknown', 'Master', 0, {}])(
+    'keeps %s unknown instead of defaulting to Bachelor’s',
+    (degree) => {
+      expect(applicantDegreeOrNull(degree)).toBeNull();
+    },
+  );
+  it('returns exact matches', () => {
+    expect(applicantDegreeOrNull('bachelor')).toBe('bachelor');
+    expect(applicantDegreeOrNull('master')).toBe('master');
   });
 });
 
@@ -138,29 +153,25 @@ describe('applicant overview states', () => {
   );
 });
 
-it('rolls back to the legacy shell unless explicitly enabled', async () => {
-  try {
-    for (const value of [undefined, 'false', 'true']) {
-      vi.stubEnv('VITE_APPLICANT_WORKSPACE_ENABLED', value);
-      vi.resetModules();
-      const { isApplicantWorkspacePath } = await import(
-        'src/lib/applicantWorkspace'
-      );
-      expect(isApplicantWorkspacePath('/student-hub/overview')).toBe(
-        value === 'true',
-      );
-      expect(isApplicantWorkspacePath('/student-hub')).toBe(value === 'true');
-      expect(isApplicantWorkspacePath('/student-hub/sat-prep/runner')).toBe(
-        false,
-      );
-      expect(isApplicantWorkspacePath('/student-hub/research-prep')).toBe(
-        false,
-      );
-      expect(isApplicantWorkspacePath('/counselor-console')).toBe(false);
-      expect(isApplicantWorkspacePath('/student-hub-other')).toBe(false);
-    }
-  } finally {
-    vi.unstubAllEnvs();
-    vi.resetModules();
+it('always uses the applicant shell while keeping specialist prep pages independent', async () => {
+  const { isApplicantWorkspacePath } = await import('src/lib/applicantWorkspace');
+  for (const path of ['/student-hub', '/student-hub/overview', '/student-hub/applications', '/student-hub/documents']) {
+    expect(isApplicantWorkspacePath(path)).toBe(true);
   }
+  for (const path of ['/student-hub/sat-prep/runner', '/student-hub/research-prep', '/student-hub/ielts-prep', '/counselor-console', '/student-hub-other']) {
+    expect(isApplicantWorkspacePath(path)).toBe(false);
+  }
+});
+
+it.each([
+  ['?section=others&target=profile&tab=college-lists', '/student-hub/applications'],
+  ['?section=others&target=college-lists&applicationFlow=new', '/student-hub/applications/new'],
+  ['?section=others&target=profile&tab=documents', '/student-hub/documents'],
+  ['?section=others&target=documents', '/student-hub/documents'],
+  ['?section=others&target=essays', '/student-hub/essays'],
+  ['?section=others&target=profile&tab=academic', null],
+  ['?section=others&target=full-support', null],
+  ['?section=messages', null],
+])('routes retired workspace link %s to %s', (search, expected) => {
+  expect(legacyWorkspaceRedirect(search)).toBe(expected);
 });

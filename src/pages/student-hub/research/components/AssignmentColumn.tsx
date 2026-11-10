@@ -5,25 +5,14 @@
  *   - Title + brief instructions
  *   - Drop-zone (drag & drop a file OR click to browse)
  *   - Submission Requirements bullet list
- *   - Save as Draft / Submit Final Assignment buttons
+ *   - Submit assignment button
  *   - Once submitted: status, feedback when graded, "Book a mentor review"
  *     CTA for non-Full-Support students
  */
 
 import React, { useRef, useState } from 'react';
 import { message } from 'antd';
-import {
-  CheckCircle2,
-  Clock,
-  Download,
-  FileText,
-  Lock,
-  MessageSquare,
-  RefreshCw,
-  Save,
-  Send,
-  UploadCloud,
-} from 'lucide-react';
+import { CheckCircle2, Clock, Download, FileText, Lock, MessageSquare, RefreshCw, Send, UploadCloud } from 'lucide-react';
 import {
   useSubmitAssignmentMutation,
   researchPrepErrorMessage,
@@ -68,7 +57,6 @@ const AssignmentColumn: React.FC<AssignmentColumnProps> = ({
   const [submit, { isLoading }] = useSubmitAssignmentMutation();
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [text, setText] = useState('');
-  const [draftSaved, setDraftSaved] = useState(false);
   const [isResubmitting, setIsResubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -94,15 +82,6 @@ const AssignmentColumn: React.FC<AssignmentColumnProps> = ({
     setPendingFile(file);
   };
 
-  const handleSaveDraft = () => {
-    if (!pendingFile && !text.trim()) {
-      message.warning('Add a file or text before saving a draft.');
-      return;
-    }
-    setDraftSaved(true);
-    message.success('Draft saved locally.');
-  };
-
   const handleSubmit = async () => {
     if (!pendingFile && !text.trim()) {
       message.warning('Attach a file or write a text response.');
@@ -117,7 +96,6 @@ const AssignmentColumn: React.FC<AssignmentColumnProps> = ({
       setPendingFile(null);
       setText('');
       setIsResubmitting(false);
-      setDraftSaved(false);
       message.success(`Week ${weekNumber} assignment submitted.`);
     } catch (err: any) {
       message.error(researchPrepErrorMessage(err, 'Could not submit assignment.'));
@@ -358,16 +336,7 @@ const AssignmentColumn: React.FC<AssignmentColumnProps> = ({
               ))}
             </ul>
 
-            <div className="a-actions">
-              <button
-                type="button"
-                className="secondary"
-                onClick={handleSaveDraft}
-                disabled={isLoading || (!pendingFile && !text.trim())}
-              >
-                <Save size={13} />
-                {draftSaved ? 'Draft saved' : 'Save as Draft'}
-              </button>
+            <div className="a-actions a-actions--single">
               <button
                 type="button"
                 className="primary"
@@ -377,7 +346,7 @@ const AssignmentColumn: React.FC<AssignmentColumnProps> = ({
                 <Send size={13} />
                 {latest && isResubmitting
                   ? `Resubmit (#${latest.attemptNumber + 1})`
-                  : 'Submit Final Assignment'}
+                  : 'Submit assignment'}
               </button>
             </div>
             {latest && isResubmitting && (

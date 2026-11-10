@@ -1,3 +1,4 @@
+import AdminPanelRedirect from 'src/lib/adminPanel';
 import { lazy, Suspense, useEffect } from "react";
 import {
   Outlet,
@@ -168,47 +169,20 @@ const MentorConsoleLayoutLazy = lazy(() => import("src/pages/mentor/console/Ment
 const MentorConsoleScheduleLazy = lazy(() => import("src/pages/mentor/console/pages/SchedulePage"));
 const MentorCourseClassesLazy = lazy(() => import("src/pages/mentor/console/pages/CourseClassesPage"));
 const MentorConsoleStudentsLazy = lazy(() => import("src/pages/mentor/console/pages/StudentsPage"));
-const MentorEssayReviewsLazy = lazy(() => import("src/pages/mentor/console/pages/EssayReviewsPage"));
 const MentorStudentWorkspaceLazy = lazy(() => import("src/pages/mentor/console/pages/StudentWorkspacePage"));
-const MentorConsoleAvailabilityLazy = lazy(() => import("src/pages/mentor/console/pages/AvailabilityPage"));
 const MentorConsoleFeedLazy = lazy(() => import("src/pages/mentor/console/pages/FeedPage"));
 const MentorConsoleProfileLazy = lazy(() => import("src/pages/mentor/console/pages/ProfilePage"));
-const MentorConsoleReferralsLazy = lazy(() => import("src/pages/mentor/console/pages/ReferralsPage"));
+const MentorConsoleAvailabilityLazy = lazy(() => import("src/pages/mentor/console/pages/AvailabilityPage"));
 const MentorResearchPrepLearnerLazy = lazy(
   () => import("src/pages/mentor/console/pages/ResearchPrepLearnerPage"),
 );
 const AdminNavLazy = lazy(() => import("src/components/common/AdminNav"));
-const AdminConsoleGateLazy = lazy(() => import("src/pages/admin/console/AdminConsoleGate"));
-const AdminConsoleLayoutLazy = lazy(() => import("src/pages/admin/console/AdminConsoleLayout"));
-const AdminConsoleDashboardLazy = lazy(
-  () => import("src/pages/admin/console/pages/DashboardPage"),
-);
-const AdminConsoleUsersLazy = lazy(
-  () => import("src/pages/admin/console/pages/UsersPage"),
-);
-const AdminConsoleAdministrationLazy = lazy(
-  () => import("src/pages/admin/console/pages/AdministrationPage"),
-);
-const AdminConsolePaymentsLazy = lazy(() => import("src/pages/admin/console/pages/PaymentsPage"));
-const AdminConsoleReferralsLazy = lazy(() => import("src/pages/admin/console/pages/ReferralsPage"));
-const AdminConsoleSubscriptionsLazy = lazy(() => import("src/pages/admin/console/pages/SubscriptionsPage"));
-const AdminConsoleSessionsLazy = lazy(() => import("src/pages/admin/console/pages/SessionsPage"));
-const AdminConsoleEventsLazy = lazy(() => import("src/pages/admin/console/pages/EventsPage"));
-const AdminConsoleInsightsLazy = lazy(() => import("src/pages/admin/console/pages/InsightsPage"));
-const AdminConsoleMajorMatchLazy = lazy(() => import("src/pages/admin/console/pages/MajorMatchPage"));
-const AdminConsoleCommunityModerationLazy = lazy(
-  () => import("src/pages/admin/console/pages/CommunityModerationPage"),
-);
-const AdminConsoleContactLeadsLazy = lazy(
-  () => import("src/pages/admin/console/pages/ContactLeadsPage"),
-);
 const CaafAdminRouteLazy = lazy(() => import("src/pages/admin/console/CaafAdminRoute"));
 const TopcoachLaunchEventAdminRouteLazy = lazy(
   () => import("src/pages/admin/console/TopcoachLaunchEventAdminRoute"),
 );
 const AdminProgramManagementLazy = lazy(() => import("src/pages/admin/console/pages/ProgramManagementPage"));
 const AdminOrganizationManagementLazy = lazy(() => import("src/pages/admin/console/pages/OrganizationManagementPage"));
-const FullSupportMentorDashboardLazy = lazy(() => import("src/pages/full-support/FullSupportMentorDashboard"));
 const FullSupportMentorSatProgressPageLazy = lazy(() => import("src/pages/full-support/FullSupportMentorSatProgressPage"));
 const StudentHubRoutesLazy = lazy(() => import("src/pages/student-hub/StudentHubRoutes"));
 // Import factories shared between lazy() and the post-auth preload below,
@@ -388,106 +362,7 @@ function RouterProvider() {
             }
           />
 
-          <Route element={<AddFallbackLayout />}>
-            <Route
-              path="/new-admin"
-              element={
-                <Suspense fallback={<Loader height="100vh" />}>
-                  <AdminConsoleGateLazy />
-                </Suspense>
-              }
-            >
-              {/* ISC 2026 admissions console — full-screen takeover (its own
-                  sidebar), gated by AdminConsoleGate, outside AdminConsoleLayout. */}
-              <Route
-                path="events/isc-2026"
-                element={
-                  ISC_2026_ENABLED ? (
-                    <div style={{ height: '100vh' }}>
-                      <Suspense fallback={<Loader height="100vh" />}>
-                        <Isc2026ConsoleLazy />
-                      </Suspense>
-                    </div>
-                  ) : (
-                    <Navigate to="/new-admin/events" replace />
-                  )
-                }
-              />
-              <Route
-                element={
-                  <Suspense
-                    fallback={
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          minHeight: '100vh',
-                        }}
-                      >
-                        <Loader height="100vh" />
-                      </div>
-                    }
-                  >
-                    <AdminConsoleLayoutLazy />
-                  </Suspense>
-                }
-              >
-                <Route index element={<Navigate to="dashboard" replace />} />
-                <Route path="dashboard" element={<AdminConsoleDashboardLazy />} />
-
-                {/* Unified users directory (tabs via ?tab= query) */}
-                <Route path="users" element={<AdminConsoleUsersLazy />} />
-
-                {/* Programs */}
-                <Route path="programs" element={<Navigate to="/new-admin/programs/enrollments" replace />} />
-                <Route path="programs/enrollments" element={<AdminProgramManagementLazy />} />
-                <Route path="programs/analytics" element={<Navigate to="/new-admin/insights" replace />} />
-                {/* Organizations moved out of Programs into a standalone page */}
-                <Route path="programs/organizations" element={<Navigate to="/new-admin/organization-management" replace />} />
-                <Route path="programs/full-support" element={<AdminProgramManagementLazy />} />
-                <Route path="programs/research-prep" element={<AdminProgramManagementLazy />} />
-
-                {/* School / organization management (standalone) */}
-                <Route path="organization-management" element={<AdminOrganizationManagementLazy />} />
-
-                {/* Contact-form leads (read-only viewer) */}
-                <Route path="contact-leads" element={<AdminConsoleContactLeadsLazy />} />
-
-                {/* Operations */}
-                <Route path="payments" element={<AdminConsolePaymentsLazy />} />
-                <Route path="referrals" element={<AdminConsoleReferralsLazy />} />
-                <Route path="subscriptions" element={<AdminConsoleSubscriptionsLazy />} />
-                <Route path="sessions" element={<AdminConsoleSessionsLazy />} />
-                <Route path="events" element={<AdminConsoleEventsLazy />} />
-                <Route path="events/caaf" element={<CaafAdminRouteLazy />} />
-                <Route
-                  path="events/topcoach-launch-event"
-                  element={<TopcoachLaunchEventAdminRouteLazy />}
-                />
-
-                {/* Insights + governance */}
-                <Route path="insights" element={<AdminConsoleInsightsLazy />} />
-                <Route path="major-match" element={<AdminConsoleMajorMatchLazy />} />
-                <Route path="administration" element={<AdminConsoleAdministrationLazy />} />
-                <Route path="community-moderation" element={<AdminConsoleCommunityModerationLazy />} />
-
-                {/* Permanent redirects from legacy console paths */}
-                <Route path="mentees" element={<Navigate to="/new-admin/users?tab=mentees" replace />} />
-                <Route path="mentors" element={<Navigate to="/new-admin/users?tab=mentors" replace />} />
-                <Route path="organizations" element={<Navigate to="/new-admin/organization-management" replace />} />
-                <Route path="content" element={<Navigate to="/new-admin/events" replace />} />
-                <Route path="central-asian-admissions-forum" element={<Navigate to="/new-admin/events/caaf" replace />} />
-                <Route path="management" element={<Navigate to="/new-admin/programs/enrollments" replace />} />
-                <Route path="management/users" element={<Navigate to="/new-admin/programs/enrollments" replace />} />
-                <Route path="management/analytics" element={<Navigate to="/new-admin/insights" replace />} />
-                <Route path="management/organizations" element={<Navigate to="/new-admin/organization-management" replace />} />
-                <Route path="management/full_support" element={<Navigate to="/new-admin/programs/full-support" replace />} />
-                <Route path="full-support" element={<Navigate to="/new-admin/programs/full-support" replace />} />
-                <Route path="access-programs" element={<Navigate to="/new-admin/dashboard" replace />} />
-              </Route>
-            </Route>
-          </Route>
+          <Route path="/new-admin/*" element={<AdminPanelRedirect />} />
 
           {/* Main Layout */}
           <Route element={<MainLayout />}>
@@ -806,7 +681,9 @@ function RouterProvider() {
                     <Route path="attendance" element={<Navigate to="/mentor/dashboard?program=full-support&scope=due" replace />} />
                     <Route path="course-classes" element={<MentorCourseClassesLazy />} />
                     <Route path="students" element={<MentorConsoleStudentsLazy />} />
-                    <Route path="essay-reviews" element={<MentorEssayReviewsLazy />} />
+                    <Route path="reviews" element={<Navigate to="/mentor/students?tab=reviews" replace />} />
+                    <Route path="essay-reviews" element={<Navigate to="/mentor/students?tab=reviews&type=essay" replace />} />
+                    <Route path="document-reviews" element={<Navigate to="/mentor/students?tab=reviews&type=document" replace />} />
                     <Route path="students/:id" element={<MentorStudentWorkspaceLazy />} />
                     <Route path="availability" element={<MentorConsoleAvailabilityLazy />} />
                     <Route path="feed" element={<MentorConsoleFeedLazy />} />
@@ -818,7 +695,7 @@ function RouterProvider() {
                     <Route path="research-grading" element={<Navigate to="/mentor/students" replace />} />
                     <Route path="research-prep" element={<MentorResearchPrepLearnerLazy />} />
                     <Route path="profile" element={<MentorConsoleProfileLazy />} />
-                    <Route path="referrals" element={<MentorConsoleReferralsLazy />} />
+                    <Route path="referrals" element={<Navigate to="/mentor/profile?tab=referrals" replace />} />
                   </Route>
                 </Route>
               </Route>

@@ -1,0 +1,44 @@
+name: Learning access dev fix
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/scripts/compile-learning-access-dev.cjs'
+      - '.github/scripts/promote-learning-access-dev.py'
+      - '.github/workflows/learning-access-dev.yml'
+  workflow_dispatch:
+concurrency:
+  group: learning-access-dev
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+      - name: Verify and deploy the two learning fixes
+        env:
+          DEST: ${{ secrets.DEV_SSH_USER }}@${{ secrets.DEV_SERVER_IP }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${DEST#*@}" >> ~/.ssh/known_hosts
+          scp .github/scripts/promote-learning-access-dev.py "$DEST:/tmp/"
+          ssh "$DEST" 'python3 /tmp/promote-learning-access-dev.py inspect'
+          scp "$DEST:/tmp/learning-access-ui-snapshot.json" learning-access-ui-snapshot.json
+          npm install --prefix /tmp/learning-access-compiler --no-audit --no-fund typescript@5.7.3
+          NODE_PATH=/tmp/learning-access-compiler/node_modules node .github/scripts/compile-learning-access-dev.cjs
+          scp learning-access-ui-bundle.json "$DEST:/tmp/"
+          ssh "$DEST" 'python3 /tmp/promote-learning-access-dev.py deploy' | tee learning-access-ui-result.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: learning-access-dev-result
+          path: learning-access-ui-result.json

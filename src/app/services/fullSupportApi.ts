@@ -26,6 +26,7 @@ export type MentorRosterStudent = {
   initials: string;
   used: number;
   allocated: number;
+  scheduledHours?: number;
   sessionsCount: number;
 };
 
@@ -42,6 +43,7 @@ export type StudentGoalDto = {
 };
 
 export type SessionLogDto = {
+  recurrence?: { seriesId: string; position: number; timezone: string; repeat: "none" | "weekly" | "biweekly" } | null;
   id: string;
   mentorUserId?: string;
   studentUserId?: string;
@@ -311,6 +313,10 @@ export const fullSupportApi = RtkApi.injectEndpoints({
       }),
       invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions', 'FullSupportAdmin'],
     }),
+    updateMentorLessonLog: builder.mutation<{ data: SessionLogDto; success: boolean }, { id: string; sharedNotes: string; description?: string }>({
+      query: ({ id, ...body }) => ({ url: `/full-support/mentor/sessions/${id}/log`, method: 'PATCH', body }),
+      invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions', 'FullSupportAdmin'],
+    }),
     recordMentorLesson: builder.mutation<
       { data: SessionLogDto; success: boolean },
       { id: string; outcome: 'held' | 'cancelled' | 'student_no_show' | 'mentor_no_show'; attendance?: 'present' | 'late'; actualDurationMinutes?: number; sharedNotes?: string }
@@ -318,7 +324,7 @@ export const fullSupportApi = RtkApi.injectEndpoints({
       query: ({ id, ...body }) => ({ url: `/full-support/mentor/sessions/${id}/record`, method: 'POST', body }),
       invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions', 'FullSupportAdmin'],
     }),
-    rescheduleMentorLesson: builder.mutation<{ data: SessionLogDto; success: boolean }, { id: string; dateTime: string; duration: string }>({
+    rescheduleMentorLesson: builder.mutation<{ data: SessionLogDto; success: boolean }, { id: string; dateTime: string; duration: string; meetingLink?: string | null }>({
       query: ({ id, ...body }) => ({ url: `/full-support/mentor/sessions/${id}/reschedule`, method: 'POST', body }),
       invalidatesTags: ['FullSupportMentorRoster', 'FullSupportMentorSessions', 'FullSupportAdmin'],
     }),
@@ -776,6 +782,7 @@ export const {
   useCreateMentorSessionMutation,
   useUpdateMentorSessionMutation,
   useRecordMentorLessonMutation,
+  useUpdateMentorLessonLogMutation,
   useRescheduleMentorLessonMutation,
   useDeleteMentorSessionMutation,
   useGetMentorTasksQuery,

@@ -18,7 +18,23 @@ import {
   useReviewDocumentWithAiMutation,
 } from "src/app/services/student-hub/documentManagementApi";
 import { ApplicantPage, Breadcrumb, QueryState, displayDate } from "./ApplicantPage";
+import { DocumentReviewDecision } from "./DocumentReviewDecision";
 import { useGetEligibleEssayMentorsQuery } from "src/app/services/student-hub/essayReviewApi";
+
+type PreviewKind = "pdf" | "image" | "docx" | "doc" | "none";
+const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "webp", "gif"];
+const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+// Stored MIME types are not always reliable (some uploads arrive as
+// application/octet-stream), so fall back to the file extension.
+const getPreviewKind = (mimeType = "", fileName = ""): PreviewKind => {
+  const extension = fileName.split(".").pop()?.toLowerCase() ?? "";
+  if (mimeType === "application/pdf" || extension === "pdf") return "pdf";
+  if (mimeType.startsWith("image/") || IMAGE_EXTENSIONS.includes(extension)) return "image";
+  if (mimeType === DOCX_MIME || extension === "docx") return "docx";
+  if (mimeType === "application/msword" || extension === "doc") return "doc";
+  return "none";
+};
 
 const saveBlob = (blob: Blob, fileName: string) => {
   const url = URL.createObjectURL(blob);
@@ -33,7 +49,7 @@ export default function ApplicantDocumentReviewPage() {
   const { documentId = "" } = useParams();
   const [params] = useSearchParams();
   const documentQuery = useGetDocumentQuery(documentId, { skip: !documentId });
-  const reviewQuery = useGetDocumentReviewQuery(documentId, { skip: !documentId });
+  const reviewQuery = useGetDocumentReviewQuery(documentId, { skip: !documentId, pollingInterval: 10000 });
   const versionsQuery = useGetDocumentVersionsQuery(documentId, { skip: !documentId });
   const [download] = useDownloadDocumentMutation();
   const [downloadVersion] = useDownloadDocumentVersionMutation();
@@ -51,11 +67,14 @@ export default function ApplicantDocumentReviewPage() {
   const [pdfPage, setPdfPage] = useState(1);
   const [pdfWidth, setPdfWidth] = useState(720);
   const pdfContainerRef = useRef<HTMLDivElement>(null);
+  const docxContainerRef = useRef<HTMLDivElement>(null);
+  const [docxBlob, setDocxBlob] = useState<Blob>();
   const [modalOpen, setModalOpen] = useState(false);
   const [file, setFile] = useState<File>();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [form] = Form.useForm<{ changeSummary?: string }>();
   const record = documentQuery.data?.data;
+  const previewKind = getPreviewKind(record?.mimeType, record?.fileName);
   const review = reviewQuery.data?.data;
   const reviewerAccess = review?.reviewerAccess ?? record?.reviewerAccess ?? false;
   useEffect(() => { setReviewText(''); aiState.reset(); }, [record?.id, record?.updatedAt]);
@@ -85,16 +104,16 @@ export default function ApplicantDocumentReviewPage() {
 
   useEffect(() => {
     const container = pdfContainerRef.current;
-    if (!container || !previewUrl || record?.mimeType !== "application/pdf") return;
+    if (!container || !previewUrl || previewKind !== "pdf") return;
     const observer = new ResizeObserver(([entry]) => {
       if (entry) setPdfWidth(Math.max(1, Math.floor(entry.contentRect.width)));
     });
     observer.observe(container);
     return () => observer.disconnect();
-  }, [previewUrl, record?.mimeType, tab]);
+  }, [previewUrl, previewKind, tab]);
 
   useEffect(() => {
-    if (!record || tab !== "preview" || !/^(application\/pdf|image\/)/.test(record.mimeType ?? "")) return;
+    if (!record || tab !== "preview" || !["pdf", "image", "docx"].includes(previewKind)) return;
     let live = true;
     let url: string | undefined;
     setPreviewError(false);
@@ -102,8 +121,12 @@ export default function ApplicantDocumentReviewPage() {
     setPdfPages(0);
     download(record.id).unwrap().then(async (blob) => {
       if (!live) return;
-      if (!blob.size || (record.mimeType === "application/pdf" && !(await blob.slice(0, 5).text()).startsWith("%PDF-"))) {
-        throw new Error("The stored file is not a valid PDF preview.");
+      if (!blob.size || (previewKind === "pdf" && !(await blob.slice(0, 5).text()).startsWith("%PDF-"))) {
+        throw new Error("The stored file cannot be previewed.");
+      }
+      if (previewKind === "docx") {
+        setDocxBlob(blob);
+        return;
       }
       url = URL.createObjectURL(blob);
       setPreviewUrl(url);
@@ -112,8 +135,28 @@ export default function ApplicantDocumentReviewPage() {
       live = false;
       if (url) URL.revokeObjectURL(url);
       setPreviewUrl(undefined);
+      setDocxBlob(undefined);
     };
-  }, [record?.id, record?.updatedAt, record?.mimeType, tab]);
+  }, [record?.id, record?.updatedAt, previewKind, tab]);
+
+  // docx-preview is loaded on demand so other pages don't pay for it.
+  useEffect(() => {
+    const container = docxContainerRef.current;
+    if (!docxBlob || !container) return;
+    let live = true;
+    container.innerHTML = "";
+    import("docx-preview")
+      .then(({ renderAsync }) => renderAsync(docxBlob, container, undefined, {
+        className: "applicant-docx",
+        inWrapper: true,
+        ignoreLastRenderedPageBreak: true,
+      }))
+      .catch(() => { if (live) setPreviewError(true); });
+    return () => {
+      live = false;
+      container.innerHTML = "";
+    };
+  }, [docxBlob]);
 
   const getCurrent = async () => {
     if (!record) return;
@@ -156,6 +199,7 @@ export default function ApplicantDocumentReviewPage() {
         <div className="applicant-tabs" role="tablist" aria-label="Document review">
           {(["preview", "feedback", "versions", "ai helper"] as const).map((view) => <button key={view} type="button" role="tab" aria-selected={tab === view} className={tab === view ? "is-active" : ""} onClick={() => setTab(view)}>{view[0].toUpperCase() + view.slice(1)}</button>)}
         </div>
+        {review && <><p>Current file: version {review.currentVersion}</p><DocumentReviewDecision status={review.status} /></>}
         {tab === 'ai helper' && <div className="applicant-panel applicant-document-review">
           <h2>AI document helper</h2>
           <p>Review clarity and completeness—not authenticity or admission eligibility. This is separate from mentor feedback and does not mark your file as verified.</p>
@@ -170,8 +214,12 @@ export default function ApplicantDocumentReviewPage() {
         {tab === "preview" && <div className="applicant-panel applicant-document-review">
           <div className="applicant-section-heading"><h2>{record.fileName}</h2><Button onClick={getCurrent} icon={<Download size={16} />}>Download</Button></div>
           {previewError ? <Alert type="error" message="Preview unavailable" description="Try downloading the file." />
-            : previewUrl && record.mimeType?.startsWith("image/") ? <img className="applicant-document-review__image" src={previewUrl} alt={`Preview of ${record.fileName}`} onError={() => setPreviewError(true)} />
-            : previewUrl && record.mimeType === "application/pdf" ? <div className="applicant-document-review__pdf" ref={pdfContainerRef}>
+            : previewKind === "docx" ? <div className="applicant-document-review__docx">
+                {!docxBlob && <p>Loading document preview…</p>}
+                <div ref={docxContainerRef} />
+              </div>
+            : previewUrl && previewKind === "image" ? <img className="applicant-document-review__image" src={previewUrl} alt={`Preview of ${record.fileName}`} onError={() => setPreviewError(true)} />
+            : previewUrl && previewKind === "pdf" ? <div className="applicant-document-review__pdf" ref={pdfContainerRef}>
                 <Document file={previewUrl} loading={<p>Loading PDF preview…</p>} error={<Alert type="error" message="Preview unavailable" description="Try downloading the file." />} onLoadSuccess={({ numPages }) => setPdfPages(numPages)}>
                   <Page pageNumber={pdfPage} width={pdfWidth} renderTextLayer={false} renderAnnotationLayer={false} loading={<p>Loading page…</p>} />
                 </Document>
@@ -181,12 +229,14 @@ export default function ApplicantDocumentReviewPage() {
                   <Button disabled={pdfPage === pdfPages} onClick={() => setPdfPage((page) => page + 1)}>Next</Button>
                 </div>}
               </div>
-            : <div className="applicant-empty"><FileText size={36} /><p>Preview is available for PDF and image files. Download this file to review it.</p></div>}
+            : previewKind === "doc" ? <div className="applicant-empty"><FileText size={36} /><p>Older Word (.doc) files can’t be previewed in the browser. Download it, or save it as .docx or PDF and upload a new version.</p></div>
+            : previewKind === "none" ? <div className="applicant-empty"><FileText size={36} /><p>Preview is available for PDF, Word (.docx) and image files. Download this file to review it.</p></div>
+            : <p>Loading preview…</p>}
         </div>}
         {tab === "feedback" && <div className="applicant-panel applicant-document-review">
           <QueryState loading={reviewQuery.isLoading} error={reviewQuery.isError} retry={reviewQuery.refetch}>
             <h2>Reviewer feedback</h2>
-            {review?.feedback.length ? review.feedback.map((item) => <div className="applicant-document-review__feedback" key={item.id}><strong>{item.annotationType || "Comment"}</strong><small>{displayDate(item.createdAt)}{item.isResolved ? " · Resolved" : ""}</small><p>{item.content}</p></div>) : <p>No reviewer feedback has been shared yet.</p>}
+            {review?.feedback.length ? review.feedback.map((item) => <div className="applicant-document-review__feedback" key={item.id}><strong>{item.documentVersion ? `Version ${item.documentVersion}` : "Earlier feedback (version not recorded)"}{item.reviewDecision ? ` · ${item.reviewDecision.replaceAll("_", " ")}` : ""}</strong><small>{displayDate(item.createdAt)}{item.isResolved ? " · Resolved" : ""}</small><p>{item.content}</p></div>) : <p>No reviewer feedback has been shared yet.</p>}
           </QueryState>
         </div>}
         {tab === "versions" && <div className="applicant-panel applicant-document-review">
@@ -205,9 +255,9 @@ export default function ApplicantDocumentReviewPage() {
     </QueryState>
     <Modal rootClassName="applicant-modal" title="Upload new version" open={modalOpen} footer={null} onCancel={() => setModalOpen(false)}>
       <Form form={form} layout="vertical" onFinish={submitVersion}>
-        <Form.Item label="File" required><Upload.Dragger fileList={fileList} maxCount={1} beforeUpload={(next) => { setFile(next); setFileList([next]); return false; }} onRemove={() => { setFile(undefined); setFileList([]); }} accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg"><UploadCloud size={28} /><p>Choose a new version of this document</p></Upload.Dragger></Form.Item>
+        <Form.Item label="File" required><Upload.Dragger fileList={fileList} maxCount={1} beforeUpload={(next) => { setFile(next); setFileList([next]); return false; }} onRemove={() => { setFile(undefined); setFileList([]); }} accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp"><UploadCloud size={28} /><p>Choose a new version of this document</p></Upload.Dragger></Form.Item>
         <Form.Item name="changeSummary" label="What changed? (optional)"><Input.TextArea rows={2} /></Form.Item>
-        <p>Uploading a version preserves the earlier file.</p>
+        <p>Uploading a version preserves the earlier file and resets its review decision.</p>
         <div className="applicant-actions applicant-actions--end"><Button onClick={() => setModalOpen(false)}>Cancel</Button><Button type="primary" htmlType="submit" loading={uploadState.isLoading}>Upload version</Button></div>
       </Form>
     </Modal>

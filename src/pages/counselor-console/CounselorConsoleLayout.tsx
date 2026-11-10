@@ -1,3 +1,4 @@
+import { adminPanelUrl } from 'src/lib/adminPanel';
 import {
   Suspense,
   useEffect,
@@ -341,7 +342,7 @@ export default function CounselorConsoleLayout() {
           {isSuperAdmin && (
             <button
               type="button"
-              onClick={() => navigate('/new-admin/organization-management')}
+              onClick={() => window.location.assign(adminPanelUrl)}
               title="Back to admin console"
               style={{
                 display: 'flex',

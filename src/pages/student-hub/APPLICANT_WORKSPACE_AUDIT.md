@@ -1,7 +1,7 @@
 # Applicant workspace design audit
 
 Scope: every route exposed by the applicant workspace while
-`VITE_APPLICANT_WORKSPACE_ENABLED=true`, reviewed against the supplied
+the default applicant workspace, reviewed against the supplied
 TopCoach Figma workspace direction: cream canvas, compact left navigation,
 serif/editorial headings, soft bordered cards, crimson primary actions, and
 responsive mobile drawer.

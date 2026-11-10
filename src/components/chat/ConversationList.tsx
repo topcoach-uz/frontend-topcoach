@@ -31,7 +31,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
   selectedConversationId = null,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [segment, setSegment] = useState<'all' | 'mentors' | 'peers'>('all');
+  const [segment, setSegment] = useState<'all' | 'mentors' | 'peers' | 'team'>('all');
   const dispatch = useAppDispatch();
   const { data: conversationsData, isLoading } = useGetConversationsQuery(
     undefined,
@@ -117,8 +117,9 @@ const ConversationList: React.FC<ConversationListProps> = ({
 
   const roleFiltered = useMemo(() => {
     if (segment === 'all') return conversations;
+    if (segment === 'team') return conversations.filter((c) => c.conversationType === 'ADMIN_MENTOR');
     if (segment === 'peers') return conversations.filter((c) => c.conversationType === 'PEER');
-    return conversations.filter((c) => c.conversationType !== 'PEER');
+    return conversations.filter((c) => c.conversationType !== 'PEER' && c.conversationType !== 'ADMIN_MENTOR');
   }, [conversations, segment]);
 
   const filteredConversations = useMemo(() => {
@@ -182,11 +183,12 @@ const ConversationList: React.FC<ConversationListProps> = ({
             <Segmented
               block
               value={segment}
-              onChange={(v) => setSegment(v as 'all' | 'mentors' | 'peers')}
+              onChange={(v) => setSegment(v as 'all' | 'mentors' | 'peers' | 'team')}
               options={[
                 { label: 'All', value: 'all' },
                 { label: 'Mentors', value: 'mentors' },
                 { label: 'Peers', value: 'peers' },
+                { label: 'Team', value: 'team' },
               ]}
               style={{ marginBottom: 10 }}
             />
@@ -225,11 +227,12 @@ const ConversationList: React.FC<ConversationListProps> = ({
             <Segmented
               block
               value={segment}
-              onChange={(v) => setSegment(v as 'all' | 'mentors' | 'peers')}
+              onChange={(v) => setSegment(v as 'all' | 'mentors' | 'peers' | 'team')}
               options={[
                 { label: 'All', value: 'all' },
                 { label: 'Mentors', value: 'mentors' },
                 { label: 'Peers', value: 'peers' },
+                { label: 'Team', value: 'team' },
               ]}
               style={{ marginBottom: 10 }}
             />
@@ -299,6 +302,11 @@ const ConversationList: React.FC<ConversationListProps> = ({
               }
               description={
                 <div>
+                  {conversation.conversationType === 'ADMIN_MENTOR' && (
+                    <Text type="secondary" style={{ display: 'block', fontSize: 11, marginBottom: 2 }}>
+                      {conversation.mentorId === currentUser?.id ? 'Mentor · Team chat' : 'TopCoach Admin'}
+                    </Text>
+                  )}
                   {conversation.conversationType === 'PEER' && (
                     <Text type="secondary" style={{ display: 'block', fontSize: 11, marginBottom: 2 }}>
                       Peer · Study Buddy
@@ -323,11 +331,12 @@ const ConversationList: React.FC<ConversationListProps> = ({
           <Segmented
             block
             value={segment}
-            onChange={(v) => setSegment(v as 'all' | 'mentors' | 'peers')}
+            onChange={(v) => setSegment(v as 'all' | 'mentors' | 'peers' | 'team')}
             options={[
               { label: 'All', value: 'all' },
               { label: 'Mentors', value: 'mentors' },
               { label: 'Peers', value: 'peers' },
+                { label: 'Team', value: 'team' },
             ]}
             style={{ marginBottom: 10 }}
           />

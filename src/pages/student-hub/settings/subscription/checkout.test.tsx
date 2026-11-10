@@ -35,6 +35,7 @@ vi.mock('src/app/services/subscription', () => ({
 vi.mock('src/app/services/paymentRedirect', () => ({
   paymentRedirectWithTimeout: vi.fn(),
 }));
+vi.mock('./_components/PolarCommunityPass', () => ({ default: () => null }));
 vi.mock('./_components/CurrentPlanCard', () => ({
   default: () => <div>Recurring agreement</div>,
 }));

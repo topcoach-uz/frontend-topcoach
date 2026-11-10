@@ -53,6 +53,14 @@ export const chatApi = RtkApi.injectEndpoints({
       invalidatesTags: ['ChatConversations'],
     }),
 
+    findOrCreateAdminMentorConversation: build.mutation<
+      { conversation: Conversation },
+      { mentorUserId: string }
+    >({
+      query: (body) => ({ url: '/chat/conversations/find-or-create-admin-mentor', method: 'POST', body }),
+      invalidatesTags: [{ type: 'ChatConversations', id: 'LIST' }],
+    }),
+
     /**
      * Find or create a conversation between the current counselor and a student.
      * counselorId is derived server-side from the JWT — only studentId is sent.
@@ -334,6 +342,7 @@ export const chatApi = RtkApi.injectEndpoints({
 
 // Export hooks for usage in functional components
 export const {
+  useFindOrCreateAdminMentorConversationMutation,
   useGetConversationsQuery,
   useGetConversationQuery,
   useFindOrCreateConversationMutation,

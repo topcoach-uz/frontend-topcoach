@@ -1,3 +1,4 @@
+import RecordedWorkshopGridCards from './_components/RecordedWorkshopGridCards';
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Spin } from 'antd';
 import { api } from 'src/app/api';
@@ -281,6 +282,7 @@ export default function EventsPage() {
                 <>
                   <IvyEssayWorkshopGridCard />
                   <EssayMasterclassGridCard />
+                  <RecordedWorkshopGridCards />
                   <PersonalStatementWorkshopGridCard />
                 </>
               )}

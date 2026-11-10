@@ -1,9 +1,11 @@
+import { adminPanelUrl } from 'src/lib/adminPanel';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Drawer, Skeleton } from 'antd';
 import {
   ChevronRight,
   CirclePlay,
   ClipboardList,
+  ListChecks,
   HeartHandshake,
   House,
   Lock,
@@ -26,9 +28,9 @@ import {
 } from './ApplicantOverviewContext';
 import OrgMembershipSidebar from '../components/OrgMembershipSidebar';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
-import { useGetEnrollmentMeQuery } from 'src/app/services/fullSupportApi';
 import { ApplicantTopBarContext } from './ApplicantTopBarContext';
 import './applicantWorkspace.scss';
+import ProgramNavigationLink from '../my-programs/ProgramNavigationLink';
 
 export default function ApplicantShell({ children }: { children: ReactNode }) {
   const userId = useTypedSelector((state) => state.auth.profile?.id);
@@ -114,11 +116,7 @@ function ApplicantNavigation({
   );
   const { isCommunityEnrolled, isEntitlementLoading } =
     useJourneyExperience();
-  const { data: fullSupportEnrollment, isLoading: fullSupportLoading } =
-    useGetEnrollmentMeQuery();
   const communityLocked = !isEntitlementLoading && !isCommunityEnrolled;
-  const fullSupportLocked =
-    !fullSupportLoading && !fullSupportEnrollment?.data?.enrolled;
   const { t } = useTranslation();
   const { pathname, search } = useLocation();
   const current = new URLSearchParams(search);
@@ -138,7 +136,6 @@ function ApplicantNavigation({
             { key: 'collegeList', to: applicantLinks.applications },
             { key: 'essays', to: applicantLinks.essays },
             { key: 'documents', to: applicantLinks.documents },
-            { key: 'tasks', to: applicantLinks.tasks },
           ]
         : [
             { key: 'exploreDirection', to: applicantLinks.studyDirection },
@@ -146,7 +143,6 @@ function ApplicantNavigation({
             { key: 'shortlist', to: applicantLinks.applications },
             { key: 'essays', to: applicantLinks.essays },
             { key: 'documents', to: applicantLinks.documents },
-            { key: 'tasks', to: applicantLinks.tasks },
           ],
     },
     {
@@ -154,6 +150,7 @@ function ApplicantNavigation({
       Icon: CirclePlay,
       links: degree === 'bachelor'
         ? [
+            { key: 'mySessions', to: applicantLinks.sessions, locked: false },
             { key: 'ieltsTestPrep', to: '/student-hub/ielts-prep', locked: false },
             {
               key: 'admissions',
@@ -173,6 +170,7 @@ function ApplicantNavigation({
           ]
         : [
             { key: 'myProgress', to: applicantLinks.learning, locked: false },
+            { key: 'mySessions', to: applicantLinks.sessions, locked: false },
             { key: 'ieltsTestPrep', to: '/student-hub/ielts-prep', locked: false },
             {
               key: 'admissions',
@@ -283,6 +281,7 @@ function ApplicantNavigation({
                 link.to,
                 t(
                   `applicant.${entry.key === 'myLearning' && link.key === 'researchPrep' ? 'researchPrepShort' : link.key}`,
+                  { defaultValue: link.key === 'mySessions' ? 'My sessions' : link.key },
                 ),
                 selected(link.to),
                 undefined,
@@ -346,14 +345,14 @@ function ApplicantNavigation({
           <House size={20} aria-hidden />,
         )}
         {group(groups[0])}
-        {degree === 'bachelor' && group(groups[1])}
         {navLink(
-          applicantLinks.fullSupport,
-          t('applicant.fullSupport'),
-          selected(applicantLinks.fullSupport),
-          <HeartHandshake size={20} aria-hidden />,
-          fullSupportLocked,
+          applicantLinks.tasks,
+          t('applicant.tasks', 'Tasks'),
+          selected(applicantLinks.tasks),
+          <ListChecks size={20} aria-hidden />,
         )}
+        {group(groups[1])}
+        <ProgramNavigationLink onNavigate={onNavigate} />
         {group(groups[2])}
         <div className="applicant-account-nav">
           {navLink(MEMBERSHIP_BILLING_PATH, t('accountNav.membership', 'Membership & billing'),
@@ -364,11 +363,7 @@ function ApplicantNavigation({
         {(managementRole === 'SuperAdmin' ||
           (managementRole as string) === 'Owner') && (
           <div className="applicant-nav-children">
-            {navLink(
-              '/new-admin/dashboard',
-              t('studentHub.nav.adminConsole', 'Admin console'),
-              false,
-            )}
+            <a href={adminPanelUrl}>{t('studentHub.nav.adminConsole', 'Admin')}</a>
           </div>
         )}
       </nav>

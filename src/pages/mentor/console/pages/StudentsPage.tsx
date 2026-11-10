@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react';
-import { Alert, Button, Card, Input, Spin, Table, Typography } from 'antd';
+import { Alert, Button, Card, Input, Spin, Table, Tabs, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Search } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import ReviewsPage from './ReviewsPage';
+import { useReviewCounts } from '../components/reviews/reviewCounts';
 import {
   useGetMentorRosterQuery,
   useGetMentorTasksQuery,
@@ -20,12 +22,16 @@ type ConsoleStudent = {
   initials: string;
   used: number;
   allocated: number;
+  scheduledHours?: number;
   sessionsCount: number;
   isFullSupport: boolean;
 };
 
 export default function MentorConsoleStudentsPage() {
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const activeTab = params.get('tab') === 'reviews' ? 'reviews' : 'students';
+  const { total: pendingReviews } = useReviewCounts();
   const [q, setQ] = useState('');
 
   const { data, isLoading, isError } = useGetMentorRosterQuery();
@@ -39,6 +45,7 @@ export default function MentorConsoleStudentsPage() {
       name: r.name,
       initials: r.initials,
       used: r.used,
+      scheduledHours: r.scheduledHours,
       allocated: r.allocated,
       sessionsCount: r.sessionsCount,
       isFullSupport: true,
@@ -142,13 +149,13 @@ export default function MentorConsoleStudentsPage() {
       },
     },
     {
-      title: 'Hours used',
+      title: 'Lesson hours',
       key: 'hours',
       width: 130,
       render: (_, row) =>
         row.isFullSupport ? (
           <Text style={{ color: 'var(--mc-text)' }}>
-            {row.used}h <span style={{ color: 'var(--mc-text-muted)' }}>/ {row.allocated}h</span>
+            {row.used}h completed <span style={{ color: 'var(--mc-text-muted)' }}>· {row.scheduledHours ?? 0}h scheduled</span>
           </Text>
         ) : (
           <Text style={{ color: 'var(--mc-text-muted)' }}>—</Text>
@@ -207,11 +214,23 @@ export default function MentorConsoleStudentsPage() {
         <h1 className="mc-page-title">Students</h1>
         <p className="mc-page-lead">
           Your Full Support students and 1:1 mentees. Open a workspace to manage tasks, review
-          sessions and message them in one place.
+          essays, documents, sessions and message them in one place.
         </p>
       </div>
 
-      <Card bordered={false} className="mc-panel">
+      <Tabs
+        activeKey={activeTab}
+        onChange={(tab) => setParams((current) => {
+          if (tab === 'reviews') current.set('tab', tab);
+          else { current.delete('tab'); current.delete('type'); }
+          return current;
+        })}
+        items={[
+          { key: 'students', label: 'All students' },
+          { key: 'reviews', label: pendingReviews > 0 ? `Reviews (${pendingReviews})` : 'Reviews' },
+        ]}
+      />
+      {activeTab === 'reviews' ? <ReviewsPage embedded /> : <Card bordered={false} className="mc-panel">
         <div style={{ marginBottom: 12 }}>
           <Input
             size="large"
@@ -258,7 +277,7 @@ export default function MentorConsoleStudentsPage() {
             size="middle"
           />
         )}
-      </Card>
+      </Card>}
     </div>
   );
 }

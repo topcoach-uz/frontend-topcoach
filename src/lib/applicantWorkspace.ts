@@ -1,10 +1,5 @@
-/** Opt-in rollout; disabling it restores the existing hub and its saved URLs. */
-export const APPLICANT_WORKSPACE_ENABLED =
-  import.meta.env.VITE_APPLICANT_WORKSPACE_ENABLED === 'true';
-
 export function isApplicantWorkspacePath(pathname: string) {
   return (
-    APPLICANT_WORKSPACE_ENABLED &&
     /^\/student-hub(?:\/|$)/.test(pathname) &&
     !/^\/student-hub\/(?:sat-prep|research-prep|ielts-prep)(?:\/|$)/.test(pathname)
   );
@@ -15,6 +10,7 @@ export const applicantLinks = {
   applications: '/student-hub/applications',
   universities: '/student-hub/universities',
   tasks: '/student-hub/tasks',
+  sessions: '/student-hub/sessions',
   satPrep: '/student-hub/sat-prep',
   newApplication: '/student-hub/applications/new',
   profile: '/student-hub?section=others&target=profile&tab=academic',
@@ -45,4 +41,20 @@ export function isOverviewLocation(pathname: string, search: string) {
   if (!/^\/student-hub\/?$/.test(pathname)) return false;
   const section = new URLSearchParams(search).get('section');
   return !section || section === 'dashboard' || section === 'overview';
+}
+
+/** Keep bookmarks to retired workspace panes useful without mounting their UI. */
+export function legacyWorkspaceRedirect(search: string): string | null {
+  const params = new URLSearchParams(search);
+  if (params.get('section') !== 'others') return null;
+  const target = params.get('target');
+  const tab = target === 'profile' ? params.get('tab') : target;
+  if (tab === 'college-lists') {
+    return params.get('applicationFlow') === 'new'
+      ? applicantLinks.newApplication
+      : applicantLinks.applications;
+  }
+  if (tab === 'documents') return applicantLinks.documents;
+  if (target === 'essays') return applicantLinks.essays;
+  return null;
 }

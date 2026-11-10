@@ -13,7 +13,6 @@
   padding: 0;
   background: transparent;
   .hub { display: block; }
-  .leftCol { display: none; }
   .centerCol { width: 100%; min-width: 0; }
   .sectionSwapHubPad { padding: 0; }
 }
@@ -103,15 +102,6 @@
   padding-right: 8px;
 }
 
-/* Inner sticky wrapper: stays at the top of the viewport while the feed
-   scrolls past, no matter how tall the feed gets. The outer .leftCol
-   stretches to the full grid-row height so this sticky has room to
-   travel through the entire feed. */
-.leftColInner {
-  position: sticky;
-  top: 16px;
-}
-
 /* When the community feed is mounted, scroll is hoisted to the document
    (see body.cf-feed-active rule in CommunityFeedEditorialView.scss).
    The global maroon header sticks at top: 0 and is ~80px tall, so the
@@ -120,275 +110,10 @@
   top: 96px;
 }
 
-/* Profile card — hero-photo layout.
- *
- * Modeled on the Sophie-Bennett-style cards in the user's reference: a
- * single large photo dominates the top of the card, then a tighter
- * meta block below with name + handle (no stats, no follow button).
- * The whole card is one click target → opens settings. */
-/* Compact "Option B" profile card — single white card with a hairline
- * border, no internal banding, no avatar drop-shadow. Two rows:
- *   Row 1: avatar + name/handle
- *   Row 2: coin chip + "View profile →"
- * Designed for the 236px sidebar width — the whole card stays under
- * ~88px tall, which leaves more room for the nav items below. */
-.profileCard {
-  position: relative;
-  border-radius: 14px;
-  border: 1px solid #e5e3da;
-  background: #fff;
-  cursor: pointer;
-  overflow: hidden;
-  padding: 14px 14px 10px !important;
-  transition: border-color 0.18s ease, transform 0.12s ease;
-
-  :global(.ant-card-body) {
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    /* No gap here — the bottom row's top hairline + padding handle spacing
-       so the divider can run flush across the card. */
-    gap: 0;
-  }
-
-  &:hover {
-    border-color: #c9b8bc;
-    transform: translateY(-1px);
-  }
-
-  &:focus-visible {
-    outline: 2px solid #7B1F2F;
-    outline-offset: 2px;
-  }
-}
-
-/* Row 1 — avatar + identity block, inline. */
-.profileTopRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-/* Inline avatar — bumped to 48px so the face is recognizable at a glance,
- * but still compact enough that the card stays under ~110px tall.
- * Explicit `border: 0` clears the white ring some browsers add to <img>
- * elements inside Ant Card. */
-.profilePhoto {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.profilePhotoImg {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-  border: 0;
-  box-shadow: none;
-}
-.profilePhotoFallback {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9ca3af;
-  background: #faf8f3;
-  border: 0;
-}
-
-/* Identity stack: name + handle, both ellipsis on overflow. */
-.profileMeta {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  flex: 1;
-}
-
-.profileName {
-  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif;
-  font-size: 0.98rem;
-  font-weight: 600;
-  color: #1f2937;
-  letter-spacing: -0.01em;
-  line-height: 1.22;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-.profileHandle {
-  color: #6b7280;
-  font-size: 0.78rem;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-/* Profile-completion progress bar — sits between the identity row and the
- * coin/View-profile row. A plain <button> so it's independently clickable
- * (stopPropagation) without nesting a <button> inside the card's own
- * role="button" wrapper's click target. */
-.profileCompletion {
-  display: block;
-  width: 100%;
-  margin-top: 10px;
-  padding: 0;
-  border: 0;
-  background: none;
-  text-align: left;
-  cursor: pointer;
-  appearance: none;
-}
-
-.profileCompletionLabel {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #8a8577;
-  margin-bottom: 5px;
-  letter-spacing: 0.005em;
-}
-
-.profileCompletionTrack {
-  display: block;
-  width: 100%;
-  height: 6px;
-  border-radius: 999px;
-  background: #ece9df;
-  overflow: hidden;
-}
-
-.profileCompletionFill {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: #7B1F2F;
-  transition: width 0.25s ease;
-}
-
-/* Fully complete — replaces the bar entirely with a single muted line. */
-.profileCompletionDone {
-  display: block;
-  width: 100%;
-  margin-top: 10px;
-  padding: 0;
-  border: 0;
-  background: none;
-  text-align: left;
-  cursor: pointer;
-  appearance: none;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #8a8577;
-}
-
-/* Row 2 — coin chip (left) + View-profile CTA (right), separated from
- * row 1 by a hairline divider that runs across the full card width.
- * The hairline + padding-top here replaces the previous gap on the
- * card body so the two rows feel anchored, not floating. */
-.profileBottomRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid #ece9df;
-}
-
-.profileFooter {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #7B1F2F;
-  letter-spacing: 0.005em;
-  padding: 2px 0;
-
-  .profileCard:hover & {
-    color: #5d1623;
-  }
-}
-
-/* Coin chip — pill button on the left of the bottom row. Sized to
- * match the avatar's visual weight (≈26px tall) so row 2 doesn't feel
- * lighter than row 1. */
-.profileCoinsInline {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  background: #fdf6ee;
-  border: 1px solid #ece4d3;
-  border-radius: 999px;
-  color: #7B1F2F;
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-  line-height: 1.2;
-
-  &:hover {
-    background: #fbeeda;
-    border-color: #d6c79e;
-  }
-}
-
-.profileCoinsValue {
-  font-weight: 800;
-  letter-spacing: 0.01em;
-}
-
-.profileCoinsLabel {
-  /* Retained for backward compat — hidden in the compact layout. */
-  display: none;
-}
-
-.profileFooterArrow {
-  transition: transform 0.18s ease;
-  font-size: 0.95rem;
-  line-height: 1;
-  font-weight: 700;
-
-  .profileCard:hover & {
-    transform: translateX(3px);
-  }
-}
-
-.profilePhase {
-  color: #8b0000;
-  font-weight: 600;
-}
-
-.profilePlanRow {
-  margin-bottom: 14px;
-}
-
 .planTag {
   background: #8b0000 !important;
   color: #fff !important;
   border: none !important;
-}
-
-.profileCoinsRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.profileCoins {
-  display: flex;
-  flex-direction: column;
 }
 
 .coinsValue {
@@ -401,35 +126,6 @@
   font-size: 12px;
   color: #64748b;
   margin-top: 2px;
-}
-
-.leftNavFlush {
-  margin-top: 0 !important;
-}
-
-.navSubList {
-  margin: 4px 0 8px 4px;
-  padding-left: 10px;
-  border-left: 2px solid #f1f5f9;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.navSubItem {
-  padding: 8px 10px !important;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.navExpandRow {
-  justify-content: space-between !important;
-}
-
-.navLockIcon {
-  margin-right: 4px;
-  flex-shrink: 0;
-  color: #94a3b8;
 }
 
 .feedLockedWrap {
@@ -743,41 +439,12 @@
   line-height: 0;
 }
 
-/* "My dashboard" expandable group — chevron on the parent row + an
- * indented, rail-guided list of children (Progress / Profile). Reuses
- * .navItem/.navItemActive for the children so active/hover states stay
- * identical to every other sidebar row. */
-.navGroupChevron {
-  margin-left: auto;
-  flex-shrink: 0;
-  color: #9ca3af;
-  transition: color 0.18s ease;
-}
-
 .navItem:hover .navGroupChevron {
   color: #1f2937;
 }
 
 .navItemActive .navGroupChevron {
   color: #7B1F2F;
-}
-
-.navSubGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin: 2px 0 4px 22px;
-  padding-left: 12px;
-  border-left: 1px solid #ece9df;
-}
-
-.navSubItem {
-  padding: 7px 10px;
-  font-size: 0.88rem;
-}
-
-.leftNavCollapse {
-  margin-top: 2px;
 }
 
 .leftNavCollapse :global(.ant-collapse-item) {
@@ -791,55 +458,8 @@
   font-weight: 800 !important;
 }
 
-.collapseHeaderLabel {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-}
-
-.collapseSubHeader {
-  font-size: 11px;
-  font-weight: 900;
-  color: #64748b;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 8px 12px 0 12px;
-}
-
 .leftNavCollapse :global(.ant-collapse-content-box) {
   padding: 0 0 4px 0 !important;
-}
-
-.collapseItems {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 0 12px 0 12px;
-}
-
-.navItemCompact {
-  padding: 8px 12px !important;
-}
-
-.navItemCompactButton {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border: none;
-  background: transparent;
-  border-radius: 12px;
-  cursor: pointer;
-  color: #0f172a;
-  font-weight: 600;
-  transition: background 0.2s ease;
-}
-
-.navItemCompactButton:hover {
-  background: #f8fafc;
 }
 
 .navCardItem {
@@ -2731,15 +2351,6 @@
   border-radius: 12px;
 }
 
-/* Scrollable hub nav inside layout mobile drawer */
-.mobileDrawerNav {
-  padding: 8px 8px 28px;
-  max-height: calc(100vh - 120px);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  box-sizing: border-box;
-}
-
 @media (max-width: 1200px) {
   .hub.hubNoRight {
     grid-template-columns: 1fr;
@@ -3058,13 +2669,6 @@
   :global(.ant-space) {
     width: 100%;
   }
-}
-
-/* ─────────────────────────────────────────────────────────────────────
- * Hidden left column (full-bleed sections — admissions, research)
- * ───────────────────────────────────────────────────────────────────── */
-.leftColHidden {
-  display: none !important;
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -3690,4 +3294,42 @@
   font-size: 11px;
   font-weight: 600;
   line-height: 18px;
+}
+
+/* ── Messages: fill the window, never scroll the page ─────────────────────
+   The chat height is 100vh minus a fixed offset, so everything above and
+   below it has to stay inside that offset: a compact one-line header here,
+   and a small bottom padding on the page frame (instead of its usual 64px). */
+.centerBodyMessenger {
+  .editorialHeader {
+    margin: 0 0 14px;
+    max-width: none;
+  }
+
+  .editorialEyebrow {
+    margin-bottom: 6px;
+  }
+
+  .editorialTitle {
+    font-size: 1.75rem;
+    margin: 0 0 4px;
+  }
+
+  .editorialDesc {
+    max-width: none;
+    font-size: 0.92rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+:global(.applicant-shell):has(.messengerHubWrap) {
+  padding-bottom: 16px;
+}
+
+.messengerHubWrap {
+  height: calc(100vh - 236px);
+  max-height: calc(100vh - 236px);
+  min-height: 420px;
 }

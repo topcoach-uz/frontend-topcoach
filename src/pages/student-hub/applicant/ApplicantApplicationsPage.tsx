@@ -1,6 +1,8 @@
+import { useGetUniversityDetailQuery } from 'src/app/services/universities';
+import { useGetUndergraduateDegreesQuery } from 'src/app/services/undergraduateDegreesApi';
 import { useEffect, useState } from "react";
-import { Alert, Button, Checkbox, Form, Input, Modal, Select, message } from "antd";
-import { ArrowRight, Plus, ClipboardList, Building2, FileText, ListChecks, ExternalLink } from "lucide-react";
+import { Alert, Button, Checkbox, Form, Input, Modal, Select, Tooltip, message } from "antd";
+import { Archive, ArrowRight, ArrowUpRight, Plus, ClipboardList, Building2, FileText, Info, ListChecks, ExternalLink, Trash2 } from "lucide-react";
 import {
   Link,
   useNavigate,
@@ -8,11 +10,19 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import {
+  useGetArchivedCollegeApplicationsQuery,
+  useArchiveCollegeApplicationMutation,
+  useRestoreCollegeApplicationMutation,
+  useDeleteCollegeApplicationMutation,
   useGetCollegeApplicationsQuery,
   useGetCollegeApplicationQuery,
   useGetApplicationTasksQuery,
+  useGetScholarshipApplicationsQuery,
   useUpdateCollegeApplicationMutation,
 } from "src/app/services/student-hub/applicationTrackingApi";
+import { useGetMenteeTasksQuery, useGetMenteePipelineQuery } from 'src/app/services/fullSupportApi';
+import { buildApplicationMilestones } from './applicationMilestones';
+import { getMentorFeedbackText } from './essayFeedbackModel';
 import { useGetStudentEssaysQuery } from "src/app/services/student-hub/essayManagementApi";
 import type { CollegeApplication } from "src/app/services/student-hub/types";
 import { useGetGraduateProgramQuery, type GraduateProgramFact } from "src/app/services/graduateProgramsApi";
@@ -20,28 +30,55 @@ import { getTranslation } from "src/lib/i18n/translationUtils";
 import {
   ApplicantPage,
   Breadcrumb,
+  CollegeListTabs,
   QueryState,
   UniversityIdentity,
   displayDate,
   applicationStatusLabels,
+  applicationTitle,
 } from "./ApplicantPage";
+import ScholarshipManagement from "./ScholarshipManagement";
+import ApplicationRequirements from './ApplicationRequirements';
+import ApplicationMentor from './ApplicationMentor';
 import ApplicationTimeline from "../applications/components/ApplicationTimeline";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 
 export default function ApplicantApplicationsPage() {
   const [listParams, setListParams] = useSearchParams();
+  const showArchived = listParams.get("view") === "archived";
+  const archived = useGetArchivedCollegeApplicationsQuery(undefined, { skip: !showArchived });
+  const [archive, archiveState] = useArchiveCollegeApplicationMutation();
+  const [restore, restoreState] = useRestoreCollegeApplicationMutation();
+  const [deleteApplication, deleteState] = useDeleteCollegeApplicationMutation();
+  // Deleting is permanent from the student's side (archive is the reversible
+  // option), so it always asks first and says what is kept.
+  const confirmDelete = (app: CollegeApplication) => Modal.confirm({
+    title: app.universityName || app.major ? `Delete ${app.universityName || app.major}?` : 'Delete this application?',
+    content: 'It will be removed from your College List and won’t appear in Archived. Your writing and documents stay saved. To keep it for later, archive it instead.',
+    okText: 'Delete',
+    okButtonProps: { danger: true },
+    cancelText: 'Cancel',
+    onOk: async () => {
+      try { await deleteApplication(app.id).unwrap(); message.success('Application deleted.'); }
+      catch { message.error('Could not delete this application. Please try again.'); throw new Error('Delete failed'); }
+    },
+  });
   const page = Math.max(1, Number(listParams.get("page")) || 1);
-  const query = useGetCollegeApplicationsQuery({ page, limit: 100 });
+  const query = useGetCollegeApplicationsQuery({ page, limit: 100 }, {pollingInterval:10000,refetchOnMountOrArgChange:true,refetchOnFocus:true});
   // Comparison uses a stable query independent of the list URL's page parameter.
   // The current backend returns all applications for the signed-in profile.
-  const allApplicationsQuery = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
-  const tasks = useGetApplicationTasksQuery({ page: 1, limit: 100 });
+  const allApplicationsQuery = useGetCollegeApplicationsQuery({ page: 1, limit: 100 }, {pollingInterval:10000,refetchOnFocus:true});
+  const tasks = useGetApplicationTasksQuery({ page: 1, limit: 100 }, { pollingInterval: 10000 });
   const navigate = useNavigate();
   const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
   const applications = query.data?.data ?? [];
   const active = applications.filter((app) => app.status !== "researching");
   const saved = applications.filter((app) => app.status === "researching");
   const showTimeline = listParams.get("tab") === "timeline";
+  const showScholarships = listParams.get("tab") === "scholarships";
+  const scholarships = useGetScholarshipApplicationsQuery({ page: 1, limit: 100 }, { skip: !showTimeline && !showScholarships, pollingInterval: 10000 });
+  const assignedTasks = useGetMenteeTasksQuery(undefined, { skip: !showTimeline, pollingInterval: 10000 });
+  const mentorPlans = useGetMenteePipelineQuery(undefined, { pollingInterval: 10000 });
   const comparedIds = (listParams.get("compare") ?? "")
     .split(",")
     .filter(Boolean);
@@ -58,29 +95,13 @@ export default function ApplicantApplicationsPage() {
     ids.length ? next.set("compare", ids.join(",")) : next.delete("compare");
     setListParams(next);
   };
-  const milestones = [
-    ...applications.filter((app) => app.deadline).map((app) => ({
-      id: `application-${app.id}`,
-      date: app.deadline!,
-      title: `${app.major || app.universityName || "Application"} planning date`,
-      detail: app.universityName || "University application",
-      path: `/student-hub/applications/${encodeURIComponent(app.id)}`,
-    })),
-    ...(tasks.data?.data ?? []).filter((task) => task.dueDate).map((task) => ({
-      id: `task-${task.id}`,
-      date: task.dueDate!,
-      title: task.title,
-      detail: "Task due",
-      path: task.collegeApplicationId
-        ? `/student-hub/tasks?application=${encodeURIComponent(task.collegeApplicationId)}`
-        : "/student-hub/tasks",
-    })),
-  ].sort((a, b) => a.date.localeCompare(b.date));
+  const milestones = buildApplicationMilestones(applications, tasks.data?.data ?? [], scholarships.data?.data ?? [], assignedTasks.data?.data ?? [], mentorPlans.data?.data ?? []);
+  const selectedMilestone = milestones.find(item => item.id === listParams.get('milestone'));
   const row = (app: CollegeApplication) => {
     const nextTask = tasks.data?.data
       .filter(
         (task) =>
-          task.collegeApplicationId === app.id && task.status !== "completed",
+          task.collegeApplicationId === app.id && !["completed", "cancelled"].includes(task.status),
       )
       .sort((a, b) =>
         (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"),
@@ -104,12 +125,13 @@ export default function ApplicantApplicationsPage() {
             .filter(Boolean)
             .join(" · ")}
         />
-        <div>
-          <span>{applicationStatusLabels[app.status] ?? app.status}</span>
-          <small>My planning deadline</small>
-          <small>{displayDate(app.deadline)}</small>
+        <div className="applicant-list__cell">
+          <span className={`applicant-list__status applicant-list__status--${app.status}`}>
+            {applicationStatusLabels[app.status] ?? app.status}
+          </span>
+          <small>Planning deadline · {displayDate(app.deadline)}</small>
         </div>
-        <div>
+        <div className="applicant-list__cell">
           {tasks.isError ? (
             <small>Tasks unavailable</small>
           ) : nextTask ? (
@@ -127,37 +149,106 @@ export default function ApplicantApplicationsPage() {
             </small>
           )}
         </div>
-        <Button
-          type={app.status === "researching" ? "default" : "primary"}
-          onClick={() =>
-            navigate(`/student-hub/applications/${encodeURIComponent(app.id)}`)
-          }
-        >
-          Open workspace <ArrowRight size={14} />
-        </Button>
-        {isMasters && app.status === "researching" && (
-          <Checkbox
-            checked={comparedIds.includes(app.id)}
-            onChange={(event) => toggleComparison(app.id, event.target.checked)}
-          >
-            Compare
-          </Checkbox>
-        )}
+        <div className="applicant-list__actions">
+          {isMasters && app.status === "researching" && (
+            <Checkbox
+              checked={comparedIds.includes(app.id)}
+              onChange={(event) => toggleComparison(app.id, event.target.checked)}
+            >
+              Compare
+            </Checkbox>
+          )}
+          <Tooltip title="Archive">
+            <Button
+              className="applicant-list__icon-btn"
+              shape="circle"
+              aria-label={`Archive ${applicationTitle(app)}`}
+              icon={<Archive size={16} />}
+              loading={archiveState.isLoading && archiveState.originalArgs === app.id}
+              onClick={() => Modal.confirm({
+                title: 'Archive this application?',
+                content: 'The application and its linked planning tasks will leave active lists and the timeline. Writing and documents stay saved. You can restore it from Archived applications.',
+                okText: 'Archive application',
+                onOk: async () => { try { await archive(app.id).unwrap(); message.success('Application archived.'); } catch { message.error('Could not archive this application.'); throw new Error('Archive failed'); } },
+              })}
+            />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button
+              className="applicant-list__icon-btn applicant-list__icon-btn--danger"
+              shape="circle"
+              aria-label={`Delete ${applicationTitle(app)}`}
+              icon={<Trash2 size={16} />}
+              loading={deleteState.isLoading && deleteState.originalArgs === app.id}
+              onClick={() => confirmDelete(app)}
+            />
+          </Tooltip>
+          <Tooltip title="Open workspace">
+            <Button
+              className="applicant-list__icon-btn"
+              shape="circle"
+              type={app.status === "researching" ? "default" : "primary"}
+              aria-label={`Open workspace for ${applicationTitle(app)}`}
+              icon={<ArrowUpRight size={17} />}
+              onClick={() =>
+                navigate(`/student-hub/applications/${encodeURIComponent(app.id)}`)
+              }
+            />
+          </Tooltip>
+        </div>
       </div>
     );
   };
+  if (showScholarships) return <ScholarshipManagement />;
+  if (showArchived) return <ApplicantPage title="Archived applications" subtitle="Restore an application to resume planning. Writing and documents are retained.">
+    <Breadcrumb><Link to="/student-hub/applications">College List</Link><span>/</span>Archived</Breadcrumb>
+    <CollegeListTabs current="archived" masters={isMasters} />
+    <QueryState loading={archived.isLoading} error={archived.isError} retry={archived.refetch}>
+      {!archived.data?.data.length ? (
+        <div className="applicant-panel applicant-empty">
+          <Archive size={32} aria-hidden />
+          <h2>Nothing archived.</h2>
+          <p>Applications you archive from your College List appear here, ready to restore.</p>
+        </div>
+      ) : (
+        <div className="applicant-panel applicant-list applicant-list--archived">
+          {archived.data.data.map(app => <div className="applicant-list__row" key={app.id}>
+            <UniversityIdentity id={app.universityId} name={app.universityName} subtitle={app.major} />
+            <div className="applicant-list__cell"><span className={`applicant-list__status applicant-list__status--${app.status}`}>{applicationStatusLabels[app.status] ?? app.status}</span></div>
+            <div className="applicant-list__cell" />
+            <div className="applicant-list__actions">
+              <Button loading={restoreState.isLoading && restoreState.originalArgs === app.id} onClick={async () => {
+                try { await restore(app.id).unwrap(); message.success('Application restored with its planning tasks.'); }
+                catch { message.error('Could not restore this application. Please try again.'); }
+              }}>Restore</Button>
+              <Tooltip title="Delete">
+                <Button
+                  className="applicant-list__icon-btn applicant-list__icon-btn--danger"
+                  shape="circle"
+                  aria-label={`Delete ${applicationTitle(app)}`}
+                  icon={<Trash2 size={16} />}
+                  loading={deleteState.isLoading && deleteState.originalArgs === app.id}
+                  onClick={() => confirmDelete(app)}
+                />
+              </Tooltip>
+            </div>
+          </div>)}
+        </div>
+      )}
+    </QueryState>
+  </ApplicantPage>;
   if (showTimeline) {
     return (
       <ApplicantPage
-        title="Deadline timeline"
+        title="Deadlines"
         subtitle="Application deadlines and planned tasks, ordered by date."
-        actions={<Button onClick={() => navigate("/student-hub/applications")}>View applications</Button>}
       >
-        <Breadcrumb>Timeline</Breadcrumb>
+        <Breadcrumb><Link to="/student-hub/applications">College List</Link><span>/</span>Deadlines</Breadcrumb>
+        <CollegeListTabs current="deadlines" masters={isMasters} />
         <QueryState
-          loading={query.isLoading || tasks.isLoading}
-          error={query.isError || tasks.isError}
-          retry={() => { query.refetch(); tasks.refetch(); }}
+          loading={query.isLoading || tasks.isLoading || scholarships.isLoading || assignedTasks.isLoading || mentorPlans.isLoading}
+          error={query.isError || tasks.isError || scholarships.isError || assignedTasks.isError || mentorPlans.isError}
+          retry={() => { query.refetch(); tasks.refetch(); scholarships.refetch(); assignedTasks.refetch(); mentorPlans.refetch(); }}
         >
           {milestones.length ? (
             <div className="applicant-panel">
@@ -173,11 +264,15 @@ export default function ApplicantApplicationsPage() {
             <div className="applicant-panel applicant-empty">
               <ClipboardList size={36} />
               <h2>No deadlines yet.</h2>
-              <p>Add an application deadline or a dated task to see it here.</p>
-              <Button onClick={() => navigate("/student-hub/applications/new")}>Add application</Button>
+              <p>Add a planning deadline or a dated task to an application to see it here.</p>
+              <Button onClick={() => navigate("/student-hub/applications")}>Open College List</Button>
             </div>
           )}
         </QueryState>
+        <Modal title={selectedMilestone?.title} open={!!selectedMilestone} footer={null} onCancel={() => { const next = new URLSearchParams(listParams); next.delete('milestone'); setListParams(next); }}>
+          <p>{selectedMilestone?.detail}</p><p>Deadline: {displayDate(selectedMilestone?.date)}</p>
+          {selectedMilestone?.notes && <p>{selectedMilestone.notes}</p>}
+        </Modal>
       </ApplicantPage>
     );
   }
@@ -242,14 +337,21 @@ export default function ApplicantApplicationsPage() {
         <Button onClick={() => navigate("/student-hub/applications?view=shortlist")}>View shortlist <ArrowRight size={16} /></Button>
       ) : applications.length > 0 ? (
         <Button
+          type="primary"
           onClick={() => navigate("/student-hub/applications/new")}
           icon={<Plus size={16} />}
         >
-          Add application
+          {isMasters ? "Add program" : "Add university"}
         </Button>
       ) : undefined}
     >
-      {!isMasters && <Breadcrumb>College List</Breadcrumb>}
+      {mentorPlans.isError && <Alert type="warning" message="Mentor plans are temporarily unavailable." action={<Button onClick={() => void mentorPlans.refetch()}>Retry</Button>} />}
+      {!!mentorPlans.data?.data.length && <details className="applicant-panel" aria-label="Earlier mentor notes">
+        <summary>Earlier mentor notes</summary><p>These older notes are awaiting review by your application mentor. Once converted, they appear in your application list.</p>
+        {mentorPlans.data.data.map(plan => <div key={plan.id} className="applicant-list__row"><strong>{plan.program}</strong><span>{plan.stage} · {plan.status}</span><span>{displayDate(plan.deadline)}</span></div>)}
+      </details>}
+      <Breadcrumb>College List</Breadcrumb>
+      <CollegeListTabs current="applications" masters={isMasters} />
       <QueryState
         loading={query.isLoading}
         error={query.isError}
@@ -274,16 +376,20 @@ export default function ApplicantApplicationsPage() {
                 {isMasters ? "Find programs" : "Find universities"} <ArrowRight size={16} />
               </Button>
               <Button onClick={() => navigate("/student-hub/applications/new")}>
-                Add an application
+                {isMasters ? "Add a program" : "Add a university"}
               </Button>
             </div>
           </div>
         ) : (
           <>
-            <div className="applicant-page__heading">
-              <h3>{active.length} {isMasters ? "program applications" : "applications"} in preparation on this page</h3>
-              <Link to="/student-hub/timeline">View deadlines →</Link>
+            <div className="applicant-section-title">
+              <h2>In preparation <span>{active.length}</span></h2>
             </div>
+            {!active.length && (
+              <p className="applicant-section-empty">
+                Nothing in preparation yet. Open a saved {isMasters ? "program" : "university"} to start planning its application.
+              </p>
+            )}
             {!!active.length && (
               <div className="applicant-panel applicant-list">
                 <div className="applicant-list__head">
@@ -297,8 +403,8 @@ export default function ApplicantApplicationsPage() {
             )}
             {!!saved.length && (
               <>
-                <div className="applicant-page__heading">
-                  <h2>Saved {isMasters ? "programs" : "universities"} · {saved.length}</h2>
+                <div className="applicant-section-title">
+                  <h2>Saved for later <span>{saved.length}</span></h2>
                   {isMasters && comparedIds.length >= 2 && (
                     <Button type="primary" onClick={() => { const next = new URLSearchParams(listParams); next.set("view", "compare"); setListParams(next); }}>
                       Compare selected ({comparedIds.length})
@@ -337,9 +443,9 @@ export default function ApplicantApplicationsPage() {
                 </Button>
               </div>
             )}
-            <p>
-              Submit through the university’s official platform. Manage your
-              preparation here.
+            <p className="applicant-list-note">
+              <Info size={14} aria-hidden />
+              Plan and prepare here. Applications are submitted on each university’s official platform.
             </p>
           </>
         )}
@@ -426,6 +532,8 @@ export function ApplicantApplicationPage() {
   const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
   const query = useGetCollegeApplicationQuery(applicationId, {
     skip: !applicationId,
+    pollingInterval: 10000,
+    refetchOnMountOrArgChange: true,
   });
   const tasks = useGetApplicationTasksQuery({ page: 1, limit: 100 });
   const essays = useGetStudentEssaysQuery({ page: 1, limit: 100 });
@@ -433,20 +541,22 @@ export function ApplicantApplicationPage() {
   const [params, setParams] = useSearchParams();
   const [status, setStatus] = useState<CollegeApplication["status"]>();
   const [notes, setNotes] = useState("");
+  const [statusSnapshot,setStatusSnapshot]=useState<CollegeApplication|null>(null);
   const navigate = useNavigate();
   const app = query.data?.data;
   const action = params.get("action");
   useEffect(() => {
     if (action === "status" && app) {
+      setStatusSnapshot(app);
       setStatus(app.status);
       setNotes("");
     }
-  }, [action, app?.id, app?.status]);
+  }, [action, app?.id]);
   const nextTask = tasks.data?.data
     .filter(
       (task) =>
         task.collegeApplicationId === applicationId &&
-        task.status !== "completed",
+        !["completed", "cancelled"].includes(task.status),
     )
     .sort((a, b) =>
       (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999"),
@@ -454,32 +564,32 @@ export function ApplicantApplicationPage() {
   const essay = essays.data?.data.find(
     (item) => item.collegeApplicationId === applicationId,
   );
+  const hasMentorFeedback = Boolean(getMentorFeedbackText(essay?.mentorFeedback));
   const closeStatus = () => {
     const next = new URLSearchParams(params);
     next.delete("action");
     setParams(next);
   };
   const saveStatus = async () => {
-    if (!app || !status) return;
+    if (!app || !status || !statusSnapshot) return;
     try {
       await update({
         id: app.id,
         data: {
           status,
+          expectedUpdatedAt:statusSnapshot.updatedAt,
           ...(status === "submitted"
             ? { submittedAt: app.submittedAt || new Date().toISOString() }
             : {}),
           ...(notes.trim()
-            ? { notes: [app.notes, notes.trim()].filter(Boolean).join("\n") }
+            ? { notes: [statusSnapshot.notes, notes.trim()].filter(Boolean).join("\n") }
             : {}),
         },
       }).unwrap();
       message.success("Application status updated.");
       closeStatus();
-    } catch {
-      message.error(
-        "Could not update the status. Your changes are still here.",
-      );
+    } catch(error:any) {
+      message.error(error?.data?.message || "Could not update the status. Your changes are still here.");
     }
   };
   return (
@@ -563,12 +673,12 @@ export function ApplicantApplicationPage() {
                           onClick={() =>
                             navigate(
                               essay
-                                ? `/student-hub/essays/${essay.id}${essay.mentorFeedback ? "?feedback=mentor" : ""}`
+                                ? `/student-hub/essays/${essay.id}${hasMentorFeedback ? "?feedback=mentor" : ""}`
                                 : `/student-hub/essays/new?application=${app.id}`,
                             )
                           }
                         >
-                          {essay?.mentorFeedback
+                          {hasMentorFeedback
                             ? "Review mentor feedback"
                             : essay
                               ? "Continue writing"
@@ -581,18 +691,11 @@ export function ApplicantApplicationPage() {
                 </div>
                 <div className="applicant-panel">
                   <h2>Requirements & documents</h2>
+                  <ApplicationRequirements key={app.id} requirements={app.requirements} updatedAt={app.updatedAt} onSave={(requirements, expectedUpdatedAt) => update({ id: app.id, data: { requirements, expectedUpdatedAt } }).unwrap()} />
                   <div className="applicant-form-grid">
                     <div>
                       <p>Check the university’s current requirements.</p>
-                      <Link
-                        to={
-                          app.universityId
-                            ? `/student-hub/universities/${app.universityId}`
-                            : `/student-hub/applications/${app.id}/edit`
-                        }
-                      >
-                        Review application details →
-                      </Link>
+                      <ApplicationSourceLink app={app} />
                     </div>
                     <div>
                       <p>Files shared across applications.</p>
@@ -602,14 +705,16 @@ export function ApplicantApplicationPage() {
                     </div>
                   </div>
                 </div>
+                <section className="applicant-panel"><h2>Shared application notes</h2><p style={{whiteSpace:"pre-wrap"}}>{app.sharedNotes || "No shared notes yet. Your application mentor can add notes here."}</p></section>
                 {!!app.notes && (
                   <div className="applicant-panel">
-                    <h2>Your notes</h2>
+                    <h2>Private notes</h2>
                     <p style={{ whiteSpace: "pre-wrap" }}>{app.notes}</p>
                   </div>
                 )}
               </div>
               <aside className="applicant-stack">
+                <ApplicationMentor key={app.id} application={app} />
                 <div className="applicant-panel">
                   <div className="applicant-page__heading">
                     <h3>Your application plan</h3>
@@ -624,7 +729,8 @@ export function ApplicantApplicationPage() {
                     <Button
                       type="link"
                       onClick={() => {
-                        setStatus(app.status);
+                        setStatusSnapshot(app);
+      setStatus(app.status);
                         setNotes("");
                         const next = new URLSearchParams(params);
                         next.set("action", "status");
@@ -682,12 +788,12 @@ export function ApplicantApplicationPage() {
                   />
                 </Form.Item>
                 <Form.Item
-                  label="Notes (optional)"
+                  label="Private note (optional)"
                   htmlFor="application-status-notes"
                 >
                   <Input.TextArea
                     id="application-status-notes"
-                    aria-label="Notes (optional)"
+                    aria-label="Private note (optional)"
                     rows={3}
                     value={notes}
                     onChange={(event) => setNotes(event.target.value)}
@@ -703,4 +809,15 @@ export function ApplicantApplicationPage() {
       </QueryState>
     </ApplicantPage>
   );
+}
+
+function ApplicationSourceLink({ app }: { app: CollegeApplication }) {
+  const degrees = useGetUndergraduateDegreesQuery(app.universityId ?? '', { skip: !app.universityId || !app.undergraduateDegreeId });
+  const university = useGetUniversityDetailQuery(app.universityId ?? '', { skip: !app.universityId || app.degreeLevel !== 'bachelor' || !!app.undergraduateDegreeId || !app.major });
+  const degree = degrees.data?.find(item => item.id === app.undergraduateDegreeId);
+  const major = university.data?.majors?.find(item => item.type === 'undergraduate' && getTranslation(item.name).trim().toLowerCase() === app.major?.trim().toLowerCase());
+  const href = degree ? `/student-hub/universities/${app.universityId}/degrees/${degree.slug}`
+    : major ? `/student-hub/universities/${app.universityId}/study-areas/${major.id}`
+    : app.universityId ? `/student-hub/universities/${app.universityId}` : `/student-hub/applications/${app.id}/edit`;
+  return <Link to={href}>Review application details →</Link>;
 }

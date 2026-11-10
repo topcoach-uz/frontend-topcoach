@@ -16,8 +16,10 @@ async function request<T>(path: string, method = 'GET', body?: object): Promise<
   return response.json();
 }
 
-export default function LiveAttendanceModal({ lesson, open, onClose }: { lesson: { id: string; title: string; duration: number } | null; open: boolean; onClose: () => void }) {
+export default function LiveAttendanceModal({ lesson, open, onClose, allowReschedule = false, initialSessionId }: { lesson: { id: string; title: string; duration: number } | null; open: boolean; onClose: () => void; allowReschedule?: boolean; initialSessionId?: string | null }) {
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
+  const [editing, setEditing] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
@@ -31,10 +33,10 @@ export default function LiveAttendanceModal({ lesson, open, onClose }: { lesson:
     try {
       const list = await request<Session[]>(`lessons/${lesson.id}/sessions`);
       setSessions(list);
-      setSelectedId((previous) => list.some((session) => session.id === previous) ? previous : list[0]?.id ?? null);
+      setSelectedId((previous) => list.some((session) => session.id === previous) ? previous : list.find(session => session.id === initialSessionId)?.id ?? list[0]?.id ?? null);
     } catch (error) { message.error((error as Error).message); }
     finally { setLoading(false); }
-  }, [lesson]);
+  }, [lesson, initialSessionId]);
 
   const reloadRoster = useCallback(async () => {
     if (!selectedId) { setStudents([]); return; }
@@ -44,6 +46,8 @@ export default function LiveAttendanceModal({ lesson, open, onClose }: { lesson:
     } catch (error) { message.error((error as Error).message); }
   }, [selectedId]);
 
+  // Start on the class the caller clicked (Schedule); reload() keeps it if it exists.
+  useEffect(() => { if (open) setSelectedId(initialSessionId ?? null); }, [open, initialSessionId]);
   useEffect(() => { if (open) void reload(); }, [open, reload]);
   useEffect(() => { if (open) void reloadRoster(); }, [open, reloadRoster]);
   useEffect(() => { if (open && lesson) form.setFieldValue('durationMinutes', lesson.duration); }, [form, lesson, open]);
@@ -57,6 +61,17 @@ export default function LiveAttendanceModal({ lesson, open, onClose }: { lesson:
       setSelectedId(session.id);
       await reload();
       message.success('Class scheduled');
+    } catch (error) { message.error((error as Error).message); }
+    finally { setBusy(false); }
+  };
+
+  const saveSchedule = async () => {
+    if (!selectedId) return;
+    const values = await editForm.validateFields();
+    setBusy(true);
+    try {
+      await request(`sessions/${selectedId}`, 'PATCH', { ...values, startsAt: values.startsAt.toISOString(), meetingUrl: values.meetingUrl?.trim() || null });
+      await reload(); setEditing(false); message.success('Class rescheduled');
     } catch (error) { message.error((error as Error).message); }
     finally { setBusy(false); }
   };
@@ -75,9 +90,20 @@ export default function LiveAttendanceModal({ lesson, open, onClose }: { lesson:
     catch (error) { message.error((error as Error).message); }
   };
 
+  const [logOpen, setLogOpen] = useState(false);
+  const [logText, setLogText] = useState('');
+  useEffect(() => { setLogOpen(false); }, [open, lesson?.id, selectedId]);
+  const saveLog = async () => {
+    if (!selectedId) return;
+    setBusy(true);
+    try { await request(`sessions/${selectedId}`, 'PATCH', { summary: logText }); await reload(); setLogOpen(false); message.success('Session log saved'); }
+    catch (error) { message.error((error as Error).message); }
+    finally { setBusy(false); }
+  };
+
   return <Modal title={`Live classes · ${lesson?.title ?? ''}`} open={open} onCancel={onClose} footer={null} width={900} destroyOnClose>
     <Typography.Paragraph type="secondary">Schedule each class, then mark every enrolled student's attendance. Unmarked students stay unmarked until a mentor or admin records them.</Typography.Paragraph>
-    <Form form={form} layout="inline" onFinish={schedule} style={{ marginBottom: 20, gap: 8 }}>
+    <Form name="courseClassSchedule" form={form} layout="inline" onFinish={schedule} style={{ marginBottom: 20, gap: 8 }}>
       <Form.Item name="startsAt" rules={[{ required: true, message: 'Choose a date and time' }]}><DatePicker showTime format="DD MMM YYYY HH:mm" placeholder="Class date and time" /></Form.Item>
       <Form.Item name="durationMinutes" rules={[{ required: true }]}><InputNumber min={1} max={480} placeholder="Minutes" /></Form.Item>
       <Form.Item name="meetingUrl"><Input type="url" placeholder="https://meeting-link" style={{ width: 220 }} /></Form.Item>
@@ -85,12 +111,27 @@ export default function LiveAttendanceModal({ lesson, open, onClose }: { lesson:
     </Form>
     {sessions.length === 0 ? <Typography.Paragraph type="secondary">No classes scheduled yet.</Typography.Paragraph> : <Select style={{ width: '100%', marginBottom: 16 }} value={selectedId} onChange={setSelectedId} options={sessions.map((session) => ({ value: session.id, label: `${dayjs(session.startsAt).format('DD MMM YYYY, HH:mm')} · ${session.status}` }))} />}
     {selected && <>
-      <Space style={{ marginBottom: 16 }}><Tag color={selected.status === 'held' ? 'green' : selected.status === 'cancelled' ? 'red' : 'blue'}>{selected.status}</Tag><Button size="small" disabled={busy || selected.status === 'held'} onClick={() => void setStatus('held')}>Mark class held</Button><Button size="small" disabled={busy || selected.status === 'cancelled'} onClick={() => void setStatus('cancelled')}>Cancel class</Button>{selected.meetingUrl && <a href={selected.meetingUrl} target="_blank" rel="noreferrer">Meeting link</a>}</Space>
+      {allowReschedule && <div style={{ marginBottom: 16 }}>
+        <Typography.Paragraph style={{ whiteSpace: 'pre-wrap' }} ellipsis={{ rows: 3, expandable: true }}>{selected.summary || 'No session log yet.'}</Typography.Paragraph>
+        <Button size="small" onClick={() => { setLogText(selected.summary); setLogOpen(true); }}>{selected.summary ? 'Edit log' : 'Write log'}</Button>
+      </div>}
+      <Space style={{ marginBottom: 16 }}><Tag color={selected.status === 'held' ? 'green' : selected.status === 'cancelled' ? 'red' : 'blue'}>{selected.status}</Tag><Button size="small" disabled={busy || selected.status !== 'scheduled' || dayjs(selected.startsAt).isAfter(dayjs())} onClick={() => void setStatus('held')}>Mark class held</Button><Button size="small" disabled={busy || selected.status === 'cancelled'} onClick={() => void setStatus('cancelled')}>Cancel class</Button>{allowReschedule && selected.status === 'scheduled' && <Button size="small" onClick={() => { editForm.setFieldsValue({ startsAt: dayjs(selected.startsAt), durationMinutes: selected.durationMinutes, meetingUrl: selected.meetingUrl ?? '' }); setEditing(true); }}>Reschedule</Button>}{selected.meetingUrl && <a href={selected.meetingUrl} target="_blank" rel="noreferrer">Meeting link</a>}</Space>
       <Table rowKey="userId" loading={loading} dataSource={students} pagination={{ pageSize: 10 }} columns={[
         { title: 'Student', render: (_, student: Student) => <><strong>{student.name}</strong><br/><Typography.Text type="secondary">{student.email}</Typography.Text></> },
-        { title: 'Attendance', render: (_, student: Student) => <Select aria-label={`Attendance for ${student.name}`} placeholder="Not marked" value={student.attendance?.status || undefined} disabled={selected.status === 'cancelled'} style={{ width: 145 }} onChange={(status) => void mark(student.userId, status)} options={['present','late','absent','excused'].map((status) => ({ value: status, label: status[0].toUpperCase() + status.slice(1) }))} /> },
+        { title: 'Attendance', render: (_, student: Student) => <Select aria-label={`Attendance for ${student.name}`} placeholder="Not marked" value={student.attendance?.status || undefined} disabled={busy || selected.status === 'cancelled' || dayjs(selected.startsAt).isAfter(dayjs())} style={{ width: 145 }} onChange={(status) => void mark(student.userId, status)} options={['present','late','absent','excused'].map((status) => ({ value: status, label: status[0].toUpperCase() + status.slice(1) }))} /> },
         { title: 'Lesson work', render: (_, student: Student) => student.homework.assigned ? `${student.homework.submitted}/${student.homework.assigned} submitted · ${student.homework.correct} correct` : 'No tasks assigned' },
       ]} />
     </>}
+    {allowReschedule && <Modal title="Reschedule class" open={editing && open} onCancel={() => setEditing(false)} onOk={saveSchedule} okText="Save schedule" confirmLoading={busy} destroyOnClose>
+      <Form name="courseClassReschedule" form={editForm} layout="vertical">
+        <Form.Item name="startsAt" label="Date & time" rules={[{ required: true }]}><DatePicker showTime /></Form.Item>
+        <Form.Item name="durationMinutes" label="Duration (minutes)" rules={[{ required: true }, { type: 'integer', min: 1, max: 480 }]}><InputNumber min={1} max={480} /></Form.Item>
+        <Form.Item name="meetingUrl" label="Meeting link" rules={[{ pattern: /^https:\/\/\S+$/i, message: 'Use an HTTPS meeting link' }]}><Input /></Form.Item>
+      </Form>
+    </Modal>}
+    {allowReschedule && <Modal title="Session log" open={logOpen && open} onCancel={() => setLogOpen(false)} onOk={saveLog} okText="Save log" confirmLoading={busy}>
+      <Typography.Paragraph type="secondary">Shared with students. Record what you covered, progress and next steps.</Typography.Paragraph>
+      <Input.TextArea aria-label="Session notes" value={logText} onChange={(event) => setLogText(event.target.value)} autoSize={{ minRows: 6, maxRows: 14 }} maxLength={5000} showCount />
+    </Modal>}
   </Modal>;
 }

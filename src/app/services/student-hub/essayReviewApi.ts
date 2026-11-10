@@ -3,7 +3,7 @@ import { RtkApi } from '../api';
 export type EligibleEssayMentor = {
   id: string;
   name: string;
-  source: 'full_support' | 'one_to_one';
+  source: 'full_support' | 'one_to_one' | 'academic';
 };
 
 export type EssayReviewRequest = {
@@ -14,7 +14,7 @@ export type EssayReviewRequest = {
   mentorName?: string;
   studentName?: string;
   status: 'pending' | 'in_review' | 'feedback_ready' | 'withdrawn';
-  relationshipSource: 'full_support' | 'one_to_one';
+  relationshipSource: 'full_support' | 'one_to_one' | 'academic';
   snapshotTitle: string;
   snapshotPrompt: string;
   snapshotContent: string;
@@ -42,7 +42,7 @@ export const essayReviewApi = RtkApi.injectEndpoints({
         method: 'POST',
         body: { mentorUserId, note },
       }),
-      invalidatesTags: ['EssayReviews'],
+      invalidatesTags: (result, error, { essayId }) => ['EssayReviews', { type: 'StudentEssays', id: essayId }],
     }),
     withdrawEssayReview: builder.mutation<EssayReviewRequest, string>({
       query: (requestId) => ({
