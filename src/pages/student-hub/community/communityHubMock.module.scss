@@ -3295,3 +3295,41 @@
   font-weight: 600;
   line-height: 18px;
 }
+
+/* ── Messages: fill the window, never scroll the page ─────────────────────
+   The chat height is 100vh minus a fixed offset, so everything above and
+   below it has to stay inside that offset: a compact one-line header here,
+   and a small bottom padding on the page frame (instead of its usual 64px). */
+.centerBodyMessenger {
+  .editorialHeader {
+    margin: 0 0 14px;
+    max-width: none;
+  }
+
+  .editorialEyebrow {
+    margin-bottom: 6px;
+  }
+
+  .editorialTitle {
+    font-size: 1.75rem;
+    margin: 0 0 4px;
+  }
+
+  .editorialDesc {
+    max-width: none;
+    font-size: 0.92rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+:global(.applicant-shell):has(.messengerHubWrap) {
+  padding-bottom: 16px;
+}
+
+.messengerHubWrap {
+  height: calc(100vh - 236px);
+  max-height: calc(100vh - 236px);
+  min-height: 420px;
+}
