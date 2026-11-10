@@ -32,6 +32,7 @@ import {
   storeLessonDraft,
 } from '../lessonPlanDraft';
 import LessonDatesPreview from './LessonDatesPreview';
+import './LessonPlanModal.scss';
 
 type Values = {
   studentUserId: string;
@@ -190,10 +191,17 @@ export default function LessonPlanModal({
     }
   };
   const selected = preview?.sessions.filter((row) => !row.excluded).length ?? 0;
+  // Lessons can only be planned for students this mentor is the Full Support
+  // mentor of. Say so up front instead of letting the save fail with a 403.
+  const chosenStudent = Form.useWatch('studentUserId', form);
+  const eligibleIds = new Set((roster.data?.data ?? []).map((row) => row.id));
+  const notEligible = roster.isSuccess && !!chosenStudent && !eligibleIds.has(chosenStudent);
   return (
     <Modal
       title="Schedule Full Support lessons"
       width={760}
+      style={{ top: 32 }}
+      rootClassName="lesson-plan-modal"
       open={open}
       onCancel={() => !saving && onClose()}
       footer={[
@@ -203,7 +211,7 @@ export default function LessonPlanModal({
         <Button
           key="preview"
           loading={previewing}
-          disabled={saving || pending}
+          disabled={saving || pending || notEligible}
           onClick={() => void showDates()}
         >
           Preview dates
@@ -213,7 +221,7 @@ export default function LessonPlanModal({
           type="primary"
           loading={saving}
           disabled={
-            !preview || !selected || preview.conflicts.length > 0 || previewing
+            notEligible || !preview || !selected || preview.conflicts.length > 0 || previewing
           }
           onClick={() => void save()}
         >
@@ -222,22 +230,28 @@ export default function LessonPlanModal({
             : `Schedule ${selected || ''} lesson${selected === 1 ? '' : 's'}`}
         </Button>,
       ]}
-      styles={{
-        body: { maxHeight: '70vh', overflowY: 'auto', paddingRight: 4 },
-      }}
+      styles={{ body: { overflow: 'visible' } }}
       closable={!saving}
       maskClosable={!saving}
     >
-      <p>
-        Plan one meeting or a repeating series with your assigned Full Support
-        student. Google Calendar is optional.
+      <p className="lesson-plan-modal__intro">
+        Plan one meeting or a repeating series. Google Calendar is optional.
       </p>
+      {notEligible && (
+        <Alert
+          type="warning"
+          showIcon
+          className="lesson-plan-modal__alert"
+          message="You’re not this student’s Full Support mentor yet"
+          description="Lessons can only be planned for students assigned to you for Full Support. An admin can assign you in the admin panel under Program access → Full Support. Then reopen this window."
+        />
+      )}
       {error && (
         <Alert
           type="error"
           showIcon
           message={error}
-          style={{ marginBottom: 16 }}
+          className="lesson-plan-modal__alert"
         />
       )}
       {roster.isError && (
@@ -256,32 +270,40 @@ export default function LessonPlanModal({
           setInput(null);
         }}
       >
-        <Form.Item
-          name="studentUserId"
-          label="Student"
-          rules={[{ required: true, message: 'Choose a Full Support student' }]}
-        >
-          <Select
-            loading={roster.isLoading}
-            placeholder="Select a Full Support student"
-            options={(roster.data?.data ?? []).map((row) => ({
-              value: row.id,
-              label: row.name,
-            }))}
-          />
-        </Form.Item>
-        <Form.Item
-          name="topic"
-          label="Session topic"
-          rules={[
-            { required: true, whitespace: true, message: 'Enter a topic' },
-          ]}
-        >
-          <Input
-            placeholder="e.g. Personal statement and application planning"
-            maxLength={2000}
-          />
-        </Form.Item>
+        <Row gutter={12}>
+          <Col xs={24} sm={10}>
+            <Form.Item
+              name="studentUserId"
+              label="Student"
+              rules={[{ required: true, message: 'Choose a Full Support student' }]}
+            >
+              <Select
+                loading={roster.isLoading}
+                placeholder="Select a Full Support student"
+                status={notEligible ? 'warning' : undefined}
+                options={(roster.data?.data ?? []).map((row) => ({
+                  value: row.id,
+                  label: row.name,
+                }))}
+                labelRender={(option) => option.label ?? (notEligible ? 'Not one of your Full Support students' : option.value)}
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={14}>
+            <Form.Item
+              name="topic"
+              label="Session topic"
+              rules={[
+                { required: true, whitespace: true, message: 'Enter a topic' },
+              ]}
+            >
+              <Input
+                placeholder="e.g. Personal statement planning"
+                maxLength={2000}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
         <Form.Item name="repeat" label="Repeat">
           <Radio.Group
             optionType="button"
@@ -293,8 +315,8 @@ export default function LessonPlanModal({
             ]}
           />
         </Form.Item>
-        <Row gutter={16}>
-          <Col xs={24} sm={8}>
+        <Row gutter={12}>
+          <Col xs={12} sm={6}>
             <Form.Item
               name="startsOn"
               label="Start date"
@@ -303,7 +325,7 @@ export default function LessonPlanModal({
               <DatePicker style={{ width: '100%' }} />
             </Form.Item>
           </Col>
-          <Col xs={12} sm={8}>
+          <Col xs={12} sm={5}>
             <Form.Item name="time" label="Time" rules={[{ required: true }]}>
               <TimePicker
                 format="HH:mm"
@@ -312,10 +334,10 @@ export default function LessonPlanModal({
               />
             </Form.Item>
           </Col>
-          <Col xs={12} sm={8}>
+          <Col xs={8} sm={4}>
             <Form.Item
               name="durationMinutes"
-              label="Duration (minutes)"
+              label="Minutes"
               rules={[
                 { required: true },
                 { type: 'integer', min: 15, max: 480 },
@@ -329,18 +351,21 @@ export default function LessonPlanModal({
               />
             </Form.Item>
           </Col>
+          <Col xs={16} sm={9}>
+            <Form.Item
+              name="timezone"
+              label="Timezone"
+              rules={[{ required: true }]}
+            >
+              <Select
+                showSearch
+                optionFilterProp="label"
+                options={TIMEZONE_OPTIONS}
+                popupMatchSelectWidth={false}
+              />
+            </Form.Item>
+          </Col>
         </Row>
-        <Form.Item
-          name="timezone"
-          label="Timezone"
-          rules={[{ required: true }]}
-        >
-          <Select
-            showSearch
-            optionFilterProp="label"
-            options={TIMEZONE_OPTIONS}
-          />
-        </Form.Item>
         {repeat !== 'none' && (
           <>
             <Form.Item

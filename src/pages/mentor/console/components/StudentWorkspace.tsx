@@ -4,7 +4,7 @@ import SharedApplications from './SharedApplications';
 import { useGetMentorEssayReviewsQuery } from "src/app/services/student-hub/essayReviewApi";
 import { calendarDateValue } from '../calendarDate';
 import ApplicationRequirements from "src/pages/student-hub/applicant/ApplicationRequirements";
-import { useGetMentorStudentApplicationsQuery, useUpdateMentorApplicationRequirementsMutation } from 'src/app/services/student-hub/applicationTrackingApi';
+import { useUpdateMentorApplicationRequirementsMutation } from 'src/app/services/student-hub/applicationTrackingApi';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Button,
@@ -248,7 +248,6 @@ export default function StudentWorkspace({
 
   const { essayCount: pendingEssayCount, documentCount: pendingDocCount } = useReviewCounts(false, studentId);
   const [updateApplicationRequirements] = useUpdateMentorApplicationRequirementsMutation();
-  const studentApplications = useGetMentorStudentApplicationsQuery(studentId ?? '', { skip: !studentId, pollingInterval: 10000 });
 
   // Lazy — fetched only when the matching tab (or "More" section) is active.
   const { data: milestonesRes, isFetching: loadingMilestones } = useGetMentorMilestonesQuery(

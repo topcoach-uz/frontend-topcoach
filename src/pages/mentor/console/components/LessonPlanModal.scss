@@ -1,0 +1,57 @@
+// Schedule Full Support lessons: compact enough to fit the window without an
+// inner scroll area (the modal itself moves with the page if a long date
+// preview needs more room).
+.lesson-plan-modal {
+  .ant-modal-body {
+    overflow: visible;
+  }
+
+  .lesson-plan-modal__intro {
+    margin: 0 0 14px;
+    color: #6e6a66;
+    font-size: 14px;
+  }
+
+  .lesson-plan-modal__alert {
+    margin-bottom: 14px;
+    border-radius: 10px;
+  }
+
+  .ant-form-item {
+    margin-bottom: 14px;
+  }
+
+  .ant-form-item-label {
+    padding-bottom: 4px !important;
+
+    > label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+  }
+
+  .ant-input,
+  .ant-input-number,
+  .ant-picker,
+  .ant-select-single .ant-select-selector {
+    min-height: 40px;
+    border-radius: 10px !important;
+  }
+
+  .ant-input-number-input {
+    height: 38px;
+  }
+
+  .ant-radio-button-wrapper {
+    height: 36px;
+    line-height: 34px;
+  }
+
+  .ant-radio-button-wrapper:first-child { border-radius: 10px 0 0 10px; }
+  .ant-radio-button-wrapper:last-child { border-radius: 0 10px 10px 0; }
+
+  .ant-modal-footer .ant-btn {
+    min-height: 40px;
+    border-radius: 10px;
+  }
+}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Alert, Button, Input, Modal, Select, Upload, message } from "antd";
 import type { UploadFile } from "antd";
-import { Paperclip, Search } from "lucide-react";
+import { CheckCircle2, Paperclip, Search, Send } from "lucide-react";
 import {
   useGetMenteeTasksQuery,
   useSubmitMenteeTaskMutation,
@@ -114,6 +114,16 @@ export function AssignedTaskList({
         .includes(search.toLowerCase()),
   );
 
+  // With the default "To do" view, finished work moves to a history list
+  // below instead of disappearing.
+  const matchesSearch = (task: TaskDto) =>
+    `${task.task} ${task.description ?? ""} ${task.mentorName ?? ""}`
+      .toLowerCase()
+      .includes(search.toLowerCase());
+  const history = status === "open"
+    ? tasks.filter((task) => task.status === "approved" && matchesSearch(task))
+    : [];
+
   const hasSelectedTask =
     !!selectedTaskId && tasks.some((task) => task.id === selectedTaskId);
   const [sending, setSending] = useState(false);
@@ -199,8 +209,8 @@ export function AssignedTaskList({
         />
       ) : visible.length === 0 ? (
         <div className="task-empty">
-          <strong>{tasks.length ? "No assigned tasks match these filters." : "Nothing assigned yet."}</strong>
-          <p>{tasks.length ? "Try another status or clear the search." : "When your counselor or mentor gives you work, it appears here."}</p>
+          <strong>{!tasks.length ? "Nothing assigned yet." : history.length && !search ? "You’re all caught up." : "No assigned tasks match these filters."}</strong>
+          <p>{!tasks.length ? "When your counselor or mentor gives you work, it appears here." : history.length && !search ? "There’s nothing to submit right now. Your finished work is below." : "Try another status or clear the search."}</p>
         </div>
       ) : (
         <div className="task-assigned-list">
@@ -211,14 +221,31 @@ export function AssignedTaskList({
             className={`mentor-assigned-tasks__item task-assigned${task.id === selectedTaskId ? " is-selected" : ""}`}
           >
             <div className="task-assigned__top">
-              <h3>{task.task}</h3>
-              <span className={`task-status task-status--${task.status}`}>
-                {statusLabels[task.status] || "To do"}
-              </span>
+              <div className="task-assigned__heading">
+                <div className="task-assigned__title-row">
+                  <h3>{task.task}</h3>
+                  <span className={`task-status task-status--${task.status}`}>
+                    {statusLabels[task.status] || "To do"}
+                  </span>
+                </div>
+                <p className="task-assigned__meta">
+                  From {task.mentorName || "your advisor"} · Due {readableDeadline(task.deadline)}
+                </p>
+              </div>
+              {(task.status === "assigned" ||
+                task.status === "revision_requested") && (
+                <Button
+                  type="primary"
+                  className="task-assigned__submit"
+                  icon={<Send size={15} aria-hidden />}
+                  onClick={() => setActive(task)}
+                >
+                  {task.status === "revision_requested"
+                    ? "Submit revision"
+                    : "Submit work"}
+                </Button>
+              )}
             </div>
-            <p className="task-assigned__meta">
-              From {task.mentorName || "your advisor"} · Due {readableDeadline(task.deadline)}
-            </p>
             {task.description && task.description.trim() !== task.task.trim() && (
               <p className="task-assigned__description">
                 {task.description}
@@ -303,18 +330,40 @@ export function AssignedTaskList({
                 <Paperclip size={14} /> {file.fileName}
               </a>
             ))}
-            {(task.status === "assigned" ||
-              task.status === "revision_requested") && (
-              <div className="task-assigned__actions">
-                <Button type="primary" onClick={() => setActive(task)}>
-                  {task.status === "revision_requested"
-                    ? "Submit revision"
-                    : "Submit work"}
-                </Button>
-              </div>
-            )}
           </article>
         ))}
+        </div>
+      )}
+      {!isLoading && !isError && history.length > 0 && (
+        <div className="task-history">
+          <h3 className="task-history__title">Completed <span className="task-count">{history.length}</span></h3>
+          <ul className="task-history__list">
+            {history.map((task) => (
+              <li key={task.id} className="task-history__item">
+                <div className="task-history__row">
+                  <CheckCircle2 size={18} className="task-history__icon" aria-hidden />
+                  <div className="task-history__main">
+                    <strong>{task.task}</strong>
+                    <small>From {task.mentorName || "your advisor"} · Due {readableDeadline(task.deadline)}</small>
+                  </div>
+                  <span className="task-status task-status--approved">Approved</span>
+                </div>
+                {(task.submissionText || task.feedback || task.submissionFileUrls?.length || task.feedbackFileUrls?.length) ? (
+                  <details className="task-history__details">
+                    <summary>View submission &amp; feedback</summary>
+                    {task.submissionText && <p><strong>Your submission:</strong> {task.submissionText}</p>}
+                    {task.submissionFileUrls?.map((file) => (
+                      <a key={file.url} href={fileUrl(file.url)} target="_blank" rel="noreferrer"><Paperclip size={14} /> {file.fileName}</a>
+                    ))}
+                    {task.feedback && <p className="task-history__feedback"><strong>Feedback:</strong> {task.feedback}</p>}
+                    {task.feedbackFileUrls?.map((file) => (
+                      <a key={file.url} href={fileUrl(file.url)} target="_blank" rel="noreferrer"><Paperclip size={14} /> {file.fileName}</a>
+                    ))}
+                  </details>
+                ) : null}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
       <Modal
