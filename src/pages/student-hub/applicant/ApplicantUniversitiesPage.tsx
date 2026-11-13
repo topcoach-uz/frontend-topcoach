@@ -176,8 +176,6 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
   const hasKeyFactMoney = keyFacts.some((row) => row.id === "tuition" || row.id === "scholarships");
 
   return <div className={`applicant-university-detail__layout${keyFacts.length ? " applicant-university-detail__layout--facts" : ""}`}>
-    <UniversityKeyFacts rows={keyFacts} />
-    <div className="applicant-university-detail__main">
     <section className="applicant-university-detail__hero">
       <div className="applicant-university-detail__identity">
         <span className={`applicant-university-detail__mark${logoUrl ? " applicant-university-detail__mark--logo" : ""}${universityLogoNeedsDarkBackground(logoUrl) ? " applicant-university-detail__mark--dark" : ""}${university.id === "1b921b70-2639-4d05-8559-36b77211852d" ? " applicant-university-detail__mark--ucla" : ""}`}>{logoUrl ? <UniversityLogoImage src={logoUrl} name={name} /> : <Building2 size={30} aria-hidden="true" />}</span>
@@ -190,6 +188,8 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
       </div>
       {applicationsUnavailable && <p className="applicant-university-detail__notice">College List is temporarily unavailable. You can still explore this university.</p>}
     </section>
+    <UniversityKeyFacts rows={keyFacts} />
+    <div className="applicant-university-detail__main">
 
     <section className="applicant-university-detail__degrees">
       <h2>Explore undergraduate degrees</h2>

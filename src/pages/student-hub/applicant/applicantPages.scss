@@ -1645,9 +1645,8 @@
 }
 
 // University detail: key facts sidebar
-.applicant-university-detail__layout { display: block; }
+.applicant-university-detail__layout { display: flex; flex-direction: column; gap: 28px; }
 .applicant-university-detail__main { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
-.applicant-university-detail__layout--facts > .applicant-university-detail__facts { margin-bottom: 28px; }
 .applicant-university-detail__rank {
   display: inline-block;
   margin-top: 10px;
@@ -1689,9 +1688,11 @@
   .applicant-university-detail__layout--facts {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 340px;
-    gap: 28px;
+    column-gap: 28px;
+    row-gap: 28px;
     align-items: start;
-    > .applicant-university-detail__facts { grid-column: 2; grid-row: 1; margin-bottom: 0; position: sticky; top: 24px; }
-    > .applicant-university-detail__main { grid-column: 1; grid-row: 1; }
+    > .applicant-university-detail__hero { grid-column: 1; grid-row: 1; }
+    > .applicant-university-detail__facts { grid-column: 2; grid-row: 1 / span 2; align-self: start; position: sticky; top: 24px; }
+    > .applicant-university-detail__main { grid-column: 1; grid-row: 2; }
   }
 }
