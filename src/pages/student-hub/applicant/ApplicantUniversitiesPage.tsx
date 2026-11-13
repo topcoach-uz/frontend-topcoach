@@ -15,10 +15,10 @@ import { useApplicantOverview } from "./ApplicantOverviewContext";
 import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import { getUniversityLogoUrl, universityLogoNeedsDarkBackground } from "./universityLogo";
 import { buildUniversityFieldOptions } from "./universityFieldOptions";
+import { UniversityKeyFacts } from "./UniversityKeyFacts";
+import { buildKeyFactRows, humanizeFacts } from "./universityKeyFactsModel";
 
-const factValue = (value: GraduateProgramFact) => !value || !Object.keys(value).length
-  ? "Verification needed"
-  : Object.entries(value).map(([key, item]) => `${key.replace(/([A-Z])/g, " $1")}: ${Array.isArray(item) ? item.join(", ") : String(item)}`).join(" · ");
+const factValue = (value: GraduateProgramFact) => humanizeFacts(value) || "Verification needed";
 
 export default function ApplicantUniversitiesPage() {
   const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
@@ -171,12 +171,17 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
   const name = getTranslation(university.name);
   const location = [getTranslation(university.location?.region), getTranslation(university.location?.country)].filter(Boolean).join(", ");
   const logoUrl = getUniversityLogoUrl(university);
+  const keyFacts = buildKeyFactRows(university, (value) => getTranslation(value as never));
+  const qs = (university.rankings ?? []).find((item) => item?.type === "QS" && Number.isFinite(item.rank) && item.rank > 0);
+  const hasKeyFactMoney = keyFacts.some((row) => row.id === "tuition" || row.id === "scholarships");
 
-  return <>
+  return <div className={`applicant-university-detail__layout${keyFacts.length ? " applicant-university-detail__layout--facts" : ""}`}>
+    <UniversityKeyFacts rows={keyFacts} />
+    <div className="applicant-university-detail__main">
     <section className="applicant-university-detail__hero">
       <div className="applicant-university-detail__identity">
         <span className={`applicant-university-detail__mark${logoUrl ? " applicant-university-detail__mark--logo" : ""}${universityLogoNeedsDarkBackground(logoUrl) ? " applicant-university-detail__mark--dark" : ""}${university.id === "1b921b70-2639-4d05-8559-36b77211852d" ? " applicant-university-detail__mark--ucla" : ""}`}>{logoUrl ? <UniversityLogoImage src={logoUrl} name={name} /> : <Building2 size={30} aria-hidden="true" />}</span>
-        <div><h1>{name}</h1>{location && <p>{location}</p>}</div>
+        <div><h1>{name}</h1>{location && <p>{location}</p>}{qs && <span className="applicant-university-detail__rank">#{qs.rank} in QS ranking</span>}</div>
       </div>
       <p className="applicant-university-detail__overview">{profile.profileOverview ?? "Explore this university's undergraduate options and check current course information before adding it to your College List."}</p>
       <div className="applicant-university-detail__hero-actions">
@@ -206,15 +211,13 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
 
     <div className="applicant-university-detail__lower">
       <section className="applicant-university-detail__life"><h2>Life at {name}</h2>{profile.studentLifeIntro || profile.studentLifeDetail ? <><p>{profile.studentLifeIntro}</p>{profile.studentLifeHighlight && <strong>{profile.studentLifeHighlight}</strong>}<p>{profile.studentLifeDetail}</p>{profile.studentLifeUrl && <a href={profile.studentLifeUrl} target="_blank" rel="noreferrer">Explore campus life <ArrowUpRight size={17} aria-hidden="true" /></a>}</> : <p>Student-life information is being checked against official university sources.</p>}</section>
-      <section className="applicant-university-detail__funding"><h2>Fees &amp; financial support</h2>{finance ? <>
-        <h3>Tuition and fees</h3><p>{finance.content.feesSummary}</p>
-        <a href={finance.content.feesUrl} target="_blank" rel="noreferrer">Official tuition and fee details <ArrowUpRight size={17} aria-hidden="true" /></a>
-        <h3>Scholarships and financial support</h3><p>{finance.content.fundingSummary}</p>
-        {finance.content.fundingPolicyNote && <p>{finance.content.fundingPolicyNote}</p>}
-        <a href={finance.content.fundingPolicyUrl} target="_blank" rel="noreferrer">Official scholarships and funding policy <ArrowUpRight size={17} aria-hidden="true" /></a>
-        <p>Checked {displayDate(finance.verifiedAt)}</p>
-      </> : profile.fundingIntro || profile.fundingDetail ? <><p>{profile.fundingIntro}</p><p>{profile.fundingDetail} {profile.fundingPolicyUrl && <a href={profile.fundingPolicyUrl} target="_blank" rel="noreferrer">International applicant policy <ArrowUpRight size={17} aria-hidden="true" /></a>}</p>{profile.fundingUrl && <a href={profile.fundingUrl} target="_blank" rel="noreferrer">Explore funding <ArrowUpRight size={17} aria-hidden="true" /></a>}</> : <p>Current tuition and funding details are being checked against official university sources.</p>}</section>
+      <section className="applicant-university-detail__funding"><h2>Fees &amp; financial support</h2>{finance ? <dl className="applicant-university-detail__finance">
+        <div><dt>Tuition &amp; fees</dt><dd><p>{finance.content.feesSummary}</p><a href={finance.content.feesUrl} target="_blank" rel="noopener noreferrer">Official tuition and fee details <ArrowUpRight size={17} aria-hidden="true" /></a></dd></div>
+        <div><dt>Scholarships &amp; funding</dt><dd><p>{finance.content.fundingSummary}</p>{finance.content.fundingPolicyNote && <p>{finance.content.fundingPolicyNote}</p>}<a href={finance.content.fundingPolicyUrl} target="_blank" rel="noopener noreferrer">Official scholarships and funding policy <ArrowUpRight size={17} aria-hidden="true" /></a></dd></div>
+        <p className="applicant-university-detail__checked">Checked {displayDate(finance.verifiedAt)}</p>
+      </dl> : profile.fundingIntro || profile.fundingDetail ? <><p>{profile.fundingIntro}</p><p>{profile.fundingDetail} {profile.fundingPolicyUrl && <a href={profile.fundingPolicyUrl} target="_blank" rel="noopener noreferrer">International applicant policy <ArrowUpRight size={17} aria-hidden="true" /></a>}</p>{profile.fundingUrl && <a href={profile.fundingUrl} target="_blank" rel="noopener noreferrer">Explore funding <ArrowUpRight size={17} aria-hidden="true" /></a>}</> : hasKeyFactMoney ? <><p>See tuition and scholarships in Key facts.</p><p className="applicant-university-detail__checked">Detailed verified funding information is still being checked against official sources.</p></> : <p>Current tuition and funding details are being checked against official university sources.</p>}</section>
     </div>
     <p className="applicant-university-detail__source">{profile.profileVerifiedAt ? `Information from the university's official pages · Checked ${displayDate(profile.profileVerifiedAt)}` : "Course, campus and funding details will appear after source review."}</p>
-  </>;
+    </div>
+  </div>;
 }
