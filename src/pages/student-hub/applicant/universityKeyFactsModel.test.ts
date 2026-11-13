@@ -22,7 +22,7 @@ describe("university key facts", () => {
     expect(buildKeyFactRows({}, tr)).toEqual([]);
     const rows = buildKeyFactRows({
       deadlines: [{ name: "Regular", date: "2027-01-01T00:00:00Z" }],
-      tuitionFees: [{ fee: 1000, notes: "per year", currency: { symbol: "$" } }],
+      tuitionFees: [{ fee: 1000, currency: { symbol: "$" } }],
       acceptanceRates: [{ rate: 4 }],
       requiredExams: [{ certification: { name: "SAT" } }, { certification: { name: "SAT" } }],
       scholarships: [{ name: "Aid", url: "https://x.edu/aid" }],

@@ -1668,7 +1668,7 @@
   dl { margin: 0; }
   dt { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #655c55; }
   dd { margin: 4px 0 0; overflow-wrap: anywhere; }
-  p { margin: 0 0 4px; font-size: 14px; line-height: 1.5; }
+  p { margin: 0 0 4px; font-size: 14px; line-height: 1.5; white-space: pre-line; }
   a { display: inline-flex; align-items: center; gap: 3px; color: #8b0000; }
 }
 .applicant-university-detail__fact { padding: 12px 0; border-top: 1px solid #e7e2dc; &:first-child { border-top: 0; } }

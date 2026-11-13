@@ -64,18 +64,18 @@ export function buildKeyFactRows(university: Partial<UniversitiesSchema>, tr: Tr
 
   const tuition = (university.tuitionFees ?? []).map((fee): KeyFactLine | undefined => {
     const text = formatMoney((fee?.currency as { symbol?: string } | undefined)?.symbol, fee?.fee);
-    return text ? { text, note: clean(fee?.notes) || undefined } : undefined;
+    return text ? { text } : undefined;
   }).filter((x): x is KeyFactLine => !!x);
   if (tuition.length) rows.push({ id: "tuition", label: "Tuition fee", lines: tuition });
 
   const appFees = (university.applicationFees ?? []).map((fee): KeyFactLine | undefined => {
     const text = formatMoney(fee?.currency?.symbol, fee?.fee);
-    return text ? { text, note: tr(fee?.notes as Translatable).trim() || undefined } : undefined;
+    return text ? { text } : undefined;
   }).filter((x): x is KeyFactLine => !!x);
   if (appFees.length) rows.push({ id: "application-fee", label: "Application fee", lines: appFees });
 
   const rates = (university.acceptanceRates ?? []).filter((r) => typeof r?.rate === "number" && Number.isFinite(r.rate))
-    .map((r): KeyFactLine => ({ text: `${r.rate}%`, note: tr(r.notes as Translatable).trim() || undefined }));
+    .map((r): KeyFactLine => ({ text: `${r.rate}%` }));
   if (rates.length) rows.push({ id: "acceptance", label: "Acceptance rate", lines: rates });
 
   const exams = [...new Set((university.requiredExams ?? []).map((e) => clean(e?.certification?.name)).filter(Boolean))];
