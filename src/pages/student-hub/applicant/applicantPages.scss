@@ -1042,7 +1042,7 @@
 .applicant-university-detail__degrees {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   > p { font-size: 17px; }
 }
 .applicant-university-detail__degree-tools {
@@ -1072,10 +1072,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 6px;
-  &-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }
-  &-head span { font-size: 13px; color: #655c55; }
-  label { font-size: 14px; font-weight: 600; color: #302b28; }
+  &-label { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
   .ant-select { width: 100%; }
   .ant-select-selector { min-height: 44px; border-color: #e7e2dc !important; border-radius: 10px !important; font-family: inherit; }
   .ant-select-selection-search-input, .ant-select-selection-placeholder { height: 42px !important; line-height: 42px !important; }
@@ -1693,3 +1690,5 @@
 .applicant-university-detail .applicant-university-detail__facts .applicant-university-detail__fact-note { font-size: 13px; font-weight: 400; color: #655c55; }
 
 .applicant-university-detail .applicant-university-detail__checked { font-size: 13px; line-height: 1.4; color: #655c55; }
+
+.applicant-university-detail__degree-tools--muted { margin: 0; a { font-size: 13px; color: #655c55; } }

@@ -42,9 +42,9 @@ export function buildDegreeOptions({ universityId, degrees, fields, majors, link
 }
 
 export function finderCopy(options: readonly DegreeOption[]) {
-  const hasDegrees = options.some((o) => o.group === "Degrees");
-  const hasAreas = options.some((o) => o.group === "Study areas");
-  if (hasDegrees && !hasAreas) return { label: "Find a degree", placeholder: "Search degrees…", intro: "Search for a degree, then look at the course in detail." };
-  if (!hasDegrees && hasAreas) return { label: "Find a study area", placeholder: "Search study areas…", intro: "Search for a study area, then look at the course in detail." };
-  return { label: "Find a degree or study area", placeholder: "Search degrees and study areas…", intro: "Search for a degree or study area, then look at the course in detail." };
+  const degrees = options.filter((o) => o.group === "Degrees").length;
+  const areas = options.filter((o) => o.group === "Study areas").length;
+  if (degrees && !areas) return { label: "Find a degree", placeholder: `Search ${degrees} degrees…` };
+  if (!degrees && areas) return { label: "Find a study area", placeholder: `Search ${areas} study areas…` };
+  return { label: "Find a degree or study area", placeholder: `Search ${degrees + areas} degrees and study areas…` };
 }
