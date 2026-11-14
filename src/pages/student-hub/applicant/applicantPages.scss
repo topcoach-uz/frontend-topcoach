@@ -1744,7 +1744,6 @@
 @media (max-width: 767px) { .applicant-university-detail__skel-card { padding: 20px; } .applicant-university-detail__skel-bar--button { display: none; } }
 
 .applicant-university-detail__save { transition: background-color 120ms ease-out, transform 100ms ease-out; }
-@media (max-width: 767px) { 
 .applicant-university-detail a { text-underline-offset: 3px; }
 .applicant-university-detail a svg { transition: transform 150ms ease-out; }
 .applicant-university-detail__clamp-toggle:active { opacity: 0.6; }
