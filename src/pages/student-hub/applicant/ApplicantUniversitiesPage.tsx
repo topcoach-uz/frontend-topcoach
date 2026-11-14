@@ -202,17 +202,12 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
     <section className="applicant-university-detail__degrees">
       <h2>Explore undergraduate degrees</h2>
       <p>{finderCopy(degreeOptions).intro}</p>
-      <div className="applicant-university-detail__degree-tools">
-        {degrees.length > 0
-          ? <span>{selectedField ? `${matchingDegreeCount} match${matchingDegreeCount === 1 ? "" : "es"} for ${selectedField} · ${degrees.length} degrees shown` : `${degrees.length} verified degrees`}</span>
-          : catalogueFields.length > 0 && <span>{selectedField ? `${matchingCatalogueFieldCount} match${matchingCatalogueFieldCount === 1 ? "" : "es"} for ${selectedField} · ${catalogueFields.length} study areas shown` : `${catalogueFields.length} undergraduate study areas listed`}</span>}
-        {profile.undergraduateCoursesUrl && <a href={profile.undergraduateCoursesUrl} target="_blank" rel="noreferrer">All undergraduate majors on the official site <ArrowUpRight size={17} aria-hidden="true" /></a>}
-      </div>
       {selectedField && degrees.length > 0 && matchingDegreeCount === 0 && <p className="applicant-university-detail__degree-note">We have not verified a degree matching {selectedField} yet. These are the other degrees currently reviewed for {name}.</p>}
       {selectedField && degrees.length === 0 && catalogueFields.length > 0 && matchingCatalogueFieldCount === 0 && <p className="applicant-university-detail__degree-note">The current catalogue does not list {selectedField} for {name}. These are its other undergraduate study areas.</p>}
       {degreesQuery.isLoading && <div className="applicant-university-detail__pending"><p>Loading undergraduate degrees…</p></div>}
       {degreesQuery.isError && <div className="applicant-university-detail__pending"><p>Degree details could not be loaded.</p><Button onClick={() => degreesQuery.refetch()}>Try again</Button></div>}
       {!degreesQuery.isLoading && !degreesQuery.isError && <UniversityDegreeFinder options={degreeOptions} />}
+      {profile.undergraduateCoursesUrl && <div className="applicant-university-detail__degree-tools"><a href={profile.undergraduateCoursesUrl} target="_blank" rel="noreferrer">All undergraduate majors on the official site <ArrowUpRight size={17} aria-hidden="true" /></a></div>}
       {!degreesQuery.isLoading && !degreesQuery.isError && !degrees.length && !catalogueFields.length && <div className="applicant-university-detail__pending"><h3>Course details are being verified</h3><p>We do not have a confirmed undergraduate course list for this university yet.</p></div>}
     </section>
 

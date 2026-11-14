@@ -20,7 +20,10 @@ export function UniversityDegreeFinder({ options }: { options: DegreeOption[] })
   };
 
   return <div className="applicant-university-detail__finder">
-    <label htmlFor="university-degree-search">{copy.label}</label>
+    <div className="applicant-university-detail__finder-head">
+      <label htmlFor="university-degree-search">{copy.label}</label>
+      <span>{options.length} available</span>
+    </div>
     <Select
       id="university-degree-search"
       className="applicant-university-detail__finder-select"
