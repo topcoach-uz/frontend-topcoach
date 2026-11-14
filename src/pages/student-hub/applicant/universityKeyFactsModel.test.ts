@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildKeyFactRows, cleanExamName, formatMoney, humanizeFacts, humanizeKey, safeHttpUrl, shortUniversityName, stripGraduateParagraph } from "./universityKeyFactsModel";
+import { buildGlanceTiles, buildKeyFactRows, buildScholarshipText, extractTuition, meetsFullNeed, cleanExamName, formatMoney, humanizeFacts, humanizeKey, safeHttpUrl, shortUniversityName, stripGraduateParagraph } from "./universityKeyFactsModel";
 
 const tr = (v: unknown) => (typeof v === "string" ? v : "");
 
@@ -28,16 +28,14 @@ describe("university key facts", () => {
       scholarships: [{ name: "Aid", url: "https://x.edu/aid" }],
       links: [{ name: "", url: "https://www.mit.edu/admissions" }],
     } as never, tr);
-    expect(rows.map((r) => r.id)).toEqual(["deadlines", "tuition", "acceptance", "exams", "scholarships", "links"]);
+    expect(rows.map((r) => r.id)).toEqual(["deadlines", "tuition", "acceptance", "exams"]);
     expect(rows[0].lines?.[0]).toEqual({ text: "Regular", note: "1 January 2027" });
     expect(rows[3].chips).toEqual(["SAT"]);
-    expect(rows[5].links?.[0].label).toBe("mit.edu");
-  });
+      });
 
   const NOW = new Date("2026-11-14T00:00:00Z");
-  it("hides tuition when verified finance exists and prefixes USD", () => {
+  it("labels tuition and prefixes USD", () => {
     const u = { tuitionFees: [{ fee: 61990, currency: { symbol: "$", name: "USD" } }] } as never;
-    expect(buildKeyFactRows(u, tr, { hasVerifiedFinance: true }).some((r) => r.id === "tuition")).toBe(false);
     const row = buildKeyFactRows(u, tr)[0];
     expect(row.label).toBe("Tuition & fees");
     expect(row.lines?.[0].text).toBe("US$61,990");
@@ -65,13 +63,41 @@ describe("university key facts", () => {
     expect(cleanExamName("X(for undergraduate)")).toBe("X");
   });
 
-  it("shows each URL once and drops the official-website label line", () => {
+  it("no longer emits scholarship or link rows", () => {
+    const rows = buildKeyFactRows({ scholarships: [{ name: "Aid", url: "https://fa.mit.edu/aid" }], links: [{ name: "Site", url: "https://mit.edu" }] } as never, tr);
+    expect(rows).toEqual([]);
+  });
+
+  it("builds legacy scholarship text without the official-website label", () => {
+    const out = buildScholarshipText({ scholarships: [{ name: "Aid\nOfficial Website:", url: "https://fa.mit.edu/aid" }] } as never, tr);
+    expect(out).toEqual({ text: "Aid", url: "https://fa.mit.edu/aid" });
+    expect(buildScholarshipText({} as never, tr)).toBeUndefined();
+  });
+
+  it("extracts tuition from verified finance text", () => {
+    expect(extractTuition("For 2026–27, tuition is $62,980 per year, plus housing $12,000.")).toEqual({ value: "US$62,980", sub: "per year · 2026–27" });
+    expect(extractTuition("Tuition US$61,990.")).toEqual({ value: "US$61,990", sub: undefined });
+    expect(extractTuition("Housing is $12,000.")).toBeUndefined();
+  });
+
+  it("detects a 100% of need pledge conservatively", () => {
+    expect(meetsFullNeed("MIT meets 100% of demonstrated financial need for all admitted students.")).toBe(true);
+    expect(meetsFullNeed("We meet the full demonstrated need of every student.")).toBe(true);
+    expect(meetsFullNeed("Aid covers full demonstrated financial need.")).toBe(true);
+    expect(meetsFullNeed("The university does not meet full need.")).toBe(false);
+    expect(meetsFullNeed("Scholarships are available.")).toBe(false);
+  });
+
+  it("builds glance tiles and omits missing data", () => {
     const rows = buildKeyFactRows({
-      scholarships: [{ name: "Aid\nOfficial Website:", url: "https://fa.mit.edu/aid" }],
-      links: [{ name: "Aid page", url: "https://fa.mit.edu/aid/" }, { name: "Official Website", url: "https://fa.mit.edu/" }, { name: "Admissions", url: "https://mit.edu/admissions" }],
+      acceptanceRates: [{ rate: 4 }],
+      tuitionFees: [{ fee: 1, currency: { symbol: "$", name: "USD" } }],
+      applicationFees: [{ fee: 75, currency: { symbol: "$", name: "USD" } }],
     } as never, tr);
-    expect(rows.find((r) => r.id === "scholarships")?.lines?.[0].text).toBe("Aid");
-    expect(rows.find((r) => r.id === "links")?.links?.map((l) => l.label)).toEqual(["Admissions"]);
+    const fin = { feesSummary: "Tuition is $62,980 in 2026-27.", fundingSummary: "Meets 100% of demonstrated need." };
+    expect(buildGlanceTiles(rows, fin).map((t) => [t.id, t.value])).toEqual([["acceptance", "4%"], ["tuition", "US$62,980"], ["application-fee", "US$75"], ["aid", "Meets 100% of need"]]);
+    expect(buildGlanceTiles(rows)[1].value).toBe("US$1");
+    expect(buildGlanceTiles([])).toEqual([]);
   });
 
   it("shortens names", () => {

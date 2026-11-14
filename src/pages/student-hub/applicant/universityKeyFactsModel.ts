@@ -76,7 +76,6 @@ export function shortUniversityName(name: string): string {
   return match?.[1].trim() || name;
 }
 
-const urlKey = (url: string) => { try { const u = new URL(url); return `${u.hostname.replace(/^www\./, "")}${u.pathname.replace(/\/+$/, "")}${u.search}`.toLowerCase(); } catch { return url; } };
 
 export function humanizeKey(key: string): string {
   const spaced = key.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").trim().toLowerCase();
@@ -96,7 +95,7 @@ export function humanizeFacts(facts: Record<string, unknown> | null | undefined)
   return Object.entries(facts).map(([key, value]) => { const text = humanizeFactValue(value); return text ? `${humanizeKey(key)}: ${text}` : ""; }).filter(Boolean).join(" · ");
 }
 
-export interface KeyFactOptions { hasVerifiedFinance?: boolean; now?: Date }
+export interface KeyFactOptions { now?: Date }
 
 export function buildKeyFactRows(university: Partial<UniversitiesSchema>, tr: Translate, options: KeyFactOptions = {}): KeyFactRow[] {
   const rows: KeyFactRow[] = [];
@@ -118,7 +117,7 @@ export function buildKeyFactRows(university: Partial<UniversitiesSchema>, tr: Tr
   if (current.length) rows.push({ id: "deadlines", label: "Application deadlines", lines: current });
   if (past.length) rows.push({ id: "deadlines-past", label: "Last cycle's deadlines", note: "Check the official site for this year's dates.", lines: past });
 
-  const tuition = options.hasVerifiedFinance ? [] : (university.tuitionFees ?? []).map((fee): KeyFactLine | undefined => {
+  const tuition = (university.tuitionFees ?? []).map((fee): KeyFactLine | undefined => {
     const currency = fee?.currency as { symbol?: string; name?: string } | undefined;
     const text = formatMoney(currency?.symbol, fee?.fee, currency?.name);
     return text ? { text } : undefined;
@@ -138,27 +137,57 @@ export function buildKeyFactRows(university: Partial<UniversitiesSchema>, tr: Tr
   const exams = [...new Set((university.requiredExams ?? []).map((e) => clean(e?.certification?.name)).filter(Boolean).filter((n) => !isGraduateOnlyExam(n)).map(cleanExamName).filter(Boolean))];
   if (exams.length) rows.push({ id: "exams", label: "Required exams", chips: exams });
 
-  const seenUrls = new Set<string>();
-  const scholarshipHosts = new Set<string>();
-  const scholarships = (university.scholarships ?? []).map((s): KeyFactLine | undefined => {
-    const url = safeHttpUrl(s?.url);
-    let name = tr(s?.name as Translatable).trim();
-    if (url) name = name.split(/\r?\n/).filter((l) => !/^\s*official\s+web\s*site\s*:?\s*(https?:\/\/\S+)?\s*$/i.test(l) && l.trim() !== url).join("\n").trim();
-    if (!name && !url) return;
-    if (url) { if (seenUrls.has(urlKey(url))) return { text: name }; seenUrls.add(urlKey(url)); scholarshipHosts.add(linkHost(url)); }
-    return name || url ? { text: name || linkHost(url as string), link: url ? { label: "Official page", url } : undefined } : undefined;
-  }).filter((x): x is KeyFactLine => !!x && !!x.text);
-  if (scholarships.length) rows.push({ id: "scholarships", label: "Scholarships", lines: scholarships });
-
-  const links = (university.links ?? []).map((l): KeyFactLink | undefined => {
-    const url = safeHttpUrl(l?.url);
-    if (!url || seenUrls.has(urlKey(url))) return;
-    const label = clean(l?.name) || linkHost(url);
-    if (/official\s*web\s*site/i.test(label) && scholarshipHosts.has(linkHost(url))) return;
-    seenUrls.add(urlKey(url));
-    return { label, url };
-  }).filter((x): x is KeyFactLink => !!x);
-  if (links.length) rows.push({ id: "links", label: "Links", links });
-
   return rows;
+}
+
+export interface GlanceTile { id: string; label: string; value: string; sub?: string }
+
+const MONEY_RE = /(?:US\$|A\$|C\$|\$|£|€|CHF\s?)\s?\d[\d,]*(?:\.\d+)?/;
+
+/** First money amount after the word "tuition", plus the "per year · 2026–27" sub-line when a year range appears. */
+export function extractTuition(text: string): { value: string; sub?: string } | undefined {
+  const index = text.search(/tuition/i);
+  if (index < 0) return;
+  const match = text.slice(index).match(MONEY_RE);
+  if (!match) return;
+  const range = text.match(/\b(20\d{2})\s*[–-]\s*(\d{2}|20\d{2})\b/);
+  const value = match[0].replace(/^\$/, "US$").replace(/\s+/g, "");
+  return { value, sub: range ? `per year · ${range[1]}–${range[2].slice(-2)}` : undefined };
+}
+
+/** Conservative: only true when the text clearly says full/100% of (demonstrated/financial) need is met. */
+export function meetsFullNeed(text: string): boolean {
+  if (/\b(?:not|no|never|doesn'?t|does not)\b[^.]{0,40}(?:full|100\s?%)/i.test(text)) return false;
+  return /\bmeets?\s+(?:the\s+)?(?:100\s?%|full)\s+(?:of\s+)?(?:(?:a\s+student'?s\s+|your\s+)?(?:demonstrated|financial)\s+)*need/i.test(text)
+    || /\bfull(?:y)?\s+demonstrated\s+(?:financial\s+)?need/i.test(text)
+    || /\b100\s?%\s+of\s+(?:(?:a\s+student'?s\s+|your\s+)?(?:demonstrated|financial)\s+)*need/i.test(text);
+}
+
+export function buildGlanceTiles(rows: readonly KeyFactRow[], finance?: { feesSummary: string; fundingSummary: string; fundingPolicyNote?: string } | null): GlanceTile[] {
+  const first = (id: string) => rows.find((r) => r.id === id)?.lines?.[0]?.text;
+  const tiles: GlanceTile[] = [];
+  const rate = first("acceptance");
+  if (rate) tiles.push({ id: "acceptance", label: "Acceptance rate", value: rate });
+  const verified = finance ? extractTuition(finance.feesSummary) : undefined;
+  const cms = first("tuition");
+  if (verified) tiles.push({ id: "tuition", label: "Tuition", value: verified.value, sub: verified.sub });
+  else if (cms) tiles.push({ id: "tuition", label: "Tuition", value: cms });
+  const fee = first("application-fee");
+  if (fee) tiles.push({ id: "application-fee", label: "Application fee", value: fee });
+  if (finance && meetsFullNeed([finance.fundingSummary, finance.fundingPolicyNote].filter(Boolean).join(" "))) tiles.push({ id: "aid", label: "Financial aid", value: "Meets 100% of need" });
+  return tiles;
+}
+
+/** Legacy CMS scholarship text with the "Official Website:" label line removed; used only when there is no verified finance. */
+export function buildScholarshipText(university: Partial<UniversitiesSchema>, tr: Translate): { text: string; url?: string } | undefined {
+  const parts: string[] = [];
+  let url: string | undefined;
+  for (const s of university.scholarships ?? []) {
+    const link = safeHttpUrl(s?.url);
+    let name = tr(s?.name as Translatable).trim();
+    if (link) name = name.split(/\r?\n/).filter((l) => !/^\s*official\s+web\s*site\s*:?\s*(https?:\/\/\S+)?\s*$/i.test(l) && l.trim() !== link).join("\n").trim();
+    if (name) parts.push(name);
+    url = url ?? link;
+  }
+  return parts.length ? { text: parts.join("\n\n"), url } : undefined;
 }
