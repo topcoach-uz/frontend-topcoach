@@ -24,3 +24,21 @@ export function UniversityAdmissions({ deadlines, exams }: { deadlines: KeyFactR
     </dl>
   </section>;
 }
+
+const Bar = ({ className = "" }: { className?: string }) => <span className={`applicant-university-detail__skel-bar ${className}`} />;
+
+/** Layout-shaped placeholder shown while the university detail loads. */
+export function UniversityDetailSkeleton() {
+  return <div className="applicant-university-detail__skeleton" aria-busy="true" aria-label="Loading university">
+    <div className="applicant-university-detail__skel-card">
+      <div className="applicant-university-detail__skel-row">
+        <span className="applicant-university-detail__skel-tile" />
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}><Bar className="applicant-university-detail__skel-bar--title" /><Bar className="applicant-university-detail__skel-bar--short" /></div>
+        <Bar className="applicant-university-detail__skel-bar--button" />
+      </div>
+    </div>
+    <div className="applicant-university-detail__skel-card"><div className="applicant-university-detail__skel-grid">{[0, 1, 2, 3].map((i) => <div key={i} style={{ display: "flex", flexDirection: "column", gap: 8 }}><Bar className="applicant-university-detail__skel-bar--short" /><Bar className="applicant-university-detail__skel-stat" /></div>)}</div></div>
+    <div className="applicant-university-detail__skel-card"><Bar className="applicant-university-detail__skel-bar--title" /><Bar className="applicant-university-detail__skel-bar--input" /></div>
+    <div className="applicant-university-detail__skel-card"><Bar className="applicant-university-detail__skel-bar--title" /><div className="applicant-university-detail__skel-grid applicant-university-detail__skel-grid--2"><div style={{ display: "flex", flexDirection: "column", gap: 10 }}><Bar /><Bar /><Bar /></div><div style={{ display: "flex", flexDirection: "column", gap: 10 }}><Bar /><Bar /><Bar /></div></div></div>
+  </div>;
+}

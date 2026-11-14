@@ -5,7 +5,7 @@ import { buildDegreeOptions } from './universityDegreeOptions';
 import { normalizeStudyArea } from './UniversityStudyAreas';
 import { useEffect, useState } from "react";
 import { Alert, Button, Input, Select, Tag } from "antd";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Bookmark, BookmarkCheck, Building2, Search } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Bookmark, BookmarkCheck, Building2, Loader2, Search } from "lucide-react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useGetGraduateProgramQuery, useGetGraduateProgramsQuery, type GraduateProgram, type GraduateProgramFact } from "src/app/services/graduateProgramsApi";
 import { useGetReviewedUniversitiesQuery, useGetUniversityDetailQuery, useGetUniversityFiltersQuery } from "src/app/services/universities";
@@ -18,7 +18,7 @@ import { useApplicantOverview } from "./ApplicantOverviewContext";
 import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import { getUniversityLogoUrl, universityLogoNeedsDarkBackground } from "./universityLogo";
 import { buildUniversityFieldOptions } from "./universityFieldOptions";
-import { UniversityAdmissions, UniversityGlance } from "./UniversitySections";
+import { UniversityAdmissions, UniversityDetailSkeleton, UniversityGlance } from "./UniversitySections";
 import { buildGlanceTiles, buildKeyFactRows, buildScholarshipText, humanizeFacts, shortUniversityName } from "./universityKeyFactsModel";
 
 const factValue = (value: GraduateProgramFact) => humanizeFacts(value) || "Verification needed";
@@ -118,9 +118,9 @@ export function ApplicantUniversityDetailPage() {
   const error = programId ? programQuery.isError || (!programQuery.isLoading && !program) : universityQuery.isError || (!universityQuery.isLoading && !university);
   if (!programId) return <section className="applicant-page applicant-university-detail">
     <ApplicantMobileTrail><Link to={`/student-hub/universities${selectedField ? `?major=${encodeURIComponent(selectedField)}` : ""}`}>Find universities</Link><span> / </span>{university ? getTranslation(university.name) : "University"}</ApplicantMobileTrail>
-    <QueryState loading={loading} error={error} retry={universityQuery.refetch}>
+    {loading ? <UniversityDetailSkeleton /> : <QueryState loading={false} error={error} retry={universityQuery.refetch}>
       {university && <BachelorUniversityDetail university={university} selectedField={selectedField} existingId={existing?.id} applicationsUnavailable={applications.isLoading || applications.isError} onAdd={() => navigate(`/student-hub/applications/new?university=${encodeURIComponent(universityId)}`)} onOpen={() => existing && navigate(`/student-hub/applications/${existing.id}`)} />}
-    </QueryState>
+    </QueryState>}
   </section>;
   return <ApplicantPage title={program?.programName ?? (university ? getTranslation(university.name) : programId ? "Graduate program" : "University overview")} actions={<Button icon={<ArrowLeft size={15} />} onClick={() => navigate("/student-hub/universities")}>Back to results</Button>}>
     <Breadcrumb><Link to="/student-hub/universities">Explore {programId ? "graduate programs" : "universities"}</Link><span>/</span>{programId ? "Program details" : "University overview"}</Breadcrumb>
@@ -182,6 +182,15 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
   const keyFacts = buildKeyFactRows(university, (value) => getTranslation(value as never));
   const qs = (university.rankings ?? []).find((item) => item?.type === "QS" && Number.isFinite(item.rank) && item.rank > 0);
   const hasVerifiedStudyAreaContent = ((university as { verifiedStudyAreaContent?: unknown[] }).verifiedStudyAreaContent?.length ?? 0) > 0;
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  // Saving opens the application form (no mutation here), so "pending" covers the hand-off until navigation unmounts the page.
+  const handleSave = () => {
+    if (existingId) { onOpen(); return; }
+    setSaveError(""); setSaving(true);
+    try { onAdd(); } catch { setSaveError("We could not save this university. Please try again."); setSaving(false); return; }
+    window.setTimeout(() => setSaving(false), 4000);
+  };
   const glanceTiles = buildGlanceTiles(keyFacts, finance?.content);
   const admissionDeadlines = keyFacts.filter((row) => row.id === "deadlines" || row.id === "deadlines-past");
   const admissionExams = keyFacts.find((row) => row.id === "exams")?.chips ?? [];
@@ -204,10 +213,13 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
             </p>}
           </div>
         </div>
-        <button type="button" className={`applicant-university-detail__save${existingId ? " applicant-university-detail__save--saved" : ""}`} disabled={applicationsUnavailable} onClick={existingId ? onOpen : onAdd}>
-          {existingId ? <BookmarkCheck size={16} aria-hidden="true" /> : <Bookmark size={16} aria-hidden="true" />}
-          {existingId ? "Saved to College List" : "Save to College List"}
-        </button>
+        <div className="applicant-university-detail__save-wrap">
+          <button type="button" className={`applicant-university-detail__save${existingId ? " applicant-university-detail__save--saved" : ""}`} disabled={applicationsUnavailable || saving} aria-busy={saving} onClick={handleSave}>
+            {saving ? <Loader2 size={16} className="applicant-university-detail__save-spinner" aria-hidden="true" /> : existingId ? <BookmarkCheck size={16} aria-hidden="true" /> : <Bookmark size={16} aria-hidden="true" />}
+            {existingId ? "Saved to College List" : saving ? "Saving…" : "Save to College List"}
+          </button>
+          {saveError && <p className="applicant-university-detail__save-error" role="alert">{saveError}</p>}
+        </div>
       </div>
       {profile.profileOverview && <p className="applicant-university-detail__overview">{profile.profileOverview}</p>}
       {applicationsUnavailable && <p className="applicant-university-detail__notice">College List is temporarily unavailable. You can still explore this university.</p>}
@@ -218,9 +230,8 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
       <h2>Explore undergraduate degrees</h2>
       {selectedField && degrees.length > 0 && matchingDegreeCount === 0 && <p className="applicant-university-detail__degree-note">We have not verified a degree matching {selectedField} yet. These are the other degrees currently reviewed for {name}.</p>}
       {selectedField && degrees.length === 0 && catalogueFields.length > 0 && matchingCatalogueFieldCount === 0 && <p className="applicant-university-detail__degree-note">The current catalogue does not list {selectedField} for {name}. These are its other undergraduate study areas.</p>}
-      {degreesQuery.isLoading && <div className="applicant-university-detail__pending"><p>Loading undergraduate degrees…</p></div>}
       {degreesQuery.isError && <div className="applicant-university-detail__pending"><p>Degree details could not be loaded.</p><Button onClick={() => degreesQuery.refetch()}>Try again</Button></div>}
-      {!degreesQuery.isLoading && !degreesQuery.isError && <UniversityDegreeFinder options={degreeOptions} />}
+      {!degreesQuery.isError && <UniversityDegreeFinder options={degreeOptions} loading={degreesQuery.isLoading} />}
       {profile.undergraduateCoursesUrl && <div className="applicant-university-detail__degree-tools applicant-university-detail__degree-tools--muted"><a href={profile.undergraduateCoursesUrl} target="_blank" rel="noreferrer">All undergraduate majors on the official site <ArrowUpRight size={17} aria-hidden="true" /></a></div>}
       {!degreesQuery.isLoading && !degreesQuery.isError && !degrees.length && !catalogueFields.length && <div className="applicant-university-detail__pending"><h3>Course details are being verified</h3><p>We do not have a confirmed undergraduate course list for this university yet.</p></div>}
     </section>

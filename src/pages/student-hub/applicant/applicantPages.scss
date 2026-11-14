@@ -1018,8 +1018,7 @@
 .applicant-university-detail__mark--ucla { background: #2774ae; }
 .applicant-university-detail__overview { max-width: 1050px; font-size: 18px; }
 .applicant-university-detail__hero-actions,
-.applicant-university-detail__degree-tools,
-.applicant-university-detail__degree-card {
+.applicant-university-detail__degree-tools {
   display: flex;
   align-items: center;
   gap: 20px;
@@ -1057,16 +1056,10 @@
   }
   > a { color: #596373; }
 }
-.applicant-university-detail__degree-card,
 .applicant-university-detail__pending {
   border: 1px solid #d8dfeb;
   border-radius: 16px;
   padding: 26px 28px;
-}
-.applicant-university-detail__degree-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
 }
 .applicant-university-detail__finder {
   display: flex;
@@ -1087,41 +1080,6 @@
   border-radius: 10px;
   background: #f6f8fb;
 }
-.applicant-university-detail__match {
-  display: inline-block;
-  margin-bottom: 8px;
-  color: #8b0000;
-  font-size: 13px;
-  font-weight: 600;
-}
-.applicant-university-detail__degree-card {
-  justify-content: space-between;
-  align-items: flex-start;
-  h3 { font-size: 24px; }
-  p { margin-top: 8px; }
-  p + p { margin-top: 18px; }
-  small {
-    display: block;
-    margin-top: 16px;
-    font-size: 13px;
-    a { display: inline-flex; align-items: center; gap: 3px; }
-  }
-}
-.applicant-university-detail__degree-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  min-width: 205px;
-  min-height: 54px;
-  padding: 12px 20px;
-  flex-shrink: 0;
-  border-radius: 10px;
-  background: #8b0000;
-  color: #fff !important;
-  text-decoration: none;
-}
-.applicant-university-detail__degree-button:hover { background: #6d0000; }
 .applicant-university-detail__lower {
   display: flex;
   flex-direction: column;
@@ -1207,8 +1165,6 @@
   .applicant-university-detail__mark--logo { width: 76px; flex-basis: 76px; padding: 7px; }
   .applicant-university-detail__overview { font-size: 16px; }
   .applicant-university-detail__hero-actions > .ant-btn { width: 100%; min-width: 0; }
-  .applicant-university-detail__degree-card { flex-direction: column; padding: 20px; }
-  .applicant-university-detail__degree-button { width: 100%; min-width: 0; }
   .applicant-page {
     gap: 20px;
     h1 {
@@ -1367,7 +1323,6 @@
   .applicant-university-detail__identity h1 { font-size: 22px; }
 }
 
-.applicant-university-detail__program-link { display:flex; align-items:center; gap:6px; color:#8b0000; font-size:14px; }
 
 .applicant-sessions {
   display: flex;
@@ -1703,8 +1658,6 @@
   > div { min-width: 0; }
 }
 .applicant-university-detail .applicant-university-detail__finance dd p { font-size: 15px; line-height: 1.6; color: #655c55; white-space: pre-line; }
-.applicant-university-detail__clamp { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
-.applicant-university-detail__clamp--open { display: block; -webkit-line-clamp: unset; overflow: visible; }
 .applicant-university-detail__clamp-toggle {
   align-self: flex-start; padding: 0; border: 0; background: none; color: #8b0000; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
   &:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; border-radius: 4px; }
@@ -1765,4 +1718,78 @@
   .applicant-university-detail .applicant-university-detail__mark,
   .applicant-university-detail .applicant-university-detail__mark--logo { width: 56px; height: 56px; flex-basis: 56px; padding: 6px; }
   .applicant-university-detail .applicant-university-detail__identity { gap: 14px; }
+}
+
+/* ---------- Motion, feedback and polish (university detail) ---------- */
+@keyframes applicant-ud-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes applicant-ud-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+@keyframes applicant-ud-spin { to { transform: rotate(360deg); } }
+.applicant-university-detail__layout { animation: applicant-ud-fade 200ms ease-out; }
+
+.applicant-university-detail__skeleton { display: flex; flex-direction: column; gap: 20px; }
+.applicant-university-detail__skel-card { background: #fff; border: 1px solid #e7e2dc; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+.applicant-university-detail__skel-row { display: flex; align-items: center; gap: 20px; }
+.applicant-university-detail__skel-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.applicant-university-detail__skel-grid--2 { grid-template-columns: 1fr; }
+.applicant-university-detail__skel-bar, .applicant-university-detail__skel-tile { background: #efebe6; border-radius: 8px; animation: applicant-ud-pulse 1.2s ease-in-out infinite; }
+.applicant-university-detail__skel-tile { width: 72px; height: 72px; border-radius: 12px; flex: 0 0 72px; }
+.applicant-university-detail__skel-bar { height: 14px; }
+.applicant-university-detail__skel-bar--title { height: 22px; width: 55%; }
+.applicant-university-detail__skel-bar--short { width: 35%; }
+.applicant-university-detail__skel-bar--input { height: 44px; border-radius: 10px; }
+.applicant-university-detail__skel-bar--button { width: 170px; height: 44px; border-radius: 10px; margin-left: auto; }
+.applicant-university-detail__skel-stat { height: 44px; }
+@media (min-width: 768px) { .applicant-university-detail__skel-grid--2 { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1024px) { .applicant-university-detail__skel-grid { grid-template-columns: repeat(4, 1fr); } .applicant-university-detail__skel-grid--2 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 767px) { .applicant-university-detail__skel-card { padding: 20px; } .applicant-university-detail__skel-bar--button { display: none; } }
+
+.applicant-university-detail__save-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: 0 0 auto; }
+.applicant-university-detail__save { min-width: 200px; transition: background-color 120ms ease-out, transform 100ms ease-out; }
+.applicant-university-detail__save-spinner { animation: applicant-ud-spin 0.8s linear infinite; }
+.applicant-university-detail__save-error { margin: 0; font-size: 13px; color: #b42318; }
+@media (max-width: 767px) { .applicant-university-detail__save-wrap { align-items: stretch; } .applicant-university-detail__save-error { text-align: left; } }
+
+.applicant-university-detail a { text-underline-offset: 3px; }
+.applicant-university-detail a svg { transition: transform 150ms ease-out; }
+.applicant-university-detail__clamp-toggle:active { opacity: 0.6; }
+
+.applicant-university-detail__clamp-wrap { overflow: hidden; transition: max-height 250ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.applicant-university-detail .applicant-university-detail__clamp { display: block; overflow: hidden; -webkit-line-clamp: unset; margin: 0; }
+.applicant-university-detail__clamp--fade { -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.6em), transparent); mask-image: linear-gradient(to bottom, #000 calc(100% - 1.6em), transparent); }
+
+.applicant-university-detail__tile dd, .applicant-university-detail .applicant-university-detail__checked { font-variant-numeric: tabular-nums; }
+
+.applicant-university-detail .applicant-university-detail__finder .ant-select-focused .ant-select-selector,
+.applicant-university-detail .applicant-university-detail__finder .ant-select-selector:focus-within { border-color: #8b0000 !important; box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.2) !important; }
+.applicant-university-detail__finder-popup .ant-select-item-option-active:not(.ant-select-item-option-disabled),
+.applicant-university-detail__finder-popup .ant-select-item-option-selected:not(.ant-select-item-option-disabled) { background: #f6e8e7; }
+.applicant-university-detail__finder-popup .ant-select-item-option-selected { font-weight: 500; }
+
+@media (hover: hover) {
+  .applicant-university-detail__save:hover:not(:disabled) { background: #6d0000; }
+  .applicant-university-detail__save--saved:hover:not(:disabled) { background: #f6f3ef; }
+  .applicant-university-detail a:hover { text-decoration: underline; }
+  .applicant-university-detail a:hover svg { transform: translate(2px, -2px); }
+  .applicant-university-detail__clamp-toggle:hover { text-decoration: underline; text-underline-offset: 3px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .applicant-university-detail__layout,
+  .applicant-university-detail__skel-bar, .applicant-university-detail__skel-tile,
+  .applicant-university-detail__save-spinner { animation: none; }
+  .applicant-university-detail__save, .applicant-university-detail a svg, .applicant-university-detail__clamp-wrap { transition: none; }
+  .applicant-university-detail a:hover svg { transform: none; }
+}
+
+@media (prefers-contrast: more) {
+  .applicant-university-detail .applicant-university-detail__hero,
+  .applicant-university-detail .applicant-university-detail__glance,
+  .applicant-university-detail .applicant-university-detail__degrees,
+  .applicant-university-detail .applicant-university-detail__funding,
+  .applicant-university-detail .applicant-university-detail__admissions,
+  .applicant-university-detail .applicant-university-detail__life { border-color: #8a8178; }
+  .applicant-university-detail p, .applicant-university-detail small, .applicant-university-detail dt,
+  .applicant-university-detail .applicant-university-detail__meta,
+  .applicant-university-detail .applicant-university-detail__finance dd p { color: #302b28; }
+  .applicant-university-detail__fact-chips li { border: 1px solid #8a8178; }
 }

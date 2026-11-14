@@ -4,14 +4,14 @@ import { finderCopy, type DegreeOption } from "./universityDegreeOptions";
 
 const GROUPS: DegreeOption["group"][] = ["Degrees", "Study areas"];
 
-export function UniversityDegreeFinder({ options }: { options: DegreeOption[] }) {
+export function UniversityDegreeFinder({ options, loading = false }: { options: DegreeOption[]; loading?: boolean }) {
   const navigate = useNavigate();
   const groups = GROUPS.map((label) => ({
     label,
     options: options.filter((option) => option.group === label).map((option) => ({ ...option, key: option.value })),
   })).filter((group) => group.options.length);
-  if (!groups.length) return null;
-  const copy = finderCopy(options);
+  if (!groups.length && !loading) return null;
+  const copy = loading ? { label: "Find a degree or study area", placeholder: "Search degrees and study areas…" } : finderCopy(options);
 
   const open = (_: string, option: unknown) => {
     const picked = option as DegreeOption;
@@ -25,6 +25,9 @@ export function UniversityDegreeFinder({ options }: { options: DegreeOption[] })
       id="university-degree-search"
       className="applicant-university-detail__finder-select"
       showSearch
+      disabled={loading}
+      loading={loading}
+      popupClassName="applicant-university-detail__finder-popup"
       allowClear
       value={null}
       placeholder={copy.placeholder}
