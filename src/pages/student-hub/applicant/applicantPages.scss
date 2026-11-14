@@ -1823,7 +1823,7 @@
   }
 }
 @media (hover: hover) { .applicant-university-detail__sectionnav a:hover { color: #8b0000; text-decoration: none; } }
-#glance, #study-areas, #costs, #admissions, #life { scroll-margin-top: calc(var(--ud-nav-offset, 0px) + 64px); }
+.applicant-university-detail__layout > [id^="ud-"] { scroll-margin-top: var(--ud-scroll-margin, 72px); }
 
 /* ---------- Exam checklist ---------- */
 .applicant-university-detail__fact-chips li:has(.applicant-university-detail__exam) { padding: 0; background: none; }
@@ -1860,3 +1860,11 @@
 }
 .applicant-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 @media (prefers-reduced-motion: reduce) { .applicant-university-detail__compare { animation: none; } }
+
+/* Finder option text stays readable on the tinted active/selected rows */
+.applicant-university-detail__finder-popup .ant-select-item-option-active:not(.ant-select-item-option-disabled),
+.applicant-university-detail__finder-popup .ant-select-item-option-selected:not(.ant-select-item-option-disabled) { color: #302b28 !important; }
+.applicant-university-detail__finder-popup .ant-select-item-option-active .ant-select-item-option-content,
+.applicant-university-detail__finder-popup .ant-select-item-option-selected .ant-select-item-option-content { color: #302b28 !important; }
+.applicant-university-detail__finder-popup .ant-select-item-option-active small,
+.applicant-university-detail__finder-popup .ant-select-item-option-selected small { color: #655c55 !important; }

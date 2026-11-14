@@ -7,7 +7,7 @@ import type { ComparableFacts, GlanceTile, KeyFactRow } from "./universityKeyFac
 export function UniversityGlance({ tiles, compare }: { tiles: GlanceTile[]; compare?: { name: string; facts: ComparableFacts; list: CollegeListEntry[] } }) {
   const [open, setOpen] = useState(false);
   if (!tiles.length) return null;
-  return <section id="glance" className="applicant-university-detail__glance" aria-label="At a glance">
+  return <section id="ud-glance" className="applicant-university-detail__glance" aria-label="At a glance">
     <div className="applicant-university-detail__glance-top">
       <dl>{tiles.map((tile) => <div className="applicant-university-detail__tile" key={tile.id}>
         <dt>{tile.label}</dt><dd>{tile.value}</dd>{tile.sub && <small>{tile.sub}</small>}
@@ -22,7 +22,7 @@ export function UniversityAdmissions({ universityId, deadlines, exams }: { unive
   const [ready, setReady] = useState<string[]>(() => loadReadyExams(universityId, exams));
   const toggle = (exam: string) => setReady((current) => { const next = toggleExam(current, exam); saveReadyExams(universityId, next); return next; });
   if (!deadlines.length && !exams.length) return null;
-  return <section id="admissions" className="applicant-university-detail__admissions">
+  return <section id="ud-admissions" className="applicant-university-detail__admissions">
     <h2>Admissions</h2>
     <dl className="applicant-university-detail__admissions-grid">
       {deadlines.length > 0 && <div>
@@ -63,6 +63,11 @@ export function UniversityDetailSkeleton() {
 
 export interface SectionNavItem { id: string; label: string }
 
+/** Sections are looked up inside the page layout so ids can never collide with the app shell. */
+function findSection(nav: HTMLElement | null, id: string): HTMLElement | null {
+  return nav?.parentElement?.querySelector<HTMLElement>(`[id="${id}"]`) ?? null;
+}
+
 const prefersReducedMotion = () => typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 /** Height of the site header when it stays pinned to the top (fixed/sticky); 0 when it scrolls away. */
@@ -77,18 +82,24 @@ export function UniversitySectionNav({ items }: { items: SectionNavItem[] }) {
   const navRef = useRef<HTMLElement>(null);
   const [active, setActive] = useState(items[0]?.id ?? "");
   const [offset, setOffset] = useState(0);
+  const [scrollMargin, setScrollMargin] = useState(64);
   const key = items.map((item) => item.id).join("|");
 
   useLayoutEffect(() => {
     const update = () => {
       const next = pinnedHeaderHeight();
       setOffset(next);
-      navRef.current?.parentElement?.style.setProperty("--ud-nav-offset", `${next}px`);
+      const nav = navRef.current;
+      if (!nav) return;
+      const margin = next + nav.offsetHeight + 12;
+      setScrollMargin(margin);
+      nav.parentElement?.style.setProperty("--ud-nav-offset", `${next}px`);
+      nav.parentElement?.style.setProperty("--ud-scroll-margin", `${margin}px`);
     };
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
-  }, []);
+  }, [key]);
 
   useEffect(() => {
     if (typeof IntersectionObserver === "undefined") return;
@@ -97,15 +108,15 @@ export function UniversitySectionNav({ items }: { items: SectionNavItem[] }) {
       for (const entry of entries) { if (entry.isIntersecting) visible.add(entry.target.id); else visible.delete(entry.target.id); }
       const first = items.find((item) => visible.has(item.id));
       if (first) setActive(first.id);
-    }, { rootMargin: `-${offset + 64}px 0px -55% 0px`, threshold: 0 });
-    items.forEach((item) => { const el = document.getElementById(item.id); if (el) observer.observe(el); });
+    }, { rootMargin: `-${scrollMargin}px 0px -55% 0px`, threshold: 0 });
+    items.forEach((item) => { const el = findSection(navRef.current, item.id); if (el) observer.observe(el); });
     return () => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, offset]);
+  }, [key, scrollMargin]);
 
   if (items.length < 2) return null;
   return <nav ref={navRef} className="applicant-university-detail__sectionnav" aria-label="Page sections" style={{ top: offset }}>
     {items.map((item) => <a key={item.id} href={`#${item.id}`} aria-current={active === item.id ? "true" : undefined}
-      onClick={(event) => { event.preventDefault(); document.getElementById(item.id)?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" }); setActive(item.id); }}>{item.label}</a>)}
+      onClick={(event) => { event.preventDefault(); findSection(navRef.current, item.id)?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" }); setActive(item.id); }}>{item.label}</a>)}
   </nav>;
 }

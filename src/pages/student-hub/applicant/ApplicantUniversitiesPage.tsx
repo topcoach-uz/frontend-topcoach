@@ -197,11 +197,11 @@ function BachelorUniversityDetail({ university, selectedField, collegeList, exis
   const showCosts = !!finance || !!cmsTuition || !!cmsScholarships;
 
   const navItems = [
-    glanceTiles.length ? { id: "glance", label: "At a glance" } : null,
-    { id: "study-areas", label: "Study areas" },
-    showCosts ? { id: "costs", label: "Costs & funding" } : null,
-    admissionDeadlines.length || admissionExams.length ? { id: "admissions", label: "Admissions" } : null,
-    hasLife ? { id: "life", label: "Life" } : null,
+    glanceTiles.length ? { id: "ud-glance", label: "At a glance" } : null,
+    { id: "ud-study-areas", label: "Study areas" },
+    showCosts ? { id: "ud-costs", label: "Costs & funding" } : null,
+    admissionDeadlines.length || admissionExams.length ? { id: "ud-admissions", label: "Admissions" } : null,
+    hasLife ? { id: "ud-life", label: "Life" } : null,
   ].filter((item): item is { id: string; label: string } => !!item);
 
   return <div className="applicant-university-detail__layout">
@@ -229,7 +229,7 @@ function BachelorUniversityDetail({ university, selectedField, collegeList, exis
     <UniversitySectionNav items={navItems} />
     <UniversityGlance tiles={glanceTiles} compare={{ name: shortUniversityName(name), facts: buildComparableFacts(keyFacts, finance?.content, qsRankOf(university)), list: collegeList }} />
 
-    <section id="study-areas" className="applicant-university-detail__degrees">
+    <section id="ud-study-areas" className="applicant-university-detail__degrees">
       <h2>Explore undergraduate degrees</h2>
       {selectedField && degrees.length > 0 && matchingDegreeCount === 0 && <p className="applicant-university-detail__degree-note">We have not verified a degree matching {selectedField} yet. These are the other degrees currently reviewed for {name}.</p>}
       {selectedField && degrees.length === 0 && catalogueFields.length > 0 && matchingCatalogueFieldCount === 0 && <p className="applicant-university-detail__degree-note">The current catalogue does not list {selectedField} for {name}. These are its other undergraduate study areas.</p>}
@@ -239,7 +239,7 @@ function BachelorUniversityDetail({ university, selectedField, collegeList, exis
       {!degreesQuery.isLoading && !degreesQuery.isError && !degrees.length && !catalogueFields.length && <div className="applicant-university-detail__pending"><h3>Course details are being verified</h3><p>We do not have a confirmed undergraduate course list for this university yet.</p></div>}
     </section>
 
-    {showCosts && <section id="costs" className="applicant-university-detail__funding"><h2>Costs &amp; funding</h2>
+    {showCosts && <section id="ud-costs" className="applicant-university-detail__funding"><h2>Costs &amp; funding</h2>
       <dl className="applicant-university-detail__finance">
         <div><dt>Tuition &amp; fees</dt><dd>
           {finance ? <><ClampedText text={finance.content.feesSummary} /><a href={finance.content.feesUrl} target="_blank" rel="noopener noreferrer">Official tuition and fee details <ArrowUpRight size={17} aria-hidden="true" /></a></> : cmsTuition ? <p>{cmsTuition}</p> : <p>Not yet verified.</p>}
@@ -251,7 +251,7 @@ function BachelorUniversityDetail({ university, selectedField, collegeList, exis
       {finance && <p className="applicant-university-detail__checked">Checked {displayDate(finance.verifiedAt)}</p>}
     </section>}
     <UniversityAdmissions universityId={university.id} deadlines={admissionDeadlines} exams={admissionExams} />
-    {hasLife && <section id="life" className="applicant-university-detail__life"><h2>Life at {shortUniversityName(name)}</h2>{profile.studentLifeIntro && <p>{profile.studentLifeIntro}</p>}{profile.studentLifeHighlight && <strong>{profile.studentLifeHighlight}</strong>}{profile.studentLifeDetail && <p>{profile.studentLifeDetail}</p>}{profile.studentLifeUrl && <a href={profile.studentLifeUrl} target="_blank" rel="noopener noreferrer">Explore campus life <ArrowUpRight size={17} aria-hidden="true" /></a>}</section>}
+    {hasLife && <section id="ud-life" className="applicant-university-detail__life"><h2>Life at {shortUniversityName(name)}</h2>{profile.studentLifeIntro && <p>{profile.studentLifeIntro}</p>}{profile.studentLifeHighlight && <strong>{profile.studentLifeHighlight}</strong>}{profile.studentLifeDetail && <p>{profile.studentLifeDetail}</p>}{profile.studentLifeUrl && <a href={profile.studentLifeUrl} target="_blank" rel="noopener noreferrer">Explore campus life <ArrowUpRight size={17} aria-hidden="true" /></a>}</section>}
     {(profile.profileVerifiedAt || (!finance && !hasVerifiedStudyAreaContent)) && <p className="applicant-university-detail__source">{profile.profileVerifiedAt ? `Information from the university's official pages · Checked ${displayDate(profile.profileVerifiedAt)}` : "Course, campus and funding details will appear after source review."}</p>}
   </div>;
 }

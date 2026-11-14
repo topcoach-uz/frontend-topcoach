@@ -11,7 +11,9 @@ const GROUPS: DegreeOption["group"][] = ["Degrees", "Study areas"];
 export function UniversityDegreeFinder({ options, loading = false, getPreview }: { options: DegreeOption[]; loading?: boolean; getPreview?: (option: DegreeOption) => StudyPreview }) {
   const navigate = useNavigate();
   const selectRef = useRef<BaseSelectRef>(null);
+  const [open, setOpen] = useState(false);
   const dropdownOpen = useRef(false);
+  const [search, setSearch] = useState("");
   const [picked, setPicked] = useState<DegreeOption | null>(null);
   const groups = GROUPS.map((label) => ({
     label,
@@ -21,11 +23,14 @@ export function UniversityDegreeFinder({ options, loading = false, getPreview }:
   const copy = loading ? { label: "Find a degree or study area", placeholder: "Search degrees and study areas…" } : finderCopy(options);
   const preview = picked && getPreview ? getPreview(picked) : null;
 
-  const close = () => { setPicked(null); selectRef.current?.focus(); };
+  const close = () => { setPicked(null); setSearch(""); selectRef.current?.focus(); };
   const choose = (_: string, option: unknown) => {
     const next = option as DegreeOption;
     if (!getPreview) { if (next.to) navigate(next.to); else if (next.href) window.open(next.href, "_blank", "noopener,noreferrer"); return; }
     setPicked(next);
+    setSearch("");
+    dropdownOpen.current = false;
+    setOpen(false);
   };
 
   return <div className="applicant-university-detail__finder" onKeyDownCapture={(event) => { if (event.key === "Escape" && picked && !dropdownOpen.current) { event.stopPropagation(); close(); } }}>
@@ -47,7 +52,10 @@ export function UniversityDegreeFinder({ options, loading = false, getPreview }:
       notFoundContent="No matching study area"
       onSelect={choose}
       onClear={() => setPicked(null)}
-      onDropdownVisibleChange={(open) => { dropdownOpen.current = open; }}
+      open={open}
+      searchValue={search}
+      onSearch={setSearch}
+      onDropdownVisibleChange={(next) => { dropdownOpen.current = next; setOpen(next); if (!next) setSearch(""); }}
       optionRender={(option) => {
         const data = option.data as DegreeOption;
         return <span className="applicant-university-detail__finder-option"><span>{data.label}</span>{data.hint && <small>{data.hint}</small>}</span>;
