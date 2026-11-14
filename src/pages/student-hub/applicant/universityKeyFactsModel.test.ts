@@ -75,9 +75,16 @@ describe("university key facts", () => {
   });
 
   it("extracts tuition from verified finance text", () => {
-    expect(extractTuition("For 2026–27, tuition is $62,980 per year, plus housing $12,000.")).toEqual({ value: "US$62,980", sub: "per year · 2026–27" });
-    expect(extractTuition("Tuition US$61,990.")).toEqual({ value: "US$61,990", sub: undefined });
+    expect(extractTuition("For 2026–27, tuition is $62,980 per year, plus housing $12,000.")).toEqual({ value: "US$62,980", period: "year", yearRange: "2026–27", sub: "per year · 2026–27" });
+    expect(extractTuition("Tuition US$61,990.")).toEqual({ value: "US$61,990", period: undefined, yearRange: undefined, sub: undefined });
     expect(extractTuition("Housing is $12,000.")).toBeUndefined();
+  });
+
+  it("keeps the billing period and never assumes per year", () => {
+    expect(extractTuition("For 2026-27, tuition is US$62,980 per year at MIT.")).toMatchObject({ value: "US$62,980", period: "year", sub: "per year · 2026–27" });
+    expect(extractTuition("Full-time undergraduate tuition is US$22,577 per quarter for 12–20 units.")).toMatchObject({ value: "US$22,577", period: "quarter", sub: "per quarter" });
+    expect(extractTuition("Tuition is $9,000 annually.")).toMatchObject({ period: "year" });
+    expect(extractTuition("Tuition of US$30,000 applies for 2026-27.")).toMatchObject({ period: undefined, sub: "2026–27" });
   });
 
   it("detects a 100% of need pledge conservatively", () => {
@@ -108,8 +115,8 @@ describe("university key facts", () => {
   it("builds comparable facts including QS rank, with gaps left undefined", () => {
     const rows = buildKeyFactRows({ acceptanceRates: [{ rate: 4 }], applicationFees: [{ fee: 75, currency: { symbol: "$", name: "USD" } }] } as never, tr);
     const facts = buildComparableFacts(rows, { feesSummary: "Tuition is $62,980 in 2026-27.", fundingSummary: "Meets 100% of demonstrated need." }, 1);
-    expect(facts).toEqual({ acceptance: "4%", tuition: "US$62,980", tuitionSub: "per year · 2026–27", applicationFee: "US$75", aid: "100% of need met", qs: "#1" });
-    expect(buildComparableFacts([], null, undefined)).toEqual({ acceptance: undefined, tuition: undefined, tuitionSub: undefined, applicationFee: undefined, aid: undefined, qs: undefined });
+    expect(facts).toEqual({ acceptance: "4%", tuition: "US$62,980", tuitionPeriod: undefined, tuitionSub: "2026–27", applicationFee: "US$75", aid: "100% of need met", qs: "#1" });
+    expect(buildComparableFacts([], null, undefined)).toEqual({ acceptance: undefined, tuition: undefined, tuitionPeriod: undefined, tuitionSub: undefined, applicationFee: undefined, aid: undefined, qs: undefined });
     expect(qsRankOf({ rankings: [{ type: "THE", rank: 3 }, { type: "QS", rank: 12 }] } as never)).toBe(12);
     expect(qsRankOf({} as never)).toBeUndefined();
   });

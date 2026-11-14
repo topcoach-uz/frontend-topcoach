@@ -152,15 +152,24 @@ export interface GlanceTile { id: string; label: string; value: string; sub?: st
 
 const MONEY_RE = /(?:US\$|A\$|C\$|\$|£|€|CHF\s?)\s?\d[\d,]*(?:\.\d+)?/;
 
-/** First money amount after the word "tuition", plus the "per year · 2026–27" sub-line when a year range appears. */
-export function extractTuition(text: string): { value: string; sub?: string } | undefined {
+const PERIOD_RE = /\b(?:per|a|each)\s+(quarter|semester|term|trimester|credit|unit|year|annum)\b|\b(annually|yearly|annual)\b/i;
+
+/** First money amount after the word "tuition", the billing period right after it (never assumed) and any year range. */
+export function extractTuition(text: string): { value: string; period?: string; yearRange?: string; sub?: string } | undefined {
   const index = text.search(/tuition/i);
   if (index < 0) return;
-  const match = text.slice(index).match(MONEY_RE);
-  if (!match) return;
+  const rest = text.slice(index);
+  const match = rest.match(MONEY_RE);
+  if (!match || match.index === undefined) return;
+  const after = rest.slice(match.index + match[0].length, match.index + match[0].length + 40);
+  const found = after.match(PERIOD_RE);
+  const raw = (found?.[1] ?? found?.[2])?.toLowerCase();
+  const period = raw ? (/^(annum|annually|yearly|annual)$/.test(raw) ? "year" : raw) : undefined;
   const range = text.match(/\b(20\d{2})\s*[–-]\s*(\d{2}|20\d{2})\b/);
+  const yearRange = range ? `${range[1]}–${range[2].slice(-2)}` : undefined;
   const value = match[0].replace(/^\$/, "US$").replace(/\s+/g, "");
-  return { value, sub: range ? `per year · ${range[1]}–${range[2].slice(-2)}` : undefined };
+  const sub = [period ? `per ${period}` : "", yearRange ?? ""].filter(Boolean).join(" · ") || undefined;
+  return { value, period, yearRange, sub };
 }
 
 /** Conservative: only true when the text clearly says full/100% of (demonstrated/financial) need is met. */
@@ -171,7 +180,7 @@ export function meetsFullNeed(text: string): boolean {
     || /\b100\s?%\s+of\s+(?:(?:a\s+student'?s\s+|your\s+)?(?:demonstrated|financial)\s+)*need/i.test(text);
 }
 
-export interface ComparableFacts { acceptance?: string; tuition?: string; tuitionSub?: string; applicationFee?: string; aid?: string; qs?: string }
+export interface ComparableFacts { acceptance?: string; tuition?: string; tuitionPeriod?: string; tuitionSub?: string; applicationFee?: string; aid?: string; qs?: string }
 type FinanceText = { feesSummary: string; fundingSummary: string; fundingPolicyNote?: string };
 
 /** The facts shown in the glance tiles and the compare table, computed in one place. */
@@ -182,6 +191,7 @@ export function buildComparableFacts(rows: readonly KeyFactRow[], finance?: Fina
   return {
     acceptance: first("acceptance"),
     tuition: verified?.value ?? first("tuition"),
+    tuitionPeriod: verified?.period,
     tuitionSub: verified?.sub,
     applicationFee: first("application-fee"),
     aid: aid ? "100% of need met" : undefined,

@@ -16,6 +16,13 @@ const ROWS: { key: keyof ComparableFacts; label: string }[] = [
   { key: "qs", label: "QS ranking" },
 ];
 
+/** Value for a compare cell; tuition keeps its billing period and is never converted. */
+const cell = (facts: ComparableFacts, key: keyof ComparableFacts) => {
+  const value = facts[key];
+  if (!value) return "—";
+  return key === "tuition" && facts.tuitionPeriod ? `${value} / ${facts.tuitionPeriod}` : value;
+};
+
 export function UniversityCompare({ currentId, currentName, currentFacts, list, onClose }: { currentId: string; currentName: string; currentFacts: ComparableFacts; list: CollegeListEntry[]; onClose: () => void }) {
   const selectId = useId();
   const [otherId, setOtherId] = useState<string>();
@@ -61,7 +68,7 @@ export function UniversityCompare({ currentId, currentName, currentFacts, list, 
         <table className="applicant-university-detail__compare-table">
           <caption className="applicant-sr-only">Comparison of {currentName} and {otherName}</caption>
           <thead><tr><th scope="col"><span className="applicant-sr-only">Fact</span></th><th scope="col">{currentName}</th><th scope="col">{otherName}</th></tr></thead>
-          <tbody>{ROWS.map((row) => <tr key={row.key}><th scope="row">{row.label}</th><td>{currentFacts[row.key] ?? "—"}</td><td>{otherFacts[row.key] ?? "—"}</td></tr>)}</tbody>
+          <tbody>{ROWS.map((row) => <tr key={row.key}><th scope="row">{row.label}</th><td>{cell(currentFacts, row.key)}</td><td>{cell(otherFacts, row.key)}</td></tr>)}</tbody>
         </table>)}
   </div>;
 }
