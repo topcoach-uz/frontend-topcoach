@@ -4,6 +4,7 @@ import { useGetUndergraduateDegreesQuery, type UndergraduateDegree } from 'src/a
 import { getTranslation } from 'src/lib/i18n/translationUtils';
 import { QueryState } from './ApplicantPage';
 import { UniversityDetailSkeleton } from './UniversitySections';
+import { useStructuredContent } from './StructuredSections';
 import { ApplicantMobileTrail } from './ApplicantTopBarContext';
 import { publishedDegreeForStudyArea } from './degreePlanning';
 import { DegreeContent } from './ApplicantDegreeDetailPage';
@@ -17,6 +18,7 @@ export default function ApplicantStudyAreaDetailPage() {
   const query = useGetUniversityDetailQuery(universityId, { skip: !universityId });
   const degreesQuery = useGetUndergraduateDegreesQuery(universityId, { skip: !universityId });
   const university = query.data;
+  const structured = useStructuredContent(university);
   const major = university?.majors?.find(item => item.id === majorId && item.type === 'undergraduate');
   const name = major ? getTranslation(major.name) : '';
   const publishedDegree = publishedDegreeForStudyArea(degreesQuery.data ?? [], name);
@@ -41,7 +43,7 @@ export default function ApplicantStudyAreaDetailPage() {
   return <section className="applicant-page applicant-degree-page applicant-university-detail">
     <ApplicantMobileTrail><Link to="/student-hub/universities">Find universities</Link><span> / </span><Link to={universityHref}>{universityName}</Link><span> / </span>{name || 'Study area'}</ApplicantMobileTrail>
     {query.isLoading || degreesQuery.isLoading ? <UniversityDetailSkeleton /> : <QueryState loading={false} error={query.isError || degreesQuery.isError} retry={() => { query.refetch(); degreesQuery.refetch(); }}>
-      {university && major ? <DegreeContent key={publishedDegree?.id ?? universityId + majorId} degree={withVerifiedUniversityFinance(publishedDegree ?? degree, university.undergraduateFinanceContent)} studyArea={!publishedDegree} universityName={universityName} location={[getTranslation(university.location?.region), getTranslation(university.location?.country)].filter(Boolean).join(', ')} logoUrl={getUniversityLogoUrl(university)} saveHrefOverride={publishedDegree ? undefined : saveHref} universityHref={universityHref} deadlines={university.deadlines ?? []} /> : <div className="applicant-degree-page__missing"><h1>Study area not found</h1><p>This study area is not listed for this university.</p><Link to={universityHref}>Return to university</Link></div>}
+      {university && major ? <DegreeContent key={publishedDegree?.id ?? universityId + majorId} degree={withVerifiedUniversityFinance(publishedDegree ?? degree, university.undergraduateFinanceContent)} studyArea={!publishedDegree} universityName={universityName} location={[getTranslation(university.location?.region), getTranslation(university.location?.country)].filter(Boolean).join(', ')} logoUrl={getUniversityLogoUrl(university)} saveHrefOverride={publishedDegree ? undefined : saveHref} universityHref={universityHref} deadlines={university.deadlines ?? []} structured={structured} /> : <div className="applicant-degree-page__missing"><h1>Study area not found</h1><p>This study area is not listed for this university.</p><Link to={universityHref}>Return to university</Link></div>}
     </QueryState>}
   </section>;
 }

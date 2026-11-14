@@ -1863,3 +1863,47 @@
 .applicant-university-detail .applicant-university-detail__subtitle { margin-top: 4px; font-size: 14px; line-height: 1.4; color: #655c55; }
 
 .applicant-university-detail__compare-skeleton { display: flex; flex-direction: column; gap: 12px; padding-top: 4px; .applicant-university-detail__skel-bar { height: 18px; } }
+
+/* ---------- Structured lists (entry, costs, scholarships, steps, deadlines) ---------- */
+.applicant-university-detail__structured, .applicant-university-detail__reqs, .applicant-university-detail__scholarships,
+.applicant-university-detail__cost, .applicant-university-detail__deadlines, .applicant-university-detail__stepper-wrap { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.applicant-university-detail__structured { gap: 24px; }
+.applicant-university-detail__reqs { gap: 18px; }
+.applicant-university-detail__req-group { display: flex; flex-direction: column; gap: 6px; }
+.applicant-university-detail .applicant-university-detail__list-title { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #655c55; line-height: 1.4; }
+.applicant-university-detail__list, .applicant-university-detail__stepper, .applicant-university-detail__cards { margin: 0; padding: 0; list-style: none; }
+.applicant-university-detail__list > li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-top: 1px solid #e7e2dc; &:first-child { border-top: 0; } }
+.applicant-university-detail__list-icon { flex: 0 0 22px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: #f3f1ed; color: #655c55; margin-top: 1px; }
+.applicant-university-detail__req-group--required .applicant-university-detail__list-icon { background: #f6e8e7; color: #8b0000; }
+.applicant-university-detail__list-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; strong { font-size: 15px; font-weight: 500; color: #302b28; } em { font-style: normal; font-size: 12px; color: #655c55; } span { font-size: 14px; line-height: 1.5; color: #655c55; } }
+.applicant-university-detail__req-group--not-required .applicant-university-detail__list-body strong { color: #655c55; font-weight: 400; }
+.applicant-university-detail__tag { flex: 0 0 auto; align-self: flex-start; display: inline-block; padding: 2px 8px; border-radius: 6px; background: #f3f1ed; color: #655c55; font-size: 12px; font-weight: 500; }
+.applicant-university-detail__tag--required { background: #f6e8e7; color: #8b0000; }
+.applicant-university-detail a.applicant-university-detail__item-source { flex: 0 0 auto; display: inline-flex; align-items: center; margin-left: 6px; color: #655c55; }
+.applicant-university-detail__cost-table, .applicant-university-detail__deadline-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums;
+  th, td { padding: 10px 0; border-top: 1px solid #e7e2dc; vertical-align: top; text-align: left; font-size: 15px; color: #302b28; }
+  tbody tr:first-child th, tbody tr:first-child td { border-top: 0; }
+  th small { display: block; margin-top: 2px; font-size: 13px; font-weight: 400; color: #655c55; }
+  th { font-weight: 500; } }
+.applicant-university-detail__cost-table td { text-align: right; font-weight: 500; white-space: nowrap; }
+.applicant-university-detail__cost-total th, .applicant-university-detail__cost-total td { font-weight: 700; border-top: 1px solid #302b28; }
+.applicant-university-detail__table-scroll { overflow-x: auto; }
+.applicant-university-detail__deadline-table { min-width: 420px; thead th { border-top: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #655c55; padding-top: 0; } }
+.applicant-university-detail__cards { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.applicant-university-detail__card-item { display: flex; flex-direction: column; gap: 6px; padding: 16px; border: 1px solid #e7e2dc; border-radius: 12px; background: #fbf9f6;
+  h4 { margin: 8px 0 0; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #655c55; }
+  ul { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.5; color: #302b28; }
+  a { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; align-self: flex-start; margin-top: 6px; } }
+.applicant-university-detail__card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; strong { font-size: 16px; font-weight: 500; color: #302b28; } }
+.applicant-university-detail .applicant-university-detail__card-line { margin: 0; font-size: 14px; line-height: 1.5; color: #655c55; strong { color: #302b28; font-weight: 500; } }
+.applicant-university-detail__stepper { display: flex; flex-direction: column; gap: 16px; counter-reset: none;
+  > li { display: flex; gap: 14px; align-items: flex-start; } }
+.applicant-university-detail__step-num { flex: 0 0 28px; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: #8b0000; color: #fff; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.applicant-university-detail__step-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; strong { font-size: 15px; font-weight: 500; color: #302b28; } > span { font-size: 14px; line-height: 1.5; color: #655c55; } }
+.applicant-university-detail__step-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; a { display: inline-flex; align-items: center; gap: 3px; font-size: 14px; font-weight: 500; } }
+@media (min-width: 768px) { .applicant-university-detail__cards { grid-template-columns: 1fr 1fr; } }
+@media (prefers-contrast: more) {
+  .applicant-university-detail__card-item { border-color: #8a8178; }
+  .applicant-university-detail__list > li, .applicant-university-detail__cost-table th, .applicant-university-detail__cost-table td { border-top-color: #8a8178; }
+  .applicant-university-detail__list-body span, .applicant-university-detail__list-title, .applicant-university-detail__step-body > span { color: #302b28; }
+}

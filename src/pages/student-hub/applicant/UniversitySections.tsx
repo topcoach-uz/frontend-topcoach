@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowLeftRight, ArrowUpRight } from "lucide-react";
 import { ClampedText } from "./ClampedText";
+import { StructuredCosts } from "./StructuredSections";
+import { hasStructuredCosts, type StructuredUniversityContent } from "./structuredContent";
 import { UniversityCompare, type CollegeListEntry } from "./UniversityCompare";
 import type { ComparableFacts, GlanceTile, KeyFactRow } from "./universityKeyFactsModel";
 
@@ -115,7 +117,8 @@ export function UniversitySectionNav({ items }: { items: SectionNavItem[] }) {
 export interface CostColumn { text?: string; url?: string; linkLabel: string }
 
 /** Costs & funding card: two clamped columns, shared by the university and degree pages. */
-export function CostsFundingSection({ tuition, funding, checked }: { tuition: CostColumn; funding: CostColumn; checked?: string }) {
+export function CostsFundingSection({ tuition, funding, checked, structured }: { tuition: CostColumn; funding: CostColumn; checked?: string; structured?: StructuredUniversityContent }) {
+  if (hasStructuredCosts(structured)) return <section id="ud-costs" className="applicant-university-detail__funding"><h2>Costs &amp; funding</h2><StructuredCosts content={structured!} /></section>;
   if (!tuition.text && !funding.text) return null;
   const column = (label: string, col: CostColumn) => <div><dt>{label}</dt><dd>
     {col.text ? <ClampedText text={col.text} /> : <p>Not yet verified.</p>}

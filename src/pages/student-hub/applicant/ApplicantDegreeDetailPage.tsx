@@ -13,6 +13,8 @@ import { ApplicantMobileTrail } from './ApplicantTopBarContext';
 import { ClampedText } from './ClampedText';
 import { DetailHero, SaveToListButton } from './DetailHero';
 import { awardedQualification, buildDegreeGlance } from './degreeFactsModel';
+import { ApplicationStepper, DeadlinesTable, EntryRequirementsList, useStructuredContent } from './StructuredSections';
+import { hasStructuredCosts, type StructuredUniversityContent } from './structuredContent';
 import { CostsFundingSection, UniversityDetailSkeleton, UniversityGlance, UniversitySectionNav } from './UniversitySections';
 import { shortUniversityName } from './universityKeyFactsModel';
 import { universityLogoNeedsDarkBackground } from './universityLogo';
@@ -43,6 +45,7 @@ export default function ApplicantDegreeDetailPage() {
   const universityQuery = useGetUniversityDetailQuery(universityId, { skip: !universityId });
   const degreeQuery = useGetUndergraduateDegreeQuery({ universityId, slug: degreeSlug }, { skip: !universityId || !degreeSlug });
   const university = universityQuery.data;
+  const structured = useStructuredContent(university);
   const degree = degreeQuery.data;
   const name = university ? getTranslation(university.name) : 'University';
   const universityHref = '/student-hub/universities/' + universityId + (field ? '?field=' + encodeURIComponent(field) : '');
@@ -57,6 +60,7 @@ export default function ApplicantDegreeDetailPage() {
         location={[getTranslation(university.location?.region), getTranslation(university.location?.country)].filter(Boolean).join(', ')}
         logoUrl={logoUrl}
         universityHref={universityHref}
+        structured={structured}
         deadlines={university.deadlines ?? []}
         degree={withVerifiedUniversityFinance(degree, university.undergraduateFinanceContent)}
       /> : <div className="applicant-degree-page__missing"><h1>Degree not found</h1><p>This university has no published record for this degree.</p><Link to={universityHref}>Return to university <ArrowRight size={17} aria-hidden="true" /></Link></div>}
@@ -66,7 +70,7 @@ export default function ApplicantDegreeDetailPage() {
 
 const GUIDANCE_PREFIX = /^University guidance:\s*/i;
 
-export function DegreeContent({ universityName, location, logoUrl, degree, saveHrefOverride, studyArea = false, universityHref, deadlines = [] }: {
+export function DegreeContent({ universityName, location, logoUrl, degree, saveHrefOverride, studyArea = false, universityHref, deadlines = [], structured }: {
   universityName: string;
   location: string;
   logoUrl?: string;
@@ -75,6 +79,7 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
   studyArea?: boolean;
   universityHref?: string;
   deadlines?: UniversitiesSchema['deadlines'];
+  structured?: StructuredUniversityContent;
 }) {
   const navigate = useNavigate();
   const applications = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
@@ -89,7 +94,9 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
   const studyText = [degree.description, degree.curriculumSummary].filter(Boolean).join('\n\n');
   const feesText = degree.feesSummary?.replace(GUIDANCE_PREFIX, '');
   const fundingText = [degree.fundingSummary?.replace(GUIDANCE_PREFIX, ''), degree.fundingPolicyNote].filter(Boolean).join('\n\n');
-  const showCosts = !!(feesText || fundingText);
+  const showCosts = !!(feesText || fundingText) || hasStructuredCosts(structured);
+  const structuredEntry = !!structured && (structured.entryRequirements.length > 0 || structured.supplementary.length > 0);
+  const structuredApply = !!structured && (structured.applicationSteps.length > 0 || structured.deadlines.length > 0);
   const curriculumHref = degree.curriculumUrl ?? degree.officialDegreeUrl;
   const checked = Number.isFinite(Date.parse(degree.verifiedAt)) ? displayDate(degree.verifiedAt) : undefined;
   const awarded = awardedQualification(degree.degreeType);
@@ -125,7 +132,7 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
     </section>
 
     <section id="ud-entry" className="applicant-university-detail__card"><h2>Entry requirements</h2>
-      {degree.entrySummary ? <ClampedText text={degree.entrySummary} /> : <p>Degree-specific entry requirements have not been verified in the catalogue.</p>}
+      {structuredEntry ? <EntryRequirementsList content={structured!} /> : degree.entrySummary ? <ClampedText text={degree.entrySummary} /> : <p>Degree-specific entry requirements have not been verified in the catalogue.</p>}
       <div className="applicant-degree-page__qualification">
         <div className="applicant-degree-page__qualification-control"><label htmlFor="degree-qualification">Published qualification</label><Select id="degree-qualification" aria-label="Published qualification" value={qualification} onChange={setQualification} options={qualificationOptions(degree)} popupClassName="applicant-university-detail__finder-popup" /></div>
         {publishedQualification ? <>
@@ -142,11 +149,15 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
       tuition={{ text: feesText, url: degree.feesUrl ?? undefined, linkLabel: 'Official tuition and fee details' }}
       funding={{ text: fundingText, url: degree.fundingPolicyUrl ?? undefined, linkLabel: 'Official scholarships and funding policy' }}
       checked={checked}
+      structured={structured}
     />}
 
     <section id="ud-apply" className="applicant-university-detail__card"><h2>How to apply</h2>
-      {degree.applicationSummary ? <ClampedText text={degree.applicationSummary} /> : <p>Check the official application guide for steps and dates.</p>}
-      {degree.deadlineNote && <p className="applicant-university-detail__checked">{degree.deadlineNote}</p>}
+      {structuredApply ? <>
+        <ApplicationStepper content={structured!} />
+        <DeadlinesTable content={structured!} />
+      </> : degree.applicationSummary ? <ClampedText text={degree.applicationSummary} /> : <p>Check the official application guide for steps and dates.</p>}
+      {degree.deadlineNote && !structuredApply && <p className="applicant-university-detail__checked">{degree.deadlineNote}</p>}
       <div className="applicant-degree-page__links">
         <OfficialLink href={degree.applicationUrl}>Official application guide</OfficialLink>
       </div>
