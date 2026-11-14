@@ -89,7 +89,7 @@ const monthOf = (text: string) => MONTHS.findIndex((name) => new RegExp(`\\b${na
 /** Orders dates inside one admissions cycle (Aug–Dec come before Jan–Jul). */
 const cycleKey = (text: string) => { const month = monthOf(text); return month < 0 ? Number.NaN : (month >= 7 ? month - 7 : month + 5) * 100 + (parseInt(text.match(/\b(\d{1,2})\b/)?.[1] ?? "0", 10) || 0); };
 const shortMonths = (text: string) => MONTHS.reduce((out, name) => out.replace(new RegExp(`\\b${name}\\b`, "gi"), name.slice(0, 3).replace(/^./, (c) => c.toUpperCase())), text);
-const isAidRound = (round: string) => /financial aid|css profile|fafsa|\baid\b/i.test(round);
+const isAidRound = (round: string) => /aid|financial|css|fafsa|enrol|enroll|reply|deposit|decision release|housing/i.test(round);
 
 /** The applicant's final-chance deadline from structured rounds, with the early round noted when there is one. */
 export function structuredDeadlineTile(content?: StructuredUniversityContent): { value: string; sub: string } | undefined {

@@ -56,6 +56,17 @@ describe("structured content", () => {
     expect(structuredDeadlineTile(undefined)).toBeUndefined();
   });
 
+  it("ignores aid and enrollment rounds (MIT deadlines)", () => {
+    const mit = { deadlines: [
+      { round: "Early Action", applicationDeadline: { text: "November 1" } },
+      { round: "Regular Action", applicationDeadline: { text: "January 4" } },
+      { round: "Financial aid (Early Action)", applicationDeadline: { text: "November 30" } },
+      { round: "Financial aid (Regular Action)", applicationDeadline: { text: "February 15" } },
+      { round: "Enrollment reply", applicationDeadline: { text: "May 1" } },
+    ] } as never;
+    expect(structuredDeadlineTile(mit)).toEqual({ value: "January 4", sub: "Regular Action · Early Action Nov 1" });
+  });
+
   it("reads tuition and detects missing years", () => {
     expect(structuredTuition(content)).toEqual({ value: "US$66,720", period: "year", sub: "per year · 2026–27" });
     expect(structuredTuition({ costItems: [{ category: "tuition", amount: null }] } as never)).toBeUndefined();
