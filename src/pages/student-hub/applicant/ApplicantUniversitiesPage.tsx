@@ -4,7 +4,7 @@ import { buildDegreeOptions } from './universityDegreeOptions';
 import { normalizeStudyArea } from './UniversityStudyAreas';
 import { useEffect, useState } from "react";
 import { Alert, Button, Input, Select, Tag } from "antd";
-import { ArrowLeft, ArrowRight, ArrowUpRight, BookmarkPlus, Building2, Search } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Bookmark, BookmarkCheck, Building2, Search } from "lucide-react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useGetGraduateProgramQuery, useGetGraduateProgramsQuery, type GraduateProgram, type GraduateProgramFact } from "src/app/services/graduateProgramsApi";
 import { useGetReviewedUniversitiesQuery, useGetUniversityDetailQuery, useGetUniversityFiltersQuery } from "src/app/services/universities";
@@ -185,15 +185,23 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
 
   return <div className={`applicant-university-detail__layout${keyFacts.length ? " applicant-university-detail__layout--facts" : ""}`}>
     <section className="applicant-university-detail__hero">
-      <div className="applicant-university-detail__identity">
-        <span className={`applicant-university-detail__mark${logoUrl ? " applicant-university-detail__mark--logo" : ""}${universityLogoNeedsDarkBackground(logoUrl) ? " applicant-university-detail__mark--dark" : ""}${university.id === "1b921b70-2639-4d05-8559-36b77211852d" ? " applicant-university-detail__mark--ucla" : ""}`}>{logoUrl ? <UniversityLogoImage src={logoUrl} name={name} /> : <Building2 size={30} aria-hidden="true" />}</span>
-        <div><h1>{name}</h1>{location && <p>{location}</p>}{qs && <span className="applicant-university-detail__rank">#{qs.rank} in QS ranking</span>}</div>
+      <div className="applicant-university-detail__hero-top">
+        <div className="applicant-university-detail__identity">
+          <span className={`applicant-university-detail__mark${logoUrl ? " applicant-university-detail__mark--logo" : ""}${universityLogoNeedsDarkBackground(logoUrl) ? " applicant-university-detail__mark--dark" : ""}${university.id === "1b921b70-2639-4d05-8559-36b77211852d" ? " applicant-university-detail__mark--ucla" : ""}`}>{logoUrl ? <UniversityLogoImage src={logoUrl} name={name} /> : <Building2 size={30} aria-hidden="true" />}</span>
+          <div>
+            <h1>{name}</h1>
+            {(location || qs || profile.officialWebsiteUrl) && <p className="applicant-university-detail__meta">
+              {[location, qs ? `#${qs.rank} in QS ranking` : ""].filter(Boolean).join(" · ")}
+              {profile.officialWebsiteUrl && <>{(location || qs) && " · "}<a href={profile.officialWebsiteUrl} target="_blank" rel="noopener noreferrer">Official website <ArrowUpRight size={14} aria-hidden="true" /></a></>}
+            </p>}
+          </div>
+        </div>
+        <button type="button" className={`applicant-university-detail__save${existingId ? " applicant-university-detail__save--saved" : ""}`} disabled={applicationsUnavailable} onClick={existingId ? onOpen : onAdd}>
+          {existingId ? <BookmarkCheck size={16} aria-hidden="true" /> : <Bookmark size={16} aria-hidden="true" />}
+          {existingId ? "Saved to College List" : "Save to College List"}
+        </button>
       </div>
       {profile.profileOverview && <p className="applicant-university-detail__overview">{profile.profileOverview}</p>}
-      <div className="applicant-university-detail__hero-actions">
-        <Button disabled={applicationsUnavailable} onClick={existingId ? onOpen : onAdd}>{existingId ? "Open College List" : "Save to College List"}</Button>
-        {profile.officialWebsiteUrl && <a href={profile.officialWebsiteUrl} target="_blank" rel="noreferrer">Official website <ArrowUpRight size={18} aria-hidden="true" /></a>}
-      </div>
       {applicationsUnavailable && <p className="applicant-university-detail__notice">College List is temporarily unavailable. You can still explore this university.</p>}
     </section>
     <UniversityKeyFacts rows={keyFacts} />
