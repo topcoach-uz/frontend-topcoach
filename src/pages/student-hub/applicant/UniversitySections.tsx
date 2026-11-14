@@ -1,8 +1,9 @@
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { GlanceTile, KeyFactRow } from "./universityKeyFactsModel";
 
 export function UniversityGlance({ tiles }: { tiles: GlanceTile[] }) {
   if (!tiles.length) return null;
-  return <section className="applicant-university-detail__glance" aria-label="At a glance">
+  return <section id="glance" className="applicant-university-detail__glance" aria-label="At a glance">
     <dl>{tiles.map((tile) => <div className="applicant-university-detail__tile" key={tile.id}>
       <dt>{tile.label}</dt><dd>{tile.value}</dd>{tile.sub && <small>{tile.sub}</small>}
     </div>)}</dl>
@@ -11,7 +12,7 @@ export function UniversityGlance({ tiles }: { tiles: GlanceTile[] }) {
 
 export function UniversityAdmissions({ deadlines, exams }: { deadlines: KeyFactRow[]; exams: string[] }) {
   if (!deadlines.length && !exams.length) return null;
-  return <section className="applicant-university-detail__admissions">
+  return <section id="admissions" className="applicant-university-detail__admissions">
     <h2>Admissions</h2>
     <dl className="applicant-university-detail__admissions-grid">
       {deadlines.length > 0 && <div>
@@ -41,4 +42,53 @@ export function UniversityDetailSkeleton() {
     <div className="applicant-university-detail__skel-card"><Bar className="applicant-university-detail__skel-bar--title" /><Bar className="applicant-university-detail__skel-bar--input" /></div>
     <div className="applicant-university-detail__skel-card"><Bar className="applicant-university-detail__skel-bar--title" /><div className="applicant-university-detail__skel-grid applicant-university-detail__skel-grid--2"><div style={{ display: "flex", flexDirection: "column", gap: 10 }}><Bar /><Bar /><Bar /></div><div style={{ display: "flex", flexDirection: "column", gap: 10 }}><Bar /><Bar /><Bar /></div></div></div>
   </div>;
+}
+
+export interface SectionNavItem { id: string; label: string }
+
+const prefersReducedMotion = () => typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+/** Height of the site header when it stays pinned to the top (fixed/sticky); 0 when it scrolls away. */
+function pinnedHeaderHeight(): number {
+  const header = document.querySelector("header");
+  if (!header) return 0;
+  const position = getComputedStyle(header).position;
+  return position === "fixed" || position === "sticky" ? Math.round(header.getBoundingClientRect().height) : 0;
+}
+
+export function UniversitySectionNav({ items }: { items: SectionNavItem[] }) {
+  const navRef = useRef<HTMLElement>(null);
+  const [active, setActive] = useState(items[0]?.id ?? "");
+  const [offset, setOffset] = useState(0);
+  const key = items.map((item) => item.id).join("|");
+
+  useLayoutEffect(() => {
+    const update = () => {
+      const next = pinnedHeaderHeight();
+      setOffset(next);
+      navRef.current?.parentElement?.style.setProperty("--ud-nav-offset", `${next}px`);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+    const visible = new Set<string>();
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) { if (entry.isIntersecting) visible.add(entry.target.id); else visible.delete(entry.target.id); }
+      const first = items.find((item) => visible.has(item.id));
+      if (first) setActive(first.id);
+    }, { rootMargin: `-${offset + 64}px 0px -55% 0px`, threshold: 0 });
+    items.forEach((item) => { const el = document.getElementById(item.id); if (el) observer.observe(el); });
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, offset]);
+
+  if (items.length < 2) return null;
+  return <nav ref={navRef} className="applicant-university-detail__sectionnav" aria-label="Page sections" style={{ top: offset }}>
+    {items.map((item) => <a key={item.id} href={`#${item.id}`} aria-current={active === item.id ? "true" : undefined}
+      onClick={(event) => { event.preventDefault(); document.getElementById(item.id)?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" }); setActive(item.id); }}>{item.label}</a>)}
+  </nav>;
 }

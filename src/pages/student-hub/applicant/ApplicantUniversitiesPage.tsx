@@ -18,7 +18,7 @@ import { useApplicantOverview } from "./ApplicantOverviewContext";
 import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import { getUniversityLogoUrl, universityLogoNeedsDarkBackground } from "./universityLogo";
 import { buildUniversityFieldOptions } from "./universityFieldOptions";
-import { UniversityAdmissions, UniversityDetailSkeleton, UniversityGlance } from "./UniversitySections";
+import { UniversityAdmissions, UniversityDetailSkeleton, UniversityGlance, UniversitySectionNav } from "./UniversitySections";
 import { buildGlanceTiles, buildKeyFactRows, buildScholarshipText, humanizeFacts, shortUniversityName } from "./universityKeyFactsModel";
 
 const factValue = (value: GraduateProgramFact) => humanizeFacts(value) || "Verification needed";
@@ -188,7 +188,16 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
   const cmsTuition = keyFacts.find((row) => row.id === "tuition")?.lines?.map((line) => line.text).join("\n");
   const cmsScholarships = buildScholarshipText(university, (value) => getTranslation(value as never))
     ?? ((profile.fundingIntro || profile.fundingDetail) ? { text: [profile.fundingIntro, profile.fundingDetail].filter(Boolean).join("\n\n"), url: profile.fundingPolicyUrl ?? profile.fundingUrl ?? undefined } : undefined);
+  const hasLife = !!(profile.studentLifeIntro || profile.studentLifeDetail);
   const showCosts = !!finance || !!cmsTuition || !!cmsScholarships;
+
+  const navItems = [
+    glanceTiles.length ? { id: "glance", label: "At a glance" } : null,
+    { id: "study-areas", label: "Study areas" },
+    showCosts ? { id: "costs", label: "Costs & funding" } : null,
+    admissionDeadlines.length || admissionExams.length ? { id: "admissions", label: "Admissions" } : null,
+    hasLife ? { id: "life", label: "Life" } : null,
+  ].filter((item): item is { id: string; label: string } => !!item);
 
   return <div className="applicant-university-detail__layout">
     <section className="applicant-university-detail__hero">
@@ -212,9 +221,10 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
       {profile.profileOverview && <p className="applicant-university-detail__overview">{profile.profileOverview}</p>}
       {applicationsUnavailable && <p className="applicant-university-detail__notice">College List is temporarily unavailable. You can still explore this university.</p>}
     </section>
+    <UniversitySectionNav items={navItems} />
     <UniversityGlance tiles={glanceTiles} />
 
-    <section className="applicant-university-detail__degrees">
+    <section id="study-areas" className="applicant-university-detail__degrees">
       <h2>Explore undergraduate degrees</h2>
       {selectedField && degrees.length > 0 && matchingDegreeCount === 0 && <p className="applicant-university-detail__degree-note">We have not verified a degree matching {selectedField} yet. These are the other degrees currently reviewed for {name}.</p>}
       {selectedField && degrees.length === 0 && catalogueFields.length > 0 && matchingCatalogueFieldCount === 0 && <p className="applicant-university-detail__degree-note">The current catalogue does not list {selectedField} for {name}. These are its other undergraduate study areas.</p>}
@@ -224,7 +234,7 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
       {!degreesQuery.isLoading && !degreesQuery.isError && !degrees.length && !catalogueFields.length && <div className="applicant-university-detail__pending"><h3>Course details are being verified</h3><p>We do not have a confirmed undergraduate course list for this university yet.</p></div>}
     </section>
 
-    {showCosts && <section className="applicant-university-detail__funding"><h2>Costs &amp; funding</h2>
+    {showCosts && <section id="costs" className="applicant-university-detail__funding"><h2>Costs &amp; funding</h2>
       <dl className="applicant-university-detail__finance">
         <div><dt>Tuition &amp; fees</dt><dd>
           {finance ? <><ClampedText text={finance.content.feesSummary} /><a href={finance.content.feesUrl} target="_blank" rel="noopener noreferrer">Official tuition and fee details <ArrowUpRight size={17} aria-hidden="true" /></a></> : cmsTuition ? <p>{cmsTuition}</p> : <p>Not yet verified.</p>}
@@ -236,7 +246,7 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
       {finance && <p className="applicant-university-detail__checked">Checked {displayDate(finance.verifiedAt)}</p>}
     </section>}
     <UniversityAdmissions deadlines={admissionDeadlines} exams={admissionExams} />
-    {(profile.studentLifeIntro || profile.studentLifeDetail) && <section className="applicant-university-detail__life"><h2>Life at {shortUniversityName(name)}</h2>{profile.studentLifeIntro && <p>{profile.studentLifeIntro}</p>}{profile.studentLifeHighlight && <strong>{profile.studentLifeHighlight}</strong>}{profile.studentLifeDetail && <p>{profile.studentLifeDetail}</p>}{profile.studentLifeUrl && <a href={profile.studentLifeUrl} target="_blank" rel="noopener noreferrer">Explore campus life <ArrowUpRight size={17} aria-hidden="true" /></a>}</section>}
+    {hasLife && <section id="life" className="applicant-university-detail__life"><h2>Life at {shortUniversityName(name)}</h2>{profile.studentLifeIntro && <p>{profile.studentLifeIntro}</p>}{profile.studentLifeHighlight && <strong>{profile.studentLifeHighlight}</strong>}{profile.studentLifeDetail && <p>{profile.studentLifeDetail}</p>}{profile.studentLifeUrl && <a href={profile.studentLifeUrl} target="_blank" rel="noopener noreferrer">Explore campus life <ArrowUpRight size={17} aria-hidden="true" /></a>}</section>}
     {(profile.profileVerifiedAt || (!finance && !hasVerifiedStudyAreaContent)) && <p className="applicant-university-detail__source">{profile.profileVerifiedAt ? `Information from the university's official pages · Checked ${displayDate(profile.profileVerifiedAt)}` : "Course, campus and funding details will appear after source review."}</p>}
   </div>;
 }

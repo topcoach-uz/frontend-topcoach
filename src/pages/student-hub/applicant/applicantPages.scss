@@ -1808,3 +1808,19 @@
 @media (min-width: 768px) { .applicant-university-detail__preview-body { grid-template-columns: 1fr 1fr; gap: 32px; } }
 .applicant-university-detail__preview-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; a { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; } }
 @media (prefers-reduced-motion: reduce) { .applicant-university-detail__preview { animation: none; } }
+
+/* ---------- Sticky section nav ---------- */
+.applicant-university-detail__layout { --ud-nav-offset: 0px; }
+.applicant-university-detail__sectionnav {
+  position: sticky; z-index: 5; display: flex; gap: 24px; overflow-x: auto; white-space: nowrap;
+  padding: 0 4px; background: #fbf9f6; border-bottom: 1px solid #e7e2dc; scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+  a {
+    flex: 0 0 auto; padding: 12px 0 10px; color: #655c55; font-size: 14px; font-weight: 500; text-decoration: none;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    &[aria-current="true"] { color: #8b0000; border-bottom-color: #8b0000; }
+    &:focus-visible { outline: 2px solid #8b0000; outline-offset: -2px; border-radius: 4px; }
+  }
+}
+@media (hover: hover) { .applicant-university-detail__sectionnav a:hover { color: #8b0000; text-decoration: none; } }
+#glance, #study-areas, #costs, #admissions, #life { scroll-margin-top: calc(var(--ud-nav-offset, 0px) + 64px); }
