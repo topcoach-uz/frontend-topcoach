@@ -1,6 +1,6 @@
 import { verifiedUniversityFinance, type VerifiedUniversityFinance } from './verifiedUniversityFinance';
 import { UniversityDegreeFinder } from './UniversityDegreeFinder';
-import { buildDegreeOptions } from './universityDegreeOptions';
+import { buildDegreeOptions, finderCopy } from './universityDegreeOptions';
 import { normalizeStudyArea } from './UniversityStudyAreas';
 import { useEffect, useState } from "react";
 import { Alert, Button, Input, Select, Tag } from "antd";
@@ -18,7 +18,7 @@ import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import { getUniversityLogoUrl, universityLogoNeedsDarkBackground } from "./universityLogo";
 import { buildUniversityFieldOptions } from "./universityFieldOptions";
 import { UniversityKeyFacts } from "./UniversityKeyFacts";
-import { buildKeyFactRows, humanizeFacts } from "./universityKeyFactsModel";
+import { buildKeyFactRows, humanizeFacts, shortUniversityName } from "./universityKeyFactsModel";
 
 const factValue = (value: GraduateProgramFact) => humanizeFacts(value) || "Verification needed";
 
@@ -178,8 +178,9 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
     links: (university as UniversityProfileContent & { verifiedProgramLinks?: import('src/app/services/universities').VerifiedProgramLink[] }).verifiedProgramLinks ?? [],
     fields: catalogueFields.filter(field => !degrees.some(degree => degreeMatchesField(degree, field.value) || normalizeStudyArea(degree.name) === normalizeStudyArea(field.value))),
   });
-  const keyFacts = buildKeyFactRows(university, (value) => getTranslation(value as never));
+  const keyFacts = buildKeyFactRows(university, (value) => getTranslation(value as never), { hasVerifiedFinance: !!finance });
   const qs = (university.rankings ?? []).find((item) => item?.type === "QS" && Number.isFinite(item.rank) && item.rank > 0);
+  const hasVerifiedStudyAreaContent = ((university as { verifiedStudyAreaContent?: unknown[] }).verifiedStudyAreaContent?.length ?? 0) > 0;
   const hasKeyFactMoney = keyFacts.some((row) => row.id === "tuition" || row.id === "scholarships");
 
   return <div className={`applicant-university-detail__layout${keyFacts.length ? " applicant-university-detail__layout--facts" : ""}`}>
@@ -188,7 +189,7 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
         <span className={`applicant-university-detail__mark${logoUrl ? " applicant-university-detail__mark--logo" : ""}${universityLogoNeedsDarkBackground(logoUrl) ? " applicant-university-detail__mark--dark" : ""}${university.id === "1b921b70-2639-4d05-8559-36b77211852d" ? " applicant-university-detail__mark--ucla" : ""}`}>{logoUrl ? <UniversityLogoImage src={logoUrl} name={name} /> : <Building2 size={30} aria-hidden="true" />}</span>
         <div><h1>{name}</h1>{location && <p>{location}</p>}{qs && <span className="applicant-university-detail__rank">#{qs.rank} in QS ranking</span>}</div>
       </div>
-      <p className="applicant-university-detail__overview">{profile.profileOverview ?? "Explore this university's undergraduate options and check current course information before adding it to your College List."}</p>
+      {profile.profileOverview && <p className="applicant-university-detail__overview">{profile.profileOverview}</p>}
       <div className="applicant-university-detail__hero-actions">
         <Button disabled={applicationsUnavailable} onClick={existingId ? onOpen : onAdd}>{existingId ? "Open College List" : "Save to College List"}</Button>
         {profile.officialWebsiteUrl && <a href={profile.officialWebsiteUrl} target="_blank" rel="noreferrer">Official website <ArrowUpRight size={18} aria-hidden="true" /></a>}
@@ -200,7 +201,7 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
 
     <section className="applicant-university-detail__degrees">
       <h2>Explore undergraduate degrees</h2>
-      <p>Search for a degree or study area, then look at the course in detail.</p>
+      <p>{finderCopy(degreeOptions).intro}</p>
       <div className="applicant-university-detail__degree-tools">
         {degrees.length > 0
           ? <span>{selectedField ? `${matchingDegreeCount} match${matchingDegreeCount === 1 ? "" : "es"} for ${selectedField} · ${degrees.length} degrees shown` : `${degrees.length} verified degrees`}</span>
@@ -216,14 +217,14 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
     </section>
 
     <div className="applicant-university-detail__lower">
-      <section className="applicant-university-detail__life"><h2>Life at {name}</h2>{profile.studentLifeIntro || profile.studentLifeDetail ? <><p>{profile.studentLifeIntro}</p>{profile.studentLifeHighlight && <strong>{profile.studentLifeHighlight}</strong>}<p>{profile.studentLifeDetail}</p>{profile.studentLifeUrl && <a href={profile.studentLifeUrl} target="_blank" rel="noreferrer">Explore campus life <ArrowUpRight size={17} aria-hidden="true" /></a>}</> : <p>Student-life information is being checked against official university sources.</p>}</section>
+      <section className="applicant-university-detail__life"><h2>Life at {shortUniversityName(name)}</h2>{profile.studentLifeIntro || profile.studentLifeDetail ? <><p>{profile.studentLifeIntro}</p>{profile.studentLifeHighlight && <strong>{profile.studentLifeHighlight}</strong>}<p>{profile.studentLifeDetail}</p>{profile.studentLifeUrl && <a href={profile.studentLifeUrl} target="_blank" rel="noreferrer">Explore campus life <ArrowUpRight size={17} aria-hidden="true" /></a>}</> : <p>Student-life information is being checked against official university sources.</p>}</section>
       <section className="applicant-university-detail__funding"><h2>Fees &amp; financial support</h2>{finance ? <dl className="applicant-university-detail__finance">
         <div><dt>Tuition &amp; fees</dt><dd><p>{finance.content.feesSummary}</p><a href={finance.content.feesUrl} target="_blank" rel="noopener noreferrer">Official tuition and fee details <ArrowUpRight size={17} aria-hidden="true" /></a></dd></div>
         <div><dt>Scholarships &amp; funding</dt><dd><p>{finance.content.fundingSummary}</p>{finance.content.fundingPolicyNote && <p>{finance.content.fundingPolicyNote}</p>}<a href={finance.content.fundingPolicyUrl} target="_blank" rel="noopener noreferrer">Official scholarships and funding policy <ArrowUpRight size={17} aria-hidden="true" /></a></dd></div>
         <p className="applicant-university-detail__checked">Checked {displayDate(finance.verifiedAt)}</p>
       </dl> : profile.fundingIntro || profile.fundingDetail ? <><p>{profile.fundingIntro}</p><p>{profile.fundingDetail} {profile.fundingPolicyUrl && <a href={profile.fundingPolicyUrl} target="_blank" rel="noopener noreferrer">International applicant policy <ArrowUpRight size={17} aria-hidden="true" /></a>}</p>{profile.fundingUrl && <a href={profile.fundingUrl} target="_blank" rel="noopener noreferrer">Explore funding <ArrowUpRight size={17} aria-hidden="true" /></a>}</> : hasKeyFactMoney ? <><p>See tuition and scholarships in Key facts.</p><p className="applicant-university-detail__checked">Detailed verified funding information is still being checked against official sources.</p></> : <p>Current tuition and funding details are being checked against official university sources.</p>}</section>
     </div>
-    <p className="applicant-university-detail__source">{profile.profileVerifiedAt ? `Information from the university's official pages · Checked ${displayDate(profile.profileVerifiedAt)}` : "Course, campus and funding details will appear after source review."}</p>
+    {(profile.profileVerifiedAt || (!finance && !hasVerifiedStudyAreaContent)) && <p className="applicant-university-detail__source">{profile.profileVerifiedAt ? `Information from the university's official pages · Checked ${displayDate(profile.profileVerifiedAt)}` : "Course, campus and funding details will appear after source review."}</p>}
     </div>
   </div>;
 }

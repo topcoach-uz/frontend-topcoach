@@ -12,6 +12,7 @@ export function UniversityKeyFacts({ rows }: { rows: KeyFactRow[] }) {
       {rows.map((row) => <div className="applicant-university-detail__fact" key={row.id}>
         <dt>{row.label}</dt>
         <dd>
+          {row.note && <p className="applicant-university-detail__fact-note">{row.note}</p>}
           {row.lines?.map((line, i) => <p key={i}>{line.text}{line.note && <span className="applicant-university-detail__fact-note"> · {line.note}</span>}{line.link && <> <External url={line.link.url}>{line.link.label}</External></>}</p>)}
           {row.chips && <ul className="applicant-university-detail__fact-chips">{row.chips.map((chip) => <li key={chip}>{chip}</li>)}</ul>}
           {row.links?.map((link) => <p key={link.url}><External url={link.url}>{link.label}</External></p>)}

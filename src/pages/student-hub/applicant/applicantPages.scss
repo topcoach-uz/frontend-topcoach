@@ -1043,7 +1043,6 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  h2 { font-size: 27px; }
   > p { font-size: 17px; }
 }
 .applicant-university-detail__degree-tools {
@@ -1051,10 +1050,10 @@
   flex-wrap: wrap;
   margin: 12px 0 8px;
   > span {
-    background: #fff3f3;
-    color: #8b0000;
-    border-radius: 10px;
-    padding: 13px 16px;
+    background: none;
+    color: #655c55;
+    padding: 0;
+    font-size: 14px;
   }
   > a { color: #596373; }
 }
@@ -1130,7 +1129,6 @@
   // Stretch so the Life and Fees cards always share one height.
   align-items: stretch;
   > section { display: flex; flex-direction: column; gap: 14px; }
-  h2 { font-size: 22px; line-height: 1.3; }
   p { font-size: 16px; line-height: 1.6; }
   strong { font-size: 18px; font-weight: 500; }
 }
@@ -1661,7 +1659,7 @@
 }
 .applicant-university-detail__finance {
   margin: 0; display: flex; flex-direction: column; gap: 14px;
-  dt { font-size: 13px; font-weight: 600; color: #655c55; }
+  dt { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #655c55; }
   dd { margin: 4px 0 0; display: flex; flex-direction: column; gap: 6px; }
   dd p { margin: 0; }
 }
@@ -1678,3 +1676,15 @@
     > .applicant-university-detail__main { grid-column: 1; grid-row: 2; }
   }
 }
+
+// Warm palette + section heading rhythm for the university detail page.
+.applicant-university-detail p,
+.applicant-university-detail small { color: #655c55; }
+.applicant-university-detail__degrees h2,
+.applicant-university-detail__life h2,
+.applicant-university-detail__funding h2 { font-size: 22px; line-height: 1.25; font-weight: 500; letter-spacing: -0.01em; }
+.applicant-university-detail .applicant-university-detail__facts dd p,
+.applicant-university-detail .applicant-university-detail__facts dd p a { font-size: 15px; font-weight: 500; color: #302b28; }
+.applicant-university-detail .applicant-university-detail__facts dd p a { color: #8b0000; }
+.applicant-university-detail .applicant-university-detail__facts dd p.applicant-university-detail__fact-note,
+.applicant-university-detail .applicant-university-detail__facts .applicant-university-detail__fact-note { font-size: 13px; font-weight: 400; color: #655c55; }

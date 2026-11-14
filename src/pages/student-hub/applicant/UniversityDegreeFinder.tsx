@@ -1,6 +1,6 @@
 import { Select } from "antd";
 import { useNavigate } from "react-router-dom";
-import type { DegreeOption } from "./universityDegreeOptions";
+import { finderCopy, type DegreeOption } from "./universityDegreeOptions";
 
 const GROUPS: DegreeOption["group"][] = ["Degrees", "Study areas"];
 
@@ -11,6 +11,7 @@ export function UniversityDegreeFinder({ options }: { options: DegreeOption[] })
     options: options.filter((option) => option.group === label).map((option) => ({ ...option, key: option.value })),
   })).filter((group) => group.options.length);
   if (!groups.length) return null;
+  const copy = finderCopy(options);
 
   const open = (_: string, option: unknown) => {
     const picked = option as DegreeOption;
@@ -19,14 +20,14 @@ export function UniversityDegreeFinder({ options }: { options: DegreeOption[] })
   };
 
   return <div className="applicant-university-detail__finder">
-    <label htmlFor="university-degree-search">Find a degree or study area</label>
+    <label htmlFor="university-degree-search">{copy.label}</label>
     <Select
       id="university-degree-search"
       className="applicant-university-detail__finder-select"
       showSearch
       allowClear
       value={null}
-      placeholder="Search a study area…"
+      placeholder={copy.placeholder}
       options={groups}
       optionFilterProp="label"
       filterOption={(input, option) => String((option as DegreeOption | undefined)?.label ?? "").toLocaleLowerCase().includes(input.trim().toLocaleLowerCase())}
