@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight, ArrowUpRight } from "lucide-react";
+import { ClampedText } from "./ClampedText";
 import { UniversityCompare, type CollegeListEntry } from "./UniversityCompare";
 import type { ComparableFacts, GlanceTile, KeyFactRow } from "./universityKeyFactsModel";
 
@@ -109,4 +110,19 @@ export function UniversitySectionNav({ items }: { items: SectionNavItem[] }) {
     {items.map((item) => <a key={item.id} href={`#${item.id}`} aria-current={active === item.id ? "true" : undefined}
       onClick={(event) => { event.preventDefault(); findSection(navRef.current, item.id)?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" }); setActive(item.id); }}>{item.label}</a>)}
   </nav>;
+}
+
+export interface CostColumn { text?: string; url?: string; linkLabel: string }
+
+/** Costs & funding card: two clamped columns, shared by the university and degree pages. */
+export function CostsFundingSection({ tuition, funding, checked }: { tuition: CostColumn; funding: CostColumn; checked?: string }) {
+  if (!tuition.text && !funding.text) return null;
+  const column = (label: string, col: CostColumn) => <div><dt>{label}</dt><dd>
+    {col.text ? <ClampedText text={col.text} /> : <p>Not yet verified.</p>}
+    {col.text && col.url && <a href={col.url} target="_blank" rel="noopener noreferrer">{col.linkLabel} <ArrowUpRight size={17} aria-hidden="true" /></a>}
+  </dd></div>;
+  return <section id="ud-costs" className="applicant-university-detail__funding"><h2>Costs &amp; funding</h2>
+    <dl className="applicant-university-detail__finance">{column("Tuition & fees", tuition)}{column("Scholarships & funding", funding)}</dl>
+    {checked && <p className="applicant-university-detail__checked">Checked {checked}</p>}
+  </section>;
 }

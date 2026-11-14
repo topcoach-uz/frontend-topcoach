@@ -6,7 +6,7 @@ import { buildDegreeOptions, buildPreview } from './universityDegreeOptions';
 import { normalizeStudyArea } from './UniversityStudyAreas';
 import { useEffect, useState } from "react";
 import { Alert, Button, Input, Select, Tag } from "antd";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Bookmark, BookmarkCheck, Building2, Search } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Building2, Search } from "lucide-react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useGetGraduateProgramQuery, useGetGraduateProgramsQuery, type GraduateProgram, type GraduateProgramFact } from "src/app/services/graduateProgramsApi";
 import { useGetReviewedUniversitiesQuery, useGetUniversityDetailQuery, useGetUniversityFiltersQuery } from "src/app/services/universities";
@@ -19,7 +19,8 @@ import { useApplicantOverview } from "./ApplicantOverviewContext";
 import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import { getUniversityLogoUrl, universityLogoNeedsDarkBackground } from "./universityLogo";
 import { buildUniversityFieldOptions } from "./universityFieldOptions";
-import { UniversityAdmissions, UniversityDetailSkeleton, UniversityGlance, UniversitySectionNav } from "./UniversitySections";
+import { DetailHero, SaveToListButton } from "./DetailHero";
+import { CostsFundingSection, UniversityAdmissions, UniversityDetailSkeleton, UniversityGlance, UniversitySectionNav } from "./UniversitySections";
 import { buildComparableFacts, qsRankOf, buildGlanceTiles, buildKeyFactRows, buildScholarshipText, humanizeFacts, shortUniversityName } from "./universityKeyFactsModel";
 
 const factValue = (value: GraduateProgramFact) => humanizeFacts(value) || "Verification needed";
@@ -205,27 +206,18 @@ function BachelorUniversityDetail({ university, selectedField, collegeList, exis
   ].filter((item): item is { id: string; label: string } => !!item);
 
   return <div className="applicant-university-detail__layout">
-    <section className="applicant-university-detail__hero">
-      <div className="applicant-university-detail__hero-top">
-        <div className="applicant-university-detail__identity">
-          <span className={`applicant-university-detail__mark${logoUrl ? " applicant-university-detail__mark--logo" : ""}${universityLogoNeedsDarkBackground(logoUrl) ? " applicant-university-detail__mark--dark" : ""}${university.id === "1b921b70-2639-4d05-8559-36b77211852d" ? " applicant-university-detail__mark--ucla" : ""}`}>{logoUrl ? <UniversityLogoImage src={logoUrl} name={name} /> : <Building2 size={30} aria-hidden="true" />}</span>
-          <div>
-            <h1 title={name}>{name}</h1>
-            {(location || qs || profile.officialWebsiteUrl) && <p className="applicant-university-detail__meta">
-              {location && <span>{location}</span>}
-              {qs && <span>#{qs.rank} in QS ranking</span>}
-              {profile.officialWebsiteUrl && <a href={profile.officialWebsiteUrl} target="_blank" rel="noopener noreferrer">Official website <ArrowUpRight size={14} aria-hidden="true" /></a>}
-            </p>}
-          </div>
-        </div>
-        <button type="button" className={`applicant-university-detail__save${existingId ? " applicant-university-detail__save--saved" : ""}`} disabled={applicationsUnavailable} onClick={existingId ? onOpen : onAdd}>
-          {existingId ? <BookmarkCheck size={16} aria-hidden="true" /> : <Bookmark size={16} aria-hidden="true" />}
-          {existingId ? "Saved to College List" : "Save to College List"}
-        </button>
-      </div>
-      {profile.profileOverview && <p className="applicant-university-detail__overview">{profile.profileOverview}</p>}
-      {applicationsUnavailable && <p className="applicant-university-detail__notice">College List is temporarily unavailable. You can still explore this university.</p>}
-    </section>
+    <DetailHero
+      mark={<span className={`applicant-university-detail__mark${logoUrl ? " applicant-university-detail__mark--logo" : ""}${universityLogoNeedsDarkBackground(logoUrl) ? " applicant-university-detail__mark--dark" : ""}${university.id === "1b921b70-2639-4d05-8559-36b77211852d" ? " applicant-university-detail__mark--ucla" : ""}`}>{logoUrl ? <UniversityLogoImage src={logoUrl} name={name} /> : <Building2 size={30} aria-hidden="true" />}</span>}
+      title={name} titleText={name}
+      meta={<>
+        {location && <span>{location}</span>}
+        {qs && <span>#{qs.rank} in QS ranking</span>}
+        {profile.officialWebsiteUrl && <a href={profile.officialWebsiteUrl} target="_blank" rel="noopener noreferrer">Official website <ArrowUpRight size={14} aria-hidden="true" /></a>}
+      </>}
+      overview={profile.profileOverview || undefined}
+      action={<SaveToListButton saved={!!existingId} disabled={applicationsUnavailable} onAdd={onAdd} onOpen={onOpen} />}
+      notice={applicationsUnavailable ? <p className="applicant-university-detail__notice">College List is temporarily unavailable. You can still explore this university.</p> : undefined}
+    />
     <UniversitySectionNav items={navItems} />
     <UniversityGlance tiles={glanceTiles} compare={{ name: shortUniversityName(name), facts: buildComparableFacts(keyFacts, finance?.content, qsRankOf(university)), list: collegeList }} />
 
@@ -239,17 +231,11 @@ function BachelorUniversityDetail({ university, selectedField, collegeList, exis
       {!degreesQuery.isLoading && !degreesQuery.isError && !degrees.length && !catalogueFields.length && <div className="applicant-university-detail__pending"><h3>Course details are being verified</h3><p>We do not have a confirmed undergraduate course list for this university yet.</p></div>}
     </section>
 
-    {showCosts && <section id="ud-costs" className="applicant-university-detail__funding"><h2>Costs &amp; funding</h2>
-      <dl className="applicant-university-detail__finance">
-        <div><dt>Tuition &amp; fees</dt><dd>
-          {finance ? <><ClampedText text={finance.content.feesSummary} /><a href={finance.content.feesUrl} target="_blank" rel="noopener noreferrer">Official tuition and fee details <ArrowUpRight size={17} aria-hidden="true" /></a></> : cmsTuition ? <p>{cmsTuition}</p> : <p>Not yet verified.</p>}
-        </dd></div>
-        <div><dt>Scholarships &amp; funding</dt><dd>
-          {finance ? <><ClampedText text={[finance.content.fundingSummary, finance.content.fundingPolicyNote].filter(Boolean).join("\n\n")} /><a href={finance.content.fundingPolicyUrl} target="_blank" rel="noopener noreferrer">Official scholarships and funding policy <ArrowUpRight size={17} aria-hidden="true" /></a></> : cmsScholarships ? <><ClampedText text={cmsScholarships.text} />{cmsScholarships.url && <a href={cmsScholarships.url} target="_blank" rel="noopener noreferrer">Official page <ArrowUpRight size={17} aria-hidden="true" /></a>}</> : <p>Not yet verified.</p>}
-        </dd></div>
-      </dl>
-      {finance && <p className="applicant-university-detail__checked">Checked {displayDate(finance.verifiedAt)}</p>}
-    </section>}
+    {showCosts && <CostsFundingSection
+      tuition={finance ? { text: finance.content.feesSummary, url: finance.content.feesUrl, linkLabel: "Official tuition and fee details" } : { text: cmsTuition, linkLabel: "" }}
+      funding={finance ? { text: [finance.content.fundingSummary, finance.content.fundingPolicyNote].filter(Boolean).join("\n\n"), url: finance.content.fundingPolicyUrl, linkLabel: "Official scholarships and funding policy" } : { text: cmsScholarships?.text, url: cmsScholarships?.url, linkLabel: "Official page" }}
+      checked={finance ? displayDate(finance.verifiedAt) : undefined}
+    />}
     <UniversityAdmissions deadlines={admissionDeadlines} exams={admissionExams} />
     {hasLife && <section id="ud-life" className="applicant-university-detail__life"><h2>Life at {shortUniversityName(name)}</h2>{profile.studentLifeIntro && <p>{profile.studentLifeIntro}</p>}{profile.studentLifeHighlight && <strong>{profile.studentLifeHighlight}</strong>}{profile.studentLifeDetail && <p>{profile.studentLifeDetail}</p>}{profile.studentLifeUrl && <a href={profile.studentLifeUrl} target="_blank" rel="noopener noreferrer">Explore campus life <ArrowUpRight size={17} aria-hidden="true" /></a>}</section>}
     {(profile.profileVerifiedAt || (!finance && !hasVerifiedStudyAreaContent)) && <p className="applicant-university-detail__source">{profile.profileVerifiedAt ? `Information from the university's official pages · Checked ${displayDate(profile.profileVerifiedAt)}` : "Course, campus and funding details will appear after source review."}</p>}
