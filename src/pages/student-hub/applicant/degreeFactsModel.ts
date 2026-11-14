@@ -4,14 +4,15 @@ import { extractTuition, formatFactDate, hasMonthDay, parseDatesWithYear, stripG
 
 const GENERIC_TYPES = /^undergraduate (study area|degree)$/i;
 
-/** "Bachelor of Science (SB)" -> SB; "Bachelor of Science" -> BSc; unknown or generic types return undefined. */
-export function shortQualification(degreeType: string | null | undefined): string | undefined {
-  const type = (degreeType ?? "").trim();
-  if (!type || GENERIC_TYPES.test(type)) return undefined;
-  const paren = type.match(/\(([A-Za-z.]{2,6})\)\s*$/);
-  if (paren) return paren[1].replace(/\./g, "");
-  const map: [RegExp, string][] = [[/^bachelor of science\b/i, "BSc"], [/^bachelor of arts\b/i, "BA"], [/^bachelor of engineering\b/i, "BEng"], [/^bachelor of business\b/i, "BBA"], [/^bachelor of fine arts\b/i, "BFA"]];
-  return map.find(([re]) => re.test(type))?.[1];
+/** Short form only when the data states it explicitly, e.g. a trailing "(SB)"; never guessed from the long name. */
+export function shortQualification(...texts: (string | null | undefined)[]): string | undefined {
+  for (const raw of texts) {
+    const text = (raw ?? "").trim();
+    if (!text || GENERIC_TYPES.test(text)) continue;
+    const paren = text.match(/\(([A-Z][A-Za-z.]{1,5})\)\s*$/);
+    if (paren) return paren[1].replace(/\./g, "");
+  }
+  return undefined;
 }
 
 /** Awarded qualification line for the hero, hiding the generic placeholder used for study areas. */
@@ -57,7 +58,7 @@ export function deadlineTile(degree: Pick<UndergraduateDegree, "deadlineAt">, de
 
 export function buildDegreeGlance(degree: UndergraduateDegree, deadlines: NonNullable<UniversitiesSchema["deadlines"]>, tr: Translate, now: Date = new Date()): GlanceTile[] {
   const tiles: GlanceTile[] = [];
-  const qualification = shortQualification(degree.degreeType);
+  const qualification = shortQualification(degree.degreeType, degree.name);
   if (qualification) tiles.push({ id: "qualification", label: "Qualification", value: qualification });
   const timing = majorChoiceTiming(degree.entrySummary, degree.description, degree.curriculumSummary, degree.applicationSummary, degree.firstYearSubjects);
   if (timing) tiles.push({ id: "choose-major", label: "Choose major", value: timing });

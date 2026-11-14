@@ -119,6 +119,7 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
       {degree.firstYearSubjects && <p className="applicant-degree-page__plain">{degree.firstYearSubjects}</p>}
       <div className="applicant-degree-page__links">
         <OfficialLink href={curriculumHref}>{studyText ? 'Official curriculum source' : 'Explore the curriculum'}</OfficialLink>
+        {degree.sourceUrl && degree.sourceUrl !== curriculumHref && degree.sourceUrl !== degree.officialDegreeUrl && <OfficialLink href={degree.sourceUrl}>Course catalogue</OfficialLink>}
         {degree.officialDegreeUrl && degree.officialDegreeUrl !== curriculumHref && <OfficialLink href={degree.officialDegreeUrl}>{studyArea ? 'Official programme information' : 'Official degree page'}</OfficialLink>}
       </div>
     </section>
@@ -144,14 +145,12 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
     />}
 
     <section id="ud-apply" className="applicant-university-detail__card"><h2>How to apply</h2>
-      {degree.applicationSummary ? <ClampedText text={degree.applicationSummary} /> : <p>Application guidance has not been verified in the catalogue.</p>}
+      {degree.applicationSummary ? <ClampedText text={degree.applicationSummary} /> : <p>Check the official application guide for steps and dates.</p>}
       {degree.deadlineNote && <p className="applicant-university-detail__checked">{degree.deadlineNote}</p>}
       <div className="applicant-degree-page__links">
         <OfficialLink href={degree.applicationUrl}>Official application guide</OfficialLink>
       </div>
       <div className="applicant-degree-page__cta"><button type="button" className="applicant-university-detail__save" onClick={() => navigate(applicationPlanHref(saveHref, []))}>Plan my application</button></div>
     </section>
-
-    <p className="applicant-university-detail__source">{degree.sourceUrl ? <a href={degree.sourceUrl} target="_blank" rel="noopener noreferrer">{degree.sourceTitle} <ArrowUpRight size={14} aria-hidden="true" /></a> : 'Official programme source has not yet been verified.'}</p>
   </div>;
 }

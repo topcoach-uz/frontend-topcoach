@@ -7,7 +7,9 @@ const NOW = new Date("2026-11-14T00:00:00Z");
 describe("degree facts", () => {
   it("derives short qualifications conservatively", () => {
     expect(shortQualification("Bachelor of Science (SB)")).toBe("SB");
-    expect(shortQualification("Bachelor of Science in Physics")).toBe("BSc");
+    expect(shortQualification("Bachelor of Science in Physics")).toBeUndefined();
+    expect(shortQualification("Bachelor of Science", "Computer Science (Course 6-3)")).toBeUndefined();
+    expect(shortQualification("Bachelor of Science", "Physics (SB)")).toBe("SB");
     expect(shortQualification("Undergraduate study area")).toBeUndefined();
     expect(shortQualification("Diploma")).toBeUndefined();
   });
