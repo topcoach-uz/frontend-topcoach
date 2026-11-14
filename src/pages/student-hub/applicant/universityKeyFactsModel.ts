@@ -163,18 +163,36 @@ export function meetsFullNeed(text: string): boolean {
     || /\b100\s?%\s+of\s+(?:(?:a\s+student'?s\s+|your\s+)?(?:demonstrated|financial)\s+)*need/i.test(text);
 }
 
-export function buildGlanceTiles(rows: readonly KeyFactRow[], finance?: { feesSummary: string; fundingSummary: string; fundingPolicyNote?: string } | null): GlanceTile[] {
+export interface ComparableFacts { acceptance?: string; tuition?: string; tuitionSub?: string; applicationFee?: string; aid?: string; qs?: string }
+type FinanceText = { feesSummary: string; fundingSummary: string; fundingPolicyNote?: string };
+
+/** The facts shown in the glance tiles and the compare table, computed in one place. */
+export function buildComparableFacts(rows: readonly KeyFactRow[], finance?: FinanceText | null, qsRank?: number | null): ComparableFacts {
   const first = (id: string) => rows.find((r) => r.id === id)?.lines?.[0]?.text;
-  const tiles: GlanceTile[] = [];
-  const rate = first("acceptance");
-  if (rate) tiles.push({ id: "acceptance", label: "Acceptance rate", value: rate });
   const verified = finance ? extractTuition(finance.feesSummary) : undefined;
-  const cms = first("tuition");
-  if (verified) tiles.push({ id: "tuition", label: "Tuition", value: verified.value, sub: verified.sub });
-  else if (cms) tiles.push({ id: "tuition", label: "Tuition", value: cms });
-  const fee = first("application-fee");
-  if (fee) tiles.push({ id: "application-fee", label: "Application fee", value: fee });
-  if (finance && meetsFullNeed([finance.fundingSummary, finance.fundingPolicyNote].filter(Boolean).join(" "))) tiles.push({ id: "aid", label: "Financial aid", value: "Meets 100% of need" });
+  const aid = finance && meetsFullNeed([finance.fundingSummary, finance.fundingPolicyNote].filter(Boolean).join(" "));
+  return {
+    acceptance: first("acceptance"),
+    tuition: verified?.value ?? first("tuition"),
+    tuitionSub: verified?.sub,
+    applicationFee: first("application-fee"),
+    aid: aid ? "Meets 100% of need" : undefined,
+    qs: qsRank && Number.isFinite(qsRank) && qsRank > 0 ? `#${qsRank}` : undefined,
+  };
+}
+
+export function qsRankOf(university: Partial<UniversitiesSchema>): number | undefined {
+  const entry = (university.rankings ?? []).find((item) => item?.type === "QS" && Number.isFinite(item.rank) && item.rank > 0);
+  return entry?.rank;
+}
+
+export function buildGlanceTiles(rows: readonly KeyFactRow[], finance?: FinanceText | null): GlanceTile[] {
+  const facts = buildComparableFacts(rows, finance);
+  const tiles: GlanceTile[] = [];
+  if (facts.acceptance) tiles.push({ id: "acceptance", label: "Acceptance rate", value: facts.acceptance });
+  if (facts.tuition) tiles.push({ id: "tuition", label: "Tuition", value: facts.tuition, sub: facts.tuitionSub });
+  if (facts.applicationFee) tiles.push({ id: "application-fee", label: "Application fee", value: facts.applicationFee });
+  if (facts.aid) tiles.push({ id: "aid", label: "Financial aid", value: facts.aid });
   return tiles;
 }
 

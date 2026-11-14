@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildGlanceTiles, buildKeyFactRows, buildScholarshipText, extractTuition, meetsFullNeed, cleanExamName, formatMoney, humanizeFacts, humanizeKey, safeHttpUrl, shortUniversityName, stripGraduateParagraph } from "./universityKeyFactsModel";
+import { buildComparableFacts, qsRankOf, buildGlanceTiles, buildKeyFactRows, buildScholarshipText, extractTuition, meetsFullNeed, cleanExamName, formatMoney, humanizeFacts, humanizeKey, safeHttpUrl, shortUniversityName, stripGraduateParagraph } from "./universityKeyFactsModel";
 
 const tr = (v: unknown) => (typeof v === "string" ? v : "");
 
@@ -103,5 +103,14 @@ describe("university key facts", () => {
   it("shortens names", () => {
     expect(shortUniversityName("Massachusetts Institute of Technology (MIT)")).toBe("MIT");
     expect(shortUniversityName("Yale University")).toBe("Yale University");
+  });
+
+  it("builds comparable facts including QS rank, with gaps left undefined", () => {
+    const rows = buildKeyFactRows({ acceptanceRates: [{ rate: 4 }], applicationFees: [{ fee: 75, currency: { symbol: "$", name: "USD" } }] } as never, tr);
+    const facts = buildComparableFacts(rows, { feesSummary: "Tuition is $62,980 in 2026-27.", fundingSummary: "Meets 100% of demonstrated need." }, 1);
+    expect(facts).toEqual({ acceptance: "4%", tuition: "US$62,980", tuitionSub: "per year · 2026–27", applicationFee: "US$75", aid: "Meets 100% of need", qs: "#1" });
+    expect(buildComparableFacts([], null, undefined)).toEqual({ acceptance: undefined, tuition: undefined, tuitionSub: undefined, applicationFee: undefined, aid: undefined, qs: undefined });
+    expect(qsRankOf({ rankings: [{ type: "THE", rank: 3 }, { type: "QS", rank: 12 }] } as never)).toBe(12);
+    expect(qsRankOf({} as never)).toBeUndefined();
   });
 });

@@ -1,4 +1,5 @@
 import { verifiedUniversityFinance, type VerifiedUniversityFinance } from './verifiedUniversityFinance';
+import type { CollegeListEntry } from "./UniversityCompare";
 import { ClampedText } from './ClampedText';
 import { UniversityDegreeFinder } from './UniversityDegreeFinder';
 import { buildDegreeOptions, buildPreview } from './universityDegreeOptions';
@@ -19,7 +20,7 @@ import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import { getUniversityLogoUrl, universityLogoNeedsDarkBackground } from "./universityLogo";
 import { buildUniversityFieldOptions } from "./universityFieldOptions";
 import { UniversityAdmissions, UniversityDetailSkeleton, UniversityGlance, UniversitySectionNav } from "./UniversitySections";
-import { buildGlanceTiles, buildKeyFactRows, buildScholarshipText, humanizeFacts, shortUniversityName } from "./universityKeyFactsModel";
+import { buildComparableFacts, qsRankOf, buildGlanceTiles, buildKeyFactRows, buildScholarshipText, humanizeFacts, shortUniversityName } from "./universityKeyFactsModel";
 
 const factValue = (value: GraduateProgramFact) => humanizeFacts(value) || "Verification needed";
 
@@ -114,12 +115,15 @@ export function ApplicantUniversityDetailPage() {
   const program = programQuery.data;
   const university = universityQuery.data;
   const existing = programId ? applications.data?.data.find((app) => app.programId === programId) : applications.data?.data.find((app) => app.universityId === universityId);
+  const collegeList: CollegeListEntry[] = [...new Map((applications.data?.data ?? [])
+    .filter((app) => app.degreeLevel === "bachelor" && app.universityId && app.universityId !== universityId && app.universityName)
+    .map((app) => [app.universityId!, { universityId: app.universityId!, universityName: app.universityName! }] as const)).values()];
   const loading = programId ? programQuery.isLoading : universityQuery.isLoading;
   const error = programId ? programQuery.isError || (!programQuery.isLoading && !program) : universityQuery.isError || (!universityQuery.isLoading && !university);
   if (!programId) return <section className="applicant-page applicant-university-detail">
     <ApplicantMobileTrail><Link to={`/student-hub/universities${selectedField ? `?major=${encodeURIComponent(selectedField)}` : ""}`}>Find universities</Link><span> / </span>{university ? getTranslation(university.name) : "University"}</ApplicantMobileTrail>
     {loading ? <UniversityDetailSkeleton /> : <QueryState loading={false} error={error} retry={universityQuery.refetch}>
-      {university && <BachelorUniversityDetail university={university} selectedField={selectedField} existingId={existing?.id} applicationsUnavailable={applications.isLoading || applications.isError} onAdd={() => navigate(`/student-hub/applications/new?university=${encodeURIComponent(universityId)}`)} onOpen={() => existing && navigate(`/student-hub/applications/${existing.id}`)} />}
+      {university && <BachelorUniversityDetail university={university} selectedField={selectedField} collegeList={collegeList} existingId={existing?.id} applicationsUnavailable={applications.isLoading || applications.isError} onAdd={() => navigate(`/student-hub/applications/new?university=${encodeURIComponent(universityId)}`)} onOpen={() => existing && navigate(`/student-hub/applications/${existing.id}`)} />}
     </QueryState>}
   </section>;
   return <ApplicantPage title={program?.programName ?? (university ? getTranslation(university.name) : programId ? "Graduate program" : "University overview")} actions={<Button icon={<ArrowLeft size={15} />} onClick={() => navigate("/student-hub/universities")}>Back to results</Button>}>
@@ -155,9 +159,10 @@ function UniversityLogoImage({ src, name }: { src: string; name: string }) {
   return failed ? <Building2 size={30} aria-hidden="true" /> : <img src={src} alt={`${name} logo`} onError={() => setFailed(true)} />;
 }
 
-function BachelorUniversityDetail({ university, selectedField, existingId, applicationsUnavailable, onAdd, onOpen }: {
+function BachelorUniversityDetail({ university, selectedField, collegeList, existingId, applicationsUnavailable, onAdd, onOpen }: {
   university: UniversitiesSchema;
   selectedField: string;
+  collegeList: CollegeListEntry[];
   existingId?: string;
   applicationsUnavailable: boolean;
   onAdd: () => void;
@@ -222,7 +227,7 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
       {applicationsUnavailable && <p className="applicant-university-detail__notice">College List is temporarily unavailable. You can still explore this university.</p>}
     </section>
     <UniversitySectionNav items={navItems} />
-    <UniversityGlance tiles={glanceTiles} />
+    <UniversityGlance tiles={glanceTiles} compare={{ name: shortUniversityName(name), facts: buildComparableFacts(keyFacts, finance?.content, qsRankOf(university)), list: collegeList }} />
 
     <section id="study-areas" className="applicant-university-detail__degrees">
       <h2>Explore undergraduate degrees</h2>

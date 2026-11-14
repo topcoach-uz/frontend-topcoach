@@ -1,14 +1,20 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Check } from "lucide-react";
+import { ArrowLeftRight, Check } from "lucide-react";
+import { UniversityCompare, type CollegeListEntry } from "./UniversityCompare";
 import { loadReadyExams, saveReadyExams, toggleExam } from "./examChecklist";
-import type { GlanceTile, KeyFactRow } from "./universityKeyFactsModel";
+import type { ComparableFacts, GlanceTile, KeyFactRow } from "./universityKeyFactsModel";
 
-export function UniversityGlance({ tiles }: { tiles: GlanceTile[] }) {
+export function UniversityGlance({ tiles, compare }: { tiles: GlanceTile[]; compare?: { name: string; facts: ComparableFacts; list: CollegeListEntry[] } }) {
+  const [open, setOpen] = useState(false);
   if (!tiles.length) return null;
   return <section id="glance" className="applicant-university-detail__glance" aria-label="At a glance">
-    <dl>{tiles.map((tile) => <div className="applicant-university-detail__tile" key={tile.id}>
-      <dt>{tile.label}</dt><dd>{tile.value}</dd>{tile.sub && <small>{tile.sub}</small>}
-    </div>)}</dl>
+    <div className="applicant-university-detail__glance-top">
+      <dl>{tiles.map((tile) => <div className="applicant-university-detail__tile" key={tile.id}>
+        <dt>{tile.label}</dt><dd>{tile.value}</dd>{tile.sub && <small>{tile.sub}</small>}
+      </div>)}</dl>
+      {compare && <button type="button" className="applicant-university-detail__compare-btn" aria-expanded={open} onClick={() => setOpen((v) => !v)}><ArrowLeftRight size={14} aria-hidden="true" />Compare</button>}
+    </div>
+    {compare && open && <UniversityCompare currentName={compare.name} currentFacts={compare.facts} list={compare.list} onClose={() => setOpen(false)} />}
   </section>;
 }
 
