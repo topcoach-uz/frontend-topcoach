@@ -1861,3 +1861,5 @@
 .applicant-university-detail__finder-popup .ant-select-item-option-selected small { color: #655c55 !important; }
 
 .applicant-university-detail .applicant-university-detail__subtitle { margin-top: 4px; font-size: 14px; line-height: 1.4; color: #655c55; }
+
+.applicant-university-detail__compare-skeleton { display: flex; flex-direction: column; gap: 12px; padding-top: 4px; .applicant-university-detail__skel-bar { height: 18px; } }

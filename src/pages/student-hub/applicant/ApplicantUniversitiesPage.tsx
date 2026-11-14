@@ -219,7 +219,7 @@ function BachelorUniversityDetail({ university, selectedField, collegeList, exis
       notice={applicationsUnavailable ? <p className="applicant-university-detail__notice">College List is temporarily unavailable. You can still explore this university.</p> : undefined}
     />
     <UniversitySectionNav items={navItems} />
-    <UniversityGlance tiles={glanceTiles} compare={{ name: shortUniversityName(name), facts: buildComparableFacts(keyFacts, finance?.content, qsRankOf(university)), list: collegeList }} />
+    <UniversityGlance tiles={glanceTiles} compare={{ id: university.id, name: shortUniversityName(name), facts: buildComparableFacts(keyFacts, finance?.content, qsRankOf(university)), list: collegeList }} />
 
     <section id="ud-study-areas" className="applicant-university-detail__degrees">
       <h2>Explore undergraduate degrees</h2>

@@ -95,7 +95,7 @@ describe("university key facts", () => {
       applicationFees: [{ fee: 75, currency: { symbol: "$", name: "USD" } }],
     } as never, tr);
     const fin = { feesSummary: "Tuition is $62,980 in 2026-27.", fundingSummary: "Meets 100% of demonstrated need." };
-    expect(buildGlanceTiles(rows, fin).map((t) => [t.id, t.value])).toEqual([["acceptance", "4%"], ["tuition", "US$62,980"], ["application-fee", "US$75"], ["aid", "Meets 100% of need"]]);
+    expect(buildGlanceTiles(rows, fin).map((t) => [t.id, t.value])).toEqual([["acceptance", "4%"], ["tuition", "US$62,980"], ["application-fee", "US$75"], ["aid", "100% of need met"]]);
     expect(buildGlanceTiles(rows)[1].value).toBe("US$1");
     expect(buildGlanceTiles([])).toEqual([]);
   });
@@ -108,7 +108,7 @@ describe("university key facts", () => {
   it("builds comparable facts including QS rank, with gaps left undefined", () => {
     const rows = buildKeyFactRows({ acceptanceRates: [{ rate: 4 }], applicationFees: [{ fee: 75, currency: { symbol: "$", name: "USD" } }] } as never, tr);
     const facts = buildComparableFacts(rows, { feesSummary: "Tuition is $62,980 in 2026-27.", fundingSummary: "Meets 100% of demonstrated need." }, 1);
-    expect(facts).toEqual({ acceptance: "4%", tuition: "US$62,980", tuitionSub: "per year · 2026–27", applicationFee: "US$75", aid: "Meets 100% of need", qs: "#1" });
+    expect(facts).toEqual({ acceptance: "4%", tuition: "US$62,980", tuitionSub: "per year · 2026–27", applicationFee: "US$75", aid: "100% of need met", qs: "#1" });
     expect(buildComparableFacts([], null, undefined)).toEqual({ acceptance: undefined, tuition: undefined, tuitionSub: undefined, applicationFee: undefined, aid: undefined, qs: undefined });
     expect(qsRankOf({ rankings: [{ type: "THE", rank: 3 }, { type: "QS", rank: 12 }] } as never)).toBe(12);
     expect(qsRankOf({} as never)).toBeUndefined();

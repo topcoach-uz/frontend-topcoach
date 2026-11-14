@@ -184,7 +184,7 @@ export function buildComparableFacts(rows: readonly KeyFactRow[], finance?: Fina
     tuition: verified?.value ?? first("tuition"),
     tuitionSub: verified?.sub,
     applicationFee: first("application-fee"),
-    aid: aid ? "Meets 100% of need" : undefined,
+    aid: aid ? "100% of need met" : undefined,
     qs: qsRank && Number.isFinite(qsRank) && qsRank > 0 ? `#${qsRank}` : undefined,
   };
 }

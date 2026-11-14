@@ -4,7 +4,7 @@ import { ClampedText } from "./ClampedText";
 import { UniversityCompare, type CollegeListEntry } from "./UniversityCompare";
 import type { ComparableFacts, GlanceTile, KeyFactRow } from "./universityKeyFactsModel";
 
-export function UniversityGlance({ tiles, compare }: { tiles: GlanceTile[]; compare?: { name: string; facts: ComparableFacts; list: CollegeListEntry[] } }) {
+export function UniversityGlance({ tiles, compare }: { tiles: GlanceTile[]; compare?: { id: string; name: string; facts: ComparableFacts; list: CollegeListEntry[] } }) {
   const [open, setOpen] = useState(false);
   if (!tiles.length) return null;
   return <section id="ud-glance" className="applicant-university-detail__glance" aria-label="At a glance">
@@ -14,7 +14,7 @@ export function UniversityGlance({ tiles, compare }: { tiles: GlanceTile[]; comp
       </div>)}</dl>
       {compare && <button type="button" className="applicant-university-detail__compare-btn" aria-expanded={open} onClick={() => setOpen((v) => !v)}><ArrowLeftRight size={14} aria-hidden="true" />Compare</button>}
     </div>
-    {compare && open && <UniversityCompare currentName={compare.name} currentFacts={compare.facts} list={compare.list} onClose={() => setOpen(false)} />}
+    {compare && open && <UniversityCompare currentId={compare.id} currentName={compare.name} currentFacts={compare.facts} list={compare.list} onClose={() => setOpen(false)} />}
   </section>;
 }
 
