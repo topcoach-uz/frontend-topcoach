@@ -19,6 +19,8 @@ import { useApplicantOverview } from "./ApplicantOverviewContext";
 import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import { getUniversityLogoUrl, universityLogoNeedsDarkBackground } from "./universityLogo";
 import { buildUniversityFieldOptions } from "./universityFieldOptions";
+import { hasStructuredCosts } from './structuredContent';
+import { useStructuredContent } from './StructuredSections';
 import { DetailHero, SaveToListButton } from "./DetailHero";
 import { CostsFundingSection, UniversityAdmissions, UniversityDetailSkeleton, UniversityGlance, UniversitySectionNav } from "./UniversitySections";
 import { buildComparableFacts, qsRankOf, buildGlanceTiles, buildKeyFactRows, buildScholarshipText, humanizeFacts, shortUniversityName } from "./universityKeyFactsModel";
@@ -195,13 +197,15 @@ function BachelorUniversityDetail({ university, selectedField, collegeList, exis
   const cmsScholarships = buildScholarshipText(university, (value) => getTranslation(value as never))
     ?? ((profile.fundingIntro || profile.fundingDetail) ? { text: [profile.fundingIntro, profile.fundingDetail].filter(Boolean).join("\n\n"), url: profile.fundingPolicyUrl ?? profile.fundingUrl ?? undefined } : undefined);
   const hasLife = !!(profile.studentLifeIntro || profile.studentLifeDetail);
-  const showCosts = !!finance || !!cmsTuition || !!cmsScholarships;
+  const structured = useStructuredContent(university);
+  const showCosts = !!finance || !!cmsTuition || !!cmsScholarships || hasStructuredCosts(structured);
+  const hasStructuredAdmissions = !!structured && (structured.deadlines.length > 0 || structured.entryRequirements.some((item) => item.status === "required"));
 
   const navItems = [
     glanceTiles.length ? { id: "ud-glance", label: "At a glance" } : null,
     { id: "ud-study-areas", label: "Study areas" },
     showCosts ? { id: "ud-costs", label: "Costs & funding" } : null,
-    admissionDeadlines.length || admissionExams.length ? { id: "ud-admissions", label: "Admissions" } : null,
+    admissionDeadlines.length || admissionExams.length || hasStructuredAdmissions ? { id: "ud-admissions", label: "Admissions" } : null,
     hasLife ? { id: "ud-life", label: "Life" } : null,
   ].filter((item): item is { id: string; label: string } => !!item);
 
@@ -235,8 +239,9 @@ function BachelorUniversityDetail({ university, selectedField, collegeList, exis
       tuition={finance ? { text: finance.content.feesSummary, url: finance.content.feesUrl, linkLabel: "Official tuition and fee details" } : { text: cmsTuition, linkLabel: "" }}
       funding={finance ? { text: [finance.content.fundingSummary, finance.content.fundingPolicyNote].filter(Boolean).join("\n\n"), url: finance.content.fundingPolicyUrl, linkLabel: "Official scholarships and funding policy" } : { text: cmsScholarships?.text, url: cmsScholarships?.url, linkLabel: "Official page" }}
       checked={finance ? displayDate(finance.verifiedAt) : undefined}
+      structured={structured}
     />}
-    <UniversityAdmissions deadlines={admissionDeadlines} exams={admissionExams} />
+    <UniversityAdmissions deadlines={admissionDeadlines} exams={admissionExams} structured={structured} />
     {hasLife && <section id="ud-life" className="applicant-university-detail__life"><h2>Life at {shortUniversityName(name)}</h2>{profile.studentLifeIntro && <p>{profile.studentLifeIntro}</p>}{profile.studentLifeHighlight && <strong>{profile.studentLifeHighlight}</strong>}{profile.studentLifeDetail && <p>{profile.studentLifeDetail}</p>}{profile.studentLifeUrl && <a href={profile.studentLifeUrl} target="_blank" rel="noopener noreferrer">Explore campus life <ArrowUpRight size={17} aria-hidden="true" /></a>}</section>}
     {(profile.profileVerifiedAt || (!finance && !hasVerifiedStudyAreaContent)) && <p className="applicant-university-detail__source">{profile.profileVerifiedAt ? `Information from the university's official pages · Checked ${displayDate(profile.profileVerifiedAt)}` : "Course, campus and funding details will appear after source review."}</p>}
   </div>;

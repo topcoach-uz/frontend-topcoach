@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowLeftRight, ArrowUpRight } from "lucide-react";
 import { ClampedText } from "./ClampedText";
-import { StructuredCosts } from "./StructuredSections";
+import { DeadlinesTable, EntryRequirementsList, StructuredCosts } from "./StructuredSections";
 import { hasStructuredCosts, type StructuredUniversityContent } from "./structuredContent";
 import { UniversityCompare, type CollegeListEntry } from "./UniversityCompare";
 import type { ComparableFacts, GlanceTile, KeyFactRow } from "./universityKeyFactsModel";
@@ -20,18 +20,22 @@ export function UniversityGlance({ tiles, compare }: { tiles: GlanceTile[]; comp
   </section>;
 }
 
-export function UniversityAdmissions({ deadlines, exams }: { deadlines: KeyFactRow[]; exams: string[] }) {
-  if (!deadlines.length && !exams.length) return null;
+export function UniversityAdmissions({ deadlines, exams, structured }: { deadlines: KeyFactRow[]; exams: string[]; structured?: StructuredUniversityContent }) {
+  const structuredDeadlines = !!structured && structured.deadlines.length > 0;
+  const structuredRequired = !!structured && structured.entryRequirements.some((item) => item.status === "required");
+  if (!deadlines.length && !exams.length && !structuredDeadlines && !structuredRequired) return null;
   return <section id="ud-admissions" className="applicant-university-detail__admissions">
     <h2>Admissions</h2>
     <dl className="applicant-university-detail__admissions-grid">
-      {deadlines.length > 0 && <div>
+      {structuredDeadlines && <div><DeadlinesTable content={structured!} /></div>}
+      {!structuredDeadlines && deadlines.length > 0 && <div>
         {deadlines.map((row) => <div className="applicant-university-detail__admissions-group" key={row.id}>
           <dt>{row.id === "deadlines" ? "Deadlines" : row.label}</dt>
           <dd>{row.note && <small>{row.note}</small>}{row.lines?.map((line, i) => <p key={i}>{line.text}{line.note && <span> · {line.note}</span>}</p>)}</dd>
         </div>)}
       </div>}
-      {exams.length > 0 && <div><dt>Required exams</dt><dd><ul className="applicant-university-detail__fact-chips">{exams.map((exam) => <li key={exam}>{exam}</li>)}</ul></dd></div>}
+      {structuredRequired && <div><dt>Required entry</dt><dd><EntryRequirementsList content={structured!} statuses={["required"]} /></dd></div>}
+      {!structuredRequired && exams.length > 0 && <div><dt>Required exams</dt><dd><ul className="applicant-university-detail__fact-chips">{exams.map((exam) => <li key={exam}>{exam}</li>)}</ul></dd></div>}
     </dl>
   </section>;
 }
