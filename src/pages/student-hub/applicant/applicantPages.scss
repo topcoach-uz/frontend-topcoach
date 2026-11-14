@@ -1603,6 +1603,7 @@
 .applicant-university-detail p,
 .applicant-university-detail small { color: #655c55; }
 .applicant-university-detail__degrees h2,
+.applicant-university-detail__card h2,
 .applicant-university-detail__life h2,
 .applicant-university-detail__funding h2 { font-size: 22px; line-height: 1.25; font-weight: 500; letter-spacing: -0.01em; }
 
@@ -1675,11 +1676,13 @@
 .applicant-university-detail .applicant-university-detail__degrees,
 .applicant-university-detail .applicant-university-detail__funding,
 .applicant-university-detail .applicant-university-detail__admissions,
-.applicant-university-detail .applicant-university-detail__life {
+.applicant-university-detail .applicant-university-detail__life,
+.applicant-university-detail .applicant-university-detail__card {
   background: #fff; border: 1px solid #e7e2dc; border-radius: 16px; padding: 24px;
 }
 .applicant-university-detail__funding,
 .applicant-university-detail__admissions,
+.applicant-university-detail__card,
 .applicant-university-detail__life { display: flex; flex-direction: column; gap: 14px; }
 .applicant-university-detail__life p { font-size: 16px; line-height: 1.6; }
 .applicant-university-detail__life strong { font-size: 18px; font-weight: 500; }
@@ -1707,7 +1710,8 @@
   .applicant-university-detail .applicant-university-detail__degrees,
   .applicant-university-detail .applicant-university-detail__funding,
   .applicant-university-detail .applicant-university-detail__admissions,
-  .applicant-university-detail .applicant-university-detail__life { padding: 20px; }
+  .applicant-university-detail .applicant-university-detail__life,
+  .applicant-university-detail .applicant-university-detail__card { padding: 20px; }
 }
 
 .applicant-university-detail__meta { display: flex; flex-wrap: wrap; column-gap: 8px; row-gap: 2px; }
@@ -1781,7 +1785,8 @@
   .applicant-university-detail .applicant-university-detail__degrees,
   .applicant-university-detail .applicant-university-detail__funding,
   .applicant-university-detail .applicant-university-detail__admissions,
-  .applicant-university-detail .applicant-university-detail__life { border-color: #8a8178; }
+  .applicant-university-detail .applicant-university-detail__life,
+  .applicant-university-detail .applicant-university-detail__card { border-color: #8a8178; }
   .applicant-university-detail p, .applicant-university-detail small, .applicant-university-detail dt,
   .applicant-university-detail .applicant-university-detail__meta,
   .applicant-university-detail .applicant-university-detail__finance dd p { color: #302b28; }
