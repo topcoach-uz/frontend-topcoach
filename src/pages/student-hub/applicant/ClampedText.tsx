@@ -1,9 +1,8 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 
-const LINES = 4;
 
-/** Paragraph limited to 4 lines with a bottom fade; the toggle only appears when the text really overflows. */
-export function ClampedText({ text }: { text: string }) {
+/** Paragraph limited to N (default 4) lines with a bottom fade; the toggle only appears when the text really overflows. */
+export function ClampedText({ text, lines = 4 }: { text: string; lines?: number }) {
   const ref = useRef<HTMLParagraphElement>(null);
   const id = useId();
   const [expanded, setExpanded] = useState(false);
@@ -14,14 +13,14 @@ export function ClampedText({ text }: { text: string }) {
     if (!el) return;
     const measure = () => {
       const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 24;
-      setHeights({ full: el.scrollHeight, collapsed: Math.round(lineHeight * LINES) });
+      setHeights({ full: el.scrollHeight, collapsed: Math.round(lineHeight * lines) });
     };
     measure();
     if (typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [text]);
+  }, [text, lines]);
 
   useEffect(() => { setExpanded(false); }, [text]);
 

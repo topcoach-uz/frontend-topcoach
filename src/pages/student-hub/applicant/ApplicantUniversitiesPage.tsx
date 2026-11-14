@@ -1,7 +1,7 @@
 import { verifiedUniversityFinance, type VerifiedUniversityFinance } from './verifiedUniversityFinance';
 import { ClampedText } from './ClampedText';
 import { UniversityDegreeFinder } from './UniversityDegreeFinder';
-import { buildDegreeOptions } from './universityDegreeOptions';
+import { buildDegreeOptions, buildPreview } from './universityDegreeOptions';
 import { normalizeStudyArea } from './UniversityStudyAreas';
 import { useEffect, useState } from "react";
 import { Alert, Button, Input, Select, Tag } from "antd";
@@ -219,7 +219,7 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
       {selectedField && degrees.length > 0 && matchingDegreeCount === 0 && <p className="applicant-university-detail__degree-note">We have not verified a degree matching {selectedField} yet. These are the other degrees currently reviewed for {name}.</p>}
       {selectedField && degrees.length === 0 && catalogueFields.length > 0 && matchingCatalogueFieldCount === 0 && <p className="applicant-university-detail__degree-note">The current catalogue does not list {selectedField} for {name}. These are its other undergraduate study areas.</p>}
       {degreesQuery.isError && <div className="applicant-university-detail__pending"><p>Degree details could not be loaded.</p><Button onClick={() => degreesQuery.refetch()}>Try again</Button></div>}
-      {!degreesQuery.isError && <UniversityDegreeFinder options={degreeOptions} loading={degreesQuery.isLoading} />}
+      {!degreesQuery.isError && <UniversityDegreeFinder options={degreeOptions} loading={degreesQuery.isLoading} getPreview={(option) => buildPreview(option, { universityId: university.id, degrees: degreesQuery.data ?? [], majors: university.majors ?? [], links: (university as { verifiedProgramLinks?: import("src/app/services/universities").VerifiedProgramLink[] }).verifiedProgramLinks ?? [], content: (university as { verifiedStudyAreaContent?: import("./verifiedStudyAreaContent").VerifiedStudyAreaContent[] }).verifiedStudyAreaContent ?? [] })} />}
       {profile.undergraduateCoursesUrl && <div className="applicant-university-detail__degree-tools applicant-university-detail__degree-tools--muted"><a href={profile.undergraduateCoursesUrl} target="_blank" rel="noreferrer">All undergraduate majors on the official site <ArrowUpRight size={17} aria-hidden="true" /></a></div>}
       {!degreesQuery.isLoading && !degreesQuery.isError && !degrees.length && !catalogueFields.length && <div className="applicant-university-detail__pending"><h3>Course details are being verified</h3><p>We do not have a confirmed undergraduate course list for this university yet.</p></div>}
     </section>
