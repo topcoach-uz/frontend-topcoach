@@ -190,6 +190,7 @@ function BachelorUniversityDetail({ university, selectedField, collegeList, exis
   const keyFacts = buildKeyFactRows(university, (value) => getTranslation(value as never));
   const qs = (university.rankings ?? []).find((item) => item?.type === "QS" && Number.isFinite(item.rank) && item.rank > 0);
   const hasVerifiedStudyAreaContent = ((university as { verifiedStudyAreaContent?: unknown[] }).verifiedStudyAreaContent?.length ?? 0) > 0;
+  const structured = useStructuredContent(university);
   const glanceTiles = buildGlanceTiles(keyFacts, finance?.content, structured);
   const admissionDeadlines = keyFacts.filter((row) => row.id === "deadlines" || row.id === "deadlines-past");
   const admissionExams = keyFacts.find((row) => row.id === "exams")?.chips ?? [];
@@ -197,7 +198,6 @@ function BachelorUniversityDetail({ university, selectedField, collegeList, exis
   const cmsScholarships = buildScholarshipText(university, (value) => getTranslation(value as never))
     ?? ((profile.fundingIntro || profile.fundingDetail) ? { text: [profile.fundingIntro, profile.fundingDetail].filter(Boolean).join("\n\n"), url: profile.fundingPolicyUrl ?? profile.fundingUrl ?? undefined } : undefined);
   const hasLife = !!(profile.studentLifeIntro || profile.studentLifeDetail);
-  const structured = useStructuredContent(university);
   const showCosts = !!finance || !!cmsTuition || !!cmsScholarships || hasStructuredCosts(structured);
   const hasStructuredAdmissions = !!structured && (structured.deadlines.length > 0 || structured.entryRequirements.some((item) => item.status === "required"));
 
