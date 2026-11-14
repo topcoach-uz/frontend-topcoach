@@ -196,10 +196,11 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
         <div className="applicant-university-detail__identity">
           <span className={`applicant-university-detail__mark${logoUrl ? " applicant-university-detail__mark--logo" : ""}${universityLogoNeedsDarkBackground(logoUrl) ? " applicant-university-detail__mark--dark" : ""}${university.id === "1b921b70-2639-4d05-8559-36b77211852d" ? " applicant-university-detail__mark--ucla" : ""}`}>{logoUrl ? <UniversityLogoImage src={logoUrl} name={name} /> : <Building2 size={30} aria-hidden="true" />}</span>
           <div>
-            <h1>{name}</h1>
+            <h1 title={name}>{name}</h1>
             {(location || qs || profile.officialWebsiteUrl) && <p className="applicant-university-detail__meta">
-              {[location, qs ? `#${qs.rank} in QS ranking` : ""].filter(Boolean).join(" · ")}
-              {profile.officialWebsiteUrl && <>{(location || qs) && " · "}<a href={profile.officialWebsiteUrl} target="_blank" rel="noopener noreferrer">Official website <ArrowUpRight size={14} aria-hidden="true" /></a></>}
+              {location && <span>{location}</span>}
+              {qs && <span>#{qs.rank} in QS ranking</span>}
+              {profile.officialWebsiteUrl && <a href={profile.officialWebsiteUrl} target="_blank" rel="noopener noreferrer">Official website <ArrowUpRight size={14} aria-hidden="true" /></a>}
             </p>}
           </div>
         </div>

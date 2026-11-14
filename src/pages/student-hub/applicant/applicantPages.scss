@@ -1756,3 +1756,13 @@
   .applicant-university-detail .applicant-university-detail__admissions,
   .applicant-university-detail .applicant-university-detail__life { padding: 20px; }
 }
+
+.applicant-university-detail__meta { display: flex; flex-wrap: wrap; column-gap: 8px; row-gap: 2px; }
+.applicant-university-detail__meta > * { white-space: nowrap; }
+.applicant-university-detail__meta > * + *::before { content: "·"; margin-right: 8px; color: #655c55; }
+@media (max-width: 767px) {
+  .applicant-university-detail .applicant-university-detail__identity h1 { display: block; -webkit-line-clamp: unset; overflow: visible; font-size: 20px; line-height: 1.25; }
+  .applicant-university-detail .applicant-university-detail__mark,
+  .applicant-university-detail .applicant-university-detail__mark--logo { width: 56px; height: 56px; flex-basis: 56px; padding: 6px; }
+  .applicant-university-detail .applicant-university-detail__identity { gap: 14px; }
+}
