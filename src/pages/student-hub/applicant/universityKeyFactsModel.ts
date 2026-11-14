@@ -95,15 +95,13 @@ export function humanizeFacts(facts: Record<string, unknown> | null | undefined)
   return Object.entries(facts).map(([key, value]) => { const text = humanizeFactValue(value); return text ? `${humanizeKey(key)}: ${text}` : ""; }).filter(Boolean).join(" · ");
 }
 
-export interface KeyFactOptions { now?: Date }
+export interface SplitDeadlines { current: KeyFactLine[]; past: KeyFactLine[] }
 
-export function buildKeyFactRows(university: Partial<UniversitiesSchema>, tr: Translate, options: KeyFactOptions = {}): KeyFactRow[] {
-  const rows: KeyFactRow[] = [];
-  const now = options.now ?? new Date();
-
+/** Splits CMS deadlines into current ones and last-cycle ones (every parseable date already past). */
+export function splitDeadlines(deadlines: NonNullable<UniversitiesSchema["deadlines"]>, tr: Translate, now: Date): SplitDeadlines {
   const current: KeyFactLine[] = [];
   const past: KeyFactLine[] = [];
-  for (const item of university.deadlines ?? []) {
+  for (const item of deadlines) {
     const name = stripGraduateParagraph(tr(item?.name as Translatable).trim());
     const date = formatFactDate(item?.date);
     if (!name && !date) continue;
@@ -114,6 +112,16 @@ export function buildKeyFactRows(university: Partial<UniversitiesSchema>, tr: Tr
     const line: KeyFactLine = name && date && !name.includes(year) && !dates.length ? { text: name, note: date } : { text: name || date };
     (stale ? past : current).push(line);
   }
+  return { current, past };
+}
+
+export interface KeyFactOptions { now?: Date }
+
+export function buildKeyFactRows(university: Partial<UniversitiesSchema>, tr: Translate, options: KeyFactOptions = {}): KeyFactRow[] {
+  const rows: KeyFactRow[] = [];
+  const now = options.now ?? new Date();
+
+  const { current, past } = splitDeadlines(university.deadlines ?? [], tr, now);
   if (current.length) rows.push({ id: "deadlines", label: "Application deadlines", lines: current });
   if (past.length) rows.push({ id: "deadlines-past", label: "Last cycle's deadlines", note: "Check the official site for this year's dates.", lines: past });
 
