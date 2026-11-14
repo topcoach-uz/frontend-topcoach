@@ -1,5 +1,7 @@
 import { verifiedUniversityFinance, type VerifiedUniversityFinance } from './verifiedUniversityFinance';
-import { UniversityStudyAreas, normalizeStudyArea } from './UniversityStudyAreas';
+import { UniversityDegreeFinder } from './UniversityDegreeFinder';
+import { buildDegreeOptions } from './universityDegreeOptions';
+import { normalizeStudyArea } from './UniversityStudyAreas';
 import { useEffect, useState } from "react";
 import { Alert, Button, Input, Select, Tag } from "antd";
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookmarkPlus, Building2, Search } from "lucide-react";
@@ -171,6 +173,11 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
   const name = getTranslation(university.name);
   const location = [getTranslation(university.location?.region), getTranslation(university.location?.country)].filter(Boolean).join(", ");
   const logoUrl = getUniversityLogoUrl(university);
+  const degreeOptions = buildDegreeOptions({
+    universityId: university.id, degrees, selectedField, majors: university.majors ?? [],
+    links: (university as UniversityProfileContent & { verifiedProgramLinks?: import('src/app/services/universities').VerifiedProgramLink[] }).verifiedProgramLinks ?? [],
+    fields: catalogueFields.filter(field => !degrees.some(degree => degreeMatchesField(degree, field.value) || normalizeStudyArea(degree.name) === normalizeStudyArea(field.value))),
+  });
   const keyFacts = buildKeyFactRows(university, (value) => getTranslation(value as never));
   const qs = (university.rankings ?? []).find((item) => item?.type === "QS" && Number.isFinite(item.rank) && item.rank > 0);
   const hasKeyFactMoney = keyFacts.some((row) => row.id === "tuition" || row.id === "scholarships");
@@ -193,7 +200,7 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
 
     <section className="applicant-university-detail__degrees">
       <h2>Explore undergraduate degrees</h2>
-      <p>Start with your field of interest, then look at the course in detail.</p>
+      <p>Search for a degree or study area, then look at the course in detail.</p>
       <div className="applicant-university-detail__degree-tools">
         {degrees.length > 0
           ? <span>{selectedField ? `${matchingDegreeCount} match${matchingDegreeCount === 1 ? "" : "es"} for ${selectedField} · ${degrees.length} degrees shown` : `${degrees.length} verified degrees`}</span>
@@ -204,8 +211,7 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
       {selectedField && degrees.length === 0 && catalogueFields.length > 0 && matchingCatalogueFieldCount === 0 && <p className="applicant-university-detail__degree-note">The current catalogue does not list {selectedField} for {name}. These are its other undergraduate study areas.</p>}
       {degreesQuery.isLoading && <div className="applicant-university-detail__pending"><p>Loading undergraduate degrees…</p></div>}
       {degreesQuery.isError && <div className="applicant-university-detail__pending"><p>Degree details could not be loaded.</p><Button onClick={() => degreesQuery.refetch()}>Try again</Button></div>}
-      {!degreesQuery.isLoading && !degreesQuery.isError && degrees.length > 0 && <div className="applicant-university-detail__degree-list">{degrees.map((degree) => <article className="applicant-university-detail__degree-card" key={degree.slug}><div>{degreeMatchesField(degree, selectedField) && <span className="applicant-university-detail__match">Matches selected field</span>}<h3>{degree.name}</h3><p>{degree.degreeType} · Undergraduate degree</p><p>{degree.description}</p><small>Verified {displayDate(degree.verifiedAt)} · <a href={degree.sourceUrl} target="_blank" rel="noreferrer">Official source <ArrowUpRight size={14} aria-hidden="true" /></a></small></div><Link className="applicant-university-detail__degree-button" to={`/student-hub/universities/${university.id}/degrees/${degree.slug}${selectedField ? `?field=${encodeURIComponent(selectedField)}` : ""}`}>View degree <ArrowRight size={19} aria-hidden="true" /></Link></article>)}</div>}
-      {!degreesQuery.isLoading && !degreesQuery.isError && <UniversityStudyAreas universityId={university.id} fields={catalogueFields.filter(field => !degrees.some(degree => degreeMatchesField(degree, field.value) || normalizeStudyArea(degree.name) === normalizeStudyArea(field.value)))} majors={university.majors ?? []} links={(university as UniversityProfileContent & { verifiedProgramLinks?: import('src/app/services/universities').VerifiedProgramLink[] }).verifiedProgramLinks} selectedField={selectedField} />}
+      {!degreesQuery.isLoading && !degreesQuery.isError && <UniversityDegreeFinder options={degreeOptions} />}
       {!degreesQuery.isLoading && !degreesQuery.isError && !degrees.length && !catalogueFields.length && <div className="applicant-university-detail__pending"><h3>Course details are being verified</h3><p>We do not have a confirmed undergraduate course list for this university yet.</p></div>}
     </section>
 
