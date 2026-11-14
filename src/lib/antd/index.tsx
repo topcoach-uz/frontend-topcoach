@@ -13,7 +13,7 @@ function AntdProvider({ children }: PropsWithChildren) {
       theme={{
         token: {
           fontSize: 16,
-          fontFamily: 'Inter, sans-serif',
+          fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
           ...colors,
         },
         components: {

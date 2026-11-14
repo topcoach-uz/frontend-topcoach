@@ -1,0 +1,112 @@
+@use '/src/styles/liquid-glass' as lg;
+
+.degree-choice {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.degree-choice__option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 76px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  @include lg.lg-inset;
+  transition:
+    transform 160ms lg.$lg-ease,
+    box-shadow 240ms lg.$lg-ease,
+    border-color 240ms lg.$lg-ease,
+    background-color 240ms lg.$lg-ease;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow:
+      inset 0 1px 0 #fff,
+      0 10px 22px -16px rgba(48, 43, 40, 0.4);
+  }
+  &:active:not(:disabled) {
+    transform: scale(0.985);
+    transition-duration: 100ms;
+  }
+  &:focus-visible {
+    outline: 2px solid #8b0000;
+    outline-offset: 2px;
+  }
+  &:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+
+  &.is-selected {
+    background: rgba(247, 230, 228, 0.85);
+    border-color: rgba(139, 0, 0, 0.45);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.95),
+      0 0 0 3px rgba(139, 0, 0, 0.08),
+      0 12px 26px -18px rgba(139, 0, 0, 0.5);
+
+    .degree-choice__icon {
+      background: #8b0000;
+      color: #fff;
+    }
+    .degree-choice__check {
+      background: #8b0000;
+      border-color: #8b0000;
+      color: #fff;
+    }
+  }
+}
+.degree-choice__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: rgba(139, 0, 0, 0.07);
+  color: #8b0000;
+  transition: background-color 240ms lg.$lg-ease, color 240ms lg.$lg-ease;
+}
+.degree-choice__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+
+  strong {
+    color: #221d1a;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  small {
+    color: #6b625b;
+    font-size: 13px;
+  }
+}
+.degree-choice__check {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(48, 43, 40, 0.18);
+  transition: background-color 240ms lg.$lg-ease, border-color 240ms lg.$lg-ease;
+}
+
+@media (max-width: 560px) {
+  .degree-choice {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .degree-choice__option {
+    transition: none;
+  }
+}

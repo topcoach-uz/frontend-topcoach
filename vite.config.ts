@@ -52,6 +52,17 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      // With VITE_API_HOST='' the app is same-origin, so it works from any
+      // network address (LAN/phone testing) without pinning the machine's IP.
+      '/socket.io': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        ws: true,
+      },
+      '/uploads': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
     },
   },
   optimizeDeps: {

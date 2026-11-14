@@ -7,6 +7,7 @@ import { ACADEMIC_ICONS, ACTION_ICONS } from '../../../constants/icons';
 import { useStudentProfile } from '../../../hooks/useStudentHub';
 import { AcademicProfile as AcademicProfileType } from '../../../app/services/student-hub/types';
 import './AcademicProfile.scss';
+import DegreeChoice from './DegreeChoice';
 
 const { Option } = Select;
 
@@ -56,7 +57,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
   const isReadOnly = readOnly === true;
   const hookOptions = isReadOnly && studentId ? { studentId } : undefined;
   const { profile, updateStudentProfile, refetchProfile } = useStudentProfile(hookOptions);
-  const targetDegree = Form.useWatch('targetDegree', form) ?? profile?.academicProfile?.targetDegree ?? 'bachelor';
+  // Layout follows the *saved* degree. Picking a degree only selects the
+  // button; the page doesn't re-shape until the choice is saved.
+  const targetDegree = profile?.academicProfile?.targetDegree ?? 'bachelor';
   const educationStatus = Form.useWatch('educationStatus', form);
   const previousInstitution = Form.useWatch('previousInstitution', form);
   const previousDegree = Form.useWatch('previousDegree', form);
@@ -247,7 +250,8 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
   };
 
   const availableTests = TEST_ORDER.filter((key) =>
-    targetDegree === 'master' ? key !== 'sat' && key !== 'act' : key !== 'gre' && key !== 'gmat',
+    // SAT / ACT are always offered; GRE / GMAT are added for master's applicants.
+    targetDegree === 'master' || (key !== 'gre' && key !== 'gmat'),
   );
   const addTestMenuItems: MenuProps['items'] = availableTests.filter(
     (key) => !visibleTests.includes(key),
@@ -365,16 +369,9 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
         className="academic-form"
       >
         <Card title={t('studentHub.profile.applicationGoal', 'Application goal')} className="section-card">
-          {targetDegree === 'master' ? (
-            <>
-              <div className="master-goal-summary"><FontAwesomeIcon icon={ACADEMIC_ICONS.DEGREE} />{t('studentHub.applications.degreeMaster', 'Master’s')}</div>
-              <Form.Item name="targetDegree" hidden rules={[{ required: true }]}><Input type="hidden" /></Form.Item>
-            </>
-          ) : (
-            <Form.Item name="targetDegree" label={t('studentHub.profile.targetDegree', 'Degree you plan to pursue')} rules={[{ required: true }]}>
-              <Select disabled={isReadOnly}><Option value="bachelor">{t('studentHub.applications.degreeBachelor', 'Bachelor’s')}</Option><Option value="master">{t('studentHub.applications.degreeMaster', 'Master’s')}</Option></Select>
-            </Form.Item>
-          )}
+          <Form.Item name="targetDegree" label={t('studentHub.profile.targetDegree', 'Degree you plan to pursue')} rules={[{ required: true }]}>
+            <DegreeChoice disabled={isReadOnly} />
+          </Form.Item>
         </Card>
 
         {targetDegree === 'master' && <Card title={t('studentHub.profile.previousEducation', 'Previous education')} className="section-card">
@@ -459,7 +456,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                   </Col>
                 );
               })}
-              {targetDegree !== 'master' && visibleTests.includes('sat') && (
+              {visibleTests.includes('sat') && (
                 <Col xs={24} lg={12}>
                   <div className="test-section">
                     <div className="test-title-row">
@@ -527,7 +524,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
                 </Col>
               )}
 
-              {targetDegree !== 'master' && visibleTests.includes('act') && (
+              {visibleTests.includes('act') && (
                 <Col xs={24} lg={12}>
                   <div className="test-section">
                     <div className="test-title-row">
@@ -855,7 +852,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
               <Form.Item
                 name="gpaUnweighted"
                 label={t('studentHub.profile.unweightedGpa', 'Unweighted GPA')}
-                rules={[{ required: targetDegree !== 'master', message: t('studentHub.profile.pleaseEnterUnweightedGpa', 'Please enter your unweighted GPA') }]}
+                rules={[{ required: true, message: t('studentHub.profile.pleaseEnterUnweightedGpa', 'Please enter your unweighted GPA') }]}
               >
                 <InputNumber
                   min={0}
@@ -920,7 +917,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
               <Form.Item
                 name="curriculum"
                 label={t('studentHub.profile.schoolCurriculum', 'School Curriculum *')}
-                rules={[{ required: targetDegree !== 'master', message: t('studentHub.profile.pleaseSelectCurriculum', 'Please select your school curriculum') }]}
+                rules={[{ required: true, message: t('studentHub.profile.pleaseSelectCurriculum', 'Please select your school curriculum') }]}
               >
                 <Select placeholder={t('studentHub.profile.selectCurriculum', 'Select curriculum')} className="curriculum-select">
                   {curriculumOptions.map(option => (
@@ -935,7 +932,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
               <Form.Item
                 name="graduationYear"
                 label={t('studentHub.profile.graduationYear', 'Graduation Year *')}
-                rules={[{ required: targetDegree !== 'master', message: t('studentHub.profile.pleaseSelectGraduationYear', 'Please select your graduation year') }]}
+                rules={[{ required: true, message: t('studentHub.profile.pleaseSelectGraduationYear', 'Please select your graduation year') }]}
               >
                 <Select placeholder="Select graduation year" className="graduation-select">
                   {graduationYearOptions.map(option => (

@@ -24,6 +24,7 @@ import DocumentsPage from '../documents/DocumentsPage';
 import { ApplicantPage } from '../applicant/ApplicantPage';
 // import SettingsPage from '../settings/SettingsPage'; // Settings tab hidden
 import './ProfilePage.scss';
+import { useSegmentLens } from 'src/hooks/useSegmentLens';
 
 // How long the card is allowed to show a loading skeleton before it just
 // renders its best-effort state off whatever data has landed. Guards
@@ -44,6 +45,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('personal');
+  // iOS-style sliding glass thumb under the active tab.
+  const tabsLens = useSegmentLens<HTMLElement>('.pf-tab--active', [activeTab]);
   // Keys whose pane has been opened at least once, see the render note on
   // why panes stay mounted afterwards.
   const [visitedTabs, setVisitedTabs] = useState<Set<string>>(() => new Set(['personal']));
@@ -397,7 +400,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ readOnly = false, studentId }
       {/* Section navigation. A plain underline strip rather than AntD's
           Tabs: no ink bar to fight, no boxed pills, and the labels can
           carry the page's serif. */}
-      {!isApplicationFlow && <nav className="pf-tabs" role="tablist" aria-label={t('studentHub.profile.sectionsNav', 'Profile sections')}>
+      {!isApplicationFlow && <nav ref={tabsLens.ref} className="pf-tabs" role="tablist" aria-label={t('studentHub.profile.sectionsNav', 'Profile sections')}>
+        <span className="pf-tabs-lens" style={tabsLens.lensStyle} aria-hidden />
         {tabItems.map((tab) => (
           <button
             key={tab.key}

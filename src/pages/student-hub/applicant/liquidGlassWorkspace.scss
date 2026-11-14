@@ -1,0 +1,436 @@
+// Liquid glass across the student workspace. Page components keep their own
+// layout; this layer only swaps opaque white surfaces for glass materials.
+@use '/src/styles/liquid-glass' as lg;
+
+.applicant-shell {
+  // ---------- First-level surfaces: glass ----------
+  .applicant-panel,
+  .applicant-card,
+  .ant-card,
+  .cf__post,
+  .mm2__intro,
+  .mm2-results,
+  .majormatch-results__card,
+  .study-direction__card,
+  .applicant-sessions__card,
+  .task-card,
+  .task-form-card {
+    @include lg.lg-regular;
+    border-radius: 22px;
+  }
+  .applicant-card--muted {
+    @include lg.lg-thin;
+  }
+
+  // ---------- Nested surfaces: never glass on glass ----------
+  .applicant-panel .applicant-panel,
+  .applicant-panel .applicant-card,
+  .applicant-panel .ant-card,
+  .applicant-card .applicant-card,
+  .applicant-card .ant-card,
+  .ant-card .ant-card,
+  .ant-card .applicant-card,
+  .mm2__intro .mm3-intro__part-card,
+  .mm2__intro .applicant-card,
+  .mm2-results .applicant-card,
+  .mm2-results .majormatch-results__card {
+    @include lg.lg-inset;
+    border-radius: 18px;
+  }
+
+  // Ant Design surfaces that sit directly on the page.
+  .ant-card {
+    .ant-card-head {
+      border-bottom-color: rgba(48, 43, 40, 0.06);
+    }
+  }
+  .ant-tabs-nav::before {
+    border-bottom-color: rgba(48, 43, 40, 0.08);
+  }
+  .ant-segmented {
+    @include lg.lg-thin;
+    border-radius: 999px;
+    padding: 3px;
+
+    .ant-segmented-item {
+      border-radius: 999px;
+    }
+    .ant-segmented-item-selected {
+      background: #fff;
+      box-shadow: 0 4px 12px -6px rgba(48, 43, 40, 0.35);
+    }
+  }
+  // Borderless fields (e.g. Settings grouped lists) stay plain text at rest.
+  .ant-input-affix-wrapper:not(.ant-input-affix-wrapper-borderless),
+  .ant-input:not(.ant-input-affix-wrapper .ant-input):not(.ant-input-borderless),
+  .ant-select:not(.ant-select-customize-input):not(.ant-select-borderless) .ant-select-selector,
+  .ant-picker {
+    background: rgba(255, 255, 255, 0.62);
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 4px 12px -10px rgba(48, 43, 40, 0.3);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+  }
+  .ant-input-affix-wrapper .ant-input {
+    background: transparent;
+  }
+}
+
+// ---------- Floating layers (rendered in portals) ----------
+.ant-modal .ant-modal-content,
+.ant-modal .ant-modal-header {
+  background: rgba(255, 255, 255, 0.82);
+}
+.ant-modal .ant-modal-content {
+  backdrop-filter: blur(40px) saturate(190%);
+  -webkit-backdrop-filter: blur(40px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 24px;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    0 40px 80px -40px rgba(30, 20, 15, 0.45);
+}
+.ant-modal .ant-modal-header {
+  background: transparent;
+}
+.ant-dropdown .ant-dropdown-menu,
+.ant-select-dropdown,
+.ant-popover .ant-popover-inner {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    0 24px 48px -24px rgba(30, 20, 15, 0.35);
+}
+.applicant-drawer .ant-drawer-content {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(36px) saturate(190%);
+  -webkit-backdrop-filter: blur(36px) saturate(190%);
+}
+.applicant-drawer .ant-drawer-body,
+.applicant-drawer .ant-drawer-header {
+  background: transparent;
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .ant-modal .ant-modal-content,
+  .ant-dropdown .ant-dropdown-menu,
+  .ant-select-dropdown,
+  .ant-popover .ant-popover-inner,
+  .applicant-drawer .ant-drawer-content {
+    background: #fff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+// ---------- AI Major Match ----------
+.applicant-shell {
+  .mm2-page {
+    max-width: none;
+  }
+  .mm2__intro {
+    @include lg.lg-thick;
+    border-radius: 28px;
+    padding: 40px 44px;
+
+    @media (max-width: 540px) {
+      padding: 24px 20px;
+    }
+  }
+  // The hero sits on glass already: drop the pink wash and frame the preview as an inset.
+  .mm3-intro__hero {
+    background: none;
+    padding: 0;
+  }
+  .mm3-intro__preview {
+    @include lg.lg-inset;
+    border-radius: 20px;
+  }
+  .mm3-intro__part-card {
+    padding: 20px 20px 18px;
+    transition: transform 240ms lg.$lg-ease, box-shadow 240ms lg.$lg-ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 14px 28px -20px rgba(48, 43, 40, 0.35);
+    }
+  }
+  .mm2__notice,
+  .mm3-motion-intro__notice {
+    @include lg.lg-notice;
+    border-radius: 14px;
+    padding: 12px 16px;
+  }
+  .mm2__btn--secondary {
+    @include lg.lg-thin;
+    color: #8b0000;
+  }
+  .mm2__btn--primary {
+    @include lg.lg-tint;
+  }
+  .mm2__btn:active {
+    transform: scale(0.97);
+    transition: transform 100ms ease-out;
+  }
+  // New-student start screen: glass shell, flat inset hero (no gradient wash).
+  .mm3-motion-intro {
+    @include lg.lg-thick;
+    border-radius: 28px;
+  }
+  .mm3-motion-intro__hero {
+    @include lg.lg-inset;
+    background-image: none;
+    border-radius: 22px;
+  }
+  .mm3-motion-intro__button {
+    @include lg.lg-tint;
+  }
+  .mm2__intro .majormatch__upsell {
+    @include lg.lg-inset;
+    border-radius: 22px;
+  }
+}
+
+// ---------- Page-specific surfaces (higher specificity than page styles) ----------
+.applicant-shell .applicant-content {
+  .applicant-find-card,
+  .cf__composer,
+  .cf__widget,
+  .pf-rail,
+  .rp-section,
+  .rp-milestone,
+  .task-card,
+  .task-form-card {
+    @include lg.lg-regular;
+    border-radius: 22px;
+  }
+  .rp-topbar {
+    @include lg.lg-thin;
+    border-radius: 20px;
+  }
+  // Specialist pages paint their own page background; let the workspace light through.
+  .applicant-page,
+  .applicant-specialist-page {
+    background: transparent;
+  }
+  // Nested inside the new glass surfaces: inset, not glass.
+  .rp-section .rp-milestone,
+  .rp-section .applicant-card,
+  .cf__widget .applicant-card,
+  .pf-rail .applicant-card {
+    @include lg.lg-inset;
+    border-radius: 18px;
+  }
+}
+
+// ---------- Red glass for primary actions ----------
+.applicant-shell .applicant-content {
+  .ant-btn-primary:not(:disabled):not(.ant-btn-dangerous),
+  .applicant-button:not(.applicant-button--secondary) {
+    @include lg.lg-tint;
+
+    &:hover {
+      color: #fff;
+      filter: brightness(1.06);
+    }
+    &:active {
+      transform: scale(0.97);
+      transition: transform 100ms ease-out;
+    }
+  }
+  .applicant-button--secondary {
+    @include lg.lg-thin;
+    color: #8b0000;
+  }
+}
+
+// Major Match (intro, runner and results) uses the full body width inside the workspace.
+.applicant-shell .applicant-content {
+  // Question and analysing screens keep their narrow reading column.
+  .mm3-workspace:not(.mm3-workspace--questions):not(.mm3-workspace--analyzing),
+  .mm2-page:not(.mm3-workspace--questions):not(.mm3-workspace--analyzing) {
+    width: 100%;
+    max-width: none;
+  }
+  .mm3-results {
+    max-width: none;
+  }
+}
+
+// ---------- Alignment: page wrappers fill the body and line up with the title ----------
+// Some pages centre themselves in a capped box; once the panel folds the body grows
+// past that cap and the content drifts right of the page heading.
+.applicant-shell .applicant-content {
+  // Shared wrapper used by ~15 hub pages (max 1320px, centred, 20px !important padding).
+  .student-hub-page {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  [class*='_hubFullBleed'] {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .rp-topbar-row-inner,
+  .rp-body {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+// ---------- Student profile (Settings → Personal / Academic / Activities) ----------
+// The editorial profile chrome is shared with counselor views and uses !important,
+// so the student workspace overrides it here, deliberately and only here.
+.applicant-shell .applicant-content .applicant-profile-page {
+  .pf-masthead {
+    border-bottom: 0;
+    margin-bottom: 18px;
+  }
+  // Major Match prompt: blush glass instead of the red left stripe.
+  .pf-rail {
+    border-radius: 24px;
+    @include lg.lg-blush;
+  }
+  // Tabs: iOS liquid-glass segmented control with a sliding thumb.
+  .pf-tabs {
+    display: inline-flex;
+    gap: 0;
+    margin: 0 0 24px;
+    padding: 3px;
+    border-bottom: 0;
+    border-radius: 999px;
+    overflow: visible;
+    @include lg.lg-segment-track;
+  }
+  .pf-tabs-lens {
+    @include lg.lg-segment-thumb;
+  }
+  .pf-tab {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    padding: 8px 20px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b625b;
+    transition: color 240ms lg.$lg-ease;
+
+    &:hover {
+      color: #221d1a;
+    }
+  }
+  .pf-tab--active {
+    color: #221d1a;
+    font-weight: 600;
+    background: transparent;
+    box-shadow: none;
+  }
+  // Each form section is a glass card (real fill: no blur over transparency).
+  .section-card {
+    margin: 0 0 20px !important;
+    padding: 24px 28px !important;
+    border-radius: 24px !important;
+    border: 1px solid rgba(255, 255, 255, 0.75) !important;
+    background: rgba(255, 255, 255, 0.55) !important;
+    backdrop-filter: blur(28px) saturate(185%);
+    -webkit-backdrop-filter: blur(28px) saturate(185%);
+    box-shadow:
+      lg.lg-specular(0.55, 0.06),
+      0 18px 40px -30px rgba(48, 43, 40, 0.3) !important;
+
+    > .ant-card-head {
+      margin-bottom: 18px !important;
+      padding: 0 0 14px !important;
+      border-bottom: 1px solid rgba(48, 43, 40, 0.07) !important;
+
+      .ant-card-head-title {
+        color: #6b625b !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.08em !important;
+      }
+    }
+  }
+  // Save: a compact floating glass pill, bottom-right, only as wide as its buttons.
+  .form-actions-card,
+  .save-section {
+    position: sticky;
+    bottom: 20px;
+    z-index: 5;
+    width: fit-content;
+    margin: 12px 0 0 auto !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(30px) saturate(190%);
+    -webkit-backdrop-filter: blur(30px) saturate(190%);
+    box-shadow:
+      inset 0 1px 1px #fff,
+      0 18px 40px -18px rgba(48, 43, 40, 0.45),
+      0 2px 6px rgba(48, 43, 40, 0.08) !important;
+
+    > .ant-card-body {
+      padding: 6px !important;
+      border: 0 !important;
+    }
+    .form-actions {
+      gap: 6px;
+    }
+    .ant-btn {
+      height: 40px !important;
+      border-radius: 999px !important;
+      padding-inline: 18px !important;
+    }
+    .ant-btn-default {
+      border-color: transparent !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      color: #6b625b !important;
+
+      &:hover {
+        background: rgba(48, 43, 40, 0.05) !important;
+        color: #221d1a !important;
+      }
+    }
+  }
+  // Keep the last fields clear of the floating pill.
+  .pf-panel {
+    padding-bottom: 8px;
+  }
+  .ant-btn-primary:not(:disabled) {
+    background: lg.$lg-red !important;
+    border-color: rgba(255, 255, 255, 0.24) !important;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 10px 22px -12px rgba(110, 0, 0, 0.55) !important;
+  }
+
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    .section-card,
+    .form-actions-card,
+    .save-section {
+      background: #fff !important;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
+}
+// Safety net: never blur behind a surface that has no fill of its own.
+.applicant-shell .applicant-content [style*='background: transparent'],
+.applicant-shell .applicant-content .ant-select-borderless .ant-select-selector,
+.applicant-shell .applicant-content .applicant-find-filter .ant-select .ant-select-selector {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}

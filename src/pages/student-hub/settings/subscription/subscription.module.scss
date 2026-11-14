@@ -1,3 +1,4 @@
+@use '/src/styles/liquid-glass' as lg;
 /* Subscription & billing tab, editorial layout.
  *
  * Reads the canonical tokens rather than re-declaring near-miss copies of
@@ -187,3 +188,38 @@ $st-brand-soft: $brand-tint;
 
 .subSectionTitle { font-family: inherit; line-height: 1.3; letter-spacing: -0.015em; }
 .checkoutControls :global(.ant-select-single) { height: 44px; }
+
+
+// ---------- Membership & billing redesign ----------
+.quietNote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: -8px 0 0;
+  color: #6b625b;
+  font-size: 13px;
+  text-align: center;
+
+  :global(.ant-btn-link) {
+    padding: 0 4px;
+    height: auto;
+    color: #8b0000;
+    font-size: 13px;
+  }
+}
+// Billing history: one glass card centred under the plans.
+.bottomGrid.singleColumn {
+  max-width: none;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 28px;
+  border-top: 0;
+  border-radius: 28px;
+  @include lg.lg-regular;
+
+  .compactSection {
+    padding-top: 0;
+  }
+}
