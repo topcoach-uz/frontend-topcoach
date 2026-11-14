@@ -1123,11 +1123,9 @@
 }
 .applicant-university-detail__degree-button:hover { background: #6d0000; }
 .applicant-university-detail__lower {
-  display: grid;
-  grid-template-columns: minmax(0, 1.8fr) minmax(330px, 1fr);
-  gap: 26px;
-  // Stretch so the Life and Fees cards always share one height.
-  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
   > section { display: flex; flex-direction: column; gap: 14px; }
   p { font-size: 16px; line-height: 1.6; }
   strong { font-size: 18px; font-weight: 500; }
@@ -1211,7 +1209,6 @@
   .applicant-university-detail__hero-actions > .ant-btn { width: 100%; min-width: 0; }
   .applicant-university-detail__degree-card { flex-direction: column; padding: 20px; }
   .applicant-university-detail__degree-button { width: 100%; min-width: 0; }
-  .applicant-university-detail__lower { grid-template-columns: 1fr; gap: 18px; }
   .applicant-page {
     gap: 20px;
     h1 {
@@ -1733,4 +1730,23 @@
   .applicant-university-detail__hero-top { flex-direction: column; align-items: stretch; }
   .applicant-university-detail__save { width: 100%; }
   .applicant-university-detail .applicant-university-detail__identity h1 { font-size: 22px; }
+}
+
+// Lower sections: stacked, full width
+.applicant-university-detail__finance {
+  display: grid; grid-template-columns: 1fr; gap: 20px;
+  > div { min-width: 0; }
+}
+.applicant-university-detail .applicant-university-detail__finance dd p { font-size: 15px; line-height: 1.6; color: #655c55; white-space: pre-line; }
+.applicant-university-detail__clamp { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.applicant-university-detail__clamp--open { display: block; -webkit-line-clamp: unset; overflow: visible; }
+.applicant-university-detail__clamp-toggle {
+  align-self: flex-start; padding: 0; border: 0; background: none; color: #8b0000; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
+  &:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; border-radius: 4px; }
+}
+.applicant-university-detail .applicant-university-detail__funding .applicant-university-detail__checked {
+  margin-top: 4px; padding-top: 14px; border-top: 1px solid #e7e2dc; font-size: 13px; line-height: 1.4; color: #655c55;
+}
+@media (min-width: 768px) {
+  .applicant-university-detail__finance { grid-template-columns: 1fr 1fr; gap: 32px; }
 }
