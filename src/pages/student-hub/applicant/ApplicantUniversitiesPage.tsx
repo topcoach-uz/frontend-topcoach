@@ -245,7 +245,7 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
       </dl>
       {finance && <p className="applicant-university-detail__checked">Checked {displayDate(finance.verifiedAt)}</p>}
     </section>}
-    <UniversityAdmissions deadlines={admissionDeadlines} exams={admissionExams} />
+    <UniversityAdmissions universityId={university.id} deadlines={admissionDeadlines} exams={admissionExams} />
     {hasLife && <section id="life" className="applicant-university-detail__life"><h2>Life at {shortUniversityName(name)}</h2>{profile.studentLifeIntro && <p>{profile.studentLifeIntro}</p>}{profile.studentLifeHighlight && <strong>{profile.studentLifeHighlight}</strong>}{profile.studentLifeDetail && <p>{profile.studentLifeDetail}</p>}{profile.studentLifeUrl && <a href={profile.studentLifeUrl} target="_blank" rel="noopener noreferrer">Explore campus life <ArrowUpRight size={17} aria-hidden="true" /></a>}</section>}
     {(profile.profileVerifiedAt || (!finance && !hasVerifiedStudyAreaContent)) && <p className="applicant-university-detail__source">{profile.profileVerifiedAt ? `Information from the university's official pages · Checked ${displayDate(profile.profileVerifiedAt)}` : "Course, campus and funding details will appear after source review."}</p>}
   </div>;

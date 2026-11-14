@@ -1,4 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Check } from "lucide-react";
+import { loadReadyExams, saveReadyExams, toggleExam } from "./examChecklist";
 import type { GlanceTile, KeyFactRow } from "./universityKeyFactsModel";
 
 export function UniversityGlance({ tiles }: { tiles: GlanceTile[] }) {
@@ -10,7 +12,9 @@ export function UniversityGlance({ tiles }: { tiles: GlanceTile[] }) {
   </section>;
 }
 
-export function UniversityAdmissions({ deadlines, exams }: { deadlines: KeyFactRow[]; exams: string[] }) {
+export function UniversityAdmissions({ universityId, deadlines, exams }: { universityId: string; deadlines: KeyFactRow[]; exams: string[] }) {
+  const [ready, setReady] = useState<string[]>(() => loadReadyExams(universityId, exams));
+  const toggle = (exam: string) => setReady((current) => { const next = toggleExam(current, exam); saveReadyExams(universityId, next); return next; });
   if (!deadlines.length && !exams.length) return null;
   return <section id="admissions" className="applicant-university-detail__admissions">
     <h2>Admissions</h2>
@@ -21,7 +25,14 @@ export function UniversityAdmissions({ deadlines, exams }: { deadlines: KeyFactR
           <dd>{row.note && <small>{row.note}</small>}{row.lines?.map((line, i) => <p key={i}>{line.text}{line.note && <span> · {line.note}</span>}</p>)}</dd>
         </div>)}
       </div>}
-      {exams.length > 0 && <div><dt>Required exams</dt><dd><ul className="applicant-university-detail__fact-chips">{exams.map((exam) => <li key={exam}>{exam}</li>)}</ul></dd></div>}
+      {exams.length > 0 && <div><dt>Required exams</dt><dd>
+        <p className="applicant-university-detail__exam-progress" aria-live="polite">{ready.length} of {exams.length} ready</p>
+        <ul className="applicant-university-detail__fact-chips">{exams.map((exam) => {
+          const on = ready.includes(exam);
+          return <li key={exam}><button type="button" className={`applicant-university-detail__exam${on ? " applicant-university-detail__exam--ready" : ""}`} aria-pressed={on} onClick={() => toggle(exam)}>{on && <Check size={14} aria-hidden="true" />}{exam}</button></li>;
+        })}</ul>
+        <small className="applicant-university-detail__exam-note">Saved on this device</small>
+      </dd></div>}
     </dl>
   </section>;
 }
