@@ -1,4 +1,5 @@
 import type { UniversitiesSchema } from "src/app/api/Api";
+import { structuredTuition, type StructuredUniversityContent } from "./structuredContent";
 
 type Translatable = Parameters<typeof String>[0];
 export type Translate = (value: Translatable) => string;
@@ -184,9 +185,9 @@ export interface ComparableFacts { acceptance?: string; tuition?: string; tuitio
 type FinanceText = { feesSummary: string; fundingSummary: string; fundingPolicyNote?: string };
 
 /** The facts shown in the glance tiles and the compare table, computed in one place. */
-export function buildComparableFacts(rows: readonly KeyFactRow[], finance?: FinanceText | null, qsRank?: number | null): ComparableFacts {
+export function buildComparableFacts(rows: readonly KeyFactRow[], finance?: FinanceText | null, qsRank?: number | null, structured?: StructuredUniversityContent): ComparableFacts {
   const first = (id: string) => rows.find((r) => r.id === id)?.lines?.[0]?.text;
-  const verified = finance ? extractTuition(finance.feesSummary) : undefined;
+  const verified = structuredTuition(structured) ?? (finance ? extractTuition(finance.feesSummary) : undefined);
   const aid = finance && meetsFullNeed([finance.fundingSummary, finance.fundingPolicyNote].filter(Boolean).join(" "));
   return {
     acceptance: first("acceptance"),
@@ -204,8 +205,8 @@ export function qsRankOf(university: Partial<UniversitiesSchema>): number | unde
   return entry?.rank;
 }
 
-export function buildGlanceTiles(rows: readonly KeyFactRow[], finance?: FinanceText | null): GlanceTile[] {
-  const facts = buildComparableFacts(rows, finance);
+export function buildGlanceTiles(rows: readonly KeyFactRow[], finance?: FinanceText | null, structured?: StructuredUniversityContent): GlanceTile[] {
+  const facts = buildComparableFacts(rows, finance, undefined, structured);
   const tiles: GlanceTile[] = [];
   if (facts.acceptance) tiles.push({ id: "acceptance", label: "Acceptance rate", value: facts.acceptance });
   if (facts.tuition) tiles.push({ id: "tuition", label: "Tuition", value: facts.tuition, sub: facts.tuitionSub });

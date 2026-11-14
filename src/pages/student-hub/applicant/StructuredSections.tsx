@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { ArrowUpRight, Check, CircleDashed, CircleDot, Minus } from "lucide-react";
 import { displayDate } from "./ApplicantPage";
 import {
-  formatAmountRange, formatCostAmount, formatDateText, getStructuredContent, hasStructuredCosts, sharedSource, sortedCostItems,
+  deadlinesHaveYear, formatAmountRange, formatCostAmount, formatDateText, getStructuredContent, hasStructuredCosts, sharedSource, sortedCostItems,
   type Src, type StructuredUniversityContent,
 } from "./structuredContent";
 
@@ -147,7 +147,7 @@ export function DeadlinesTable({ content }: { content: StructuredUniversityConte
   if (!rows.length) return null;
   const shared = sharedSource(rows);
   return <div className="applicant-university-detail__deadlines">
-    <h3 className="applicant-university-detail__list-title">Deadlines{content.entryCycle ? ` · ${content.entryCycle}` : ""}</h3>
+    <h3 className="applicant-university-detail__list-title">Deadlines</h3>
     <div className="applicant-university-detail__table-scroll">
       <table className="applicant-university-detail__deadline-table">
         <thead><tr><th scope="col">Round</th><th scope="col">Apply by</th><th scope="col">Decision</th></tr></thead>
@@ -158,6 +158,7 @@ export function DeadlinesTable({ content }: { content: StructuredUniversityConte
         </tr>)}</tbody>
       </table>
     </div>
+    {(content.entryCycle || !deadlinesHaveYear(content)) && <p className="applicant-university-detail__table-note">{content.entryCycle}{content.entryCycle && !deadlinesHaveYear(content) && " "}{!deadlinesHaveYear(content) && "Dates as published by the university; check the official site for the exact year."}</p>}
     <SourceLine items={rows} verifiedAt={content.verifiedAt} />
   </div>;
 }

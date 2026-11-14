@@ -90,7 +90,7 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
   const existing = applications.data?.data.find(app => app.universityId === degree.universityId
     && (studyArea ? !app.undergraduateDegreeId && app.major === degree.name : app.undergraduateDegreeId === degree.id));
   const shortName = shortUniversityName(universityName);
-  const tiles = buildDegreeGlance(degree, deadlines ?? [], value => getTranslation(value as never));
+  const tiles = buildDegreeGlance(degree, deadlines ?? [], value => getTranslation(value as never), new Date(), structured);
   const studyText = [degree.description, degree.curriculumSummary].filter(Boolean).join('\n\n');
   const feesText = degree.feesSummary?.replace(GUIDANCE_PREFIX, '');
   const fundingText = [degree.fundingSummary?.replace(GUIDANCE_PREFIX, ''), degree.fundingPolicyNote].filter(Boolean).join('\n\n');

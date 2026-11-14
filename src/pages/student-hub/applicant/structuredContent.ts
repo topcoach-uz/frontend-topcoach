@@ -81,3 +81,36 @@ export function sharedSource(items: readonly Src[]): Src | undefined {
 }
 
 export const hasStructuredCosts = (content?: StructuredUniversityContent) => !!content && (content.costItems.length > 0 || content.scholarships.length > 0);
+
+/* ---------- glance facts derived from structured content ---------- */
+
+const MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+const monthOf = (text: string) => MONTHS.findIndex((name) => new RegExp(`\\b${name.slice(0, 3)}[a-z]*\\b`, "i").test(text));
+/** Orders dates inside one admissions cycle (Aug–Dec come before Jan–Jul). */
+const cycleKey = (text: string) => { const month = monthOf(text); return month < 0 ? Number.NaN : (month >= 7 ? month - 7 : month + 5) * 100 + (parseInt(text.match(/\b(\d{1,2})\b/)?.[1] ?? "0", 10) || 0); };
+const shortMonths = (text: string) => MONTHS.reduce((out, name) => out.replace(new RegExp(`\\b${name}\\b`, "gi"), name.slice(0, 3).replace(/^./, (c) => c.toUpperCase())), text);
+const isAidRound = (round: string) => /financial aid|css profile|fafsa|\baid\b/i.test(round);
+
+/** The applicant's final-chance deadline from structured rounds, with the early round noted when there is one. */
+export function structuredDeadlineTile(content?: StructuredUniversityContent): { value: string; sub: string } | undefined {
+  const rounds = (content?.deadlines ?? []).filter((row) => !isAidRound(row.round) && formatDateText(row.applicationDeadline));
+  if (!rounds.length) return undefined;
+  const keyed = rounds.map((row, index) => ({ row, key: cycleKey(formatDateText(row.applicationDeadline)!), index }));
+  const final = keyed.reduce((best, item) => (Number.isFinite(item.key) && Number.isFinite(best.key) ? (item.key >= best.key ? item : best) : (item.index >= best.index ? item : best)));
+  const early = keyed.find((item) => item !== final && /early/i.test(item.row.round));
+  const text = formatDateText(final.row.applicationDeadline)!;
+  return { value: text, sub: early ? `${final.row.round} · ${early.row.round} ${shortMonths(formatDateText(early.row.applicationDeadline)!)}` : final.row.round };
+}
+
+/** Tuition from structured cost items with its published period and academic year. */
+export function structuredTuition(content?: StructuredUniversityContent): { value: string; period?: string; sub?: string } | undefined {
+  const item = content?.costItems.find((row) => row.category === "tuition" && typeof row.amount === "number");
+  if (!item) return undefined;
+  const period = item.period && item.period !== "one-time" ? item.period : undefined;
+  const value = formatCostAmount(item.amount, item.currency);
+  const sub = [period ? `per ${period}` : "", content?.academicYear ?? ""].filter(Boolean).join(" · ") || undefined;
+  return { value, period, sub };
+}
+
+export const deadlinesHaveYear = (content: StructuredUniversityContent) =>
+  content.deadlines.some((row) => /\b20\d{2}\b/.test(`${formatDateText(row.applicationDeadline) ?? ""} ${formatDateText(row.decisionRelease) ?? ""}`));

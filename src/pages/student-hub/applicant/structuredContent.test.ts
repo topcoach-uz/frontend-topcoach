@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { apiStructuredContent, formatAmountRange, formatCostAmount, formatDateText, getStructuredContent, sharedSource, sortedCostItems } from "./structuredContent";
+import { apiStructuredContent, deadlinesHaveYear, structuredDeadlineTile, structuredTuition, formatAmountRange, formatCostAmount, formatDateText, getStructuredContent, sharedSource, sortedCostItems } from "./structuredContent";
 
 const base = { schemaVersion: 2, universityId: "u1" };
 
@@ -37,5 +37,29 @@ describe("structured content", () => {
     expect(sharedSource([{ sourceUrl: "a", sourceTitle: "A" }, { sourceUrl: "a", sourceTitle: "A" }])).toEqual({ sourceUrl: "a", sourceTitle: "A" });
     expect(sharedSource([{ sourceUrl: "a", sourceTitle: "A" }, { sourceUrl: "b", sourceTitle: "B" }])).toBeUndefined();
     expect(sharedSource([])).toBeUndefined();
+  });
+
+  const content = {
+    academicYear: "2026–27",
+    costItems: [{ category: "housing", amount: 14090, currency: "USD", period: "year" }, { category: "tuition", amount: 66720, currency: "USD", period: "year" }],
+    deadlines: [
+      { round: "Early Action", applicationDeadline: { text: "November 1" }, decisionRelease: { text: "Mid-December" } },
+      { round: "Regular Action", applicationDeadline: { text: "January 4" } },
+      { round: "Financial aid (CSS Profile)", applicationDeadline: { text: "February 15" } },
+    ],
+  } as never;
+
+  it("picks the final applicant round and mentions the early one", () => {
+    expect(structuredDeadlineTile(content)).toEqual({ value: "January 4", sub: "Regular Action · Early Action Nov 1" });
+    expect(structuredDeadlineTile({ deadlines: [{ round: "Regular", applicationDeadline: { text: "January 4" } }] } as never)).toEqual({ value: "January 4", sub: "Regular" });
+    expect(structuredDeadlineTile({ deadlines: [{ round: "Financial aid", applicationDeadline: { text: "February 15" } }] } as never)).toBeUndefined();
+    expect(structuredDeadlineTile(undefined)).toBeUndefined();
+  });
+
+  it("reads tuition and detects missing years", () => {
+    expect(structuredTuition(content)).toEqual({ value: "US$66,720", period: "year", sub: "per year · 2026–27" });
+    expect(structuredTuition({ costItems: [{ category: "tuition", amount: null }] } as never)).toBeUndefined();
+    expect(deadlinesHaveYear(content)).toBe(false);
+    expect(deadlinesHaveYear({ deadlines: [{ applicationDeadline: { text: "January 4, 2027" } }] } as never)).toBe(true);
   });
 });

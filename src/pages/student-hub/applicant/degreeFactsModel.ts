@@ -1,5 +1,6 @@
 import type { UniversitiesSchema } from "src/app/api/Api";
 import type { UndergraduateDegree } from "src/app/services/undergraduateDegreesApi";
+import { structuredDeadlineTile, structuredTuition, type StructuredUniversityContent } from "./structuredContent";
 import { extractTuition, formatFactDate, hasMonthDay, parseDatesWithYear, stripGraduateParagraph, type GlanceTile, type Translate } from "./universityKeyFactsModel";
 
 const GENERIC_TYPES = /^undergraduate (study area|degree)$/i;
@@ -56,15 +57,15 @@ export function deadlineTile(degree: Pick<UndergraduateDegree, "deadlineAt">, de
   return { value: longDate(latest), sub: "Last cycle" };
 }
 
-export function buildDegreeGlance(degree: UndergraduateDegree, deadlines: NonNullable<UniversitiesSchema["deadlines"]>, tr: Translate, now: Date = new Date()): GlanceTile[] {
+export function buildDegreeGlance(degree: UndergraduateDegree, deadlines: NonNullable<UniversitiesSchema["deadlines"]>, tr: Translate, now: Date = new Date(), structured?: StructuredUniversityContent): GlanceTile[] {
   const tiles: GlanceTile[] = [];
   const qualification = shortQualification(degree.degreeType, degree.name);
   if (qualification) tiles.push({ id: "qualification", label: "Qualification", value: qualification });
   const timing = majorChoiceTiming(degree.entrySummary, degree.description, degree.curriculumSummary, degree.applicationSummary, degree.firstYearSubjects);
   if (timing) tiles.push({ id: "choose-major", label: "Choose major", value: timing });
-  const deadline = deadlineTile(degree, deadlines, tr, now);
+  const deadline = structuredDeadlineTile(structured) ?? deadlineTile(degree, deadlines, tr, now);
   if (deadline) tiles.push({ id: "deadline", label: "Application deadline", value: deadline.value, sub: deadline.sub });
-  const tuition = extractTuition((degree.feesSummary ?? "").replace(/^University guidance:\s*/i, ""));
+  const tuition = structuredTuition(structured) ?? extractTuition((degree.feesSummary ?? "").replace(/^University guidance:\s*/i, ""));
   if (tuition) tiles.push({ id: "tuition", label: "Tuition", value: tuition.value, sub: tuition.sub });
   return tiles;
 }
