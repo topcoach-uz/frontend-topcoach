@@ -1743,12 +1743,8 @@
 @media (min-width: 1024px) { .applicant-university-detail__skel-grid { grid-template-columns: repeat(4, 1fr); } .applicant-university-detail__skel-grid--2 { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 767px) { .applicant-university-detail__skel-card { padding: 20px; } .applicant-university-detail__skel-bar--button { display: none; } }
 
-.applicant-university-detail__save-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: 0 0 auto; }
-.applicant-university-detail__save { min-width: 200px; transition: background-color 120ms ease-out, transform 100ms ease-out; }
-.applicant-university-detail__save-spinner { animation: applicant-ud-spin 0.8s linear infinite; }
-.applicant-university-detail__save-error { margin: 0; font-size: 13px; color: #b42318; }
-@media (max-width: 767px) { .applicant-university-detail__save-wrap { align-items: stretch; } .applicant-university-detail__save-error { text-align: left; } }
-
+.applicant-university-detail__save { transition: background-color 120ms ease-out, transform 100ms ease-out; }
+@media (max-width: 767px) { 
 .applicant-university-detail a { text-underline-offset: 3px; }
 .applicant-university-detail a svg { transition: transform 150ms ease-out; }
 .applicant-university-detail__clamp-toggle:active { opacity: 0.6; }
@@ -1775,8 +1771,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .applicant-university-detail__layout,
-  .applicant-university-detail__skel-bar, .applicant-university-detail__skel-tile,
-  .applicant-university-detail__save-spinner { animation: none; }
+  .applicant-university-detail__skel-bar, .applicant-university-detail__skel-tile { animation: none; }
   .applicant-university-detail__save, .applicant-university-detail a svg, .applicant-university-detail__clamp-wrap { transition: none; }
   .applicant-university-detail a:hover svg { transform: none; }
 }

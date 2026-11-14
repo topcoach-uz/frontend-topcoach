@@ -5,7 +5,7 @@ import { buildDegreeOptions } from './universityDegreeOptions';
 import { normalizeStudyArea } from './UniversityStudyAreas';
 import { useEffect, useState } from "react";
 import { Alert, Button, Input, Select, Tag } from "antd";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Bookmark, BookmarkCheck, Building2, Loader2, Search } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Bookmark, BookmarkCheck, Building2, Search } from "lucide-react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useGetGraduateProgramQuery, useGetGraduateProgramsQuery, type GraduateProgram, type GraduateProgramFact } from "src/app/services/graduateProgramsApi";
 import { useGetReviewedUniversitiesQuery, useGetUniversityDetailQuery, useGetUniversityFiltersQuery } from "src/app/services/universities";
@@ -182,15 +182,6 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
   const keyFacts = buildKeyFactRows(university, (value) => getTranslation(value as never));
   const qs = (university.rankings ?? []).find((item) => item?.type === "QS" && Number.isFinite(item.rank) && item.rank > 0);
   const hasVerifiedStudyAreaContent = ((university as { verifiedStudyAreaContent?: unknown[] }).verifiedStudyAreaContent?.length ?? 0) > 0;
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState("");
-  // Saving opens the application form (no mutation here), so "pending" covers the hand-off until navigation unmounts the page.
-  const handleSave = () => {
-    if (existingId) { onOpen(); return; }
-    setSaveError(""); setSaving(true);
-    try { onAdd(); } catch { setSaveError("We could not save this university. Please try again."); setSaving(false); return; }
-    window.setTimeout(() => setSaving(false), 4000);
-  };
   const glanceTiles = buildGlanceTiles(keyFacts, finance?.content);
   const admissionDeadlines = keyFacts.filter((row) => row.id === "deadlines" || row.id === "deadlines-past");
   const admissionExams = keyFacts.find((row) => row.id === "exams")?.chips ?? [];
@@ -213,13 +204,10 @@ function BachelorUniversityDetail({ university, selectedField, existingId, appli
             </p>}
           </div>
         </div>
-        <div className="applicant-university-detail__save-wrap">
-          <button type="button" className={`applicant-university-detail__save${existingId ? " applicant-university-detail__save--saved" : ""}`} disabled={applicationsUnavailable || saving} aria-busy={saving} onClick={handleSave}>
-            {saving ? <Loader2 size={16} className="applicant-university-detail__save-spinner" aria-hidden="true" /> : existingId ? <BookmarkCheck size={16} aria-hidden="true" /> : <Bookmark size={16} aria-hidden="true" />}
-            {existingId ? "Saved to College List" : saving ? "Saving…" : "Save to College List"}
-          </button>
-          {saveError && <p className="applicant-university-detail__save-error" role="alert">{saveError}</p>}
-        </div>
+        <button type="button" className={`applicant-university-detail__save${existingId ? " applicant-university-detail__save--saved" : ""}`} disabled={applicationsUnavailable} onClick={existingId ? onOpen : onAdd}>
+          {existingId ? <BookmarkCheck size={16} aria-hidden="true" /> : <Bookmark size={16} aria-hidden="true" />}
+          {existingId ? "Saved to College List" : "Save to College List"}
+        </button>
       </div>
       {profile.profileOverview && <p className="applicant-university-detail__overview">{profile.profileOverview}</p>}
       {applicationsUnavailable && <p className="applicant-university-detail__notice">College List is temporarily unavailable. You can still explore this university.</p>}
