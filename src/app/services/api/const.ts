@@ -13,6 +13,7 @@ export const apiTagTypes = [
   'PublicInvitation',
   'CounselorOrgs',
   'CounselorOrgContext',
+  'CounselorBranches',
   'CounselorDashboard',
   'CounselorStudents',
   'CounselorStudentPrograms',

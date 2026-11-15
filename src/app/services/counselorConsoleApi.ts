@@ -54,6 +54,55 @@ export interface OrgContext {
   status: OrgStatus;
 }
 
+// ── Branches ("filials") ───────────────────────────────────────────────────
+
+export type OrgBranchStatus = 'active' | 'archived';
+
+/** One row of `GET /org/:orgId/branches` — a branch visible to the caller. */
+export interface OrgBranch {
+  id: string;
+  name: string;
+  slug: string;
+  address: string | null;
+  isDefault: boolean;
+  status: OrgBranchStatus;
+  studentCount: number;
+  counselorCount: number;
+}
+
+/** `'all'` = the caller's whole scope; otherwise one branch id. */
+export type BranchSelection = 'all' | string;
+
+/**
+ * Query-string fragment for the optional `?branchId=`. Omitted for `'all'` /
+ * undefined so the server applies the caller's whole scope.
+ */
+export function branchParam(
+  branchId?: BranchSelection | null,
+): { branchId?: string } {
+  return branchId && branchId !== 'all' ? { branchId } : {};
+}
+
+export interface CreateOrgBranchArgs {
+  orgId: string;
+  name: string;
+  address?: string;
+}
+
+export interface UpdateOrgBranchArgs {
+  orgId: string;
+  branchId: string;
+  name?: string;
+  address?: string;
+  status?: OrgBranchStatus;
+}
+
+export interface MoveStudentBranchArgs {
+  orgId: string;
+  userId: string;
+  branchId: string;
+}
+
 // ── Dashboard ──────────────────────────────────────────────────────────────
 
 /** A student near the top of the cohort by program progress. */
@@ -118,6 +167,9 @@ export interface OrgStudent {
   lastActiveAt: string | null;
   status: OrgStudentStatus;
   telegramStatus: TelegramStatus;
+  /** Home branch. Optional so an older backend still type-checks. */
+  branchId?: string | null;
+  branchName?: string | null;
 }
 
 export interface OrgStudentsResponse {
@@ -129,6 +181,7 @@ export interface OrgStudentsResponse {
 
 export interface GetOrgStudentsArgs {
   orgId: string;
+  branchId?: BranchSelection;
   search?: string;
   status?: OrgStudentStatus | string;
   page?: number;
@@ -447,6 +500,8 @@ export interface OrgInvitation {
    * the email — the console must surface it rather than implying success.
    */
   lastEmailError: string | null;
+  branchId?: string | null;
+  branchName?: string | null;
 }
 
 export interface OrgInvitationsResponse {
@@ -458,6 +513,7 @@ export interface OrgInvitationsResponse {
 
 export interface GetInvitationsArgs {
   orgId: string;
+  branchId?: BranchSelection;
   /**
    * Omit for the actionable list (pending + expired). Accepted and revoked
    * invitations are only returned when asked for by name.
@@ -478,6 +534,10 @@ export interface CreateInvitationBody {
   gradeLevel?: number;
   graduationYear?: number;
   phone?: string;
+  /** Target branch. Server default = the org's default branch. */
+  branchId?: string;
+  /** Bulk only: matched case-insensitively; unknown falls back to `branchId`. */
+  branchName?: string;
 }
 
 export interface CreateInvitationArgs extends CreateInvitationBody {
@@ -487,6 +547,8 @@ export interface CreateInvitationArgs extends CreateInvitationBody {
 /** Body of `POST /org/:orgId/invitations/bulk`. */
 export interface BulkInviteArgs {
   orgId: string;
+  /** Fallback branch for rows without a (resolvable) `branchName`. */
+  branchId?: string;
   invitations: CreateInvitationBody[];
 }
 
@@ -530,6 +592,7 @@ export interface AddOrgMemberArgs {
   orgId: string;
   userId: string;
   role: 'student' | 'counselor';
+  branchId?: string;
 }
 
 // ── Analytics (broad org analytics) ──────────────────────────────────────────
@@ -626,7 +689,13 @@ export interface OrgAnalytics {
 
 export interface GetOrgAnalyticsArgs {
   orgId: string;
+  branchId?: BranchSelection;
   range: OrgAnalyticsRange;
+}
+
+export interface GetOrgDashboardArgs {
+  orgId: string;
+  branchId?: BranchSelection;
 }
 
 // ── Member admin (archive / transfer) ────────────────────────────────────────
@@ -661,18 +730,19 @@ export const counselorConsoleApi = RtkApi.injectEndpoints({
       ],
     }),
 
-    getOrgDashboard: builder.query<OrgDashboard, string>({
-      query: (orgId) => ({
+    getOrgDashboard: builder.query<OrgDashboard, GetOrgDashboardArgs>({
+      query: ({ orgId, branchId }) => ({
         url: `/org/${encodeURIComponent(orgId)}/dashboard`,
         method: 'GET',
+        params: { ...branchParam(branchId) },
       }),
-      providesTags: (_res, _err, orgId) => [
+      providesTags: (_res, _err, { orgId }) => [
         { type: 'CounselorDashboard' as const, id: orgId },
       ],
     }),
 
     getOrgStudents: builder.query<OrgStudentsResponse, GetOrgStudentsArgs>({
-      query: ({ orgId, search, status, page, limit, sort }) => ({
+      query: ({ orgId, branchId, search, status, page, limit, sort }) => ({
         url: `/org/${encodeURIComponent(orgId)}/students`,
         method: 'GET',
         params: {
@@ -681,6 +751,7 @@ export const counselorConsoleApi = RtkApi.injectEndpoints({
           ...(page != null ? { page } : {}),
           ...(limit != null ? { limit } : {}),
           ...(sort ? { sort } : {}),
+          ...branchParam(branchId),
         },
       }),
       providesTags: (_res, _err, { orgId }) => [
@@ -746,6 +817,7 @@ export const counselorConsoleApi = RtkApi.injectEndpoints({
       invalidatesTags: (_res, _err, { orgId }) => [
         { type: 'CounselorStudents' as const, id: orgId },
         { type: 'CounselorDashboard' as const, id: orgId },
+        { type: 'CounselorBranches' as const, id: orgId },
       ],
     }),
 
@@ -762,10 +834,10 @@ export const counselorConsoleApi = RtkApi.injectEndpoints({
     }),
 
     addOrgMember: builder.mutation<void, AddOrgMemberArgs>({
-      query: ({ orgId, userId, role }) => ({
+      query: ({ orgId, userId, role, branchId }) => ({
         url: `/org/${encodeURIComponent(orgId)}/members`,
         method: 'POST',
-        body: { userId, role },
+        body: { userId, role, ...(branchId ? { branchId } : {}) },
       }),
       invalidatesTags: (_res, _err, { orgId }) => [
         { type: 'CounselorStudents' as const, id: orgId },
@@ -777,10 +849,10 @@ export const counselorConsoleApi = RtkApi.injectEndpoints({
 
     // ── Analytics ──────────────────────────────────────────────────────────────
     getOrgAnalytics: builder.query<OrgAnalytics, GetOrgAnalyticsArgs>({
-      query: ({ orgId, range }) => ({
+      query: ({ orgId, range, branchId }) => ({
         url: `/org/${encodeURIComponent(orgId)}/analytics`,
         method: 'GET',
-        params: { range },
+        params: { range, ...branchParam(branchId) },
       }),
       providesTags: (_res, _err, { orgId }) => [
         { type: 'CounselorAnalytics' as const, id: orgId },
@@ -789,7 +861,7 @@ export const counselorConsoleApi = RtkApi.injectEndpoints({
 
     // ── Invitations ──────────────────────────────────────────────────────────
     getInvitations: builder.query<OrgInvitationsResponse, GetInvitationsArgs>({
-      query: ({ orgId, status, role, page, limit }) => ({
+      query: ({ orgId, branchId, status, role, page, limit }) => ({
         url: `/org/${encodeURIComponent(orgId)}/invitations`,
         method: 'GET',
         params: {
@@ -797,6 +869,7 @@ export const counselorConsoleApi = RtkApi.injectEndpoints({
           ...(role ? { role } : {}),
           ...(page != null ? { page } : {}),
           ...(limit != null ? { limit } : {}),
+          ...branchParam(branchId),
         },
       }),
       providesTags: (_res, _err, { orgId }) => [
@@ -817,10 +890,10 @@ export const counselorConsoleApi = RtkApi.injectEndpoints({
     }),
 
     bulkInvite: builder.mutation<BulkInviteResult, BulkInviteArgs>({
-      query: ({ orgId, invitations }) => ({
+      query: ({ orgId, invitations, branchId }) => ({
         url: `/org/${encodeURIComponent(orgId)}/invitations/bulk`,
         method: 'POST',
-        body: { invitations },
+        body: { invitations, ...(branchId ? { branchId } : {}) },
       }),
       invalidatesTags: (_res, _err, { orgId }) => [
         { type: 'CounselorInvitations' as const, id: orgId },
@@ -863,6 +936,61 @@ export const counselorConsoleApi = RtkApi.injectEndpoints({
       ],
     }),
 
+    // ── Branches ─────────────────────────────────────────────────────────────
+    getOrgBranches: builder.query<OrgBranch[], string>({
+      query: (orgId) => ({
+        url: `/org/${encodeURIComponent(orgId)}/branches`,
+        method: 'GET',
+      }),
+      providesTags: (_res, _err, orgId) => [
+        { type: 'CounselorBranches' as const, id: orgId },
+      ],
+    }),
+
+    createOrgBranch: builder.mutation<OrgBranch, CreateOrgBranchArgs>({
+      query: ({ orgId, ...body }) => ({
+        url: `/org/${encodeURIComponent(orgId)}/branches`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (_res, _err, { orgId }) => [
+        { type: 'CounselorBranches' as const, id: orgId },
+        { type: 'CounselorAudit' as const, id: orgId },
+      ],
+    }),
+
+    updateOrgBranch: builder.mutation<OrgBranch, UpdateOrgBranchArgs>({
+      query: ({ orgId, branchId, ...body }) => ({
+        url: `/org/${encodeURIComponent(orgId)}/branches/${encodeURIComponent(branchId)}`,
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: (_res, _err, { orgId }) => [
+        { type: 'CounselorBranches' as const, id: orgId },
+        { type: 'CounselorStudents' as const, id: orgId },
+        { type: 'CounselorStaff' as const, id: orgId },
+        { type: 'CounselorAudit' as const, id: orgId },
+      ],
+    }),
+
+    moveStudentBranch: builder.mutation<
+      { userId: string; branchId: string },
+      MoveStudentBranchArgs
+    >({
+      query: ({ orgId, userId, branchId }) => ({
+        url: `/org/${encodeURIComponent(orgId)}/students/${encodeURIComponent(userId)}/branch`,
+        method: 'PATCH',
+        body: { branchId },
+      }),
+      invalidatesTags: (_res, _err, { orgId }) => [
+        { type: 'CounselorStudents' as const, id: orgId },
+        { type: 'CounselorDashboard' as const, id: orgId },
+        { type: 'CounselorAnalytics' as const, id: orgId },
+        { type: 'CounselorBranches' as const, id: orgId },
+        { type: 'CounselorAudit' as const, id: orgId },
+      ],
+    }),
+
     // ── Member admin (archive / transfer) ────────────────────────────────────
     archiveStudent: builder.mutation<void, ArchiveStudentArgs>({
       query: ({ orgId, userId }) => ({
@@ -896,6 +1024,10 @@ export const counselorConsoleApi = RtkApi.injectEndpoints({
 export const {
   useGetMyOrgsQuery,
   useGetOrgContextQuery,
+  useGetOrgBranchesQuery,
+  useCreateOrgBranchMutation,
+  useUpdateOrgBranchMutation,
+  useMoveStudentBranchMutation,
   useGetOrgDashboardQuery,
   useGetOrgAnalyticsQuery,
   useGetOrgStudentsQuery,
