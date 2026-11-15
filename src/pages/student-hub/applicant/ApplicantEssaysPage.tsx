@@ -48,6 +48,7 @@ import {
   useWithdrawEssayReviewMutation,
 } from "src/app/services/student-hub/essayReviewApi";
 import { getMentorFeedbackText } from "./essayFeedbackModel";
+import { countWords, essayWordLimit, formatSavedTime, limitLevel, saveState } from "./essayWriting";
 
 const essayTypes: Array<{ value: StudentEssay["essayType"]; label: string }> = [
   { value: "personal_statement", label: "Personal statement" },
@@ -313,6 +314,8 @@ export function ApplicantEssayEditorPage() {
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<StudentEssay["status"]>("draft");
   const [dirty, setDirty] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<Date>();
+  const [saveFailed, setSaveFailed] = useState(false);
   const snapshotRef = useRef("");
   const savingRef = useRef(false);
   const [params, setParams] = useSearchParams();
@@ -363,10 +366,10 @@ export function ApplicantEssayEditorPage() {
     setStatus(essay.status);
     setDirty(false);
   }, [essay?.id, localDraftKey]);
-  const words = useMemo(
-    () => (content.trim() ? content.trim().split(/\s+/).length : 0),
-    [content],
-  );
+  const words = useMemo(() => countWords(content), [content]);
+  const wordLimit = essay ? essayWordLimit(essay.essayType) : undefined;
+  const level = limitLevel(words, wordLimit);
+  const status_ = saveState({ saving: updateState.isLoading, failed: saveFailed, dirty, lastSavedAt });
   const openReview = reviewRequests.find((request) => ["pending", "in_review"].includes(request.status));
   const openReviews = reviewRequests.filter((request) => ["pending", "in_review"].includes(request.status));
   const availableMentors = eligibleMentors.filter((mentor) => !openReviews.some((request) => request.mentorUserId === mentor.id));
@@ -416,7 +419,7 @@ export function ApplicantEssayEditorPage() {
       /* Server save remains available when local storage is blocked. */
     }
   }, [localDraftKey, dirty, content, title, status]);
-  const save = async () => {
+  const save = async (manual = false) => {
     if (!essay || !dirty || savingRef.current) return;
     const submitted = JSON.stringify({ content, title, status });
     savingRef.current = true;
@@ -430,15 +433,12 @@ export function ApplicantEssayEditorPage() {
           /* A successful server save is still successful. */
         }
       }
-      message.success(
-        snapshotRef.current === submitted
-          ? "Draft saved."
-          : "Latest changes are still unsaved.",
-      );
+      setLastSavedAt(new Date());
+      setSaveFailed(false);
+      if (manual) message.success("Draft saved.");
     } catch {
-      message.error(
-        "Could not save your draft. Your text remains in the editor.",
-      );
+      setSaveFailed(true);
+      if (manual) message.error("Could not save your draft. Your text remains in the editor.");
     } finally {
       savingRef.current = false;
     }
@@ -479,7 +479,7 @@ export function ApplicantEssayEditorPage() {
               type="primary"
               icon={<Save size={15} />}
               loading={updateState.isLoading}
-              onClick={save}
+              onClick={() => { void save(true); }}
             >
               Save draft
             </Button>
@@ -550,7 +550,7 @@ export function ApplicantEssayEditorPage() {
                   <Button
                     icon={<Save size={15} />}
                     loading={updateState.isLoading}
-                    onClick={save}
+                    onClick={() => { void save(true); }}
                   >Save draft</Button>
                 )}
                 <Button
@@ -596,13 +596,25 @@ export function ApplicantEssayEditorPage() {
                   setContent(event.target.value);
                   setDirty(true);
                 }}
-                onBlur={save}
+                onBlur={() => { void save(); }}
                 placeholder="Begin your draft…"
                 aria-label="Draft text"
               />
-              <div className="applicant-editor__footer">
-                <span>{words} words</span>
-                <span>{dirty ? "Changes saved automatically after a pause" : "Private draft"}</span>
+              <div className={`applicant-editor__status is-${level}`} role="status" aria-live="polite">
+                <div className="applicant-editor__status-row">
+                  <span className="applicant-editor__status-words">
+                    {wordLimit ? `${words} / ${wordLimit} words` : `${words} words`}
+                    {level === "over" && ` · ${words - wordLimit!} over`}
+                  </span>
+                  <span className="applicant-editor__status-save">
+                    {status_ === "saving" && "Saving…"}
+                    {status_ === "unsaved" && "Unsaved changes"}
+                    {status_ === "saved" && lastSavedAt && `Saved ${formatSavedTime(lastSavedAt)}`}
+                    {status_ === "idle" && "Private draft"}
+                    {status_ === "error" && <>Couldn’t save · <button type="button" className="applicant-editor__retry" onClick={() => { void save(true); }}>Retry</button></>}
+                  </span>
+                </div>
+                {wordLimit && <div className="applicant-editor__bar" aria-hidden><span style={{ width: `${Math.min(100, (words / wordLimit) * 100)}%` }} /></div>}
               </div>
             </div>
             {sidePanel && <aside className="applicant-panel applicant-writing-desk__side">

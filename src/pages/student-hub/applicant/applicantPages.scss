@@ -778,6 +778,24 @@
   color: #606976;
   font-size: 13px;
 }
+.applicant-editor__status {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin: 10px calc(clamp(24px, 3vw, 42px) * -1) calc(clamp(24px, 3vw, 42px) * -1);
+  padding: 12px clamp(24px, 3vw, 42px) 12px;
+  background: #fff;
+  border-top: 1px solid #e7e2dc;
+  border-radius: 0 0 6px 6px;
+  color: #655c55;
+  font-size: 13px;
+}
+.applicant-editor__status-row { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+.applicant-editor__bar { height: 3px; margin-top: 8px; border-radius: 2px; background: #efeae4; overflow: hidden; }
+.applicant-editor__bar > span { display: block; height: 100%; background: #a39a92; transition: width .2s ease-out; }
+.applicant-editor__status.is-near { color: #8a5a00; .applicant-editor__bar > span { background: #d98e04; } }
+.applicant-editor__status.is-over { color: #b3261e; .applicant-editor__bar > span { background: #b3261e; } }
+.applicant-editor__retry { border: 0; background: none; padding: 0; color: #8b0000; font: inherit; text-decoration: underline; cursor: pointer; }
 .applicant-writing-desk__side {
   position: sticky;
   top: 24px;
