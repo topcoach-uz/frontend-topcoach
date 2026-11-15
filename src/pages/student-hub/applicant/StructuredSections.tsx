@@ -144,22 +144,30 @@ export function ApplicationStepper({ content }: { content: StructuredUniversityC
   </div>;
 }
 
+/** "January 5 (December 5 if you submit …)" → main "January 5", condition "December 5 if you submit …". */
+function splitCondition(text?: string): { main?: string; condition?: string } {
+  const match = text?.match(/^(.*?)\s*\(([^()]+)\)\s*$/);
+  return match && match[1] ? { main: match[1], condition: match[2].charAt(0).toUpperCase() + match[2].slice(1) } : { main: text };
+}
+
 export function DeadlinesTable({ content }: { content: StructuredUniversityContent }) {
   const rows = content.deadlines;
   if (!rows.length) return null;
   const shared = sharedSource(rows);
   return <div className="applicant-university-detail__deadlines">
     <h3 className="applicant-university-detail__list-title">Deadlines</h3>
-    <div className="applicant-university-detail__table-scroll">
-      <table className="applicant-university-detail__deadline-table">
-        <thead><tr><th scope="col">Round</th><th scope="col">Apply by</th><th scope="col">Decision</th></tr></thead>
-        <tbody>{rows.map((row) => <tr key={row.round}>
-          <th scope="row">{row.round}{!shared && <SourceLink src={row} />}</th>
-          <td>{formatDateText(row.applicationDeadline) ?? "—"}</td>
-          <td>{formatDateText(row.decisionRelease) ?? "—"}</td>
-        </tr>)}</tbody>
-      </table>
-    </div>
+    <ul className="applicant-university-detail__deadline-list">{rows.map((row) => {
+      const date = splitCondition(formatDateText(row.applicationDeadline));
+      const decision = formatDateText(row.decisionRelease);
+      return <li key={row.round}>
+        <span className="applicant-university-detail__deadline-round">{row.round}{!shared && <SourceLink src={row} />}</span>
+        <span className="applicant-university-detail__deadline-when">
+          <strong>{date.main ?? "Date not published"}</strong>
+          {date.condition && <small>{date.condition}</small>}
+          {decision && <small>Decision: {decision.charAt(0).toLowerCase() + decision.slice(1)}</small>}
+        </span>
+      </li>;
+    })}</ul>
     {(content.entryCycle || !deadlinesHaveYear(content)) && <p className="applicant-university-detail__table-note">{content.entryCycle}{content.entryCycle && !deadlinesHaveYear(content) && " "}{!deadlinesHaveYear(content) && "Dates as published by the university; check the official site for the exact year."}</p>}
     <SourceLine items={rows} verifiedAt={content.verifiedAt} />
   </div>;
