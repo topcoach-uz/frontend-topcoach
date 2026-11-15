@@ -16,6 +16,7 @@ import { useGetCollegeApplicationsQuery } from "src/app/services/student-hub/app
 import { getTranslation } from "src/lib/i18n/translationUtils";
 import { ApplicantPage, Breadcrumb, QueryState, displayDate } from "./ApplicantPage";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
+import { applicantDegree } from "./applicantOverviewModel";
 import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import { getUniversityLogoUrl, universityLogoNeedsDarkBackground } from "./universityLogo";
 import { buildUniversityFieldOptions, buildUniversitySubjectOptions, subjectKey } from "./universityFieldOptions";
@@ -30,7 +31,11 @@ const UNIVERSITIES_PER_PAGE = 12;
 const factValue = (value: GraduateProgramFact) => humanizeFacts(value) || "Verification needed";
 
 export default function ApplicantUniversitiesPage() {
-  const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
+  const overview = useApplicantOverview();
+  const isMasters = applicantDegree(overview.currentData?.profile?.targetDegree) === "master";
+  // Wait for the profile so a master applicant never flashes the bachelor catalogue (unset degree falls back to bachelor).
+  const degreePending = overview.isLoading && !overview.currentData;
+  const degreeType = isMasters ? "graduate" : "undergraduate";
   const [params, setParams] = useSearchParams();
   const search = params.get("q") ?? "";
   const major = params.get("major") ?? "";
@@ -44,24 +49,25 @@ export default function ApplicantUniversitiesPage() {
   // the applicant explicitly chooses a field, rather than hiding universities.
   // Only the text search goes to the server. Field and destination are applied to the cached
   // catalogue below, so changing them is instant and costs no request.
-  const universityQuery = useGetReviewedUniversitiesQuery({ search: search || undefined }, { skip: isMasters });
-  const filtersQuery = useGetUniversityFiltersQuery(undefined, { skip: isMasters });
-  const programsQuery = useGetGraduateProgramsQuery({ q: search || undefined, page, limit: 20 }, { skip: !isMasters });
+  const universityQuery = useGetReviewedUniversitiesQuery({ search: search || undefined }, { skip: isMasters || degreePending });
+  const filtersQuery = useGetUniversityFiltersQuery(degreeType, { skip: isMasters || degreePending });
+  const programsQuery = useGetGraduateProgramsQuery({ q: search || undefined, page, limit: 20 }, { skip: !isMasters || degreePending });
   const applications = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
   const masterPrograms = programsQuery.data?.data ?? [];
-  const filteredUniversities = useMemo(() => filterUniversityRows(universityQuery.data?.data ?? [], { country, majorName: major }), [universityQuery.data, country, major]);
+  const filteredUniversities = useMemo(() => filterUniversityRows(universityQuery.data?.data ?? [], { country, majorName: major, degree: degreeType }), [universityQuery.data, country, major, degreeType]);
   const universities = useMemo(() => filteredUniversities.slice((page - 1) * UNIVERSITIES_PER_PAGE, page * UNIVERSITIES_PER_PAGE), [filteredUniversities, page]);
   const isLoading = isMasters ? programsQuery.isLoading : universityQuery.isLoading;
   const isError = isMasters ? programsQuery.isError : universityQuery.isError;
   const total = isMasters ? programsQuery.data?.total ?? 0 : filteredUniversities.length;
   const perPage = isMasters ? programsQuery.data?.limit ?? 20 : UNIVERSITIES_PER_PAGE;
-  const subjectOptions = useMemo(() => buildUniversitySubjectOptions(filtersQuery.data?.majors ?? []), [filtersQuery.data]);
-  const majorKey = useMemo(() => subjectKey(major), [major]);
+  const subjectOptions = useMemo(() => buildUniversitySubjectOptions(filtersQuery.data?.majors ?? [], degreeType), [filtersQuery.data, degreeType]);
+  const majorKey = useMemo(() => subjectKey(major, degreeType), [major, degreeType]);
   const majorLabel = useMemo(() => subjectOptions.find((option) => option.value === majorKey)?.label ?? major, [subjectOptions, majorKey, major]);
   const countryOptions = useMemo(() => (filtersQuery.data?.countries ?? []).map((item) => ({ value: item, label: item })), [filtersQuery.data]);
   const savedUniversityIds = useMemo(() => new Set((applications.data?.data ?? []).map((app) => app.universityId).filter((id): id is string => Boolean(id))), [applications.data]);
   const setPage = (nextPage: number) => { const next = new URLSearchParams(params); next.set("page", String(nextPage)); setParams(next); };
   const setFilter = (key: "major" | "country", value: string) => { const next = new URLSearchParams(params); if (value) next.set(key, value); else next.delete(key); next.delete("page"); setParams(next); };
+  if (degreePending) return <ApplicantPage title="Find universities" subtitle="Loading your study goal…"><QueryState loading error={false} retry={overview.refetch}><span /></QueryState></ApplicantPage>;
   if (!isMasters) return <ApplicantPage title="Find universities" subtitle="Explore Bachelor’s options. Check course availability before adding a university to your College List.">
     <form className="applicant-find-search" onSubmit={(event) => { event.preventDefault(); const next = new URLSearchParams(params); if (value.trim()) next.set("q", value.trim()); else next.delete("q"); next.delete("page"); setParams(next); }}>
       <Input prefix={<Search size={21} />} value={value} onChange={(event) => setValue(event.target.value)} placeholder="Search universities" allowClear aria-label="Search universities" />

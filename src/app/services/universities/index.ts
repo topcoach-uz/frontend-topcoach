@@ -92,11 +92,11 @@ export const universityApi = RtkApi.injectEndpoints({
       keepUnusedDataFor: 1800,
     }),
 
-    getUniversityFilters: build.query<{ majors: Pick<MajorsSchema, 'id' | 'name' | 'type'>[]; countries: string[] }, void>({
-      query: () => ({ url: '/university/filters', method: 'GET', params: { scope: 'undergraduate' } }),
+    getUniversityFilters: build.query<{ majors: Pick<MajorsSchema, 'id' | 'name' | 'type'>[]; countries: string[] }, 'undergraduate' | 'graduate' | void>({
+      query: (degree) => ({ url: '/university/filters', method: 'GET', params: { scope: degree ?? 'undergraduate' } }),
       // The response carries ~9k majors (~1 MB) plus lists this page never reads; keep what it renders.
-      transformResponse: (response: { majors?: Pick<MajorsSchema, 'id' | 'name' | 'type'>[]; countries?: string[] }) => ({
-        majors: (response.majors ?? []).filter((major) => major.type === 'undergraduate'),
+      transformResponse: (response: { majors?: Pick<MajorsSchema, 'id' | 'name' | 'type'>[]; countries?: string[] }, _meta, degree) => ({
+        majors: (response.majors ?? []).filter((major) => major.type === (degree ?? 'undergraduate')),
         countries: response.countries ?? [],
       }),
       // Filter values barely change; keep them for an hour so revisits are instant.

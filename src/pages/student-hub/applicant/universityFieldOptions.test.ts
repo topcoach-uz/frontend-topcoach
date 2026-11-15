@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { filterUniversityRows } from "src/app/services/universities/universityQuery";
-import { buildUniversityFieldOptions, buildUniversitySubjectOptions, isUsableUniversityFieldName } from "./universityFieldOptions";
+import { buildUniversityFieldOptions, buildUniversitySubjectOptions, isUsableUniversityFieldName, subjectKey } from "./universityFieldOptions";
 
 describe("university field options", () => {
   it.each([
@@ -65,5 +65,31 @@ describe("university subject options", () => {
     ];
     expect(filterUniversityRows(rows, { majorName: "accounting" }).map((r) => r.id)).toEqual(["a"]);
     expect(filterUniversityRows(rows, { majorName: "Accounting (BSc)" }).map((r) => r.id)).toEqual(["a"]);
+  });
+});
+
+describe("graduate subject options", () => {
+  const gr = (name: string) => ({ type: "graduate", name });
+  it("strips master's qualifiers instead of dropping the subject", () => {
+    const options = buildUniversitySubjectOptions([
+      gr("Finance (MBA)"), gr("Finance"), gr("MSc Data Science"), gr("Data Science (MSc)"),
+      gr("Master of Science in Physics"), gr("Physics, MSc"), gr("LLM International Law"),
+      gr("Biology (BSc)"), { type: "undergraduate", name: "Chemistry" },
+    ], "graduate");
+    expect(options.map((o) => o.value)).toEqual(["data science", "finance", "international law", "physics"]);
+    expect(options.find((o) => o.value === "finance")?.variants).toHaveLength(2);
+  });
+  it("keys graduate and undergraduate differently for the same label", () => {
+    expect(subjectKey("Finance (MBA)", "graduate")).toBe("finance");
+    expect(subjectKey("Finance (MBA)")).toBe("");
+    expect(subjectKey("Biology (BSc)", "graduate")).toBe("");
+  });
+  it("filters rows by graduate subject keys", () => {
+    const rows = [
+      { id: "a", ugMajorKeys: ["finance"], gradMajorKeys: ["finance (mba)"] },
+      { id: "b", ugMajorKeys: ["finance"], gradMajorKeys: [] },
+    ];
+    expect(filterUniversityRows(rows, { majorName: "finance", degree: "graduate" }).map((r) => r.id)).toEqual(["a"]);
+    expect(filterUniversityRows(rows, { majorName: "finance" }).map((r) => r.id)).toEqual(["a", "b"]);
   });
 });
