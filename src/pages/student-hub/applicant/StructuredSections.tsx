@@ -48,7 +48,7 @@ export function ScoresBlock({ content }: { content: StructuredUniversityContent 
     {rows.length === 0 ? <p className="applicant-university-detail__preview-empty">No minimum scores are published.</p> : <table className="applicant-university-detail__score-table">
       <tbody>{rows.map((row) => <tr key={`${row.test}-${row.kind}-${row.value}`}>
         <th scope="row">{row.test}{row.appliesTo === "international" && <small>International applicants</small>}</th>
-        <td><strong>{row.value}</strong><small>{SCORE_KIND[row.kind]}{row.note ? ` · ${row.note}` : ""}</small></td>
+        <td><strong>{row.value}</strong><small>{SCORE_KIND[row.kind]}{(() => { const note = row.kind === "admitted-range" ? row.note?.replace(/^middle 50%,?\s*/i, "") : row.note; return note ? ` · ${note}` : ""; })()}</small></td>
         {!shared && <td className="applicant-university-detail__score-src"><SourceLink src={row} /></td>}
       </tr>)}</tbody>
     </table>}
