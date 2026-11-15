@@ -777,10 +777,19 @@
 .applicant-page .applicant-editor input.applicant-title-input.ant-input:focus {
   border-bottom-color: #8b0000 !important;
 }
-.applicant-page .applicant-editor input.applicant-title-input.ant-input:focus-visible,
-.applicant-page .applicant-editor textarea.applicant-writing.ant-input:focus-visible {
-  outline: 2px solid #8b0000;
-  outline-offset: 2px;
+// Writing surface = one sheet of paper. The workspace glass layer makes .applicant-panel translucent
+// off-white, while antd paints inputs solid white, which showed as two white boxes inside the card.
+// Make the sheet solid and let the title + body sit on it with no fill or outline of their own.
+.applicant-shell .applicant-panel.applicant-editor {
+  background: #fff;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 1px solid #ece7e1;
+}
+.applicant-page .applicant-editor input.applicant-title-input.ant-input,
+.applicant-page .applicant-editor textarea.applicant-writing.ant-input {
+  background: transparent !important;
+  outline: none; // text fields match :focus-visible on mouse focus too; the sheet's focus ring covers it
 }
 .applicant-editor__prompt {
   margin: 0 0 20px;
