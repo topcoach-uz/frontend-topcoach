@@ -9,6 +9,7 @@
 
 import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { applicantLinks } from 'src/lib/applicantWorkspace';
 import {
   ArrowLeft,
   BookmarkCheck,
@@ -60,9 +61,9 @@ const SatPrepLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             <span className="sat-shell__crumb-sep">›</span>
             <span className="sat-shell__crumb-current">{activeTab?.label ?? 'Overview'}</span>
           </div>
-          <button className="sat-shell__back-btn" onClick={() => navigate('/student-hub')}>
+          <button className="sat-shell__back-btn" onClick={() => navigate(applicantLinks.learning)}>
             <ArrowLeft size={13} />
-            My Journey
+            My learning
           </button>
         </div>
         <nav className="sat-shell__tabs">

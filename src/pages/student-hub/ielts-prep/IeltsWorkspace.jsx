@@ -6,6 +6,7 @@ import React, {
   createContext,
 } from "react";
 import { Logo } from "../../../components/logos";
+import { applicantLinks } from "src/lib/applicantWorkspace";
 import {
   ArrowLeft,
   Sun,
@@ -513,7 +514,7 @@ function App() {
             </IconButton>
             <IconButton
               label="Back to main menu"
-              onClick={() => go("/student-hub")}
+              onClick={() => go(applicantLinks.learning)}
             >
               <ArrowLeft />
             </IconButton>
@@ -533,7 +534,7 @@ function App() {
                     <button onClick={() => go("/settings/account")}>
                       Account Settings
                     </button>
-                    <button onClick={() => go("/student-hub")}>
+                    <button onClick={() => go(applicantLinks.learning)}>
                       Back to main menu
                     </button>
                   </div>

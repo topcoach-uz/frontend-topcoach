@@ -25,6 +25,7 @@ import ResearchTopBar from './components/ResearchTopBar';
 import ResearchOverview from './components/ResearchOverview';
 import ResearchModuleView from './components/ResearchModuleView';
 import { computeResearchProgress } from './researchProgress';
+import { applicantLinks } from 'src/lib/applicantWorkspace';
 import '../applicant/applicantPages.scss';
 import './research-prep.scss';
 
@@ -71,8 +72,8 @@ const ResearchPrepPage: React.FC<ResearchPrepPageProps> = ({ isFullSupport = fal
       onExit();
       return;
     }
-    // Land on the dashboard so the community sidebar is back.
-    navigate('/student-hub?section=dashboard');
+    // Return to My learning, where research prep is opened from.
+    navigate(applicantLinks.learning);
   };
 
   const handleBookMentorReview = (submissionId: string) => {

@@ -192,8 +192,9 @@ export default function CommunityHubMockPage() {
     if (panel === 'admissions') navigate('/student-hub?section=admissions-program', { replace: true });
     else if (panel === 'sat') navigate('/student-hub?section=sat-course', { replace: true });
     else if (panel === 'ai') navigate('/student-hub?section=ai-major-match', { replace: true });
-    else navigate(defaultHubSectionPath, { replace: true });
-  }, [location.search, navigate, defaultHubSectionPath]);
+    else if (params.get('tab') === 'admissions') navigate('/student-hub?section=admissions-program', { replace: true });
+    else navigate(applicantLinks.learning, { replace: true });
+  }, [location.search, navigate]);
 
   /** Workshops → public events (no hub section) */
   useEffect(() => {
@@ -480,7 +481,7 @@ export default function CommunityHubMockPage() {
                   <button
                     type="button"
                     className={styles.admissionsBackBtn}
-                    onClick={() => navigate(defaultHubSectionPath)}
+                    onClick={() => navigate(applicantLinks.learning)}
                   >
                     <ArrowLeft size={13} />
                     {t('studentHub.hub.backToMainMenu', 'Back to main menu')}

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { applicantLinks } from "src/lib/applicantWorkspace";
 import {
   ArrowLeft,
   ArrowRight,
@@ -122,7 +123,7 @@ export default function IeltsBrowse({ pagePath, Link, profile, last }) {
         </aside>
         <main className="ib-main">
           <div className="ib-breadcrumb">
-            <Link className="ib-hub-link" to="/student-hub"><ArrowLeft size={16} /> Student hub</Link>
+            <Link className="ib-hub-link" to={applicantLinks.learning}><ArrowLeft size={16} /> My learning</Link>
             <ChevronRight size={13} />
             <Link to="/">IELTS prep</Link>
             {!overview && (
