@@ -1,0 +1,208 @@
+// Liquid glass materials (Apple "Materials & depth", translated for the web).
+//
+// - A material is a translucent fill + backdrop blur/saturation + a bright top
+//   edge where light catches it. No gradients.
+// - Bigger surfaces read as thicker: stronger blur and a deeper shadow.
+// - Never stack a light translucent surface on another; nested surfaces use
+//   `lg-inset` (near-solid, no blur) so text stays legible.
+// - Reduced transparency / more contrast fall back to solid surfaces.
+
+$lg-brand: #8b0000;
+$lg-ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+@mixin lg-fallbacks($solid: #fff) {
+  @media (prefers-reduced-transparency: reduce) {
+    background: $solid;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  @media (prefers-contrast: more) {
+    background: $solid;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-color: #8a8178;
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: $solid;
+  }
+}
+
+// Specular treatment shared by every material (the "lens" look):
+// a bright top edge, a soft sheen falling into the glass, and depth at the bottom.
+@function lg-specular($sheen: 0.55, $depth: 0.06) {
+  @return inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 22px 30px -24px rgba(255, 255, 255, $sheen),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.35),
+    inset 0 -16px 28px -24px rgba(48, 43, 40, $depth);
+}
+
+// Large containers: page sections, panels, hero cards.
+@mixin lg-thick {
+  background: rgba(255, 255, 255, 0.46);
+  backdrop-filter: blur(36px) saturate(190%);
+  -webkit-backdrop-filter: blur(36px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow:
+    lg-specular(0.6, 0.07),
+    0 28px 56px -36px rgba(48, 43, 40, 0.34),
+    0 2px 6px rgba(48, 43, 40, 0.04);
+  @include lg-fallbacks;
+}
+
+// Cards and list containers.
+@mixin lg-regular {
+  background: rgba(255, 255, 255, 0.52);
+  backdrop-filter: blur(28px) saturate(185%);
+  -webkit-backdrop-filter: blur(28px) saturate(185%);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  box-shadow:
+    lg-specular(0.55, 0.06),
+    0 18px 40px -30px rgba(48, 43, 40, 0.32),
+    0 1px 3px rgba(48, 43, 40, 0.04);
+  @include lg-fallbacks;
+}
+
+// Chips, pills, small controls.
+@mixin lg-thin {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 10px 14px -12px rgba(255, 255, 255, 0.6),
+    0 6px 16px -10px rgba(48, 43, 40, 0.3);
+  @include lg-fallbacks;
+}
+
+// Brand-tinted glass (primary emphasis surfaces): the same red as the rail.
+$lg-red: rgba(139, 0, 0, 0.9);
+@mixin lg-tint {
+  background: $lg-red;
+  backdrop-filter: blur(40px) saturate(200%) brightness(1.04);
+  -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.04);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 22px 30px -24px rgba(255, 255, 255, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 -18px 30px -22px rgba(40, 0, 0, 0.45),
+    0 22px 44px -22px rgba(110, 0, 0, 0.5),
+    0 2px 6px rgba(110, 0, 0, 0.12);
+  @include lg-fallbacks($lg-brand);
+}
+
+// Blush glass (#F7E6E4): the calm brand surface for large areas; red stays for accents.
+$lg-blush: rgba(247, 230, 228, 0.72);
+$lg-blush-solid: #f7e6e4;
+@mixin lg-blush {
+  background: $lg-blush;
+  backdrop-filter: blur(36px) saturate(180%);
+  -webkit-backdrop-filter: blur(36px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  color: #2a2522;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 22px 30px -24px rgba(255, 255, 255, 0.7),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.4),
+    inset 0 -16px 28px -24px rgba(139, 0, 0, 0.08),
+    0 22px 44px -28px rgba(139, 0, 0, 0.22),
+    0 2px 6px rgba(139, 0, 0, 0.05);
+  @include lg-fallbacks($lg-blush-solid);
+}
+
+// White lens on blush (selected rail item).
+@mixin lg-lens-light {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 1),
+    inset 0 -1px 1px rgba(139, 0, 0, 0.06),
+    0 8px 20px -10px rgba(139, 0, 0, 0.3);
+}
+
+// Clear lens on a tinted surface (selected item, button on red).
+@mixin lg-lens {
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(12px) saturate(110%);
+  -webkit-backdrop-filter: blur(12px) saturate(110%);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.6),
+    inset 0 12px 18px -14px rgba(255, 255, 255, 0.45),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.12),
+    0 10px 22px -12px rgba(30, 0, 0, 0.55);
+}
+
+// iOS-style segmented control: frosted track + sliding glass thumb.
+@mixin lg-segment-track {
+  position: relative;
+  isolation: isolate;
+  background: rgba(118, 107, 99, 0.09);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    inset 0 1px 2px rgba(48, 43, 40, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.8);
+}
+@mixin lg-segment-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border: 0.5px solid rgba(255, 255, 255, 1);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 1),
+    inset 0 10px 14px -10px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 1px rgba(48, 43, 40, 0.05),
+    0 6px 16px -6px rgba(48, 43, 40, 0.28),
+    0 1px 3px rgba(48, 43, 40, 0.08);
+  pointer-events: none;
+}
+
+// Surface nested inside glass: near-solid, no blur, hairline edge.
+@mixin lg-inset {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(48, 43, 40, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+// Soft status banner on glass (info / notice).
+@mixin lg-notice {
+  background: rgba(139, 0, 0, 0.06);
+  border: 1px solid rgba(139, 0, 0, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+// "Materialize, don't just fade": blur + scale arrive together.
+@keyframes lg-materialize {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@mixin lg-enter($delay: 0ms) {
+  animation: lg-materialize 480ms $lg-ease both;
+  animation-delay: $delay;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}

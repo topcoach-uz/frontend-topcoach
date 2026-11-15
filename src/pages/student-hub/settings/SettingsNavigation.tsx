@@ -2,6 +2,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { SettingsSection } from 'src/lib/accountNavigation';
 import styles from './MenteeSettingsPageMock.module.scss';
+import { useSegmentLens } from 'src/hooks/useSegmentLens';
 
 export default function SettingsNavigation({
   activeTab,
@@ -12,12 +13,12 @@ export default function SettingsNavigation({
 }) {
   const { t } = useTranslation();
   const [params] = useSearchParams();
+  // iOS-style sliding glass thumb under the active section.
+  const lens = useSegmentLens<HTMLElement>('[aria-current="page"]', [activeTab]);
   const sections = [
+    // Billing is its own destination (rail → Billing), not a settings tab.
     { key: 'profile', label: t('accountNav.account', 'Account') },
-    {
-      key: 'subscription',
-      label: t('accountNav.membership', 'Membership & billing'),
-    },
+    { key: 'notifications', label: t('studentHub.settingsMock.notifications', 'Notifications') },
     { key: 'referrals', label: t('settings.referrals.tab', 'Referrals') },
     ...(showExperience
       ? [
@@ -30,9 +31,11 @@ export default function SettingsNavigation({
   ];
   return (
     <nav
+      ref={lens.ref}
       className={styles.tabs}
       aria-label={t('accountNav.sections', 'Settings sections')}
     >
+      <span className={styles.tabsLens} style={lens.lensStyle} aria-hidden />
       {sections.map((section) => {
         const query = new URLSearchParams(params);
         query.set('section', 'account');

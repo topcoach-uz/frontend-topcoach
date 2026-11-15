@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Skeleton } from 'antd';
-import { ArrowRight, RefreshCw } from 'lucide-react';
+import { ArrowRight, RefreshCw, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -16,6 +16,7 @@ import {
   applicationWorkspaceLink,
 } from 'src/lib/applicantWorkspace';
 import { useApplicantOverview } from './ApplicantOverviewContext';
+import './applicantOverview.scss';
 import {
   applicantDegreeOrNull,
   assessmentState,
@@ -34,24 +35,6 @@ import {
   unwrapSessions,
 } from './studentSessionsModel';
 
-const TextLink = ({
-  to,
-  children,
-  primary = false,
-}: {
-  to: string;
-  children: React.ReactNode;
-  primary?: boolean;
-}) => (
-  <Link
-    className={primary ? 'applicant-button' : 'applicant-text-link'}
-    to={to}
-  >
-    {children}
-    <ArrowRight size={16} aria-hidden />
-  </Link>
-);
-
 export default function ApplicantOverviewPage() {
   const {
     currentData: data,
@@ -62,9 +45,6 @@ export default function ApplicantOverviewPage() {
   } = useApplicantOverview();
   const { t, i18n } = useTranslation();
   const [online, setOnline] = useState(() => navigator.onLine);
-  const [applicationTab, setApplicationTab] = useState<'active' | 'shortlist'>(
-    'active',
-  );
   useEffect(() => {
     const update = () => setOnline(navigator.onLine);
     window.addEventListener('online', update);
@@ -223,7 +203,6 @@ export default function ApplicantOverviewPage() {
   const sessions = data.sessions.state === 'ready' ? data.sessions.data : null;
   const next = sessions?.next;
   const nextDeadline = apps?.nextDeadline;
-  const currentApplications = apps?.[applicationTab];
   const completion = profile
     ? Math.max(0, Math.min(100, profile.completionPercentage))
     : null;
@@ -251,57 +230,117 @@ export default function ApplicantOverviewPage() {
     .filter((name): name is string => !!name)
     .slice(0, 3) ?? [];
   const hasViewableReport = !!latest.currentData || !!status.currentData?.latest;
-  const applicationCard = (app: OverviewApplication) => (
-    <article className="applicant-card applicant-application" key={app.id}>
-      <h3>{getTranslation(app.major) || t('applicant.fieldNotSet')}</h3>
-      <p className="applicant-muted">
-        {getTranslation(app.universityName) || t('applicant.universityNotSet')}
-      </p>
-      {app.degreeLevel && (
-        <small>{t(`applicant.${app.degreeLevel}Degree`)}</small>
-      )}
-      <span className="applicant-status">
-        {t(`applicant.status.${app.status}`, t('applicant.statusUnknown'))}
-      </span>
-      {app.deadline && (
-        <small>{t('applicant.deadline', { date: date(app.deadline) })}</small>
-      )}
-      <TextLink to={applicationWorkspaceLink(app.id)}>
-        {t('applicant.openApplication')}
-      </TextLink>
-    </article>
-  );
+  const topMajors = (latest.currentData?.majors ?? [])
+    .filter((major) => !!major.name?.trim())
+    .slice(0, 3)
+    .map((major) => {
+      const raw = Number(major.fitScore);
+      const fit = Number.isFinite(raw) ? Math.round(raw <= 1 ? raw * 100 : raw) : null;
+      return { name: major.name.trim(), fit: fit === null ? null : Math.max(0, Math.min(100, fit)) };
+    });
+  const today = new Intl.DateTimeFormat(i18n.language, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  }).format(new Date());
+  const overdue = (value: string | null) =>
+    !!value && new Date(value).getTime() < Date.now();
+  const listApplications = apps
+    ? (apps.active.items.length ? apps.active.items : apps.shortlist.items).slice(0, 4)
+    : [];
+  const ringLength = 2 * Math.PI * 20;
+  const ringOffset = ringLength * (1 - (completion ?? 0) / 100);
+
+  type Focus = {
+    eyebrow: string;
+    title?: string;
+    body?: string;
+    loading?: boolean;
+    retry?: boolean;
+    majors?: string[];
+    action?: { to: string; label: string };
+    secondary?: { to: string; label: string };
+  };
+  let focus: Focus | null = null;
+  if (!degree) {
+    focus = {
+      eyebrow: t('applicant.nextStep'),
+      title: t(profile ? 'applicant.chooseGoal' : 'applicant.profileMissing'),
+      body: t(profile ? 'applicant.chooseGoalBody' : 'applicant.profileMissingBody'),
+      action: { to: applicantLinks.profile, label: t('applicant.reviewProfile') },
+    };
+  } else if (needsAssessment && assessment === 'loading') {
+    focus = { eyebrow: t('applicant.majorMatch'), loading: true };
+  } else if (needsAssessment && assessment === 'error') {
+    focus = {
+      eyebrow: t('applicant.majorMatch'),
+      title: t('applicant.assessmentError'),
+      body: t('applicant.sectionError'),
+      retry: true,
+    };
+  } else if (needsAssessment && assessment === 'complete') {
+    focus = {
+      eyebrow: t('applicant.majorMatch'),
+      title: t(hasViewableReport
+        ? 'applicant.assessment.complete.title'
+        : 'applicant.assessment.complete.noReportTitle'),
+      body: t(hasViewableReport
+        ? 'applicant.assessment.complete.body'
+        : 'applicant.assessment.complete.noReportBody'),
+      majors: matchedMajors,
+      action: { to: applicantLinks.universities, label: t('applicant.assessment.complete.nextAction') },
+      secondary: {
+        to: hasViewableReport ? `${applicantLinks.majorMatch}?step=results` : applicantLinks.personal,
+        label: hasViewableReport ? t('applicant.assessment.complete.reportAction') : t('applicant.reviewGoals'),
+      },
+    };
+  } else if (needsAssessment) {
+    focus = {
+      eyebrow: t('applicant.majorMatch'),
+      title: t(`applicant.assessment.${assessment}.title`),
+      body: t(`applicant.assessment.${assessment}.body`),
+      action: { to: applicantLinks.majorMatch, label: t(`applicant.assessment.${assessment}.action`) },
+    };
+  } else if (degree === 'master' && !!apps && apps.active.total === 0 && apps.shortlist.total === 0) {
+    focus = {
+      eyebrow: t('applicant.nextStep'),
+      title: t('applicant.masterStartTitle'),
+      body: t('applicant.masterStartBody'),
+      action: { to: applicantLinks.newApplication, label: t('applicant.startShortlist') },
+    };
+  }
+
+  const stats = [
+    { key: 'applications', label: t('applicant.active'), value: apps?.active.total, to: applicantLinks.applications },
+    { key: 'shortlist', label: t('applicant.shortlist'), value: apps?.shortlist.total, to: applicantLinks.applications },
+    { key: 'tasks', label: t('applicant.nav.openTasks', 'Open tasks'), value: tasks?.open, to: applicantLinks.tasks },
+    {
+      key: 'documents',
+      label: t('applicant.documents'),
+      value: data.documents.state === 'ready' ? data.documents.data.total : undefined,
+      to: applicantLinks.documents,
+    },
+  ];
 
   return (
-    <div
-      className="applicant-overview"
-      data-degree={degree ?? 'unknown'}
-      data-visit={visit}
-    >
+    <div className="ov" data-degree={degree ?? 'unknown'} data-visit={visit}>
       {!online && (
-        <Alert
-          type="warning"
-          showIcon
-          message={t('applicant.offlineTitle')}
-          description={t('applicant.offlineBody')}
-        />
+        <Alert type="warning" showIcon message={t('applicant.offlineTitle')} description={t('applicant.offlineBody')} />
       )}
       {isError && (
         <Alert
           type="warning"
           showIcon
           message={t('applicant.refreshError')}
-          action={
-            <Button onClick={retry} loading={isFetching}>
-              {t('applicant.retry')}
-            </Button>
-          }
+          action={<Button onClick={retry} loading={isFetching}>{t('applicant.retry')}</Button>}
         />
       )}
-      <header className="applicant-page-heading">
-        <div>
+
+      <header className="ov-hero">
+        <div className="ov-hero__text">
+          <p className="ov-eyebrow">{today}</p>
           <h1>{greeting}</h1>
-          <p>
+          <p className="ov-hero__sub">
             {t(
               degree === 'bachelor'
                 ? 'applicant.bachelorWorkspaceLabel'
@@ -311,387 +350,361 @@ export default function ApplicantOverviewPage() {
             )}
           </p>
         </div>
-        <Button
-          type="text"
-          aria-label={t('applicant.refresh')}
-          title={t('applicant.refresh')}
-          loading={isFetching}
-          onClick={retry}
-          icon={<RefreshCw size={18} aria-hidden />}
-        />
+        <div className="ov-hero__aside">
+          {completion !== null && (
+            <Link
+              to={applicantLinks.profile}
+              className="ov-ring"
+              aria-label={t('applicant.profileCompletion', { percent: completion })}
+            >
+              <span className="ov-ring__dial" aria-hidden>
+                <svg viewBox="0 0 48 48" width="40" height="40">
+                  <circle cx="24" cy="24" r="20" className="ov-ring__track" />
+                  <circle
+                    cx="24"
+                    cy="24"
+                    r="20"
+                    className="ov-ring__value"
+                    strokeDasharray={ringLength}
+                    strokeDashoffset={ringOffset}
+                  />
+                </svg>
+                <strong>{completion}</strong>
+              </span>
+              <span className="ov-ring__label">{t('applicant.studyProfile')}</span>
+            </Link>
+          )}
+          <Button
+            type="text"
+            className="ov-refresh"
+            aria-label={t('applicant.refresh')}
+            title={t('applicant.refresh')}
+            loading={isFetching}
+            onClick={retry}
+            icon={<RefreshCw size={16} aria-hidden />}
+          />
+        </div>
       </header>
-      {!degree && (
-        <section className="applicant-card applicant-goal-prompt">
-          <h2>
-            {t(profile ? 'applicant.chooseGoal' : 'applicant.profileMissing')}
-          </h2>
-          <p>
-            {t(
-              profile
-                ? 'applicant.chooseGoalBody'
-                : 'applicant.profileMissingBody',
+
+      {focus && needsAssessment && (
+        <section
+          className={`ov-mm${assessment === 'complete' ? ' ov-mm--report' : ''}`}
+          aria-label={focus.eyebrow}
+        >
+          <header className="ov-mm__bar">
+            <span className="ov-mm__tag">
+              <Sparkles size={14} strokeWidth={2} aria-hidden />
+              {focus.eyebrow}
+            </span>
+            {assessment === 'complete' && latest.currentData?.meta?.generatedAt && (
+              <span className="ov-mm__date">
+                {t('applicant.assessment.complete.updated', {
+                  date: date(latest.currentData.meta.generatedAt),
+                })}
+              </span>
             )}
-          </p>
-          <TextLink to={applicantLinks.profile} primary>
-            {t('applicant.reviewProfile')}
-          </TextLink>
+          </header>
+
+          <div className="ov-mm__body">
+            <div className="ov-mm__copy">
+              {focus.loading ? (
+                <div role="status">
+                  <p>{t('applicant.assessmentLoading')}</p>
+                  <Skeleton active paragraph={{ rows: 2 }} />
+                </div>
+              ) : (
+                <>
+                  <h2>{focus.title}</h2>
+                  <p>{focus.body}</p>
+                </>
+              )}
+              {(focus.retry || focus.action || focus.secondary) && (
+                <div className="ov-mm__actions">
+                  {focus.retry && (
+                    <Button onClick={retryAssessment} loading={status.isFetching || latest.isFetching}>
+                      {t('applicant.retry')}
+                    </Button>
+                  )}
+                  {focus.action && (
+                    <Link className="ov-button" to={focus.action.to}>
+                      {focus.action.label}
+                      <ArrowRight size={16} aria-hidden />
+                    </Link>
+                  )}
+                  {focus.secondary && (
+                    <Link className="ov-mm__link" to={focus.secondary.to}>
+                      {focus.secondary.label}
+                      <ArrowRight size={16} aria-hidden />
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {assessment === 'complete' ? (
+              <div className="ov-mm__matches">
+                <p className="ov-mm__matches-title">{t('applicant.assessment.complete.summaryTitle')}</p>
+                {latest.isFetching && latest.currentData === undefined ? (
+                  <Skeleton active title={false} paragraph={{ rows: 3 }} />
+                ) : topMajors.length > 0 ? (
+                  <ol>
+                    {topMajors.map((major, index) => (
+                      <li
+                        key={major.name}
+                        className={`ov-mm__match${index === 0 ? ' is-top' : ''}`}
+                        style={{ '--i': index } as React.CSSProperties}
+                      >
+                        <span className="ov-mm__rank" aria-hidden>
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <span className="ov-mm__name">
+                          <strong>{major.name}</strong>
+                          {index === 0 && (
+                            <em>{t('applicant.assessment.complete.bestFit', 'Best fit')}</em>
+                          )}
+                        </span>
+                        {major.fit !== null && (
+                          <>
+                            <span className="ov-mm__meter" aria-hidden>
+                              <span style={{ '--fit': `${major.fit}%` } as React.CSSProperties} />
+                            </span>
+                            <span className="ov-mm__fit">
+                              {major.fit}
+                              <small>%</small>
+                            </span>
+                          </>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="ov-mm__empty">{t('applicant.assessment.complete.summaryFallback')}</p>
+                )}
+              </div>
+            ) : assessment !== 'loading' && assessment !== 'error' ? (
+              <div className="ov-mm__video">
+                <iframe
+                  src="https://www.youtube-nocookie.com/embed/0ntdgdT3JCs?rel=0"
+                  title={t('applicant.watchIntroduction')}
+                  loading="lazy"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              </div>
+            ) : null}
+          </div>
         </section>
       )}
 
-      {needsAssessment && (
-        <section
-          className={`applicant-major-match${assessment === 'complete' ? ' applicant-major-match--complete' : ''}`}
-          aria-label={t('applicant.majorMatch')}
-        >
-          <div>
-            <p className="applicant-eyebrow">{t('applicant.majorMatch')}</p>
-            {assessment === 'loading' ? (
+      {focus && !needsAssessment && (
+        <section className="ov-focus" aria-label={focus.eyebrow}>
+          <div className="ov-focus__body">
+            <p className="ov-eyebrow ov-eyebrow--light">{focus.eyebrow}</p>
+            {focus.loading ? (
               <div role="status">
                 <p>{t('applicant.assessmentLoading')}</p>
                 <Skeleton active paragraph={{ rows: 2 }} />
               </div>
-            ) : assessment === 'error' ? (
-              <>
-                <h2>{t('applicant.assessmentError')}</h2>
-                <p>{t('applicant.sectionError')}</p>
-                <Button
-                  onClick={retryAssessment}
-                  loading={status.isFetching || latest.isFetching}
-                >
-                  {t('applicant.retry')}
-                </Button>
-              </>
-            ) : assessment === 'complete' ? (
-              <>
-                <h2>{t(hasViewableReport
-                  ? 'applicant.assessment.complete.title'
-                  : 'applicant.assessment.complete.noReportTitle')}</h2>
-                <p>{t(hasViewableReport
-                  ? 'applicant.assessment.complete.body'
-                  : 'applicant.assessment.complete.noReportBody')}</p>
-                <div className="applicant-major-match__actions">
-                  <TextLink primary to={applicantLinks.universities}>
-                    {t('applicant.assessment.complete.nextAction')}
-                  </TextLink>
-                  <TextLink
-                    to={hasViewableReport
-                      ? `${applicantLinks.majorMatch}?step=results`
-                      : applicantLinks.personal}
-                  >
-                    {hasViewableReport
-                      ? t('applicant.assessment.complete.reportAction')
-                      : t('applicant.reviewGoals')}
-                  </TextLink>
-                </div>
-              </>
             ) : (
               <>
-                <h2>{t(`applicant.assessment.${assessment}.title`)}</h2>
-                <p>{t(`applicant.assessment.${assessment}.body`)}</p>
-                <TextLink
-                  primary
-                  to={applicantLinks.majorMatch}
-                >
-                  {t(`applicant.assessment.${assessment}.action`)}
-                </TextLink>
+                <h2>{focus.title}</h2>
+                <p>{focus.body}</p>
               </>
             )}
+            {!!focus.majors?.length && (
+              <ol className="ov-chips">
+                {focus.majors.map((major) => <li key={major}>{major}</li>)}
+              </ol>
+            )}
           </div>
-          {assessment === 'complete' ? (
-            <div className="applicant-major-match__summary">
-              <p className="applicant-eyebrow applicant-major-match__summary-label">
-                {t('applicant.assessment.complete.summaryTitle')}
-              </p>
-              {latest.isFetching && latest.currentData === undefined ? (
-                <Skeleton active title={false} paragraph={{ rows: 3 }} />
-              ) : matchedMajors.length > 0 ? (
-                <ol>
-                  {matchedMajors.map((major) => <li key={major}>{major}</li>)}
-                </ol>
-              ) : (
-                <p>{t('applicant.assessment.complete.summaryFallback')}</p>
+          {(focus.retry || focus.action || focus.secondary) && (
+            <div className="ov-focus__actions">
+              {focus.retry && (
+                <Button onClick={retryAssessment} loading={status.isFetching || latest.isFetching}>
+                  {t('applicant.retry')}
+                </Button>
               )}
-              {latest.currentData?.meta?.generatedAt && (
-                <small>
-                  {t('applicant.assessment.complete.updated', {
-                    date: date(latest.currentData.meta.generatedAt),
-                  })}
-                </small>
+              {focus.action && (
+                <Link className="ov-button" to={focus.action.to}>
+                  {focus.action.label}
+                  <ArrowRight size={16} aria-hidden />
+                </Link>
               )}
-            </div>
-          ) : (
-            <div className="applicant-video">
-              <iframe
-                src="https://www.youtube-nocookie.com/embed/0ntdgdT3JCs?rel=0"
-                title={t('applicant.watchIntroduction')}
-                loading="lazy"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-              />
+              {focus.secondary && (
+                <Link className="ov-button ov-button--ghost" to={focus.secondary.to}>
+                  {focus.secondary.label}
+                </Link>
+              )}
             </div>
           )}
         </section>
       )}
 
-      {degree === 'bachelor' && visit === 'new' && assessment === 'new' && (
-        <section
-          className="applicant-first-steps"
-          aria-labelledby="applicant-steps-title"
-        >
-          <h2 id="applicant-steps-title">{t('applicant.firstSteps')}</h2>
-          <div>
-            {[
-              ['direction', applicantLinks.personal],
-              ['documents', applicantLinks.documents],
-              ['shortlist', applicantLinks.applications],
-            ].map(([key, to], index) => (
-              <article className="applicant-card" key={key}>
-                <h3>
-                  {index + 1} · {t(`applicant.step.${key}.title`)}
-                </h3>
-                <p>{t(`applicant.step.${key}.body`)}</p>
-                <TextLink to={to}>{t(`applicant.step.${key}.action`)}</TextLink>
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
+      <nav className="ov-stats" aria-label={t('applicant.studyContext')}>
+        {stats.map((stat, index) => (
+          <Link key={stat.key} to={stat.to} className="ov-stat" style={{ animationDelay: `${index * 60}ms` }}>
+            <span className="ov-stat__label">{stat.label}</span>
+            <strong className="ov-stat__value">{stat.value ?? '–'}</strong>
+            <ArrowRight size={14} aria-hidden className="ov-stat__arrow" />
+          </Link>
+        ))}
+      </nav>
 
-      <div className="applicant-columns">
-        <div className="applicant-stack">
-          {degree === 'master' &&
-            (visit === 'new' ||
-              (visit === 'returning' &&
-                !!apps &&
-                apps.active.total === 0 &&
-                apps.shortlist.total === 0)) && (
-            <section className="applicant-card applicant-master-start">
-              <p className="applicant-eyebrow">{t('applicant.nextStep')}</p>
-              <h2>{t('applicant.masterStartTitle')}</h2>
-              <p>{t('applicant.masterStartBody')}</p>
-              <TextLink primary to={applicantLinks.newApplication}>
-                {t('applicant.startShortlist')}
-              </TextLink>
-            </section>
-          )}
-
-          <section
-            className="applicant-applications"
-            aria-labelledby="applicant-applications-title"
-          >
-            <div className="applicant-section-heading">
-              <h2 id="applicant-applications-title">
-                {t('applicant.yourApplications')}
-              </h2>
-              <TextLink to={applicantLinks.applications}>
+      <div className="ov-grid">
+        <div className="ov-col">
+          <section className="ov-card" aria-labelledby="ov-apps-title">
+            <div className="ov-card__head">
+              <h2 id="ov-apps-title">{t('applicant.yourApplications')}</h2>
+              <Link className="ov-link" to={applicantLinks.applications}>
                 {t('applicant.viewAll')}
-              </TextLink>
+              </Link>
             </div>
             {!apps ? (
               sectionError()
-            ) : (
-              <>
-                <div
-                  className="applicant-tabs"
-                  role="group"
-                  aria-label={t('applicant.applicationView')}
-                >
-                  {(['active', 'shortlist'] as const).map((tab) => (
-                    <button
-                      type="button"
-                      key={tab}
-                      aria-pressed={applicationTab === tab}
-                      className={applicationTab === tab ? 'is-active' : ''}
-                      onClick={() => setApplicationTab(tab)}
-                    >
-                      {t(`applicant.${tab}`)} <span>{apps[tab].total}</span>
-                    </button>
-                  ))}
-                </div>
-                {currentApplications?.items.length ? (
-                  <div className="applicant-application-grid">
-                    {currentApplications.items.map(applicationCard)}
-                  </div>
-                ) : (
-                  <div className="applicant-card applicant-empty">
-                    <h3>{t(`applicant.empty.${applicationTab}.title`)}</h3>
-                    <p>{t(`applicant.empty.${applicationTab}.body`)}</p>
-                    <TextLink to={applicantLinks.newApplication}>
-                      {t('applicant.addApplication')}
-                    </TextLink>
-                  </div>
-                )}
-              </>
-            )}
-          </section>
-
-          <section
-            className="applicant-card"
-            aria-labelledby="applicant-tasks-title"
-          >
-            <div className="applicant-section-heading">
-              <h2 id="applicant-tasks-title">{t('applicant.upcomingTasks')}</h2>
-              {tasks && (
-                <span className="applicant-muted">
-                  {t('applicant.openTasks', { count: tasks.open })}
-                </span>
-              )}
-            </div>
-            {!tasks ? (
-              sectionError()
-            ) : tasks.items.length ? (
-              <ul className="applicant-task-list">
-                {tasks.items.map((task) => (
-                  <li key={task.id}>
-                    <div>
-                      {task.applicationId ? (
-                        <Link to={applicationWorkspaceLink(task.applicationId)}>
-                          {task.title}
-                        </Link>
-                      ) : (
-                        <span>{task.title}</span>
+            ) : listApplications.length ? (
+              <ul className="ov-list">
+                {listApplications.map((app: OverviewApplication) => (
+                  <li key={app.id}>
+                    <Link to={applicationWorkspaceLink(app.id)} className="ov-row">
+                      <span className="ov-row__main">
+                        <strong>{getTranslation(app.universityName) || t('applicant.universityNotSet')}</strong>
+                        <small>{getTranslation(app.major) || t('applicant.fieldNotSet')}</small>
+                      </span>
+                      {app.deadline && (
+                        <time className={overdue(app.deadline) ? 'is-overdue' : undefined} dateTime={app.deadline}>
+                          {date(app.deadline)}
+                        </time>
                       )}
-                      <small
-                        className={
-                          task.dueDate &&
-                          new Date(task.dueDate).getTime() < Date.now()
-                            ? 'applicant-overdue'
-                            : 'applicant-muted'
-                        }
-                      >
-                        {task.dueDate &&
-                        new Date(task.dueDate).getTime() < Date.now()
-                          ? t('applicant.overdue')
-                          : t(
-                              `applicant.taskStatus.${task.status}`,
-                              t('applicant.task'),
-                            )}
-                      </small>
-                    </div>
-                    <time dateTime={task.dueDate ?? undefined}>
-                      {date(task.dueDate)}
-                    </time>
+                      <span className="ov-pill">
+                        {t(`applicant.status.${app.status}`, t('applicant.statusUnknown'))}
+                      </span>
+                    </Link>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="applicant-muted">{t('applicant.noTasks')}</p>
-            )}
-            {tasks && tasks.open > tasks.items.length && (
-              <p className="applicant-muted">
-                {t('applicant.taskSummary', { count: tasks.items.length })}
-              </p>
+              <div className="ov-empty">
+                <p>{t('applicant.empty.active.body')}</p>
+                <Link className="ov-link" to={applicantLinks.newApplication}>
+                  {t('applicant.addApplication')} <ArrowRight size={14} aria-hidden />
+                </Link>
+              </div>
             )}
           </section>
-          {degree === 'master' && visit === 'new' && (
-            <section
-              className="applicant-toolkit"
-              aria-labelledby="applicant-toolkit-title"
-            >
-              <h2 id="applicant-toolkit-title">{t('applicant.toolkit')}</h2>
-              <div>
-                {[
-                  ['requirements', applicantLinks.applications],
-                  ['statement', applicantLinks.essays],
-                ].map(([key, to]) => (
-                  <article className="applicant-card" key={key}>
-                    <img
-                      src={`/applicant-workspace/${key}.png`}
-                      alt=""
-                      width={316}
-                      height={112}
-                    />
-                    <div>
-                      <h3>{t(`applicant.toolkit.${key}.title`)}</h3>
-                      <p>{t(`applicant.toolkit.${key}.body`)}</p>
-                      <TextLink to={to}>
-                        {t(`applicant.toolkit.${key}.action`)}
-                      </TextLink>
-                    </div>
-                  </article>
+
+          <section className="ov-card" aria-labelledby="ov-tasks-title">
+            <div className="ov-card__head">
+              <h2 id="ov-tasks-title">{t('applicant.upcomingTasks')}</h2>
+              <Link className="ov-link" to={applicantLinks.tasks}>
+                {t('applicant.viewAll')}
+              </Link>
+            </div>
+            {!tasks ? (
+              sectionError()
+            ) : tasks.items.length ? (
+              <ul className="ov-list">
+                {tasks.items.slice(0, 5).map((task) => (
+                  <li key={task.id}>
+                    <Link
+                      to={task.applicationId ? applicationWorkspaceLink(task.applicationId) : applicantLinks.tasks}
+                      className="ov-row"
+                    >
+                      <span className={`ov-dot${overdue(task.dueDate) ? ' is-overdue' : ''}`} aria-hidden />
+                      <span className="ov-row__main">
+                        <strong>{task.title}</strong>
+                        <small>
+                          {overdue(task.dueDate)
+                            ? t('applicant.overdue')
+                            : t(`applicant.taskStatus.${task.status}`, t('applicant.task'))}
+                        </small>
+                      </span>
+                      <time dateTime={task.dueDate ?? undefined}>{date(task.dueDate)}</time>
+                    </Link>
+                  </li>
                 ))}
+              </ul>
+            ) : (
+              <div className="ov-empty">
+                <p>{t('applicant.noTasks')}</p>
               </div>
-            </section>
-          )}
+            )}
+          </section>
         </div>
 
-        <aside
-          className="applicant-stack"
-          aria-label={t('applicant.studyContext')}
-        >
-          <section className="applicant-card">
-            <h2>
-              {t(next ? 'applicant.nextSession' : 'applicant.yourSessions')}
-            </h2>
+        <aside className="ov-col" aria-label={t('applicant.studyContext')}>
+          <section className="ov-card">
+            <div className="ov-card__head">
+              <h2>{t(next ? 'applicant.nextSession' : 'applicant.yourSessions')}</h2>
+              <Link className="ov-link" to={applicantLinks.sessions}>
+                {t('applicant.viewAll')}
+              </Link>
+            </div>
             {!sessions ? (
               sectionError()
             ) : next ? (
-              <div className="applicant-session">
-                <h3>{t('applicant.mentorSession')}</h3>
-                <p className="applicant-muted">
-                  {next.mentorName
-                    ? t('applicant.withMentor', { name: next.mentorName })
-                    : t('applicant.mentor')}
-                </p>
+              <div className="ov-session">
                 <time dateTime={next.date}>{date(next.date, true)}</time>
-                <small className="applicant-muted">
-                  {t('applicant.sessionDuration', {
-                    minutes: next.durationMinutes,
-                  })}{' '}
-                  · {Intl.DateTimeFormat().resolvedOptions().timeZone}
-                </small>
+                <p>
+                  {next.mentorName ? t('applicant.withMentor', { name: next.mentorName }) : t('applicant.mentor')}
+                  {' · '}
+                  {t('applicant.sessionDuration', { minutes: next.durationMinutes })}
+                </p>
                 {safeMeetingLink(next.meetingLink) && (
-                  <a
-                    className="applicant-button applicant-button--secondary"
-                    href={safeMeetingLink(next.meetingLink)!}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
+                  <a className="ov-button" href={safeMeetingLink(next.meetingLink)!} target="_blank" rel="noreferrer">
                     {t('applicant.joinSession')}
-                    <span className="applicant-sr-only">
-                      {' '}
-                      {t('applicant.opensInNewTab')}
-                    </span>
+                    <span className="applicant-sr-only"> {t('applicant.opensInNewTab')}</span>
                     <ArrowRight size={16} aria-hidden />
                   </a>
                 )}
-                <TextLink to="/mentors">{t('applicant.findMentor')}</TextLink>
               </div>
             ) : (
-              <p className="applicant-muted">{t('applicant.noSessions')}</p>
+              <div className="ov-empty">
+                <p>{t('applicant.noSessions')}</p>
+                <Link className="ov-link" to="/mentors">
+                  {t('applicant.findMentor')} <ArrowRight size={14} aria-hidden />
+                </Link>
+              </div>
             )}
             {unratedSession && (
-              <p className="applicant-muted">
+              <p className="ov-note">
                 How was your session with {mentorName(unratedSession)}?{' '}
-                <Link className="applicant-text-link" to={applicantLinks.sessions}>
-                  Rate it
-                </Link>
+                <Link className="ov-link" to={applicantLinks.sessions}>Rate it</Link>
               </p>
             )}
-            <div className="applicant-link-stack">
-              {sessions && !next && (
-                <TextLink to="/mentors">{t('applicant.findMentor')}</TextLink>
-              )}
-              <TextLink to={applicantLinks.sessions}>View all sessions</TextLink>
-            </div>
           </section>
 
-          <section className="applicant-card">
-            <div className="applicant-section-heading">
+          {nextDeadline && (
+            <Link to={applicationWorkspaceLink(nextDeadline.id)} className="ov-card ov-deadline">
+              <p className="ov-eyebrow">{t('applicant.nextDeadline')}</p>
+              <strong>{getTranslation(nextDeadline.universityName) || t('applicant.application')}</strong>
+              <time dateTime={nextDeadline.deadline ?? undefined}>{date(nextDeadline.deadline)}</time>
+            </Link>
+          )}
+
+          <section className="ov-card">
+            <div className="ov-card__head">
               <h2>{t('applicant.studyProfile')}</h2>
-              <Link className="applicant-text-link" to={applicantLinks.profile}>
+              <Link className="ov-link" to={applicantLinks.profile}>
                 {t('applicant.edit')}
               </Link>
             </div>
-            <dl className="applicant-study-fields">
+            {completion !== null && (
+              <div
+                className="ov-progress"
+                role="progressbar"
+                aria-valuenow={completion}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={t('applicant.profileCompletion', { percent: completion })}
+              >
+                <span style={{ width: `${completion}%` }} />
+              </div>
+            )}
+            <dl className="ov-facts">
               <div>
                 <dt>{t('applicant.degree')}</dt>
-                <dd>
-                  {degree
-                    ? t(`applicant.${degree}Degree`)
-                    : t('applicant.notSet')}
-                </dd>
+                <dd>{degree ? t(`applicant.${degree}Degree`) : t('applicant.notSet')}</dd>
               </div>
               {studyFields.map(([key, value]) => (
                 <div key={key}>
@@ -702,9 +715,7 @@ export default function ApplicantOverviewPage() {
               <div>
                 <dt>{t('applicant.intendedField')}</dt>
                 <dd>
-                  {profile?.fieldUndecided
-                    ? t('applicant.undecided')
-                    : profile?.intendedField || t('applicant.notSet')}
+                  {profile?.fieldUndecided ? t('applicant.undecided') : profile?.intendedField || t('applicant.notSet')}
                 </dd>
               </div>
               <div>
@@ -712,8 +723,7 @@ export default function ApplicantOverviewPage() {
                 <dd>
                   {profile?.destinationUndecided
                     ? t('applicant.undecided')
-                    : profile?.destinations?.join(', ') ||
-                      t('applicant.notSet')}
+                    : profile?.destinations?.join(', ') || t('applicant.notSet')}
                 </dd>
               </div>
               <div>
@@ -721,49 +731,7 @@ export default function ApplicantOverviewPage() {
                 <dd>{intake}</dd>
               </div>
             </dl>
-            {completion !== null && (
-              <p className="applicant-profile-progress">
-                {t('applicant.profileCompletion', { percent: completion })}
-              </p>
-            )}
           </section>
-
-          <section className="applicant-card applicant-card--muted">
-            <h2>{t('applicant.documents')}</h2>
-            {data.documents.state === 'error' ? (
-              sectionError()
-            ) : (
-              <>
-                <p>
-                  {t(
-                    degree === 'master'
-                      ? 'applicant.masterDocumentsBody'
-                      : 'applicant.documentsCardBody',
-                  )}
-                </p>
-                <p className="applicant-muted">
-                  {t('applicant.savedDocuments', {
-                    count: data.documents.data.total,
-                  })}
-                </p>
-              </>
-            )}
-            <TextLink to={applicantLinks.documents}>
-              {t('applicant.openDocuments')}
-            </TextLink>
-          </section>
-          {nextDeadline && (
-            <section className="applicant-card">
-              <p className="applicant-eyebrow">{t('applicant.nextDeadline')}</p>
-              <h3>
-                {getTranslation(nextDeadline.universityName) || t('applicant.application')}
-              </h3>
-              <p>{date(nextDeadline.deadline)}</p>
-              <TextLink to={applicationWorkspaceLink(nextDeadline.id)}>
-                {t('applicant.openApplication')}
-              </TextLink>
-            </section>
-          )}
         </aside>
       </div>
     </div>

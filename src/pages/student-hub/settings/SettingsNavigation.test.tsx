@@ -17,7 +17,7 @@ describe('settings wayfinding', () => {
     expect(ACCOUNT_SETTINGS_PATH).toContain('tab=profile');
     expect(MEMBERSHIP_BILLING_PATH).toContain('tab=subscription');
   });
-  it.each(['profile', 'subscription', 'referrals'] as const)(
+  it.each(['profile', 'referrals'] as const)(
     'marks the URL-selected %s section and preserves link navigation',
     (section) => {
       const html = renderToStaticMarkup(
@@ -34,7 +34,9 @@ describe('settings wayfinding', () => {
       expect(selectedLink).toContain(`tab=${section}`);
 
       expect(html).not.toContain('clickCheckout');
-      expect(html).toContain('Membership &amp; billing');
+      // Billing is its own page, never a settings tab.
+      expect(html).not.toContain('Membership &amp; billing');
+      expect(html).not.toContain('tab=subscription');
     },
   );
 });

@@ -704,8 +704,8 @@
   border-radius: 18px;
 }
 .applicant-writing-desk__bar {
-  max-width: 1180px;
-  margin: 0 auto 20px;
+  max-width: none;
+  margin: 0 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -718,8 +718,8 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 20px;
   align-items: start;
-  max-width: 1180px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   &.has-side-panel {
     grid-template-columns: minmax(0, 1fr) minmax(280px, 330px);
   }

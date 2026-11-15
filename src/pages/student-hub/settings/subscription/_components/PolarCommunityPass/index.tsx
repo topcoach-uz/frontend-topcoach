@@ -1,4 +1,4 @@
-import { Alert, Button, message } from "antd";
+import { Button, message } from "antd";
 import { useTranslation } from "react-i18next";
 import {
   useCreatePolarCheckoutMutation,
@@ -40,20 +40,18 @@ export default function PolarCommunityPass() {
   };
 
   if (isLoading) return null;
+  // Optional alternative checkout: a quiet note, not a page-level warning.
   if (error)
     return (
-      <Alert
-        type="warning"
-        message={t(
+      <p className={styles.quietNote} role="status">
+        {t(
           "settings.subscription.pass.unavailable",
           "One-time Community access is currently unavailable.",
-        )}
-        action={
-          <Button onClick={() => refetch()}>
-            {t("settings.subscription.pass.retry", "Try again")}
-          </Button>
-        }
-      />
+        )}{" "}
+        <Button type="link" size="small" onClick={() => refetch()}>
+          {t("settings.subscription.pass.retry", "Try again")}
+        </Button>
+      </p>
     );
   if (!products?.length) return null;
 

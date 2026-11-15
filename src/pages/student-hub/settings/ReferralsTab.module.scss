@@ -1,0 +1,71 @@
+// Student-side glass treatment for the shared referrals panel.
+@use '/src/styles/liquid-glass' as lg;
+
+.referrals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+
+  // The panel's own card rules use !important; match them deliberately.
+  :global(.ant-card) {
+    margin: 0 !important;
+    border-radius: 24px !important;
+    border: 1px solid rgba(255, 255, 255, 0.75) !important;
+    background: rgba(255, 255, 255, 0.52) !important;
+    backdrop-filter: blur(28px) saturate(185%);
+    -webkit-backdrop-filter: blur(28px) saturate(185%);
+    box-shadow:
+      lg.lg-specular(0.55, 0.06),
+      0 18px 40px -30px rgba(48, 43, 40, 0.32) !important;
+    @include lg.lg-enter;
+  }
+  // The activity list spans the full width under the two summary cards.
+  :global(.ant-card):last-child {
+    grid-column: 1 / -1;
+  }
+  :global(.ant-card-head) {
+    border-bottom: 1px solid rgba(48, 43, 40, 0.07) !important;
+    padding: 18px 24px !important;
+  }
+  :global(.ant-card-head-title) {
+    font-family: inherit !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.01em;
+    color: #221d1a !important;
+  }
+  :global(.ant-card-body) {
+    padding: 20px 24px !important;
+  }
+  // Referral code: a calm inset chip.
+  code {
+    padding: 10px 16px;
+    border-radius: 14px;
+    @include lg.lg-inset;
+    color: #8b0000;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+  }
+  :global(.ant-btn-primary:not(:disabled)) {
+    @include lg.lg-tint;
+    border-radius: 999px;
+  }
+  :global(.ant-btn-default) {
+    @include lg.lg-thin;
+    border-radius: 999px;
+    color: #8b0000;
+  }
+
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    :global(.ant-card) {
+      background: #fff !important;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

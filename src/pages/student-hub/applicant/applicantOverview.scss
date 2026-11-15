@@ -1,0 +1,1042 @@
+@use '/src/styles/liquid-glass' as lg;
+// Overview: calm, glassy, informative at a glance.
+$ink: #221d1a;
+$muted: #6b625b;
+$faint: #a39890;
+$brand: #8b0000;
+$brand-deep: #5e0000;
+$line: rgba(48, 43, 40, 0.07);
+$ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+
+@mixin glass {
+  @include lg.lg-regular;
+}
+
+@keyframes ov-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ov {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: $ink;
+
+  > * {
+    animation: ov-rise 560ms $ease-out both;
+  }
+  > *:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  > *:nth-child(3) {
+    animation-delay: 120ms;
+  }
+  > *:nth-child(4) {
+    animation-delay: 180ms;
+  }
+}
+
+.ov-eyebrow {
+  margin: 0;
+  color: $faint;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.ov-eyebrow--light,
+.ov-focus .ov-eyebrow--light {
+  color: $brand;
+}
+
+// ---------- Hero ----------
+.ov-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 4px 4px 8px;
+
+  h1 {
+    margin: 8px 0 6px;
+    font-size: clamp(1.75rem, 2.6vw, 2.5rem);
+    font-weight: 400;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: $ink;
+  }
+}
+.ov-hero__sub {
+  margin: 0;
+  color: $muted;
+  font-size: 15px;
+}
+.ov-hero__aside {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+.ov-refresh.ant-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: $muted;
+}
+
+.ov-ring {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 14px 5px 5px;
+  border-radius: 999px;
+  color: inherit;
+  @include glass;
+  transition: transform 240ms $ease-out;
+
+  &:hover {
+    color: inherit;
+    transform: translateY(-1px);
+  }
+}
+.ov-ring__dial {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+
+  svg {
+    position: absolute;
+    inset: 0;
+    transform: rotate(-90deg);
+  }
+  strong {
+    position: relative;
+    color: $ink;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+}
+.ov-ring__track,
+.ov-ring__value {
+  fill: none;
+  stroke-width: 3.5;
+}
+.ov-ring__track {
+  stroke: rgba(139, 0, 0, 0.1);
+}
+.ov-ring__value {
+  stroke: $brand;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 900ms $ease-out;
+}
+.ov-ring__label {
+  color: $muted;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+// ---------- Focus card ----------
+.ov-focus {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 32px;
+  border-radius: 26px;
+  overflow: hidden;
+  @include lg.lg-blush;
+
+  h2 {
+    margin: 10px 0 8px;
+    color: $ink;
+    font-size: clamp(1.25rem, 1.8vw, 1.6rem);
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  p {
+    margin: 0;
+    max-width: 58ch;
+    color: $muted;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+}
+.ov-focus__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  flex: none;
+}
+.ov-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    color: $brand;
+    font-size: 13px;
+  }
+}
+
+.ov-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  @include lg.lg-tint;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    transform 200ms $ease-out,
+    box-shadow 200ms $ease-out;
+
+  &:hover {
+    color: #fff;
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+  }
+  &:active {
+    transform: scale(0.97);
+  }
+  svg {
+    transition: transform 200ms $ease-out;
+  }
+  &:hover svg {
+    transform: translateX(2px);
+  }
+}
+.ov-button--ghost {
+  @include lg.lg-thin;
+  color: $brand;
+
+  &:hover {
+    color: $brand;
+    filter: none;
+  }
+}
+// The session card's join button sits on a light surface.
+.ov-card .ov-button {
+  align-self: flex-start;
+  @include lg.lg-tint;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+// ---------- AI Major Match ----------
+// Critically damped spring (apple-design: damping 1.0, response ~0.45s) as CSS linear().
+$spring: linear(
+  0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 18.2%, 1.017 23.3%, 1.035 27.8%,
+  1.027 33.5%, 1.005 45.6%, 0.998 59.6%, 1
+);
+
+.ov-mm {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding: 30px 36px 36px;
+  border-radius: 32px;
+  overflow: hidden;
+  // Deeper blush glass: more of the brand's rose tone, still translucent.
+  background: rgba(244, 222, 219, 0.82);
+  backdrop-filter: blur(36px) saturate(180%);
+  -webkit-backdrop-filter: blur(36px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 26px 34px -28px rgba(255, 255, 255, 0.75),
+    inset 0 -20px 34px -28px rgba(139, 0, 0, 0.12),
+    0 30px 60px -36px rgba(139, 0, 0, 0.3),
+    0 2px 6px rgba(139, 0, 0, 0.05);
+
+  // Soft rose light in the top-right corner (ambient, not a hard gradient).
+  &::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -12%;
+    width: 60%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: rgba(214, 150, 142, 0.28);
+    filter: blur(70px);
+    pointer-events: none;
+  }
+  > * {
+    position: relative;
+  }
+
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    background: #f4dedb;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+.ov-mm__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.ov-mm__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px 6px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1), 0 6px 14px -10px rgba(139, 0, 0, 0.35);
+  color: $brand;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.ov-mm__date {
+  color: #7a5c58;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ov-mm__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.95fr);
+  align-items: end;
+  gap: 48px;
+}
+.ov-mm__copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  h2 {
+    margin: 0 0 14px;
+    max-width: 20ch;
+    color: $ink;
+    font-size: clamp(2rem, 3.4vw, 3rem);
+    font-weight: 400;
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+  }
+  > p {
+    margin: 0;
+    max-width: 46ch;
+    color: #5f4a47;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+}
+.ov-mm__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 28px;
+  margin-top: 30px;
+
+  .ov-button {
+    min-height: 52px;
+    padding: 0 28px;
+    font-size: 15px;
+  }
+}
+.ov-mm__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: $brand;
+  font-size: 15px;
+  font-weight: 500;
+
+  svg {
+    transition: transform 240ms $ease-out;
+  }
+  &:hover {
+    color: $brand-deep;
+
+    svg {
+      transform: translateX(3px);
+    }
+  }
+}
+
+// Ranked matches: no box, hairlines, light numerals, spring-filled meters.
+.ov-mm__matches {
+  min-width: 0;
+
+  ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+.ov-mm__matches-title {
+  margin: 0 0 6px;
+  color: #7a5c58;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.ov-mm__match {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 96px 46px;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 0;
+  border-top: 1px solid rgba(139, 0, 0, 0.1);
+  animation: ov-mm-row 620ms $spring both;
+  animation-delay: calc(140ms + var(--i, 0) * 90ms);
+
+  &:first-child {
+    border-top: 0;
+  }
+}
+.ov-mm__rank {
+  color: rgba(139, 0, 0, 0.55);
+  font-size: 26px;
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.ov-mm__name {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+
+  strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: $ink;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  em {
+    align-self: flex-start;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: $brand;
+    color: #fff;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+}
+.ov-mm__match.is-top {
+  .ov-mm__rank {
+    color: $brand;
+    font-weight: 300;
+  }
+  .ov-mm__name strong {
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+.ov-mm__meter {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(139, 0, 0, 0.1);
+  overflow: hidden;
+
+  span {
+    display: block;
+    width: var(--fit, 0%);
+    height: 100%;
+    border-radius: inherit;
+    background: $brand;
+    transform-origin: left center;
+    animation: ov-mm-fill 900ms $spring both;
+    animation-delay: calc(260ms + var(--i, 0) * 90ms);
+  }
+}
+.ov-mm__match:not(.is-top) .ov-mm__meter span {
+  background: rgba(139, 0, 0, 0.55);
+}
+.ov-mm__fit {
+  text-align: right;
+  color: $ink;
+  font-size: 16px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+
+  small {
+    margin-left: 1px;
+    color: #7a5c58;
+    font-size: 12px;
+  }
+}
+.ov-mm__empty {
+  margin: 0;
+  color: #5f4a47;
+  font-size: 14px;
+}
+.ov-mm__video {
+  overflow: hidden;
+  border-radius: 24px;
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 24px 48px -30px rgba(90, 20, 20, 0.5);
+
+  iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+}
+
+@keyframes ov-mm-row {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ov-mm-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (max-width: 1100px) {
+  .ov-mm__body {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 32px;
+  }
+}
+@media (max-width: 560px) {
+  .ov-mm {
+    padding: 22px 20px 24px;
+    border-radius: 26px;
+  }
+  .ov-mm__bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .ov-mm__match {
+    grid-template-columns: 34px minmax(0, 1fr) 46px;
+  }
+  .ov-mm__meter {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ov-mm__match,
+  .ov-mm__meter span {
+    animation: none;
+  }
+}
+
+// ---------- Stats ----------
+.ov-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.ov-stat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px;
+  border-radius: 22px;
+  color: inherit;
+  @include glass;
+  animation: ov-rise 560ms $ease-out both;
+  transition:
+    transform 260ms $ease-out,
+    box-shadow 260ms $ease-out;
+
+  &:hover {
+    color: inherit;
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 26px 48px -28px rgba(48, 43, 40, 0.35);
+
+    .ov-stat__arrow {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+.ov-stat__label {
+  color: $muted;
+  font-size: 13px;
+}
+.ov-stat__value {
+  font-size: 34px;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.ov-stat__arrow {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  color: $brand;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition:
+    opacity 220ms $ease-out,
+    transform 220ms $ease-out;
+}
+
+// ---------- Two-column body ----------
+.ov-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.ov-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+.ov-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px 24px;
+  border-radius: 24px;
+  color: inherit;
+  @include glass;
+
+  h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+}
+.ov-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ov-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: $brand;
+  font-size: 13px;
+  font-weight: 500;
+
+  &:hover {
+    color: $brand-deep;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.ov-list {
+  margin: 0 -10px;
+  padding: 0;
+  list-style: none;
+}
+.ov-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 10px;
+  border-radius: 14px;
+  color: inherit;
+  transition: background-color 200ms $ease-out;
+
+  &:hover {
+    color: inherit;
+    background: rgba(255, 255, 255, 0.75);
+  }
+  time {
+    flex: none;
+    color: $muted;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+
+    &.is-overdue {
+      color: #b42318;
+    }
+  }
+}
+.ov-list li + li .ov-row {
+  box-shadow: inset 0 1px 0 $line;
+}
+.ov-list li + li .ov-row:hover {
+  box-shadow: none;
+}
+.ov-row__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+
+  strong,
+  small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  strong {
+    font-size: 14px;
+    font-weight: 500;
+  }
+  small {
+    color: $muted;
+    font-size: 12px;
+  }
+}
+.ov-pill {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(139, 0, 0, 0.07);
+  color: $brand;
+  font-size: 12px;
+  font-weight: 500;
+}
+.ov-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(139, 0, 0, 0.35);
+
+  &.is-overdue {
+    background: #d92d20;
+  }
+}
+
+.ov-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px dashed rgba(48, 43, 40, 0.12);
+  background: rgba(255, 255, 255, 0.4);
+
+  p {
+    margin: 0;
+    color: $muted;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+.ov-note {
+  margin: 0;
+  color: $muted;
+  font-size: 13px;
+}
+
+.ov-session {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  time {
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  p {
+    margin: 0 0 6px;
+    color: $muted;
+    font-size: 13px;
+  }
+}
+
+.ov-deadline {
+  gap: 6px;
+  transition: transform 240ms $ease-out;
+
+  &:hover {
+    color: inherit;
+    transform: translateY(-2px);
+  }
+  strong {
+    font-size: 16px;
+    font-weight: 500;
+  }
+  time {
+    color: $brand;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+.ov-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(139, 0, 0, 0.08);
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: $brand;
+    transition: width 900ms $ease-out;
+  }
+}
+.ov-facts {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+
+  div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0;
+  }
+  div + div {
+    border-top: 1px solid $line;
+  }
+  dt {
+    color: $muted;
+    font-size: 13px;
+  }
+  dd {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: right;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+// ---------- Responsive ----------
+@media (max-width: 1100px) {
+  .ov-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 860px) {
+  .ov-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ov-focus {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px;
+  }
+}
+@media (max-width: 560px) {
+  .ov-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .ov-stat {
+    padding: 16px;
+  }
+  .ov-stat__value {
+    font-size: 28px;
+  }
+  .ov-card {
+    padding: 18px;
+  }
+  .ov-row .ov-pill {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ov > *,
+  .ov-stat {
+    animation: none;
+  }
+  .ov-ring__value,
+  .ov-progress span,
+  .ov-stat,
+  .ov-button,
+  .ov-deadline {
+    transition: none;
+  }
+}
+
+// =====================================================================
+// Liquid glass materials (apple-design: materials & depth)
+//  - bigger surfaces read thicker; small controls are thin
+//  - nothing translucent is stacked on translucent: nested = inset
+//  - vibrancy: slightly stronger text on glass
+//  - materialize on enter (blur + scale together), cross-fade if reduced
+// =====================================================================
+$vibrant-muted: #5f5650;
+
+// Structural cards: thick glass.
+.ov-card {
+  @include lg.lg-thick;
+  border-radius: 26px;
+}
+// Interactive stat tiles: regular glass that lifts like a lens.
+.ov-stat {
+  @include lg.lg-regular;
+  border-radius: 24px;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      lg.lg-specular(0.7, 0.07),
+      0 30px 54px -30px rgba(48, 43, 40, 0.4);
+  }
+  &:active {
+    transform: scale(0.98);
+    transition-duration: 100ms;
+  }
+}
+// The one time-sensitive item gets the blush tint.
+.ov-deadline {
+  @include lg.lg-blush;
+
+  &:hover {
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.95),
+      inset 0 22px 30px -24px rgba(255, 255, 255, 0.7),
+      0 28px 50px -28px rgba(139, 0, 0, 0.3);
+  }
+}
+// Small controls: thin glass.
+.ov-ring,
+.ov-refresh.ant-btn {
+  @include lg.lg-thin;
+}
+.ov-pill {
+  @include lg.lg-thin;
+  color: $brand;
+  font-weight: 600;
+}
+
+// Nested inside glass: inset, never glass on glass.
+.ov-empty {
+  @include lg.lg-inset;
+  border-style: solid;
+  border-radius: 18px;
+}
+.ov-progress {
+  @include lg.lg-inset;
+  height: 8px;
+  border: 0;
+  // Keep the empty track visible against the glass card.
+  background: rgba(139, 0, 0, 0.08);
+  box-shadow: inset 0 1px 2px rgba(48, 43, 40, 0.08);
+}
+
+// List rows: a lens highlight on hover rather than a new surface.
+.ov-row {
+  border-radius: 16px;
+  transition:
+    background-color 220ms $ease-out,
+    box-shadow 220ms $ease-out,
+    transform 160ms $ease-out;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.95),
+      0 8px 18px -14px rgba(48, 43, 40, 0.3);
+  }
+  &:active {
+    transform: scale(0.99);
+  }
+}
+.ov-list li + li .ov-row:hover {
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    0 8px 18px -14px rgba(48, 43, 40, 0.3);
+}
+
+// Vibrancy: text on translucent surfaces gets a touch more contrast.
+.ov-card,
+.ov-stat,
+.ov-mm {
+  .ov-stat__label,
+  .ov-row__main small,
+  .ov-row time,
+  .ov-facts dt,
+  .ov-empty p,
+  .ov-note,
+  .ov-session p {
+    color: $vibrant-muted;
+  }
+  .ov-stat__label,
+  .ov-facts dt {
+    font-weight: 500;
+    letter-spacing: 0.005em;
+  }
+}
+
+// Materialize on enter: blur and scale arrive together, staggered.
+.ov > *,
+.ov-stat {
+  animation: lg-materialize 520ms $ease-out both;
+}
+.ov-stats .ov-stat:nth-child(2) { animation-delay: 60ms; }
+.ov-stats .ov-stat:nth-child(3) { animation-delay: 120ms; }
+.ov-stats .ov-stat:nth-child(4) { animation-delay: 180ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ov > *,
+  .ov-stat {
+    animation: ov-fade 200ms ease-out both;
+  }
+  .ov-stat:hover,
+  .ov-row:active,
+  .ov-stat:active {
+    transform: none;
+  }
+}
+@keyframes ov-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

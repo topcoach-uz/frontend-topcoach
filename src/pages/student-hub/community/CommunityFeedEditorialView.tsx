@@ -45,7 +45,8 @@ import {
 import dayjs from 'dayjs';
 import { message } from 'antd';
 import CommunityReportDialog from '../../community/CommunityReportDialog';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCommunityAccessGate } from 'src/lib/communityAccess';
 import { useTranslation } from 'react-i18next';
 import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import {
@@ -874,7 +875,7 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
       <div className="cf__layout">
         {/* ═══ MAIN COLUMN ═════════════════════════════════════════ */}
         <main className="cf__main">
-          {readOnly && <p className="cf__read-only-note">Explore the community feed. Community access is needed to post or interact.</p>}
+          {readOnly && <ReadOnlyNote />}
           {/* Saved view title strip — only in saved mode, so the user knows
               what they're looking at now that the loud tab strip is gone. */}
           {viewMode === 'saved' && (
@@ -2398,3 +2399,21 @@ export const PollCard: React.FC<{
 };
 
 export default CommunityFeedEditorialView;
+
+/** Read-only banner for students without Community access. */
+function ReadOnlyNote() {
+  const gate = useCommunityAccessGate();
+  return (
+    <div className="cf__read-only-note" role="note">
+      <span className="cf__read-only-icon" aria-hidden>
+        <Lock size={14} strokeWidth={2} />
+      </span>
+      <p>Explore the community feed. Community access is needed to post or interact.</p>
+      {gate.state !== 'loading' && (
+        <Link to={gate.destination} className="cf__read-only-link">
+          Unlock
+        </Link>
+      )}
+    </div>
+  );
+}
