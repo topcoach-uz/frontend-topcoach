@@ -1,4 +1,6 @@
 import { RtkApi } from './api';
+import { branchParam } from './counselorConsoleApi';
+import type { BranchSelection } from './counselorConsoleApi';
 
 /**
  * Org Audit API — the owner-only audit trail of the Counselor Console. Injected
@@ -23,6 +25,7 @@ export interface OrgAuditEntry {
   /** Arbitrary structured detail about the action. */
   metadata: Record<string, unknown> | null;
   createdAt: string;
+  branchId?: string | null;
 }
 
 export interface OrgAuditResponse {
@@ -34,6 +37,7 @@ export interface OrgAuditResponse {
 
 export interface GetAuditArgs {
   orgId: string;
+  branchId?: BranchSelection;
   page?: number;
   limit?: number;
 }
@@ -41,12 +45,13 @@ export interface GetAuditArgs {
 export const orgAuditApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
     getAudit: builder.query<OrgAuditResponse, GetAuditArgs>({
-      query: ({ orgId, page, limit }) => ({
+      query: ({ orgId, branchId, page, limit }) => ({
         url: `/org/${encodeURIComponent(orgId)}/audit`,
         method: 'GET',
         params: {
           ...(page != null ? { page } : {}),
           ...(limit != null ? { limit } : {}),
+          ...branchParam(branchId),
         },
       }),
       providesTags: (_res, _err, { orgId }) => [

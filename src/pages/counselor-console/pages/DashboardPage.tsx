@@ -80,10 +80,10 @@ const NAMED_LIST_MAX = 8;
 const DIRECT_LABEL_MIN_SHARE = 12;
 
 export default function CounselorConsoleDashboardPage() {
-  const { org, orgId } = useCounselorConsole();
+  const { org, orgId, branchId } = useCounselorConsole();
   const navigate = useNavigate();
   const { data, isLoading, isFetching, isError } = useGetOrgDashboardQuery(
-    orgId as string,
+    { orgId: orgId as string, branchId },
     { skip: !orgId },
   );
 
@@ -91,7 +91,7 @@ export default function CounselorConsoleDashboardPage() {
   // snapshot is plenty for an at-a-glance count on the dashboard).
   const { data: analytics, isLoading: analyticsLoading } =
     useGetOrgAnalyticsQuery(
-      { orgId: orgId as string, range: '90d' },
+      { orgId: orgId as string, branchId, range: '90d' },
       { skip: !orgId },
     );
 
@@ -118,6 +118,7 @@ export default function CounselorConsoleDashboardPage() {
   } = useGetOrgStudentsQuery(
     {
       orgId: orgId as string,
+      branchId,
       page: 1,
       limit: NAMED_LIST_MAX,
       // Server-side sort, so the furthest-along student leads the list.
@@ -519,7 +520,7 @@ export default function CounselorConsoleDashboardPage() {
       {header}
 
       {/* ── KPI row ── */}
-      <div className="cc-stat-grid">
+      <div className="cc-stat-grid cc-dash-kpis">
         <CcStat
           tone="info"
           icon={<Users size={15} />}

@@ -1,5 +1,10 @@
 import { RtkApi } from './api';
-import type { OrgContext, OrgMembershipRole } from './counselorConsoleApi';
+import { branchParam } from './counselorConsoleApi';
+import type {
+  BranchSelection,
+  OrgContext,
+  OrgMembershipRole,
+} from './counselorConsoleApi';
 
 /**
  * Org Administration API — the owner/communication surface of the Counselor
@@ -30,6 +35,19 @@ export interface OrgStaffMember {
   role: OrgMembershipRole;
   status: OrgStaffStatus;
   joinedAt: string | null;
+  /** Assigned branch ids. Owners: `[]`, meaning every branch. */
+  branchIds?: string[];
+}
+
+export interface GetStaffArgs {
+  orgId: string;
+  branchId?: BranchSelection;
+}
+
+export interface SetStaffBranchesArgs {
+  orgId: string;
+  userId: string;
+  branchIds: string[];
 }
 
 export interface OrgStaffResponse {
@@ -86,8 +104,15 @@ export interface OrgAnnouncementsResponse {
   items: OrgAnnouncement[];
 }
 
+export interface GetAnnouncementsArgs {
+  orgId: string;
+  branchId?: BranchSelection;
+}
+
 export interface CreateAnnouncementArgs {
   orgId: string;
+  /** Audience: a single branch, or omit / 'all' for the caller's whole scope. */
+  branchId?: BranchSelection;
   title: string;
   message: string;
 }
@@ -102,12 +127,13 @@ export interface CreateAnnouncementResult {
 export const orgAdminApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
     // ── Staff ────────────────────────────────────────────────────────────────
-    getStaff: builder.query<OrgStaffResponse, string>({
-      query: (orgId) => ({
+    getStaff: builder.query<OrgStaffResponse, GetStaffArgs>({
+      query: ({ orgId, branchId }) => ({
         url: `/org/${encodeURIComponent(orgId)}/staff`,
         method: 'GET',
+        params: { ...branchParam(branchId) },
       }),
-      providesTags: (_res, _err, orgId) => [
+      providesTags: (_res, _err, { orgId }) => [
         { type: 'CounselorStaff' as const, id: orgId },
       ],
     }),
@@ -119,6 +145,22 @@ export const orgAdminApi = RtkApi.injectEndpoints({
       }),
       invalidatesTags: (_res, _err, { orgId }) => [
         { type: 'CounselorStaff' as const, id: orgId },
+      ],
+    }),
+
+    setStaffBranches: builder.mutation<
+      { userId: string; branchIds: string[] },
+      SetStaffBranchesArgs
+    >({
+      query: ({ orgId, userId, branchIds }) => ({
+        url: `/org/${encodeURIComponent(orgId)}/staff/${encodeURIComponent(userId)}/branches`,
+        method: 'PUT',
+        body: { branchIds },
+      }),
+      invalidatesTags: (_res, _err, { orgId }) => [
+        { type: 'CounselorStaff' as const, id: orgId },
+        { type: 'CounselorBranches' as const, id: orgId },
+        { type: 'CounselorAudit' as const, id: orgId },
       ],
     }),
 
@@ -136,12 +178,13 @@ export const orgAdminApi = RtkApi.injectEndpoints({
     }),
 
     // ── Announcements ────────────────────────────────────────────────────────
-    getAnnouncements: builder.query<OrgAnnouncementsResponse, string>({
-      query: (orgId) => ({
+    getAnnouncements: builder.query<OrgAnnouncementsResponse, GetAnnouncementsArgs>({
+      query: ({ orgId, branchId }) => ({
         url: `/org/${encodeURIComponent(orgId)}/announcements`,
         method: 'GET',
+        params: { ...branchParam(branchId) },
       }),
-      providesTags: (_res, _err, orgId) => [
+      providesTags: (_res, _err, { orgId }) => [
         { type: 'CounselorAnnouncements' as const, id: orgId },
       ],
     }),
@@ -150,10 +193,10 @@ export const orgAdminApi = RtkApi.injectEndpoints({
       CreateAnnouncementResult,
       CreateAnnouncementArgs
     >({
-      query: ({ orgId, title, message }) => ({
+      query: ({ orgId, title, message, branchId }) => ({
         url: `/org/${encodeURIComponent(orgId)}/announcements`,
         method: 'POST',
-        body: { title, message },
+        body: { title, message, ...branchParam(branchId) },
       }),
       invalidatesTags: (_res, _err, { orgId }) => [
         { type: 'CounselorAnnouncements' as const, id: orgId },
@@ -165,6 +208,7 @@ export const orgAdminApi = RtkApi.injectEndpoints({
 export const {
   useGetStaffQuery,
   useRemoveStaffMutation,
+  useSetStaffBranchesMutation,
   useUpdateOrgMutation,
   useGetAnnouncementsQuery,
   useCreateAnnouncementMutation,

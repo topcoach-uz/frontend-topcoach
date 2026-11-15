@@ -11,6 +11,7 @@ import {
   type OrgSettings,
   type UpdateOrgBody,
 } from 'src/app/services/orgAdminApi';
+import { BranchesCard } from './BranchesCard';
 import './SettingsPage.scss';
 
 interface SettingsFormValues {
@@ -255,6 +256,8 @@ export default function CounselorConsoleSettingsPage() {
           </Form>
         )}
       </div>
+
+      <BranchesCard orgId={orgId} />
     </div>
   );
 }

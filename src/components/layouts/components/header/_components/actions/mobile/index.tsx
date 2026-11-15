@@ -30,6 +30,9 @@ export default function ActionsMobileVersion({
   const { screenSize } = useScreenSize();
   const { pathname } = useLocation();
   const isMentorPage = pathname === '/mentor' || pathname.startsWith('/mentor/');
+  // The counselor console has its own sidebar navigation; the site menu is noise there.
+  const isCounselorConsole =
+    pathname === '/counselor-console' || pathname.startsWith('/counselor-console/');
   const isDark = useTypedSelector((state) => state.layout.darkMode);
   const isAuthenticated = useTypedSelector(
     (state) => state.auth.isAuthenticated
@@ -62,7 +65,7 @@ export default function ActionsMobileVersion({
       ) : (
         <></>
       )}
-      {!isMentorPage && <HamburgerMenu isOpen={isOpen} toggleMenu={toggleMenu} />}
+      {!isMentorPage && !isCounselorConsole && <HamburgerMenu isOpen={isOpen} toggleMenu={toggleMenu} />}
     </div>
   );
 }
