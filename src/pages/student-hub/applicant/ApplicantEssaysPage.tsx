@@ -53,7 +53,9 @@ import {
 import { getMentorFeedbackText } from "./essayFeedbackModel";
 import { EssayPromptBox } from "./EssayPromptBox";
 import { EssayAnglesPanel } from "./EssayAnglesPanel";
-import type { EssayIdeasResponse } from "src/app/services/student-hub/essayManagementApi";
+import { PinnedAngleStrip } from "./PinnedAngleStrip";
+import { clearPinnedAngle, loadPinnedAngle, pinnedAngleFrom, savePinnedAngle, type PinnedAngle } from "./essayAngles";
+import type { EssayIdeaAngle, EssayIdeasResponse } from "src/app/services/student-hub/essayManagementApi";
 import { countWords, ideasForEssay, essayWordLimit, formatSavedTime, limitLevel, limitMessage, saveState } from "./essayWriting";
 
 const essayTypes: Array<{ value: StudentEssay["essayType"]; label: string }> = [
@@ -328,6 +330,7 @@ export function ApplicantEssayEditorPage() {
   const { essayId = "" } = useParams();
   // Last AI angles result per essay, kept for the session so closing the panel/drawer does not lose it.
   const [anglesByEssay, setAnglesByEssay] = useState<Record<string, EssayIdeasResponse>>({});
+  const [pinnedByEssay, setPinnedByEssay] = useState<Record<string, PinnedAngle | null>>({});
   const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
   const query = useGetStudentEssayQuery(essayId, { skip: !essayId });
   const versionsQuery = useGetEssayVersionsQuery(essayId, { skip: !essayId });
@@ -361,7 +364,6 @@ export function ApplicantEssayEditorPage() {
   const isMobile = useIsMobile();
   const [previewVersion, setPreviewVersion] = useState<{ label: string; content: string; date?: string } | null>(null);
   const [aiFeedbackRequested, setAiFeedbackRequested] = useState(false);
-  const [anglesByEssay, setAnglesByEssay] = useState<Record<string, EssayIdeasResponse>>({});
   const essay = query.data?.data;
   const aiFeedbackQuery = useGetEnhancedFeedbackQuery(essayId, {
     skip: !essayId || !aiFeedbackRequested,
@@ -540,14 +542,40 @@ export function ApplicantEssayEditorPage() {
   useEffect(() => {
     if (params.get("feedback") === "mentor" && latestFeedback) setSidePanel("review");
   }, [params.get("feedback"), latestFeedback]);
+  const pinned = essay ? (essay.id in pinnedByEssay ? pinnedByEssay[essay.id] : loadPinnedAngle(essay.id) ?? null) : null;
+  const togglePin = (angle: EssayIdeaAngle) => {
+    if (!essay) return;
+    if (pinned?.id === angle.id) {
+      clearPinnedAngle(essay.id);
+      setPinnedByEssay((prev) => ({ ...prev, [essay.id]: null }));
+      return;
+    }
+    const next = pinnedAngleFrom(angle);
+    savePinnedAngle(essay.id, next);
+    setPinnedByEssay((prev) => ({ ...prev, [essay.id]: next }));
+    if (isMobile) setSidePanel(null);
+  };
+  const removePin = () => {
+    if (!essay) return;
+    clearPinnedAngle(essay.id);
+    setPinnedByEssay((prev) => ({ ...prev, [essay.id]: null }));
+  };
   const sidePanelBody = shownPanel && essay ? (<>
               {shownPanel === "ideas" ? <>
-                {essay && <EssayAnglesPanel essayId={essay.id} result={anglesByEssay[essay.id]} onResult={(id, r) => setAnglesByEssay((prev) => ({ ...prev, [id]: r }))} />}
-                {essay?.prompt?.trim() && <blockquote className="applicant-writing-desk__prompt-quote"><strong>Your prompt</strong>{essay?.prompt?.trim()}</blockquote>}
-                <h4 className="essay-angles__quick">Quick questions</h4>
-                <ol className="applicant-writing-desk__ideas">
-                  {essay && ideasForEssay(essay.essayType, essay.prompt).map((idea) => <li key={idea}>{idea}</li>)}
-                </ol>
+                {essay.prompt?.trim() && <blockquote className="applicant-writing-desk__prompt-quote"><strong>Your prompt</strong>{essay.prompt.trim()}</blockquote>}
+                <EssayAnglesPanel
+                  essayId={essay.id}
+                  result={anglesByEssay[essay.id]}
+                  onResult={(id, r) => setAnglesByEssay((prev) => ({ ...prev, [id]: r }))}
+                  pinnedId={pinned?.id}
+                  onTogglePin={togglePin}
+                />
+                <details className="essay-angles__quick">
+                  <summary>Quick questions</summary>
+                  <ol className="applicant-writing-desk__ideas">
+                    {ideasForEssay(essay.essayType, essay.prompt).map((idea) => <li key={idea}>{idea}</li>)}
+                  </ol>
+                </details>
                 <small>These are writing prompts from TopCoach, not official admission requirements.</small>
               </> : <>
                 <h3>Writing helper</h3>
@@ -635,7 +663,7 @@ export function ApplicantEssayEditorPage() {
                 {feedback && reviewedRequests.length === 0 && <><h3>Mentor feedback</h3><p style={{ whiteSpace: "pre-wrap" }}>{feedback}</p></>}
               </>}
   </>) : null;
-  const sidePanelTitle = sidePanel === "ideas" ? "Ideas to get started" : "Review your draft";
+  const sidePanelTitle = sidePanel === "ideas" ? "Story angles" : "Review your draft";
   return (
     <ApplicantPage
       title={isMasters && params.get("view") === "review" ? "Statement review" : undefined}
@@ -755,6 +783,7 @@ export function ApplicantEssayEditorPage() {
             <div className={`applicant-editor-layout has-side-column${sidePanel && !isMobile ? " is-side-open" : ""}`}>
             <div className="applicant-panel applicant-editor">
               {essay.prompt?.trim() && <EssayPromptBox prompt={essay.prompt.trim()} />}
+              {pinned && <PinnedAngleStrip angle={pinned} onChange={() => setSidePanel("ideas")} onRemove={removePin} />}
               <label className="applicant-editor__title-label" htmlFor="applicant-essay-title">Draft title</label>
               <Input
                 id="applicant-essay-title"
@@ -805,7 +834,7 @@ export function ApplicantEssayEditorPage() {
               onAnimationEnd={(event) => { if (event.target === event.currentTarget && !sidePanel) setPanelExited(true); }}
             >
               <div className="applicant-page__heading">
-                <h2>{shownPanel === "ideas" ? "Ideas to get started" : "Review your draft"}</h2>
+                <h2>{shownPanel === "ideas" ? "Story angles" : "Review your draft"}</h2>
                 <Button type="text" onClick={() => setSidePanel(null)} aria-label="Close side panel">Close</Button>
               </div>
               {sidePanelBody}
