@@ -67,7 +67,7 @@ export const universityApi = RtkApi.injectEndpoints({
     getReviewedUniversities: build.query<{ data: UniversitiesSchema[]; total: number }, { search?: string; majorName?: string; country?: string; majorType?: "undergraduate" | "graduate" }>({
       async queryFn(filters, _api, _extraOptions, baseQuery) {
         const rows = new Map<string, UniversitiesSchema>();
-        const first = await baseQuery({ url: '/university', method: 'GET', params: universityListParams({ ...filters, page: 1, limit: 400 }) });
+        const first = await baseQuery({ url: '/university', method: 'GET', params: universityListParams({ ...filters, page: 1, limit: 400, view: 'card' }) });
         if (first.error) return { error: first.error };
         const firstBatch = normalizeUniversityList(first.data as UniversitiesSchema[] | { data: UniversitiesSchema[]; total: number });
         const total = firstBatch.total;
@@ -76,7 +76,7 @@ export const universityApi = RtkApi.injectEndpoints({
         if (!firstBatch.data.length && fetched < total) return { error: { status: 'CUSTOM_ERROR', error: 'The university catalogue could not be loaded completely.' } };
         // Remaining pages are independent, so fetch them concurrently instead of one after another.
         const remaining = Math.max(0, Math.ceil(total / 400) - 1);
-        const rest = await Promise.all(Array.from({ length: remaining }, (_, index) => baseQuery({ url: '/university', method: 'GET', params: universityListParams({ ...filters, page: index + 2, limit: 400 }) })));
+        const rest = await Promise.all(Array.from({ length: remaining }, (_, index) => baseQuery({ url: '/university', method: 'GET', params: universityListParams({ ...filters, page: index + 2, limit: 400, view: 'card' }) })));
         for (const result of rest) {
           if (result.error) return { error: result.error };
           const batch = normalizeUniversityList(result.data as UniversitiesSchema[] | { data: UniversitiesSchema[]; total: number });
@@ -93,7 +93,7 @@ export const universityApi = RtkApi.injectEndpoints({
     }),
 
     getUniversityFilters: build.query<{ majors: Pick<MajorsSchema, 'id' | 'name' | 'type'>[]; countries: string[] }, void>({
-      query: () => ({ url: '/university/filters', method: 'GET' }),
+      query: () => ({ url: '/university/filters', method: 'GET', params: { scope: 'undergraduate' } }),
       // The response carries ~9k majors (~1 MB) plus lists this page never reads; keep what it renders.
       transformResponse: (response: { majors?: Pick<MajorsSchema, 'id' | 'name' | 'type'>[]; countries?: string[] }) => ({
         majors: (response.majors ?? []).filter((major) => major.type === 'undergraduate'),

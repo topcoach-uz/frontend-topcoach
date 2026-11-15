@@ -6,6 +6,7 @@ export const universityListParams = ({
   majorName,
   country,
   majorType,
+  view,
 }: {
   page?: number;
   limit?: number;
@@ -14,6 +15,7 @@ export const universityListParams = ({
   majorName?: string;
   country?: string;
   majorType?: "undergraduate" | "graduate";
+  view?: "card";
 }) => ({
   _start: Math.max(0, page - 1) * limit,
   _end: Math.max(1, page) * limit,
@@ -23,6 +25,7 @@ export const universityListParams = ({
   ...(majorName ? { majorName } : {}),
   ...(country ? { country } : {}),
   ...(majorType ? { majorType } : {}),
+  ...(view ? { view } : {}),
 });
 
 export const normalizeUniversityList = <T>(
@@ -40,6 +43,7 @@ export const normalizeUniversityList = <T>(
 type ListRow = {
   id: string;
   majors?: Array<{ name?: unknown; type?: string | null } | string> | null;
+  ugMajorKeys?: string[] | null;
   media?: Array<{ tags?: string[] | null }> | null;
   location?: { country?: unknown } | null;
 };
@@ -50,7 +54,8 @@ const normalise = (value: string) => value.trim().toLowerCase();
 
 /** Lower-cased undergraduate subject names, used to filter the cached catalogue locally. */
 export const undergraduateMajorKeys = (row: ListRow): string[] =>
-  Array.from(new Set(
+  // `view=card` responses carry the index already; older APIs ignore the param and send full majors.
+  Array.isArray(row.ugMajorKeys) ? row.ugMajorKeys : Array.from(new Set(
     (row.majors ?? [])
       .filter((major): major is { name?: unknown; type?: string | null } => typeof major === 'object' && major !== null && major.type === 'undergraduate')
       .map((major) => normalise(enName(major.name)))

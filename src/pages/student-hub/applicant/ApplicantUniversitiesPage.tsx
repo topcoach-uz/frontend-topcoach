@@ -25,6 +25,8 @@ import { DetailHero, SaveToListButton } from "./DetailHero";
 import { CostsFundingSection, UniversityAdmissions, UniversityDetailSkeleton, UniversityGlance, UniversitySectionNav } from "./UniversitySections";
 import { buildComparableFacts, qsRankOf, buildGlanceTiles, buildKeyFactRows, buildScholarshipText, humanizeFacts, shortUniversityName } from "./universityKeyFactsModel";
 
+const UNIVERSITIES_PER_PAGE = 12;
+
 const factValue = (value: GraduateProgramFact) => humanizeFacts(value) || "Verification needed";
 
 export default function ApplicantUniversitiesPage() {
@@ -48,11 +50,11 @@ export default function ApplicantUniversitiesPage() {
   const applications = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
   const masterPrograms = programsQuery.data?.data ?? [];
   const filteredUniversities = useMemo(() => filterUniversityRows(universityQuery.data?.data ?? [], { country, majorName: major }), [universityQuery.data, country, major]);
-  const universities = useMemo(() => filteredUniversities.slice((page - 1) * 40, page * 40), [filteredUniversities, page]);
+  const universities = useMemo(() => filteredUniversities.slice((page - 1) * UNIVERSITIES_PER_PAGE, page * UNIVERSITIES_PER_PAGE), [filteredUniversities, page]);
   const isLoading = isMasters ? programsQuery.isLoading : universityQuery.isLoading;
   const isError = isMasters ? programsQuery.isError : universityQuery.isError;
   const total = isMasters ? programsQuery.data?.total ?? 0 : filteredUniversities.length;
-  const perPage = isMasters ? programsQuery.data?.limit ?? 20 : 40;
+  const perPage = isMasters ? programsQuery.data?.limit ?? 20 : UNIVERSITIES_PER_PAGE;
   const subjectOptions = useMemo(() => buildUniversityFieldOptions(filtersQuery.data?.majors ?? []), [filtersQuery.data]);
   const countryOptions = useMemo(() => (filtersQuery.data?.countries ?? []).map((item) => ({ value: item, label: item })), [filtersQuery.data]);
   const savedUniversityIds = useMemo(() => new Set((applications.data?.data ?? []).map((app) => app.universityId).filter((id): id is string => Boolean(id))), [applications.data]);
@@ -70,7 +72,7 @@ export default function ApplicantUniversitiesPage() {
     </div>
     {filtersQuery.isError && <Alert type="warning" message="Filters could not be loaded. Search is still available." />}
     <QueryState loading={isLoading} error={isError} retry={universityQuery.refetch}>
-      <UniversityResults universities={universities} rankOffset={(page - 1) * 40} selectedField={major} savedIds={savedUniversityIds} applicationsLoading={applications.isLoading} applicationsError={applications.isError} />
+      <UniversityResults universities={universities} rankOffset={(page - 1) * UNIVERSITIES_PER_PAGE} selectedField={major} savedIds={savedUniversityIds} applicationsLoading={applications.isLoading} applicationsError={applications.isError} />
       {total > perPage && <div className="applicant-actions applicant-actions--end"><Button disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button><span>Page {page} of {Math.ceil(total / perPage)}</span><Button disabled={page >= Math.ceil(total / perPage)} onClick={() => setPage(page + 1)}>Next</Button></div>}
     </QueryState>
     <Link className="applicant-find-open-list" to="/student-hub/applications">Open College List <ArrowRight size={21} /></Link>

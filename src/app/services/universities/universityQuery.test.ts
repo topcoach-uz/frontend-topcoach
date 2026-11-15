@@ -28,3 +28,15 @@ describe('local university filters', () => {
     expect(filterUniversityRows(rows, {})).toBe(rows);
   });
 });
+
+import { slimUniversityRow as slimRow, universityListParams as listParams } from './universityQuery';
+describe('card view support', () => {
+  it('sends view=card only when asked', () => {
+    expect(listParams({ view: 'card' })).toMatchObject({ view: 'card' });
+    expect(listParams({})).not.toHaveProperty('view');
+  });
+  it('uses the server ugMajorKeys index when present and falls back to majors otherwise', () => {
+    expect(slimRow({ id: 'a', ugMajorKeys: ['law'] }).ugMajorKeys).toEqual(['law']);
+    expect(slimRow({ id: 'b', majors: [{ name: { en: ' Law ' }, type: 'undergraduate' }, { name: { en: 'X' }, type: 'graduate' }] }).ugMajorKeys).toEqual(['law']);
+  });
+});
