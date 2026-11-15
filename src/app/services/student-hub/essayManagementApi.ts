@@ -14,7 +14,7 @@ export interface EssayIdeaAngle {
   id: string;
   title: string;
   why: string;
-  sources: Array<{ kind: 'major_match' | 'profile' | 'college_list' | 'prompt'; label: string }>;
+  sources: Array<{ kind: 'major_match' | 'profile' | 'college_list' | 'prompt' | 'document'; label: string }>;
   questions: string[];
 }
 
@@ -23,6 +23,14 @@ export interface EssayIdeasResponse {
   generatedAt: string;
   cached: boolean;
   remainingToday: number;
+  documents?: EssayIdeasDocument[];
+}
+
+export interface EssayIdeasDocument {
+  id: string;
+  name: string;
+  used: boolean;
+  reason?: string;
 }
 
 export const essayManagementApi = RtkApi.injectEndpoints({
@@ -425,12 +433,15 @@ export const essayManagementApi = RtkApi.injectEndpoints({
     // AI story angles for the Ideas panel
     getEssayIdeas: builder.mutation<
       EssayIdeasResponse,
-      { essayId: string; refresh?: boolean }
+      { essayId: string; refresh?: boolean; documentIds?: string[] }
     >({
-      query: ({ essayId, refresh }) => ({
+      query: ({ essayId, refresh, documentIds }) => ({
         url: `/essay-management/essays/${essayId}/ideas`,
         method: 'POST',
-        body: { refresh: Boolean(refresh) },
+        body: {
+          refresh: Boolean(refresh),
+          ...(documentIds && documentIds.length > 0 ? { documentIds } : {}),
+        },
       }),
     }),
 

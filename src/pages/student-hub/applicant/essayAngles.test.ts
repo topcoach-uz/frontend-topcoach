@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   ANGLES_UNAVAILABLE,
+  documentSelectionChanged,
+  documentsSelectionLabel,
+  documentsSummary,
+  isCoachSupportedDocument,
+  loadDocumentSelection,
+  sanitiseDocumentSelection,
+  saveDocumentSelection,
   anglesErrorMessage,
   clearPinnedAngle,
   loadPinnedAngle,
@@ -59,5 +66,48 @@ describe("pinned angle storage", () => {
     expect(() => savePinnedAngle("e1", angle)).not.toThrow();
     expect(loadPinnedAngle("e1")).toBeUndefined();
     expect(() => clearPinnedAngle("e1")).not.toThrow();
+  });
+});
+
+describe("coach documents", () => {
+  it("classifies support", () => {
+    expect(isCoachSupportedDocument({ mimeType: "application/pdf", fileSize: 100 })).toEqual({ supported: true });
+    expect(isCoachSupportedDocument({ mimeType: "application/pdf", fileSize: 9 * 1024 * 1024 }).reason).toBe("Larger than 8 MB");
+    expect(isCoachSupportedDocument({ mimeType: "application/msword" }).reason).toMatch(/PDF/);
+    expect(isCoachSupportedDocument({ mimeType: "application/zip" }).reason).toBe("Not supported");
+    expect(isCoachSupportedDocument({}).supported).toBe(false);
+  });
+  it("sanitises selection", () => {
+    expect(sanitiseDocumentSelection(["a", "a", "gone", "b", 3], ["a", "b"])).toEqual(["a", "b"]);
+    expect(sanitiseDocumentSelection("x", ["a"])).toEqual([]);
+    expect(sanitiseDocumentSelection(["1", "2", "3", "4", "5", "6"], ["1", "2", "3", "4", "5", "6"])).toHaveLength(5);
+  });
+  it("persists selection and survives throwing storage", () => {
+    const mem = new Map<string, string>();
+    vi.stubGlobal("localStorage", { getItem: (k: string) => mem.get(k) ?? null, setItem: (k: string, v: string) => void mem.set(k, v) });
+    saveDocumentSelection("u1", ["a", "b"]);
+    expect(loadDocumentSelection("u1")).toEqual(["a", "b"]);
+    expect(loadDocumentSelection("u2")).toEqual([]);
+    vi.stubGlobal("localStorage", { getItem: () => { throw new Error("x"); }, setItem: () => { throw new Error("x"); } });
+    expect(loadDocumentSelection("u1")).toEqual([]);
+    expect(() => saveDocumentSelection("u1", ["a"])).not.toThrow();
+    vi.unstubAllGlobals();
+  });
+  it("formats summaries", () => {
+    expect(documentsSelectionLabel(0)).toBe("Documents: none selected");
+    expect(documentsSelectionLabel(2)).toBe("Documents: 2 selected");
+    expect(documentsSummary(undefined)).toBe("");
+    expect(
+      documentsSummary([
+        { id: "1", name: "CV.pdf", used: true },
+        { id: "2", name: "essay.docx", used: false, reason: "Word files aren't supported yet" },
+      ]),
+    ).toBe("Read: CV.pdf · Skipped: essay.docx (Word files aren't supported yet)");
+  });
+  it("detects selection change", () => {
+    expect(documentSelectionChanged([], undefined)).toBe(false);
+    expect(documentSelectionChanged(["a"], undefined)).toBe(true);
+    expect(documentSelectionChanged(["a"], [{ id: "a", name: "A", used: true }])).toBe(false);
+    expect(documentSelectionChanged([], [{ id: "a", name: "A", used: true }])).toBe(true);
   });
 });
