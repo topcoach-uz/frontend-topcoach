@@ -98,7 +98,6 @@ export default function ApplicantEssaysPage() {
   const [createEssay, createState] = useCreateStudentEssayMutation();
   const [deleteEssay] = useDeleteStudentEssayMutation();
   const [deletingId, setDeletingId] = useState<string>();
-  const [anglesByEssay, setAnglesByEssay] = useState<Record<string, EssayIdeasResponse>>({});
   const removeEssay = async (essay: StudentEssay) => {
     setDeletingId(essay.id);
     try {
@@ -360,6 +359,7 @@ export function ApplicantEssayEditorPage() {
   const isMobile = useIsMobile();
   const [previewVersion, setPreviewVersion] = useState<{ label: string; content: string; date?: string } | null>(null);
   const [aiFeedbackRequested, setAiFeedbackRequested] = useState(false);
+  const [anglesByEssay, setAnglesByEssay] = useState<Record<string, EssayIdeasResponse>>({});
   const essay = query.data?.data;
   const aiFeedbackQuery = useGetEnhancedFeedbackQuery(essayId, {
     skip: !essayId || !aiFeedbackRequested,
@@ -540,7 +540,7 @@ export function ApplicantEssayEditorPage() {
   }, [params.get("feedback"), latestFeedback]);
   const sidePanelBody = shownPanel ? (<>
               {shownPanel === "ideas" ? <>
-                <EssayAnglesPanel essayId={essay.id} result={anglesByEssay[essay.id]} onResult={(id, r) => setAnglesByEssay((prev) => ({ ...prev, [id]: r }))} />
+                {essay && <EssayAnglesPanel essayId={essay.id} result={anglesByEssay[essay.id]} onResult={(id, r) => setAnglesByEssay((prev) => ({ ...prev, [id]: r }))} />}
                 {essay.prompt?.trim() && <blockquote className="applicant-writing-desk__prompt-quote"><strong>Your prompt</strong>{essay.prompt.trim()}</blockquote>}
                 <h4 className="essay-angles__quick">Quick questions</h4>
                 <ol className="applicant-writing-desk__ideas">

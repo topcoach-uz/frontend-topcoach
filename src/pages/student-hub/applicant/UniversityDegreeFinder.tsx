@@ -6,6 +6,10 @@ import { useNavigate } from "react-router-dom";
 import { ClampedText } from "./ClampedText";
 import { finderCopy, type DegreeOption, type StudyPreview } from "./universityDegreeOptions";
 
+function isDegreeOption(value: unknown): value is DegreeOption {
+  return typeof value === "object" && value !== null && "value" in value && "label" in value && "group" in value;
+}
+
 const GROUPS: DegreeOption["group"][] = ["Degrees", "Study areas"];
 
 export function UniversityDegreeFinder({ options, loading = false, getPreview }: { options: DegreeOption[]; loading?: boolean; getPreview?: (option: DegreeOption) => StudyPreview }) {
@@ -25,7 +29,8 @@ export function UniversityDegreeFinder({ options, loading = false, getPreview }:
 
   const close = () => { setPicked(null); setSearch(""); selectRef.current?.focus(); };
   const choose = (_: string, option: unknown) => {
-    const next = option as DegreeOption;
+    if (!isDegreeOption(option)) return;
+    const next = option;
     if (!getPreview) { if (next.to) navigate(next.to); else if (next.href) window.open(next.href, "_blank", "noopener,noreferrer"); return; }
     setPicked(next);
     setSearch("");
@@ -48,7 +53,7 @@ export function UniversityDegreeFinder({ options, loading = false, getPreview }:
       placeholder={copy.placeholder}
       options={groups}
       optionFilterProp="label"
-      filterOption={(input, option) => String((option as DegreeOption | undefined)?.label ?? "").toLocaleLowerCase().includes(input.trim().toLocaleLowerCase())}
+      filterOption={(input, option) => String(isDegreeOption(option) ? option.label : "").toLocaleLowerCase().includes(input.trim().toLocaleLowerCase())}
       notFoundContent="No matching study area"
       onSelect={choose}
       onClear={() => setPicked(null)}
@@ -57,7 +62,8 @@ export function UniversityDegreeFinder({ options, loading = false, getPreview }:
       onSearch={setSearch}
       onDropdownVisibleChange={(next) => { dropdownOpen.current = next; setOpen(next); if (!next) setSearch(""); }}
       optionRender={(option) => {
-        const data = option.data as DegreeOption;
+        const data: unknown = option.data;
+        if (!isDegreeOption(data)) return null;
         return <span className="applicant-university-detail__finder-option"><span>{data.label}</span>{data.hint && <small>{data.hint}</small>}</span>;
       }}
     />
