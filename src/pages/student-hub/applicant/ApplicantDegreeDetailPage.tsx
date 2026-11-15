@@ -15,6 +15,7 @@ import { DetailHero, SaveToListButton } from './DetailHero';
 import { awardedQualification, buildDegreeGlance } from './degreeFactsModel';
 import { ApplicationStepper, DeadlinesTable, EntryRequirementsList, ScoresBlock, useStructuredContent } from './StructuredSections';
 import { CurriculumBlock, type CurriculumResult } from './curriculumContent';
+import { ProgrammeList, type ProgrammesResult } from './programmeList';
 import { hasStructuredCosts, type StructuredUniversityContent } from './structuredContent';
 import { CostsFundingSection, UniversityDetailSkeleton, UniversityGlance, UniversitySectionNav } from './UniversitySections';
 import { shortUniversityName } from './universityKeyFactsModel';
@@ -71,7 +72,7 @@ export default function ApplicantDegreeDetailPage() {
 
 const GUIDANCE_PREFIX = /^University guidance:\s*/i;
 
-export function DegreeContent({ universityName, location, logoUrl, degree, saveHrefOverride, studyArea = false, universityHref, deadlines = [], structured, curriculum }: {
+export function DegreeContent({ universityName, location, logoUrl, degree, saveHrefOverride, studyArea = false, universityHref, deadlines = [], structured, curriculum, programmes }: {
   universityName: string;
   location: string;
   logoUrl?: string;
@@ -79,6 +80,7 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
   saveHrefOverride?: string;
   studyArea?: boolean;
   curriculum?: CurriculumResult;
+  programmes?: ProgrammesResult;
   universityHref?: string;
   deadlines?: UniversitiesSchema['deadlines'];
   structured?: StructuredUniversityContent;
@@ -124,6 +126,7 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
     <UniversityGlance tiles={tiles} />
 
     <section id="ud-study" className="applicant-university-detail__card"><h2>What you’ll study</h2>
+      {programmes && <ProgrammeList data={programmes} />}
       {curriculum ? <CurriculumBlock data={curriculum} /> : studyText ? <ClampedText text={studyText} /> : <p>We haven't checked this course's curriculum yet. See the university's official programme page.</p>}
       {!curriculum && degree.firstYearSubjects && <p className="applicant-degree-page__plain">{degree.firstYearSubjects}</p>}
       <div className="applicant-degree-page__links">
