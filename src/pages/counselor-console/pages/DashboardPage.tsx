@@ -520,7 +520,7 @@ export default function CounselorConsoleDashboardPage() {
       {header}
 
       {/* ── KPI row ── */}
-      <div className="cc-stat-grid">
+      <div className="cc-stat-grid cc-dash-kpis">
         <CcStat
           tone="info"
           icon={<Users size={15} />}

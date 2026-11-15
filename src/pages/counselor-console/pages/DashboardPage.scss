@@ -699,3 +699,15 @@
     transition: none;
   }
 }
+
+/* Dashboard KPI band: five tiles never divide evenly into an auto-fit grid, so
+   a wrapped row used to leave an empty cell showing the band background.
+   Flex-wrap lets every tile in a short row grow to fill it instead. The 1px
+   gap still draws the dividers (same mechanism as the grid band). */
+.cc-stat-grid.cc-stat-grid.cc-dash-kpis {
+  display: flex;
+  flex-wrap: wrap;
+}
+.cc-dash-kpis > .cc-stat {
+  flex: 1 1 150px;
+}
