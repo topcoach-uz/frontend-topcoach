@@ -22,6 +22,15 @@ export function limitLevel(words: number, limit?: number): LimitLevel {
   return "ok";
 }
 
+/** Text label for the limit state so it never relies on colour alone. */
+export function limitMessage(words: number, limit?: number): string | undefined {
+  if (!limit) return undefined;
+  if (words > limit) return `Over by ${words - limit} ${words - limit === 1 ? "word" : "words"}`;
+  const left = limit - words;
+  if (limitLevel(words, limit) === "near") return `${left} ${left === 1 ? "word" : "words"} left`;
+  return undefined;
+}
+
 export type SaveState = "saving" | "error" | "unsaved" | "saved" | "idle";
 
 export function saveState(input: { saving: boolean; failed: boolean; dirty: boolean; lastSavedAt?: Date }): SaveState {

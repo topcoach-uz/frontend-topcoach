@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countWords, essayWordLimit, ideasForEssay, limitLevel, saveState } from "./essayWriting";
+import { countWords, essayWordLimit, ideasForEssay, limitLevel, limitMessage, saveState } from "./essayWriting";
 
 describe("essayWriting", () => {
   it("counts words", () => {
@@ -16,6 +16,15 @@ describe("essayWriting", () => {
     expect(limitLevel(585, 650)).toBe("near");
     expect(limitLevel(650, 650)).toBe("near");
     expect(limitLevel(651, 650)).toBe("over");
+  });
+  it("words the limit state in text", () => {
+    expect(limitMessage(10)).toBeUndefined();
+    expect(limitMessage(100, 650)).toBeUndefined();
+    expect(limitMessage(600, 650)).toBe("50 words left");
+    expect(limitMessage(649, 650)).toBe("1 word left");
+    expect(limitMessage(650, 650)).toBe("0 words left");
+    expect(limitMessage(660, 650)).toBe("Over by 10 words");
+    expect(limitMessage(651, 650)).toBe("Over by 1 word");
   });
   it("derives save state with precedence", () => {
     const base = { saving: false, failed: false, dirty: false };

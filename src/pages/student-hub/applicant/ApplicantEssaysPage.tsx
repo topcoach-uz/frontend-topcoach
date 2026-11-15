@@ -52,7 +52,7 @@ import {
 } from "src/app/services/student-hub/essayReviewApi";
 import { getMentorFeedbackText } from "./essayFeedbackModel";
 import { EssayPromptBox } from "./EssayPromptBox";
-import { countWords, ideasForEssay, essayWordLimit, formatSavedTime, limitLevel, saveState } from "./essayWriting";
+import { countWords, ideasForEssay, essayWordLimit, formatSavedTime, limitLevel, limitMessage, saveState } from "./essayWriting";
 
 const essayTypes: Array<{ value: StudentEssay["essayType"]; label: string }> = [
   { value: "personal_statement", label: "Personal statement" },
@@ -338,6 +338,12 @@ export function ApplicantEssayEditorPage() {
   const [params, setParams] = useSearchParams();
   const [reviewTab, setReviewTab] = useState<"preview" | "feedback" | "versions">("preview");
   const [sidePanel, setSidePanel] = useState<"ideas" | "review" | null>(null);
+  // Keeps the last panel mounted while it slides out.
+  const [panelExited, setPanelExited] = useState(true);
+  const lastPanelRef = useRef<"ideas" | "review" | null>(null);
+  if (sidePanel) lastPanelRef.current = sidePanel;
+  if (sidePanel && panelExited) setPanelExited(false);
+  const shownPanel = sidePanel ?? (panelExited ? null : lastPanelRef.current);
   useEffect(() => { if (params.get('helper') === 'ai') setSidePanel('review'); }, [params.get('helper')]);
   const isMobile = useIsMobile();
   const [previewVersion, setPreviewVersion] = useState<{ label: string; content: string; date?: string } | null>(null);
@@ -520,8 +526,8 @@ export function ApplicantEssayEditorPage() {
   useEffect(() => {
     if (params.get("feedback") === "mentor" && latestFeedback) setSidePanel("review");
   }, [params.get("feedback"), latestFeedback]);
-  const sidePanelBody = sidePanel ? (<>
-              {sidePanel === "ideas" ? <>
+  const sidePanelBody = shownPanel ? (<>
+              {shownPanel === "ideas" ? <>
                 <p>Use a question if it helps. Your essay does not have to follow a template.</p>
                 {essay.prompt?.trim() && <blockquote className="applicant-writing-desk__prompt-quote"><strong>Your prompt</strong>{essay.prompt.trim()}</blockquote>}
                 <ol className="applicant-writing-desk__ideas">
@@ -728,10 +734,10 @@ export function ApplicantEssayEditorPage() {
               </div>
             </div>
             {submitBlockedReason && <p className="applicant-writing-desk__hint" id="essay-submit-hint">{submitBlockedReason}</p>}
-            <div className={`applicant-editor-layout${sidePanel ? " has-side-panel" : ""}`}>
+            <div className="applicant-editor-layout has-side-column">
             <div className="applicant-panel applicant-editor">
               {essay.prompt?.trim() && <EssayPromptBox prompt={essay.prompt.trim()} />}
-              <label className="applicant-editor__title-label" htmlFor="applicant-essay-title">DRAFT TITLE</label>
+              <label className="applicant-editor__title-label" htmlFor="applicant-essay-title">Draft title</label>
               <Input
                 id="applicant-essay-title"
                 className="applicant-title-input"
@@ -754,26 +760,34 @@ export function ApplicantEssayEditorPage() {
                 placeholder="Begin your draft…"
                 aria-label="Draft text"
               />
-              <div className={`applicant-editor__status is-${level}`} role="status" aria-live="polite">
+              <div className={`applicant-editor__status is-${level}`}>
                 <div className="applicant-editor__status-row">
                   <span className="applicant-editor__status-words">
                     {wordLimit ? `${words} / ${wordLimit} words` : `${words} words`}
-                    {level === "over" && ` · ${words - wordLimit!} over`}
+                    {limitMessage(words, wordLimit) && ` · ${limitMessage(words, wordLimit)}`}
                   </span>
                   <span className="applicant-editor__status-save">
-                    {status_ === "saving" && "Saving…"}
-                    {status_ === "unsaved" && "Unsaved changes"}
-                    {status_ === "saved" && lastSavedAt && `Saved ${formatSavedTime(lastSavedAt)}`}
-                    {status_ === "idle" && "Private draft"}
-                    {status_ === "error" && <>Couldn’t save · <button type="button" className="applicant-editor__retry" onClick={() => { void save(true); }}>Retry</button></>}
+                    <span role="status" aria-live="polite">
+                      {status_ === "saving" && "Saving…"}
+                      {status_ === "unsaved" && "Unsaved changes"}
+                      {status_ === "saved" && lastSavedAt && `Saved ${formatSavedTime(lastSavedAt)}`}
+                      {status_ === "idle" && "Private draft"}
+                    </span>
+                    <span role="alert">
+                      {status_ === "error" && <>Couldn’t save · <button type="button" className="applicant-editor__retry" onClick={() => { void save(true); }}>Retry</button></>}
+                    </span>
                   </span>
                 </div>
                 {wordLimit && <div className="applicant-editor__bar" aria-hidden><span style={{ width: `${Math.min(100, (words / wordLimit) * 100)}%` }} /></div>}
               </div>
             </div>
-            {sidePanel && !isMobile && <aside className="applicant-panel applicant-writing-desk__side">
+            {shownPanel && !isMobile && <aside
+              className="applicant-panel applicant-writing-desk__side"
+              data-open={sidePanel ? "true" : "false"}
+              onAnimationEnd={(event) => { if (event.target === event.currentTarget && !sidePanel) setPanelExited(true); }}
+            >
               <div className="applicant-page__heading">
-                <h2>{sidePanel === "ideas" ? "Ideas to get started" : "Review your draft"}</h2>
+                <h2>{shownPanel === "ideas" ? "Ideas to get started" : "Review your draft"}</h2>
                 <Button type="text" onClick={() => setSidePanel(null)} aria-label="Close side panel">Close</Button>
               </div>
               {sidePanelBody}
