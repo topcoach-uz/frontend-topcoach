@@ -22,6 +22,13 @@ export interface StructuredUniversityContent {
   applicationSteps: Array<Src & { order: number; title: string; detail: string; deadline?: DateText; url?: string }>;
   deadlines: Array<Src & { round: string; applicationDeadline?: DateText; decisionRelease?: DateText }>;
   officialLinks: Array<{ label: string; url: string }>;
+  /** Score numbers. undefined = not researched yet; [] = researched, none published. */
+  scores?: Array<Src & {
+    test: "SAT" | "ACT" | "IELTS" | "TOEFL" | "Duolingo" | "PTE" | "Cambridge" | "A-level" | "IB" | "GPA" | "other";
+    /** minimum = published cutoff; recommended = published target; admitted-range = what admitted students scored (not a requirement). */
+    kind: "minimum" | "recommended" | "admitted-range";
+    value: string; appliesTo: "all" | "international"; note?: string;
+  }>;
   /** undefined = not researched yet; null = researched, no fee published. */
   applicationFee?: (Src & { amount: number | null; currency: string; note?: string }) | null;
 }

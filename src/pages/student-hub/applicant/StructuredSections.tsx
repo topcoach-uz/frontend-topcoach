@@ -36,6 +36,26 @@ const STATUS: { key: StructuredUniversityContent["entryRequirements"][number]["s
   { key: "not-required", title: "Not required", icon: <Minus size={16} aria-hidden="true" /> },
 ];
 
+const SCORE_KIND = { minimum: "Minimum", recommended: "Recommended", "admitted-range": "Admitted students (middle 50%)" } as const;
+
+/** Score numbers, kept apart from the checklist; admitted ranges are labelled so they don't read as cutoffs. */
+export function ScoresBlock({ content }: { content: StructuredUniversityContent }) {
+  if (content.scores === undefined) return null;
+  const rows = content.scores;
+  const shared = sharedSource(rows);
+  return <div className="applicant-university-detail__scores">
+    <h3 className="applicant-university-detail__list-title">Scores</h3>
+    {rows.length === 0 ? <p className="applicant-university-detail__preview-empty">No minimum scores are published.</p> : <table className="applicant-university-detail__score-table">
+      <tbody>{rows.map((row) => <tr key={`${row.test}-${row.kind}-${row.value}`}>
+        <th scope="row">{row.test}{row.appliesTo === "international" && <small>International applicants</small>}</th>
+        <td><strong>{row.value}</strong><small>{SCORE_KIND[row.kind]}{row.note ? ` · ${row.note}` : ""}</small></td>
+        {!shared && <td className="applicant-university-detail__score-src"><SourceLink src={row} /></td>}
+      </tr>)}</tbody>
+    </table>}
+    {rows.length > 0 && <SourceLine items={rows} verifiedAt={content.verifiedAt} />}
+  </div>;
+}
+
 export function EntryRequirementsList({ content, statuses }: { content: StructuredUniversityContent; statuses?: string[] }) {
   const requirements = content.entryRequirements.filter((item) => !statuses || statuses.includes(item.status));
   const supplementary = statuses ? [] : content.supplementary;

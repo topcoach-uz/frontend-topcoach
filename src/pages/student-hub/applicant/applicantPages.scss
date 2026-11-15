@@ -1928,3 +1928,12 @@
 @media (min-width: 768px) { .applicant-university-detail__card-item:only-child .applicant-university-detail__card-cols { grid-template-columns: 1fr 1fr; gap: 24px; } }
 .applicant-university-detail__cost-table td.applicant-university-detail__cost-varies { font-weight: 400; color: #655c55; }
 .applicant-university-detail .applicant-university-detail__preview-empty { margin: 0; font-size: 14px; line-height: 1.5; color: #655c55; }
+
+.applicant-university-detail__scores { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; min-width: 0; }
+.applicant-university-detail__score-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums;
+  th, td { padding: 10px 0; border-top: 1px solid #e7e2dc; vertical-align: top; text-align: left; }
+  tr:first-child th, tr:first-child td { border-top: 0; }
+  th { width: 40%; font-size: 15px; font-weight: 500; color: #302b28; padding-right: 16px; small { display: block; font-size: 12px; font-weight: 400; color: #655c55; } }
+  td strong { display: block; font-size: 15px; font-weight: 600; color: #302b28; }
+  td small { display: block; font-size: 13px; color: #655c55; line-height: 1.45; }
+  td.applicant-university-detail__score-src { width: 24px; text-align: right; } }

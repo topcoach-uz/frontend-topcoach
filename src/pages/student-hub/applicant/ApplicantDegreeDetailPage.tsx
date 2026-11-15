@@ -13,7 +13,7 @@ import { ApplicantMobileTrail } from './ApplicantTopBarContext';
 import { ClampedText } from './ClampedText';
 import { DetailHero, SaveToListButton } from './DetailHero';
 import { awardedQualification, buildDegreeGlance } from './degreeFactsModel';
-import { ApplicationStepper, DeadlinesTable, EntryRequirementsList, useStructuredContent } from './StructuredSections';
+import { ApplicationStepper, DeadlinesTable, EntryRequirementsList, ScoresBlock, useStructuredContent } from './StructuredSections';
 import { hasStructuredCosts, type StructuredUniversityContent } from './structuredContent';
 import { CostsFundingSection, UniversityDetailSkeleton, UniversityGlance, UniversitySectionNav } from './UniversitySections';
 import { shortUniversityName } from './universityKeyFactsModel';
@@ -132,7 +132,7 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
     </section>
 
     <section id="ud-entry" className="applicant-university-detail__card"><h2>Entry requirements</h2>
-      {structuredEntry ? <EntryRequirementsList content={structured!} /> : degree.entrySummary ? <ClampedText text={degree.entrySummary} /> : <p>We haven't checked course-specific entry requirements yet.</p>}
+      {structuredEntry ? <><ScoresBlock content={structured!} /><EntryRequirementsList content={structured!} /></> : degree.entrySummary ? <ClampedText text={degree.entrySummary} /> : <p>We haven't checked course-specific entry requirements yet.</p>}
       <div className="applicant-degree-page__qualification">
         <div className="applicant-degree-page__qualification-control"><label htmlFor="degree-qualification">Published qualification</label><Select id="degree-qualification" aria-label="Published qualification" value={qualification} onChange={setQualification} options={qualificationOptions(degree)} popupClassName="applicant-university-detail__finder-popup" /></div>
         {publishedQualification ? <>

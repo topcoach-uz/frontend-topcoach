@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowLeftRight, ArrowUpRight } from "lucide-react";
 import { ClampedText } from "./ClampedText";
-import { DeadlinesTable, EntryRequirementsList, StructuredCosts } from "./StructuredSections";
+import { DeadlinesTable, EntryRequirementsList, ScoresBlock, StructuredCosts } from "./StructuredSections";
 import { hasStructuredCosts, type StructuredUniversityContent } from "./structuredContent";
 import { UniversityCompare, type CollegeListEntry } from "./UniversityCompare";
 import type { ComparableFacts, GlanceTile, KeyFactRow } from "./universityKeyFactsModel";
@@ -34,7 +34,7 @@ export function UniversityAdmissions({ deadlines, exams, structured }: { deadlin
           <dd>{row.note && <small>{row.note}</small>}{row.lines?.map((line, i) => <p key={i}>{line.text}{line.note && <span> · {line.note}</span>}</p>)}</dd>
         </div>)}
       </div>}
-      {structuredRequired && <div><dt>What you need</dt><dd><EntryRequirementsList content={structured!} statuses={["required"]} /></dd></div>}
+      {structuredRequired && <div><dt>What you need</dt><dd><ScoresBlock content={structured!} /><EntryRequirementsList content={structured!} statuses={["required"]} /></dd></div>}
       {!structuredRequired && exams.length > 0 && <div><dt>Required exams</dt><dd><ul className="applicant-university-detail__fact-chips">{exams.map((exam) => <li key={exam}>{exam}</li>)}</ul></dd></div>}
     </dl>
   </section>;
