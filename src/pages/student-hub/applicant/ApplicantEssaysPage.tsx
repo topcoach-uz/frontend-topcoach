@@ -49,7 +49,8 @@ import {
   useWithdrawEssayReviewMutation,
 } from "src/app/services/student-hub/essayReviewApi";
 import { getMentorFeedbackText } from "./essayFeedbackModel";
-import { countWords, essayWordLimit, formatSavedTime, limitLevel, saveState } from "./essayWriting";
+import { EssayPromptBox } from "./EssayPromptBox";
+import { countWords, ideasForEssay, essayWordLimit, formatSavedTime, limitLevel, saveState } from "./essayWriting";
 
 const essayTypes: Array<{ value: StudentEssay["essayType"]; label: string }> = [
   { value: "personal_statement", label: "Personal statement" },
@@ -592,6 +593,7 @@ export function ApplicantEssayEditorPage() {
             {submitBlockedReason && <p className="applicant-writing-desk__hint" id="essay-submit-hint">{submitBlockedReason}</p>}
             <div className={`applicant-editor-layout${sidePanel ? " has-side-panel" : ""}`}>
             <div className="applicant-panel applicant-editor">
+              {essay.prompt?.trim() && <EssayPromptBox prompt={essay.prompt.trim()} />}
               <label className="applicant-editor__title-label" htmlFor="applicant-essay-title">DRAFT TITLE</label>
               <Input
                 id="applicant-essay-title"
@@ -603,7 +605,6 @@ export function ApplicantEssayEditorPage() {
                 }}
                 aria-label="Draft title"
               />
-              {essay.prompt?.trim() && <p className="applicant-editor__prompt"><strong>Essay question</strong>{essay.prompt}</p>}
               <Input.TextArea
                 className="applicant-writing"
                 rows={16}
@@ -640,11 +641,9 @@ export function ApplicantEssayEditorPage() {
               </div>
               {sidePanel === "ideas" ? <>
                 <p>Use a question if it helps. Your essay does not have to follow a template.</p>
+                {essay.prompt?.trim() && <blockquote className="applicant-writing-desk__prompt-quote"><strong>Your prompt</strong>{essay.prompt.trim()}</blockquote>}
                 <ol className="applicant-writing-desk__ideas">
-                  {(essay.essayType === "personal_statement"
-                    ? ["What is one specific moment you keep thinking about?", "What did you choose to do?", "What did you learn or see differently afterward?"]
-                    : ["What is this question really asking?", "Which specific example answers it best?", "What should the reader understand about you by the end?"]
-                  ).map((idea) => <li key={idea}>{idea}</li>)}
+                  {ideasForEssay(essay.essayType, essay.prompt).map((idea) => <li key={idea}>{idea}</li>)}
                 </ol>
                 <small>These are writing prompts from TopCoach, not official admission requirements.</small>
               </> : <>
