@@ -19,6 +19,7 @@ import {
   ScrollText,
   ArrowLeft,
   Building2,
+  MapPin,
   ChevronLeft,
   ChevronsUpDown,
   Menu,
@@ -113,7 +114,8 @@ export default function CounselorConsoleLayout() {
     return () => window.removeEventListener('keydown', onKey);
   }, [isMobileConsole, mobileMenuOpen]);
 
-  const { orgs, orgId, setOrgId, org, role } = useCounselorConsole();
+  const { orgs, orgId, setOrgId, org, role, branches, branchId, setBranchId, branch, hasBranches } =
+    useCounselorConsole();
 
   const dispatch = useAppDispatch();
   const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
@@ -502,6 +504,50 @@ export default function CounselorConsoleLayout() {
               </>
             )}
           </div>
+          {hasBranches && (
+            <div className="counselor-console-branchswitch">
+              <Dropdown
+                trigger={['click']}
+                placement="bottomLeft"
+                menu={{
+                  items: [
+                    { key: 'all', label: 'All branches' },
+                    ...branches
+                      .filter((b) => b.status === 'active')
+                      .map((b) => ({ key: b.id, label: b.name })),
+                  ],
+                  selectable: true,
+                  selectedKeys: [branchId],
+                  onClick: ({ key }) => setBranchId(key),
+                }}
+              >
+                <button
+                  type="button"
+                  className="counselor-console-orgswitch-btn counselor-console-branchswitch-btn"
+                  aria-label="Switch branch"
+                  title={branch ? branch.name : 'All branches'}
+                >
+                  <span className="counselor-console-org-avatar counselor-console-branchswitch-avatar">
+                    <MapPin size={14} />
+                  </span>
+                  {showLabels && (
+                    <>
+                      <span className="counselor-console-orgswitch-meta">
+                        <span className="counselor-console-orgswitch-name">
+                          {branch ? branch.name : 'All branches'}
+                        </span>
+                        <span className="counselor-console-orgswitch-sub">Branch</span>
+                      </span>
+                      <ChevronsUpDown
+                        size={15}
+                        className="counselor-console-orgswitch-caret"
+                      />
+                    </>
+                  )}
+                </button>
+              </Dropdown>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -518,7 +564,9 @@ export default function CounselorConsoleLayout() {
             >
               <Menu size={22} strokeWidth={2} />
             </button>
-            <span className="counselor-console-mobile-bar-title">Counselor console</span>
+            <span className="counselor-console-mobile-bar-title">
+              {branch && org ? `${org.name} · ${branch.name}` : 'Counselor console'}
+            </span>
           </div>
         ) : null}
         <Suspense
