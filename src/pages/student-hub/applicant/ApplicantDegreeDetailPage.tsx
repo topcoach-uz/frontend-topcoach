@@ -14,6 +14,7 @@ import { ClampedText } from './ClampedText';
 import { DetailHero, SaveToListButton } from './DetailHero';
 import { awardedQualification, buildDegreeGlance } from './degreeFactsModel';
 import { ApplicationStepper, DeadlinesTable, EntryRequirementsList, ScoresBlock, useStructuredContent } from './StructuredSections';
+import { CurriculumBlock, type CurriculumResult } from './curriculumContent';
 import { hasStructuredCosts, type StructuredUniversityContent } from './structuredContent';
 import { CostsFundingSection, UniversityDetailSkeleton, UniversityGlance, UniversitySectionNav } from './UniversitySections';
 import { shortUniversityName } from './universityKeyFactsModel';
@@ -70,13 +71,14 @@ export default function ApplicantDegreeDetailPage() {
 
 const GUIDANCE_PREFIX = /^University guidance:\s*/i;
 
-export function DegreeContent({ universityName, location, logoUrl, degree, saveHrefOverride, studyArea = false, universityHref, deadlines = [], structured }: {
+export function DegreeContent({ universityName, location, logoUrl, degree, saveHrefOverride, studyArea = false, universityHref, deadlines = [], structured, curriculum }: {
   universityName: string;
   location: string;
   logoUrl?: string;
   degree: UndergraduateDegree;
   saveHrefOverride?: string;
   studyArea?: boolean;
+  curriculum?: CurriculumResult;
   universityHref?: string;
   deadlines?: UniversitiesSchema['deadlines'];
   structured?: StructuredUniversityContent;
@@ -122,8 +124,8 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
     <UniversityGlance tiles={tiles} />
 
     <section id="ud-study" className="applicant-university-detail__card"><h2>What you’ll study</h2>
-      {studyText ? <ClampedText text={studyText} /> : <p>We haven't checked this course's curriculum yet. See the university's official programme page.</p>}
-      {degree.firstYearSubjects && <p className="applicant-degree-page__plain">{degree.firstYearSubjects}</p>}
+      {curriculum ? <CurriculumBlock data={curriculum} /> : studyText ? <ClampedText text={studyText} /> : <p>We haven't checked this course's curriculum yet. See the university's official programme page.</p>}
+      {!curriculum && degree.firstYearSubjects && <p className="applicant-degree-page__plain">{degree.firstYearSubjects}</p>}
       <div className="applicant-degree-page__links">
         <OfficialLink href={curriculumHref}>{studyText ? 'Official curriculum source' : 'Explore the curriculum'}</OfficialLink>
         {degree.sourceUrl && degree.sourceUrl !== curriculumHref && degree.sourceUrl !== degree.officialDegreeUrl && <OfficialLink href={degree.sourceUrl}>Course catalogue</OfficialLink>}

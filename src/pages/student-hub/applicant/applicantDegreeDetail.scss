@@ -26,3 +26,20 @@
   .applicant-degree-page__qualification-control { align-items: stretch; flex-direction: column; gap: 8px; .ant-select { width: 100%; } }
   .applicant-degree-page__cta .applicant-university-detail__save { width: 100%; }
 }
+
+.applicant-degree-page__curriculum { display: flex; flex-direction: column; gap: 16px; min-width: 0;
+  > div { display: flex; flex-direction: column; gap: 8px; } }
+.applicant-degree-page__curriculum-overview { margin: 0; font-size: 15px; line-height: 1.55; color: #302b28; }
+.applicant-degree-page__curriculum-facts { margin: 0; font-size: 13px; font-weight: 500; color: #655c55; font-variant-numeric: tabular-nums; }
+.applicant-degree-page__core { list-style: none; margin: 0; padding: 0;
+  li { display: flex; flex-direction: column; gap: 2px; padding: 10px 0; border-top: 1px solid #e7e2dc; }
+  li:first-child { border-top: 0; padding-top: 0; }
+  strong { font-size: 15px; font-weight: 500; color: #302b28; }
+  span { font-size: 14px; line-height: 1.5; color: #655c55; } }
+.applicant-degree-page__tracks { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px;
+  li { padding: 4px 10px; border-radius: 6px; background: #f3f1ed; font-size: 13px; color: #302b28; } }
+.applicant-degree-page__courses { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 6px;
+  li { display: flex; gap: 10px; align-items: baseline; font-size: 14px; color: #302b28; }
+  code { flex: 0 0 auto; min-width: 72px; font-family: inherit; font-size: 12px; font-weight: 600; color: #8b0000; font-variant-numeric: tabular-nums; } }
+@media (min-width: 768px) { .applicant-degree-page__courses { grid-template-columns: 1fr 1fr; column-gap: 24px; } }
+.applicant-degree-page__curriculum-capstone { margin: 0; font-size: 14px; line-height: 1.5; color: #302b28; strong { font-weight: 600; } }
