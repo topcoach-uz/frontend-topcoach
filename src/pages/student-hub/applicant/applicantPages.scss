@@ -51,6 +51,20 @@
   .ant-btn-primary:not(:disabled):hover {
     background: #6d0000;
   }
+  // A disabled primary must not look clickable (it kept the solid maroon fill).
+  .ant-btn-primary:disabled,
+  .ant-btn-primary:disabled:hover {
+    background: #efeae4;
+    border-color: transparent;
+    color: #a39a92;
+    box-shadow: none;
+    filter: none;
+  }
+  // Press feedback for every workspace button: a quick scale on press, ease-out back.
+  .ant-btn:not(:disabled):active {
+    transform: scale(0.97);
+    transition: transform 100ms ease-out;
+  }
   .ant-input,
   .ant-select-selector,
   .ant-picker {
@@ -778,6 +792,9 @@
 .applicant-page .applicant-editor input.applicant-title-input.ant-input:focus {
   border-bottom-color: #8b0000 !important;
 }
+// antd's click "wave" paints a pink ripple ring around buttons; the workspace uses press-scale instead.
+.applicant-shell .ant-wave { display: none !important; }
+
 // Writing surface = one sheet of paper. The workspace glass layer makes .applicant-panel translucent
 // off-white, while antd paints inputs solid white, which showed as two white boxes inside the card.
 // Make the sheet solid and let the title + body sit on it with no fill or outline of their own.
@@ -866,7 +883,7 @@
 .applicant-version-preview { max-height: 55vh; overflow: auto; white-space: pre-wrap; line-height: 1.7; padding: 14px 16px; border: 1px solid #e7e2dc; border-radius: 10px; background: #fbf9f6; }
 .applicant-writing-desk__side--drawer { display: flex; flex-direction: column; gap: 18px; font-size: 15px; h3 { font-size: 16px; margin: 8px 0 0; } }
 .applicant-writing-desk__submit { display: inline-flex; }
-.applicant-writing-desk__hint { margin: -8px 0 16px; text-align: right; color: #655c55; font-size: 13px; }
+.applicant-page p.applicant-writing-desk__hint, .applicant-writing-desk__hint { margin: -8px 0 16px; text-align: right; color: #655c55; font-size: 13px; }
 .applicant-writing-desk__side {
   position: sticky;
   top: 24px;
