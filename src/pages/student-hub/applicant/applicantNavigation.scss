@@ -475,11 +475,12 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
     position: sticky;
     top: $nav-top;
     z-index: 20;
-    margin: 0 0 12px;
-    padding-top: 10px;
-    background: rgba(251, 249, 246, 0.86);
-    -webkit-backdrop-filter: saturate(180%) blur(16px);
-    backdrop-filter: saturate(180%) blur(16px);
+    // Full-bleed across the content column (cancels .applicant-content's 24px side padding),
+    // solid page colour so it reads as part of the page, hairline underneath.
+    margin: -24px -24px 16px;
+    padding: 12px 24px 2px;
+    background: #fbf9f6;
+    border-bottom: 1px solid #ece7e1;
   }
   .applicant-org-mobile {
     display: block;
@@ -532,6 +533,10 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   }
   .applicant-rail__label--phone {
     display: block;
+  }
+  .applicant-section-tabs {
+    margin: -16px -16px 12px;
+    padding: 10px 16px 2px;
   }
 }
 
