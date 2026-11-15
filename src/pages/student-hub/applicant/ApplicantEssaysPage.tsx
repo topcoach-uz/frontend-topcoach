@@ -750,7 +750,7 @@ export function ApplicantEssayEditorPage() {
               />
               <Input.TextArea
                 className="applicant-writing"
-                rows={16}
+                autoSize={{ minRows: 16 }}
                 value={content}
                 onChange={(event) => {
                   setContent(event.target.value);

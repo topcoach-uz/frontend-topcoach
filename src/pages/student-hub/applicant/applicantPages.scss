@@ -655,7 +655,8 @@
 .applicant-page .applicant-editor textarea.applicant-writing.ant-input {
   width: 100%;
   flex: 1 1 auto;
-  resize: vertical;
+  resize: none !important; // the body grows with the text (autoSize); no drag handle, no inner scrollbar
+  overflow-y: hidden !important;
   min-height: max(420px, 50vh) !important;
   font-size: 18px !important;
   line-height: 1.75 !important;
