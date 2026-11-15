@@ -2101,3 +2101,42 @@
   .applicant-editor__status { background: #fff; border-top: 1px solid #302b28; color: #302b28; }
   .applicant-editor__prompt { background: #fff; }
 }
+
+// ---------- Essay list cards: paper cards that match the editor sheet ----------
+.applicant-shell .applicant-content .applicant-writing-card {
+  background: #fff;
+  border-color: #ece7e1;
+  min-height: 0;
+  gap: 8px;
+  h2 { margin: 0; font-size: 20px; line-height: 1.25; letter-spacing: -0.01em; color: #302b28; }
+  &:hover { border-color: #d9c9c4; transform: translateY(-1px); }
+  &:active { transform: scale(0.99); transition: transform 100ms ease-out; }
+  &:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+}
+.applicant-writing-card__type {
+  color: #8b0000; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+}
+.applicant-page p.applicant-writing-card__prompt, .applicant-writing-card__prompt {
+  margin: 0; color: #655c55; font-size: 14px; line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.applicant-writing-card__meta {
+  margin-top: auto; padding-top: 8px; color: #655c55; font-size: 12px; font-variant-numeric: tabular-nums;
+  &.is-near { color: #8a5a00; }
+  &.is-over { color: #b3261e; }
+}
+// Delete is secondary: quiet warm grey, red only on hover/focus. On mouse devices it appears on card hover.
+.applicant-shell .applicant-writing-card__delete.ant-btn {
+  color: #a39a92;
+  &:not(:disabled):hover, &:focus-visible { color: #b3261e; background: #fbeeed; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .applicant-shell .applicant-writing-card__delete.ant-btn { opacity: 0; transition: opacity 150ms ease-out; }
+  .applicant-writing-card-wrap:hover .applicant-writing-card__delete.ant-btn,
+  .applicant-shell .applicant-writing-card__delete.ant-btn:focus-visible,
+  .applicant-shell .applicant-writing-card__delete.ant-btn.ant-popover-open { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .applicant-shell .applicant-content .applicant-writing-card:hover,
+  .applicant-shell .applicant-content .applicant-writing-card:active { transform: none; }
+}

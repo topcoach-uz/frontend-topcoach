@@ -193,16 +193,25 @@ export default function ApplicantEssaysPage() {
                   className="applicant-writing-card"
                   to={`/student-hub/essays/${essay.id}`}
                 >
-                  <span className="applicant-kicker">
-                    {writingTypes.find((type) => type.value === essay.essayType)
-                      ?.label ?? "Essay"}
-                  </span>
-                  <h2>{essay.title}</h2>
-                  <p>{essay.prompt || "No prompt added"}</p>
-                  <small>
-                    {essay.wordCount ?? 0} words · Updated{" "}
-                    {displayDate(essay.updatedAt)}
-                  </small>
+                  {(() => {
+                    const typeLabel = writingTypes.find((type) => type.value === essay.essayType)?.label ?? "Essay";
+                    const limit = essayWordLimit(essay.essayType);
+                    const words = essay.wordCount ?? 0;
+                    const level = limitLevel(words, limit);
+                    return (
+                      <>
+                        {/* Skip the type label when the title already says it ("Personal statement" twice). */}
+                        {typeLabel.trim().toLowerCase() !== (essay.title || "").trim().toLowerCase() && (
+                          <span className="applicant-writing-card__type">{typeLabel}</span>
+                        )}
+                        <h2>{essay.title}</h2>
+                        {essay.prompt?.trim() && <p className="applicant-writing-card__prompt">{essay.prompt.trim()}</p>}
+                        <small className={`applicant-writing-card__meta is-${level}`}>
+                          {limit ? `${words} / ${limit} words` : `${words} words`} · Edited {displayDate(essay.updatedAt)}
+                        </small>
+                      </>
+                    );
+                  })()}
                   {getMentorFeedbackText(essay.mentorFeedback) && (
                     <span className="applicant-feedback-badge">
                       <MessageSquareText size={14} /> Mentor feedback available
