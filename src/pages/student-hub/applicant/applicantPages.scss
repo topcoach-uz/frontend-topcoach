@@ -1918,3 +1918,11 @@
 .applicant-university-detail__deadline-when { display: flex; flex-direction: column; gap: 2px; min-width: 0;
   strong { font-size: 15px; font-weight: 600; color: #302b28; font-variant-numeric: tabular-nums; }
   small { font-size: 13px; line-height: 1.45; color: #655c55; } }
+
+.applicant-university-detail__cards > .applicant-university-detail__card-item:only-child { grid-column: 1 / -1; }
+.applicant-university-detail__card-tags { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; flex: 0 1 auto; }
+.applicant-university-detail__card-head { flex-wrap: wrap; }
+.applicant-university-detail__card-cols { display: grid; grid-template-columns: 1fr; gap: 12px;
+  h4 { margin: 4px 0 6px; }
+  ul { margin: 0; padding-left: 16px; list-style: disc; li { margin: 2px 0; } li::marker { color: #b3aaa1; } } }
+@media (min-width: 768px) { .applicant-university-detail__card-item:only-child .applicant-university-detail__card-cols { grid-template-columns: 1fr 1fr; gap: 24px; } }

@@ -101,13 +101,22 @@ export function ScholarshipCards({ content }: { content: StructuredUniversityCon
     <ul className="applicant-university-detail__cards">{content.scholarships.map((item) => {
       const amount = formatAmountRange(item.amount);
       const deadline = formatDateText(item.deadline);
-      const intl = item.internationalEligible === true ? "Eligible" : item.internationalEligible === false ? "Not eligible" : "Unclear";
+      const intl = item.internationalEligible === true ? "Open to international students" : item.internationalEligible === false ? "Not open to international students" : undefined;
+      const typeLabel = TYPE_LABEL[item.type];
+      const showType = !item.name.toLowerCase().includes(typeLabel.toLowerCase());
       return <li key={item.name} className="applicant-university-detail__card-item">
-        <div className="applicant-university-detail__card-head"><strong>{item.name}</strong><span className="applicant-university-detail__tag">{TYPE_LABEL[item.type]}</span></div>
-        <p className="applicant-university-detail__card-line">{item.coverage}{amount && ` · ${amount}`}</p>
-        <p className="applicant-university-detail__card-line">International students: <strong>{intl}</strong></p>
-        {item.eligibility.length > 0 && <><h4>Eligibility</h4><ul>{item.eligibility.map((line) => <li key={line}>{line}</li>)}</ul></>}
-        {item.howToApply.length > 0 && <><h4>How to apply</h4><ul>{item.howToApply.map((line) => <li key={line}>{line}</li>)}</ul></>}
+        <div className="applicant-university-detail__card-head">
+          <strong>{item.name}</strong>
+          <span className="applicant-university-detail__card-tags">
+            {showType && <span className="applicant-university-detail__tag">{typeLabel}</span>}
+            {intl && <span className={`applicant-university-detail__tag${item.internationalEligible ? " applicant-university-detail__tag--required" : ""}`}>{intl}</span>}
+          </span>
+        </div>
+        {(item.coverage || amount) && <p className="applicant-university-detail__card-line">{item.coverage}{item.coverage && amount && " · "}{amount && <strong>{amount}</strong>}</p>}
+        {(item.eligibility.length > 0 || item.howToApply.length > 0) && <div className="applicant-university-detail__card-cols">
+          {item.eligibility.length > 0 && <div><h4>Eligibility</h4><ul>{item.eligibility.map((line) => <li key={line}>{line}</li>)}</ul></div>}
+          {item.howToApply.length > 0 && <div><h4>How to apply</h4><ul>{item.howToApply.map((line) => <li key={line}>{line}</li>)}</ul></div>}
+        </div>}
         {deadline && <p className="applicant-university-detail__card-line">Deadline: <strong>{deadline}</strong></p>}
         <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer">Official page <ArrowUpRight size={16} aria-hidden="true" /></a>
       </li>;
