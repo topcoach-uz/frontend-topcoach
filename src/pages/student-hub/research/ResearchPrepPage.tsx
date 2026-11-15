@@ -13,6 +13,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
+import { useMyLearningPath } from 'src/pages/student-hub/applicant/useMyLearningPath';
 import { Spin, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -25,7 +26,6 @@ import ResearchTopBar from './components/ResearchTopBar';
 import ResearchOverview from './components/ResearchOverview';
 import ResearchModuleView from './components/ResearchModuleView';
 import { computeResearchProgress } from './researchProgress';
-import { applicantLinks } from 'src/lib/applicantWorkspace';
 import '../applicant/applicantPages.scss';
 import './research-prep.scss';
 
@@ -38,6 +38,7 @@ interface ResearchPrepPageProps {
 }
 
 const ResearchPrepPage: React.FC<ResearchPrepPageProps> = ({ isFullSupport = false, onExit }) => {
+  const myLearningPath = useMyLearningPath();
   const navigate = useNavigate();
   const { data: weeks, isLoading: weeksLoading } = useGetResearchStructureQuery();
   const { data: lockState, isLoading: lockLoading } = useGetResearchLockStateQuery();
@@ -73,7 +74,7 @@ const ResearchPrepPage: React.FC<ResearchPrepPageProps> = ({ isFullSupport = fal
       return;
     }
     // Return to My learning, where research prep is opened from.
-    navigate(applicantLinks.learning);
+    navigate(myLearningPath);
   };
 
   const handleBookMentorReview = (submissionId: string) => {
