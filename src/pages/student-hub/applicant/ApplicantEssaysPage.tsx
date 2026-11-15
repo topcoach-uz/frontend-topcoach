@@ -326,6 +326,8 @@ export default function ApplicantEssaysPage() {
 
 export function ApplicantEssayEditorPage() {
   const { essayId = "" } = useParams();
+  // Last AI angles result per essay, kept for the session so closing the panel/drawer does not lose it.
+  const [anglesByEssay, setAnglesByEssay] = useState<Record<string, EssayIdeasResponse>>({});
   const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
   const query = useGetStudentEssayQuery(essayId, { skip: !essayId });
   const versionsQuery = useGetEssayVersionsQuery(essayId, { skip: !essayId });
@@ -538,7 +540,7 @@ export function ApplicantEssayEditorPage() {
   useEffect(() => {
     if (params.get("feedback") === "mentor" && latestFeedback) setSidePanel("review");
   }, [params.get("feedback"), latestFeedback]);
-  const sidePanelBody = shownPanel ? (<>
+  const sidePanelBody = shownPanel && essay ? (<>
               {shownPanel === "ideas" ? <>
                 {essay && <EssayAnglesPanel essayId={essay.id} result={anglesByEssay[essay.id]} onResult={(id, r) => setAnglesByEssay((prev) => ({ ...prev, [id]: r }))} />}
                 {essay?.prompt?.trim() && <blockquote className="applicant-writing-desk__prompt-quote"><strong>Your prompt</strong>{essay?.prompt?.trim()}</blockquote>}
