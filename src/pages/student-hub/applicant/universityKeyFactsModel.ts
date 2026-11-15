@@ -1,5 +1,5 @@
 import type { UniversitiesSchema } from "src/app/api/Api";
-import { structuredTuition, type StructuredUniversityContent } from "./structuredContent";
+import { structuredApplicationFee, structuredTuition, type StructuredUniversityContent } from "./structuredContent";
 
 type Translatable = Parameters<typeof String>[0];
 export type Translate = (value: Translatable) => string;
@@ -194,7 +194,8 @@ export function buildComparableFacts(rows: readonly KeyFactRow[], finance?: Fina
     tuition: verified?.value ?? first("tuition"),
     tuitionPeriod: verified?.period,
     tuitionSub: verified?.sub,
-    applicationFee: first("application-fee"),
+    // Researched structured fee wins; when researched and none is published, don't fall back to older catalogue data.
+    applicationFee: structured && structured.applicationFee !== undefined ? structuredApplicationFee(structured) : first("application-fee"),
     aid: aid ? "100% of need met" : undefined,
     qs: qsRank && Number.isFinite(qsRank) && qsRank > 0 ? `#${qsRank}` : undefined,
   };

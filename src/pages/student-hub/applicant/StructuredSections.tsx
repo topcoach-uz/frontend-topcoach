@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { ArrowUpRight, Check, CircleDashed, CircleDot, Minus } from "lucide-react";
 import { displayDate } from "./ApplicantPage";
 import {
-  deadlinesHaveYear, formatAmountRange, formatCostAmount, formatDateText, getStructuredContent, hasStructuredCosts, sharedSource, sortedCostItems,
+  deadlinesHaveYear, splitCondition, formatAmountRange, formatCostAmount, formatDateText, getStructuredContent, hasStructuredCosts, sharedSource, sortedCostItems,
   type Src, type StructuredUniversityContent,
 } from "./structuredContent";
 
@@ -158,12 +158,6 @@ export function ApplicationStepper({ content }: { content: StructuredUniversityC
   </div>;
 }
 
-/** "January 5 (December 5 if you submit …)" → main "January 5", condition "December 5 if you submit …". */
-function splitCondition(text?: string): { main?: string; condition?: string } {
-  const match = text?.match(/^(.*?)\s*\(([^()]+)\)\s*$/);
-  return match && match[1] ? { main: match[1], condition: match[2].charAt(0).toUpperCase() + match[2].slice(1) } : { main: text };
-}
-
 export function DeadlinesTable({ content }: { content: StructuredUniversityContent }) {
   const rows = content.deadlines;
   if (!rows.length) return null;
@@ -182,7 +176,13 @@ export function DeadlinesTable({ content }: { content: StructuredUniversityConte
         </span>
       </li>;
     })}</ul>
-    {(content.entryCycle || !deadlinesHaveYear(content)) && <p className="applicant-university-detail__table-note">{content.entryCycle}{content.entryCycle && !deadlinesHaveYear(content) && " "}{!deadlinesHaveYear(content) && "Dates as published by the university; check the official site for the exact year."}</p>}
+    {(() => {
+      // One note: our "no year" sentence replaces any researcher wording about the missing year.
+      const noYear = !deadlinesHaveYear(content);
+      const cycle = content.entryCycle && !(noYear && /\byear\b/i.test(content.entryCycle)) ? content.entryCycle : (content.entryCycle?.split(";")[0]?.trim() || "");
+      const parts = [cycle, noYear ? "Dates as published by the university; check the official site for the exact year." : ""].filter(Boolean);
+      return parts.length > 0 && <p className="applicant-university-detail__table-note">{parts.join(". ").replace(/\.\./g, ".")}</p>;
+    })()}
     <SourceLine items={rows} verifiedAt={content.verifiedAt} />
   </div>;
 }

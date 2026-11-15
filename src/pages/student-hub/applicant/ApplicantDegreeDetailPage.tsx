@@ -122,7 +122,7 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
     <UniversityGlance tiles={tiles} />
 
     <section id="ud-study" className="applicant-university-detail__card"><h2>What you’ll study</h2>
-      {studyText ? <ClampedText text={studyText} /> : <p>Curriculum details have not been verified in the catalogue.</p>}
+      {studyText ? <ClampedText text={studyText} /> : <p>We haven't checked this course's curriculum yet. See the university's official programme page.</p>}
       {degree.firstYearSubjects && <p className="applicant-degree-page__plain">{degree.firstYearSubjects}</p>}
       <div className="applicant-degree-page__links">
         <OfficialLink href={curriculumHref}>{studyText ? 'Official curriculum source' : 'Explore the curriculum'}</OfficialLink>
@@ -132,14 +132,14 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
     </section>
 
     <section id="ud-entry" className="applicant-university-detail__card"><h2>Entry requirements</h2>
-      {structuredEntry ? <EntryRequirementsList content={structured!} /> : degree.entrySummary ? <ClampedText text={degree.entrySummary} /> : <p>Degree-specific entry requirements have not been verified in the catalogue.</p>}
+      {structuredEntry ? <EntryRequirementsList content={structured!} /> : degree.entrySummary ? <ClampedText text={degree.entrySummary} /> : <p>We haven't checked course-specific entry requirements yet.</p>}
       <div className="applicant-degree-page__qualification">
         <div className="applicant-degree-page__qualification-control"><label htmlFor="degree-qualification">Published qualification</label><Select id="degree-qualification" aria-label="Published qualification" value={qualification} onChange={setQualification} options={qualificationOptions(degree)} popupClassName="applicant-university-detail__finder-popup" /></div>
         {publishedQualification ? <>
           <p className="applicant-degree-page__plain">{publishedQualification.value}{publishedQualification.note && ` — ${publishedQualification.note}`}</p>
           {publishedQualification.sourceUrl && <p className="applicant-university-detail__checked"><a href={publishedQualification.sourceUrl} target="_blank" rel="noopener noreferrer">{publishedQualification.sourceTitle || 'Official source'}</a>{publishedQualification.verifiedAt && ` · Checked ${displayDate(publishedQualification.verifiedAt)}`}</p>}
-        </> : <p className="applicant-university-detail__checked">{qualification} requirements have not been verified in this catalogue. Check the university’s official requirements for your qualification.</p>}
-        <p className="applicant-degree-page__disclaimer">Published requirements—not a personal eligibility result.</p>
+        </> : <p className="applicant-university-detail__checked">We haven't checked {qualification} requirements for this course yet. Check the university’s official requirements.</p>}
+        <p className="applicant-degree-page__disclaimer">These are the university's published requirements, not a prediction of your chances.</p>
       </div>
       {degree.admissionsTest && <p className="applicant-degree-page__plain">{degree.admissionsTest}{degree.admissionsTestNote && ` — ${degree.admissionsTestNote}`}</p>}
       <div className="applicant-degree-page__links"><OfficialLink href={degree.requirementsUrl}>{degree.entrySummary ? 'Official entry requirements' : 'Read official requirements'}</OfficialLink></div>

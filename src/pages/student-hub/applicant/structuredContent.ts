@@ -22,6 +22,8 @@ export interface StructuredUniversityContent {
   applicationSteps: Array<Src & { order: number; title: string; detail: string; deadline?: DateText; url?: string }>;
   deadlines: Array<Src & { round: string; applicationDeadline?: DateText; decisionRelease?: DateText }>;
   officialLinks: Array<{ label: string; url: string }>;
+  /** undefined = not researched yet; null = researched, no fee published. */
+  applicationFee?: (Src & { amount: number | null; currency: string; note?: string }) | null;
 }
 
 const isStructured = (value: unknown, universityId: string): value is StructuredUniversityContent =>
@@ -91,6 +93,19 @@ const cycleKey = (text: string) => { const month = monthOf(text); return month <
 const shortMonths = (text: string) => MONTHS.reduce((out, name) => out.replace(new RegExp(`\\b${name}\\b`, "gi"), name.slice(0, 3).replace(/^./, (c) => c.toUpperCase())), text);
 const isAidRound = (round: string) => /aid|financial|css|fafsa|enrol|enroll|reply|deposit|decision release|housing/i.test(round);
 
+/** "January 5 (December 5 if you submit …)" → { main: "January 5", condition: "December 5 if you submit …" }. */
+export function splitCondition(text?: string): { main?: string; condition?: string } {
+  const match = text?.match(/^(.*?)\s*\(([^()]+)\)\s*$/);
+  return match && match[1] ? { main: match[1], condition: match[2].charAt(0).toUpperCase() + match[2].slice(1) } : { main: text };
+}
+
+/** Application fee from structured content: a formatted amount, "Varies", or undefined when none is published. */
+export function structuredApplicationFee(content?: StructuredUniversityContent): string | undefined {
+  const fee = content?.applicationFee;
+  if (!fee) return undefined;
+  return typeof fee.amount === "number" ? (fee.amount === 0 ? "No fee" : formatCostAmount(fee.amount, fee.currency)) : "Varies";
+}
+
 /** The applicant's final-chance deadline from structured rounds, with the early round noted when there is one. */
 export function structuredDeadlineTile(content?: StructuredUniversityContent): { value: string; sub: string } | undefined {
   const rounds = (content?.deadlines ?? []).filter((row) => !isAidRound(row.round) && formatDateText(row.applicationDeadline));
@@ -98,8 +113,9 @@ export function structuredDeadlineTile(content?: StructuredUniversityContent): {
   const keyed = rounds.map((row, index) => ({ row, key: cycleKey(formatDateText(row.applicationDeadline)!), index }));
   const final = keyed.reduce((best, item) => (Number.isFinite(item.key) && Number.isFinite(best.key) ? (item.key >= best.key ? item : best) : (item.index >= best.index ? item : best)));
   const early = keyed.find((item) => item !== final && /early/i.test(item.row.round));
-  const text = formatDateText(final.row.applicationDeadline)!;
-  return { value: text, sub: early ? `${final.row.round} · ${early.row.round} ${shortMonths(formatDateText(early.row.applicationDeadline)!)}` : final.row.round };
+  const text = splitCondition(formatDateText(final.row.applicationDeadline)).main!;
+  const earlyDate = early && splitCondition(formatDateText(early.row.applicationDeadline)).main;
+  return { value: text, sub: early && earlyDate ? `${final.row.round} · ${early.row.round} ${shortMonths(earlyDate)}` : final.row.round };
 }
 
 /** Tuition from structured cost items with its published period and academic year. */
