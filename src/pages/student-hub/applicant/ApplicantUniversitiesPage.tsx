@@ -243,6 +243,13 @@ function BachelorUniversityDetail({ university, selectedField, collegeList, exis
     />}
     <UniversityAdmissions deadlines={admissionDeadlines} exams={admissionExams} structured={structured} />
     {hasLife && <section id="ud-life" className="applicant-university-detail__life"><h2>Life at {shortUniversityName(name)}</h2>{profile.studentLifeIntro && <p>{profile.studentLifeIntro}</p>}{profile.studentLifeHighlight && <strong>{profile.studentLifeHighlight}</strong>}{profile.studentLifeDetail && <p>{profile.studentLifeDetail}</p>}{profile.studentLifeUrl && <a href={profile.studentLifeUrl} target="_blank" rel="noopener noreferrer">Explore campus life <ArrowUpRight size={17} aria-hidden="true" /></a>}</section>}
-    {(profile.profileVerifiedAt || (!finance && !hasVerifiedStudyAreaContent)) && <p className="applicant-university-detail__source">{profile.profileVerifiedAt ? `Information from the university's official pages · Checked ${displayDate(profile.profileVerifiedAt)}` : "Course, campus and funding details will appear after source review."}</p>}
+    {(() => {
+      // Latest check date among the sources this page actually shows.
+      const checkedAt = [profile.profileVerifiedAt, structured?.verifiedAt].filter((value): value is string => !!value && Number.isFinite(Date.parse(value))).sort().pop();
+      if (checkedAt) return <p className="applicant-university-detail__source">Information from the university's official pages · Checked {displayDate(checkedAt)}</p>;
+      // Placeholder only when nothing checked is on the page.
+      if (!finance && !hasVerifiedStudyAreaContent && !structured) return <p className="applicant-university-detail__source">Course, campus and funding details will appear after source review.</p>;
+      return null;
+    })()}
   </div>;
 }
