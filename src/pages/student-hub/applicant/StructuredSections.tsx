@@ -228,12 +228,13 @@ export function DeadlinesTable({ content }: { content: StructuredUniversityConte
       const date = splitCondition(formatDateText(row.applicationDeadline));
       const decision = formatDateText(row.decisionRelease);
       return <li key={row.round}>
-        <span className="applicant-university-detail__deadline-round">{row.round}{!shared && <SourceLink src={row} />}</span>
+        <span className="applicant-university-detail__deadline-round">{row.round}</span>
         <span className="applicant-university-detail__deadline-when">
           <strong>{date.main ?? "Date not published"}</strong>
           {date.condition && <small>{date.condition}</small>}
           {decision && <small>Decision: {decision.charAt(0).toLowerCase() + decision.slice(1)}</small>}
         </span>
+        <span className="applicant-university-detail__deadline-src">{!shared && <SourceLink src={row} />}</span>
       </li>;
     })}</ul>
     {(() => {

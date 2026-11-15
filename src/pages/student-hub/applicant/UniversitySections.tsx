@@ -26,17 +26,22 @@ export function UniversityAdmissions({ deadlines, exams, structured }: { deadlin
   if (!deadlines.length && !exams.length && !structuredDeadlines && !structuredRequired) return null;
   return <section id="ud-admissions" className="applicant-university-detail__admissions">
     <h2>Admissions</h2>
-    <dl className="applicant-university-detail__admissions-grid">
-      {structuredDeadlines && <div><DeadlinesTable content={structured!} /></div>}
+    {structured && (structuredDeadlines || structuredRequired) ? <div className="applicant-university-detail__admissions-stack">
+      {structuredDeadlines && <DeadlinesTable content={structured} />}
+      <ScoresBlock content={structured} />
+      {structuredRequired && <div className="applicant-university-detail__admissions-need">
+        <h3 className="applicant-university-detail__list-title">What you need</h3>
+        <EntryRequirementsList content={structured} statuses={["required"]} />
+      </div>}
+    </div> : <dl className="applicant-university-detail__admissions-grid">
       {!structuredDeadlines && deadlines.length > 0 && <div>
         {deadlines.map((row) => <div className="applicant-university-detail__admissions-group" key={row.id}>
           <dt>{row.id === "deadlines" ? "Deadlines" : row.label}</dt>
           <dd>{row.note && <small>{row.note}</small>}{row.lines?.map((line, i) => <p key={i}>{line.text}{line.note && <span> · {line.note}</span>}</p>)}</dd>
         </div>)}
       </div>}
-      {structuredRequired && <div><dt>What you need</dt><dd><ScoresBlock content={structured!} /><EntryRequirementsList content={structured!} statuses={["required"]} /></dd></div>}
-      {!structuredRequired && exams.length > 0 && <div><dt>Required exams</dt><dd><ul className="applicant-university-detail__fact-chips">{exams.map((exam) => <li key={exam}>{exam}</li>)}</ul></dd></div>}
-    </dl>
+      {exams.length > 0 && <div><dt>Required exams</dt><dd><ul className="applicant-university-detail__fact-chips">{exams.map((exam) => <li key={exam}>{exam}</li>)}</ul></dd></div>}
+    </dl>}
   </section>;
 }
 

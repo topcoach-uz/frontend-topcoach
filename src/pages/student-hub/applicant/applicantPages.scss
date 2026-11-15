@@ -1911,9 +1911,9 @@
 .applicant-university-detail .applicant-university-detail__table-note { margin: 0; font-size: 13px; line-height: 1.4; color: #655c55; }
 
 .applicant-university-detail__deadline-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column;
-  li { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 4px 16px; padding: 12px 0; border-top: 1px solid #e7e2dc; }
+  li { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) 20px; gap: 4px 16px; padding: 12px 0; border-top: 1px solid #e7e2dc; }
   li:first-child { border-top: 0; padding-top: 0; }
-  @media (max-width: 599px) { li { grid-template-columns: 1fr; } } }
+  @media (max-width: 599px) { li { grid-template-columns: minmax(0, 1fr) 20px; } li .applicant-university-detail__deadline-round { grid-column: 1; grid-row: 1; } li .applicant-university-detail__deadline-src { grid-column: 2; grid-row: 1; } li .applicant-university-detail__deadline-when { grid-column: 1 / -1; grid-row: 2; } } }
 .applicant-university-detail__deadline-round { display: inline-flex; align-items: flex-start; font-size: 15px; font-weight: 500; color: #302b28; }
 .applicant-university-detail__deadline-when { display: flex; flex-direction: column; gap: 2px; min-width: 0;
   strong { font-size: 15px; font-weight: 600; color: #302b28; font-variant-numeric: tabular-nums; }
@@ -1940,3 +1940,9 @@
 .applicant-university-detail__score-main { display: flex; flex-direction: column; gap: 2px; min-width: 0;
   strong { font-size: 16px; font-weight: 600; color: #302b28; font-variant-numeric: tabular-nums; }
   small { font-size: 13px; line-height: 1.45; color: #655c55; } }
+
+.applicant-university-detail__admissions-stack { display: flex; flex-direction: column; gap: 0;
+  > * { padding: 20px 0; border-top: 1px solid #e7e2dc; margin: 0; }
+  > *:first-child { padding-top: 4px; border-top: 0; } }
+.applicant-university-detail__admissions-need { display: flex; flex-direction: column; gap: 8px; }
+.applicant-university-detail__deadline-src { display: flex; justify-content: flex-end; }
