@@ -802,6 +802,10 @@
   color: #655c55;
   font-size: 13px;
 }
+// Phone: the floating tab bar (66px + 8px gap) covers the viewport bottom, so stick above it.
+@media (max-width: 760px) {
+  .applicant-editor__status { bottom: calc(82px + env(safe-area-inset-bottom)); }
+}
 .applicant-editor__status-row { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
 .applicant-editor__bar { height: 3px; margin-top: 8px; border-radius: 2px; background: #efeae4; overflow: hidden; }
 .applicant-editor__bar > span { display: block; height: 100%; background: #a39a92; transition: width .2s ease-out; }
