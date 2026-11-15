@@ -817,6 +817,7 @@
 }
 .applicant-version-preview__meta { margin: 0 0 8px; color: #655c55; font-size: 13px; }
 .applicant-version-preview { max-height: 55vh; overflow: auto; white-space: pre-wrap; line-height: 1.7; padding: 14px 16px; border: 1px solid #e7e2dc; border-radius: 12px; background: #fbf9f6; }
+.applicant-writing-desk__side--drawer { display: flex; flex-direction: column; gap: 18px; font-size: 15px; h3 { font-size: 16px; margin: 8px 0 0; } }
 .applicant-writing-desk__submit { display: inline-flex; }
 .applicant-writing-desk__hint { margin: -8px 0 16px; text-align: right; color: #655c55; font-size: 13px; }
 .applicant-writing-desk__side {
@@ -1332,6 +1333,8 @@
   }
   .applicant-writing-desk { padding: 14px 12px 28px; }
   .applicant-writing-desk__side { position: static; grid-row: 1; }
+  .applicant-writing-desk__bar .applicant-actions { flex-wrap: nowrap; margin-left: auto; }
+  .applicant-writing-desk__hint { text-align: left; }
   .applicant-writing-desk .applicant-editor { grid-row: 2; }
   .applicant-modal .ant-modal-content {
     padding: 20px;
