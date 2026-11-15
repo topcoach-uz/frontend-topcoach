@@ -66,12 +66,12 @@ export function UniversityDegreeFinder({ options, loading = false, getPreview }:
         <h3>{preview.title}</h3>
         <button type="button" className="applicant-university-detail__icon-btn" aria-label="Close preview" onClick={close}><X size={18} aria-hidden="true" /></button>
       </div>
-      {preview.pending ? <p className="applicant-university-detail__preview-empty">We haven't checked course details for this study area yet. The university's requirements, costs and deadlines are below on this page.</p> : <dl className="applicant-university-detail__preview-body">
+      {preview.pending ? <p className="applicant-university-detail__preview-empty">We haven't checked the course content for this study area yet. The full page has the entry requirements, scores, costs and how to apply.</p> : <dl className="applicant-university-detail__preview-body">
         {preview.curriculum && <div><dt>Curriculum</dt><dd><ClampedText text={preview.curriculum} lines={3} /></dd></div>}
         {preview.entry && <div><dt>Entry requirements</dt><dd><ClampedText text={preview.entry} lines={3} /></dd></div>}
       </dl>}
       <div className="applicant-university-detail__preview-actions">
-        {preview.to && !preview.pending && <button type="button" className="applicant-university-detail__save" onClick={() => navigate(preview.to!)}>Open full page</button>}
+        {preview.to && <button type="button" className="applicant-university-detail__save" onClick={() => navigate(preview.to!)}>Open full page</button>}
         {preview.url && <a href={preview.url} target="_blank" rel="noopener noreferrer">Official programme page <ArrowUpRight size={16} aria-hidden="true" /></a>}
       </div>
     </div>}
