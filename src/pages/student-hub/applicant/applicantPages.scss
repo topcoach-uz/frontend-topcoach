@@ -1926,3 +1926,4 @@
   h4 { margin: 4px 0 6px; }
   ul { margin: 0; padding-left: 16px; list-style: disc; li { margin: 2px 0; } li::marker { color: #b3aaa1; } } }
 @media (min-width: 768px) { .applicant-university-detail__card-item:only-child .applicant-university-detail__card-cols { grid-template-columns: 1fr 1fr; gap: 24px; } }
+.applicant-university-detail__cost-table td.applicant-university-detail__cost-varies { font-weight: 400; color: #655c55; }

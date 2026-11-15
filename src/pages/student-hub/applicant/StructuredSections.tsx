@@ -78,10 +78,15 @@ export function CostTable({ content }: { content: StructuredUniversityContent })
     <table className="applicant-university-detail__cost-table">
       <caption className="applicant-sr-only">Estimated costs for {content.academicYear}</caption>
       <tbody>
-        {items.map((item) => <tr key={`${item.category}-${item.label}`}>
-          <th scope="row">{item.label}{item.note && <small>{item.note}</small>}</th>
-          <td>{formatCostAmount(item.amount, item.currency, item.period)}{!shared && <SourceLink src={item} />}</td>
-        </tr>)}
+        {items.map((item) => {
+          // No published amount: say "Varies" in the amount column instead of a bare dash.
+          const noAmount = item.amount == null;
+          const note = noAmount && item.note && /^varies\.?$/i.test(item.note.trim()) ? undefined : item.note;
+          return <tr key={`${item.category}-${item.label}`}>
+            <th scope="row">{item.label}{note && <small>{note}</small>}</th>
+            <td className={noAmount ? "applicant-university-detail__cost-varies" : undefined}>{noAmount ? "Varies" : formatCostAmount(item.amount, item.currency, item.period)}{!shared && <SourceLink src={item} />}</td>
+          </tr>;
+        })}
         {content.totalCost && <tr className="applicant-university-detail__cost-total">
           <th scope="row">{content.totalCost.label}{content.totalCost.note && <small>{content.totalCost.note}</small>}</th>
           <td>{formatCostAmount(content.totalCost.amount, content.totalCost.currency, content.totalCost.period)}{!shared && <SourceLink src={content.totalCost} />}</td>
