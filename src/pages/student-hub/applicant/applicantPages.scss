@@ -725,9 +725,21 @@
   align-items: start;
   max-width: none;
   margin: 0;
-  // The side column is always reserved on desktop so opening Ideas/Review never reflows the draft.
+  // Desktop: the side column is 0px while closed (draft keeps its full, centred measure) and grows
+  // to 330px when Ideas/Review opens. The width change is animated so the draft narrows smoothly
+  // instead of snapping; the panel itself slides in from the right inside that column.
   @media (min-width: 768px) {
-    &.has-side-column { grid-template-columns: minmax(0, 1fr) 330px; }
+    &.has-side-column {
+      overflow-x: clip;
+      overflow-clip-margin: 40px; // keep the editor shadow and focus ring visible
+      grid-template-columns: minmax(0, 1fr) 0px;
+      column-gap: 0;
+      transition: grid-template-columns 220ms cubic-bezier(.2, .8, .2, 1), column-gap 220ms cubic-bezier(.2, .8, .2, 1);
+    }
+    &.has-side-column.is-side-open { grid-template-columns: minmax(0, 1fr) 330px; column-gap: 20px; }
+  }
+  @media (min-width: 768px) and (prefers-reduced-motion: reduce) {
+    &.has-side-column { transition: none; }
   }
 }
 .applicant-editor {
@@ -853,6 +865,7 @@
   grid-column: 2;
   grid-row: 1;
   border-radius: 12px;
+  @media (min-width: 768px) { width: 330px; } // keeps its width while the column animates open/closed
   &[data-open="true"] { animation: applicant-side-in 220ms cubic-bezier(.2, .8, .2, 1) both; }
   &[data-open="false"] { animation: applicant-side-out 220ms cubic-bezier(.2, .8, .2, 1) both; pointer-events: none; }
 }

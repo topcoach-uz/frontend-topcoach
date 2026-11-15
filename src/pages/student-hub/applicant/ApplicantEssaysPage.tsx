@@ -734,7 +734,7 @@ export function ApplicantEssayEditorPage() {
               </div>
             </div>
             {submitBlockedReason && <p className="applicant-writing-desk__hint" id="essay-submit-hint">{submitBlockedReason}</p>}
-            <div className="applicant-editor-layout has-side-column">
+            <div className={`applicant-editor-layout has-side-column${sidePanel && !isMobile ? " is-side-open" : ""}`}>
             <div className="applicant-panel applicant-editor">
               {essay.prompt?.trim() && <EssayPromptBox prompt={essay.prompt.trim()} />}
               <label className="applicant-editor__title-label" htmlFor="applicant-essay-title">Draft title</label>
