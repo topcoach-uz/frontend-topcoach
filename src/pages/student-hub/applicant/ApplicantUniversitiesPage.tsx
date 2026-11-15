@@ -4,12 +4,12 @@ import { ClampedText } from './ClampedText';
 import { UniversityDegreeFinder } from './UniversityDegreeFinder';
 import { buildDegreeOptions, buildPreview } from './universityDegreeOptions';
 import { normalizeStudyArea } from './UniversityStudyAreas';
-import { useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { Alert, Button, Input, Select, Tag } from "antd";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Building2, Search } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, BookmarkPlus, Building2, Search } from "lucide-react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useGetGraduateProgramQuery, useGetGraduateProgramsQuery, type GraduateProgram, type GraduateProgramFact } from "src/app/services/graduateProgramsApi";
-import { useGetReviewedUniversitiesQuery, useGetUniversityDetailQuery, useGetUniversityFiltersQuery } from "src/app/services/universities";
+import { filterUniversityRows, useGetReviewedUniversitiesQuery, useGetUniversityDetailQuery, useGetUniversityFiltersQuery } from "src/app/services/universities";
 import { degreeMatchesField, useGetUndergraduateDegreesQuery } from "src/app/services/undergraduateDegreesApi";
 import type { UniversitiesSchema } from "src/app/api/Api";
 import { useGetCollegeApplicationsQuery } from "src/app/services/student-hub/applicationTrackingApi";
@@ -40,17 +40,22 @@ export default function ApplicantUniversitiesPage() {
   useEffect(() => setValue(search), [search]);
   // Subject coverage is incomplete; only require an undergraduate subject when
   // the applicant explicitly chooses a field, rather than hiding universities.
-  const universityQuery = useGetReviewedUniversitiesQuery({ search: search || undefined, majorName: major || undefined, country: country || undefined, majorType: major ? "undergraduate" : undefined }, { skip: isMasters });
+  // Only the text search goes to the server. Field and destination are applied to the cached
+  // catalogue below, so changing them is instant and costs no request.
+  const universityQuery = useGetReviewedUniversitiesQuery({ search: search || undefined }, { skip: isMasters });
   const filtersQuery = useGetUniversityFiltersQuery(undefined, { skip: isMasters });
   const programsQuery = useGetGraduateProgramsQuery({ q: search || undefined, page, limit: 20 }, { skip: !isMasters });
   const applications = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
   const masterPrograms = programsQuery.data?.data ?? [];
-  const universities = (universityQuery.data?.data ?? []).slice((page - 1) * 40, page * 40);
+  const filteredUniversities = useMemo(() => filterUniversityRows(universityQuery.data?.data ?? [], { country, majorName: major }), [universityQuery.data, country, major]);
+  const universities = useMemo(() => filteredUniversities.slice((page - 1) * 40, page * 40), [filteredUniversities, page]);
   const isLoading = isMasters ? programsQuery.isLoading : universityQuery.isLoading;
   const isError = isMasters ? programsQuery.isError : universityQuery.isError;
-  const total = isMasters ? programsQuery.data?.total ?? 0 : universityQuery.data?.total ?? 0;
+  const total = isMasters ? programsQuery.data?.total ?? 0 : filteredUniversities.length;
   const perPage = isMasters ? programsQuery.data?.limit ?? 20 : 40;
-  const subjectOptions = buildUniversityFieldOptions(filtersQuery.data?.majors ?? []);
+  const subjectOptions = useMemo(() => buildUniversityFieldOptions(filtersQuery.data?.majors ?? []), [filtersQuery.data]);
+  const countryOptions = useMemo(() => (filtersQuery.data?.countries ?? []).map((item) => ({ value: item, label: item })), [filtersQuery.data]);
+  const savedUniversityIds = useMemo(() => new Set((applications.data?.data ?? []).map((app) => app.universityId).filter((id): id is string => Boolean(id))), [applications.data]);
   const setPage = (nextPage: number) => { const next = new URLSearchParams(params); next.set("page", String(nextPage)); setParams(next); };
   const setFilter = (key: "major" | "country", value: string) => { const next = new URLSearchParams(params); if (value) next.set(key, value); else next.delete(key); next.delete("page"); setParams(next); };
   if (!isMasters) return <ApplicantPage title="Find universities" subtitle="Explore Bachelor’s options. Check course availability before adding a university to your College List.">
@@ -60,12 +65,12 @@ export default function ApplicantUniversitiesPage() {
     </form>
     <div className="applicant-find-filters">
       <label className={major ? "applicant-find-filter applicant-find-filter--active" : "applicant-find-filter"}><span>Field of interest</span><Select value={major || undefined} placeholder="Any field" allowClear showSearch optionFilterProp="label" onChange={(selected) => setFilter("major", selected ?? "")} loading={filtersQuery.isLoading} options={subjectOptions} aria-label="Field of interest" /></label>
-      <label className={country ? "applicant-find-filter applicant-find-filter--active" : "applicant-find-filter"}><span>Destination</span><Select value={country || undefined} placeholder="Any country" allowClear showSearch optionFilterProp="label" onChange={(selected) => setFilter("country", selected ?? "")} loading={filtersQuery.isLoading} options={(filtersQuery.data?.countries ?? []).map((item) => ({ value: item, label: item }))} aria-label="Destination" /></label>
+      <label className={country ? "applicant-find-filter applicant-find-filter--active" : "applicant-find-filter"}><span>Destination</span><Select value={country || undefined} placeholder="Any country" allowClear showSearch optionFilterProp="label" onChange={(selected) => setFilter("country", selected ?? "")} loading={filtersQuery.isLoading} options={countryOptions} aria-label="Destination" /></label>
       <label className="applicant-find-filter applicant-find-filter--disabled" title="Intake dates are not available in the university catalogue"><span>Intake</span><Select value="Any intake" disabled options={[{ value: "Any intake", label: "Any intake" }]} aria-label="Intake unavailable" /></label>
     </div>
     {filtersQuery.isError && <Alert type="warning" message="Filters could not be loaded. Search is still available." />}
     <QueryState loading={isLoading} error={isError} retry={universityQuery.refetch}>
-      <UniversityResults universities={universities} rankOffset={(page - 1) * 40} selectedField={major} savedIds={new Set((applications.data?.data ?? []).map((app) => app.universityId).filter((id): id is string => Boolean(id)))} applicationsLoading={applications.isLoading} applicationsError={applications.isError} />
+      <UniversityResults universities={universities} rankOffset={(page - 1) * 40} selectedField={major} savedIds={savedUniversityIds} applicationsLoading={applications.isLoading} applicationsError={applications.isError} />
       {total > perPage && <div className="applicant-actions applicant-actions--end"><Button disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button><span>Page {page} of {Math.ceil(total / perPage)}</span><Button disabled={page >= Math.ceil(total / perPage)} onClick={() => setPage(page + 1)}>Next</Button></div>}
     </QueryState>
     <Link className="applicant-find-open-list" to="/student-hub/applications">Open College List <ArrowRight size={21} /></Link>
@@ -101,10 +106,10 @@ function universityRankingLabel(university: UniversitiesSchema, position: number
   return { label: `${source} #${ranking.rank}`, title: `${source} world ranking: #${ranking.rank}` };
 }
 
-function UniversityResults({ universities, rankOffset, selectedField, savedIds, applicationsLoading, applicationsError }: { universities: UniversitiesSchema[]; rankOffset: number; selectedField: string; savedIds: Set<string>; applicationsLoading: boolean; applicationsError: boolean }) {
+const UniversityResults = memo(function UniversityResults({ universities, rankOffset, selectedField, savedIds, applicationsLoading, applicationsError }: { universities: UniversitiesSchema[]; rankOffset: number; selectedField: string; savedIds: Set<string>; applicationsLoading: boolean; applicationsError: boolean }) {
   if (!universities.length) return <div className="applicant-panel applicant-empty"><Building2 size={36} /><h2>No universities match these filters.</h2><p>Try another search or adjust the field and destination filters.</p></div>;
-  return <div className="applicant-find-results">{universities.map((university, index) => { const logoUrl = getUniversityLogoUrl(university); const ranking = universityRankingLabel(university, rankOffset + index + 1); return <div className="applicant-find-card" key={university.id}><div className="applicant-university"><span className={`applicant-university__logo${universityLogoNeedsDarkBackground(logoUrl) ? " applicant-university__logo--dark" : ""}${university.id === "1b921b70-2639-4d05-8559-36b77211852d" ? " applicant-university__logo--ucla" : ""}`}>{logoUrl ? <UniversityLogoImage src={logoUrl} name={getTranslation(university.name)} /> : <Building2 size={28} aria-hidden />}</span><div><strong>{getTranslation(university.name)}</strong><p>{[getTranslation(university.location?.region), getTranslation(university.location?.country)].filter(Boolean).join(" · ")}</p><div className="applicant-find-tags"><span className="applicant-find-rank" title={ranking.title}>{ranking.label}</span><span className="applicant-find-degree">Bachelor’s</span></div></div></div><div className="applicant-find-card__actions"><Link to={`/student-hub/universities/${university.id}${selectedField ? `?field=${encodeURIComponent(selectedField)}` : ""}`}>View university <ArrowRight size={18} /></Link>{savedIds.has(university.id) ? <Link className="applicant-find-save" to="/student-hub/applications">In your list <ArrowRight size={17} /></Link> : <Link className={`applicant-find-save${applicationsLoading || applicationsError ? " applicant-find-save--disabled" : ""}`} aria-disabled={applicationsLoading || applicationsError} onClick={(event) => { if (applicationsLoading || applicationsError) event.preventDefault(); }} to={`/student-hub/applications/new?university=${encodeURIComponent(university.id)}`}><BookmarkPlus size={18} /> Add to list</Link>}</div></div>; })}</div>;
-}
+  return <div className="applicant-find-results">{universities.map((university, index) => { const logoUrl = getUniversityLogoUrl(university); const ranking = universityRankingLabel(university, rankOffset + index + 1); return <div className="applicant-find-card" key={university.id}><div className="applicant-university"><span className={`applicant-university__logo${universityLogoNeedsDarkBackground(logoUrl) ? " applicant-university__logo--dark" : ""}${university.id === "1b921b70-2639-4d05-8559-36b77211852d" ? " applicant-university__logo--ucla" : ""}`}>{logoUrl ? <UniversityLogoImage src={logoUrl} name={getTranslation(university.name)} lazy /> : <Building2 size={28} aria-hidden />}</span><div><strong>{getTranslation(university.name)}</strong><p>{[getTranslation(university.location?.region), getTranslation(university.location?.country)].filter(Boolean).join(" · ")}</p><div className="applicant-find-tags"><span className="applicant-find-rank" title={ranking.title}>{ranking.label}</span><span className="applicant-find-degree">Bachelor’s</span></div></div></div><div className="applicant-find-card__actions"><Link to={`/student-hub/universities/${university.id}${selectedField ? `?field=${encodeURIComponent(selectedField)}` : ""}`}>View university <ArrowRight size={18} /></Link>{savedIds.has(university.id) ? <Link className="applicant-find-save" to="/student-hub/applications">In your list <ArrowRight size={17} /></Link> : <Link className={`applicant-find-save${applicationsLoading || applicationsError ? " applicant-find-save--disabled" : ""}`} aria-disabled={applicationsLoading || applicationsError} onClick={(event) => { if (applicationsLoading || applicationsError) event.preventDefault(); }} to={`/student-hub/applications/new?university=${encodeURIComponent(university.id)}`}><BookmarkPlus size={18} /> Add to list</Link>}</div></div>; })}</div>;
+});
 
 export function ApplicantUniversityDetailPage() {
   const { universityId = "" } = useParams();
@@ -157,9 +162,10 @@ type UniversityProfileContent = UniversitiesSchema & {
   profileVerifiedAt?: string | null;
 };
 
-function UniversityLogoImage({ src, name }: { src: string; name: string }) {
+function UniversityLogoImage({ src, name, lazy = false }: { src: string; name: string; lazy?: boolean }) {
   const [failed, setFailed] = useState(false);
-  return failed ? <Building2 size={30} aria-hidden="true" /> : <img src={src} alt={`${name} logo`} onError={() => setFailed(true)} />;
+  // List logos are 64px tiles, many of them below the fold: fetch them lazily and decode off the main thread.
+  return failed ? <Building2 size={30} aria-hidden="true" /> : <img src={src} alt={`${name} logo`} onError={() => setFailed(true)} {...(lazy ? { loading: "lazy" as const, decoding: "async" as const, width: 64, height: 64 } : {})} />;
 }
 
 function BachelorUniversityDetail({ university, selectedField, collegeList, existingId, applicationsUnavailable, onAdd, onOpen }: {
