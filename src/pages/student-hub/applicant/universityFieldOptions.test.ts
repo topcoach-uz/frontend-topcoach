@@ -51,6 +51,18 @@ describe("university subject options", () => {
     expect(options[0].variants).toHaveLength(3);
     expect(options[1].variants).toHaveLength(2);
   });
+  it("strips only degree-label brackets", () => {
+    ["Accounting (BSc)", "Accounting (B.A./B.S.)", "Accounting (Hons)", "Accounting (BSc Hons)", "Accounting (BSc (Hons))", "Accounting (BA/BSc)"]
+      .forEach((name) => expect(subjectKey(name)).toBe("accounting"));
+    expect(subjectKey("Economics (Tripos)")).toBe("economics");
+    expect(subjectKey("Science (Psychology)")).toBe("science psychology");
+    expect(subjectKey("Science (Education)")).toBe("science education");
+    expect(subjectKey("Computer Science (Artificial Intelligence)")).toBe("computer science artificial intelligence");
+    expect(subjectKey("Medicine (Copenhagen)")).toBe("medicine copenhagen");
+    expect(subjectKey("Computer Science (Artificial Intelligence) (BSc)")).toBe("computer science artificial intelligence");
+    const options = buildUniversitySubjectOptions([ug("Science"), ug("Science (Psychology)"), ug("Science (Education)")]);
+    expect(options.map((o) => o.value)).toEqual(["science", "science education", "science psychology"]);
+  });
   it("merges zero-width duplicates and drops graduate and empty names", () => {
     const options = buildUniversitySubjectOptions([
       ug("Bio​logy"), ug("Biology"), ug("Finance (MBA)"), ug("​"), ug("  "), { type: "graduate", name: "Physics" },

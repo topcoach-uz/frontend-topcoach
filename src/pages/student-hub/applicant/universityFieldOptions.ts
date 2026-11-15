@@ -16,7 +16,28 @@ export function isUsableUniversityFieldName(value: string): boolean {
 
 const ZERO_WIDTH = /[\u200B-\u200F\u2060\uFEFF\u00AD]/g;
 const GRAD = /\b(?:mba|msc|m\.?sc|ma|m\.?a|meng|llm|phd|ph\.?d|dphil|master'?s?|masters|doctor(?:ate)?)\b/i;
-const TRAILING_PAREN = /\s*[([][^()[\]]*[)\]]\s*$/;
+const TRAILING_PAREN = /\s*[([]((?:[^()[\]]|[([][^()[\]]*[)\]])*)[)\]]\s*$/;
+const DEGREE_LABEL_TOKENS = new Set([
+  "bsc", "ba", "bs", "beng", "bba", "llb", "mb", "chb", "mbchb", "mbbs", "bmus", "bfa", "bed", "barch", "bcom", "hons", "honours", "honors", "tripos",
+  "bachelor", "bachelors", "degree", "and",
+  "msc", "ma", "mba", "meng", "llm", "mphil", "mres", "mfa", "mpa", "mph", "ms",
+]);
+
+/** True when a bracket's content is only degree/award labels, e.g. "BSc (Hons)", "B.A./B.S.", "Tripos". */
+function isDegreeLabel(content: string): boolean {
+  const tokens = content.toLowerCase().replace(/\./g, "").split(/[\s/,&+\-–()]+/).filter(Boolean);
+  return tokens.length > 0 && tokens.every((token) => DEGREE_LABEL_TOKENS.has(token));
+}
+
+/** Removes trailing brackets only while they are degree labels; other qualifiers stay part of the subject. */
+function stripDegreeBrackets(value: string): string {
+  let name = value;
+  for (;;) {
+    const match = TRAILING_PAREN.exec(name);
+    if (!match || !isDegreeLabel(match[1])) return name;
+    name = name.slice(0, match.index).trim();
+  }
+}
 const DEGREE_PREFIX = /^(?:bachelor'?s?\s+(?:of\s+)?(?:science|arts|engineering|applied science|fine arts|business administration)?\s*(?:\(hons\.?\)\s*)?(?:in|degree in)?|b\.?\s?sc\.?|b\.?\s?eng\.?|b\.?\s?a\.?|b\.?\s?s\.?)\s+(?:in\s+)?/i;
 
 const cleanSpaces = (value: string) => value.replace(ZERO_WIDTH, "").replace(/\s+/g, " ").trim();
@@ -37,11 +58,11 @@ function subjectDisplay(raw: string, degree: SubjectDegreeType = "undergraduate"
     // Master's labels are qualifiers on the subject, not a reason to drop it; bachelor-only labels are dropped.
     if (BACHELOR.test(name)) return "";
     name = name.replace(MASTER_PAREN, "").replace(MASTER_PREFIX, "").replace(MASTER_SUFFIX, "").trim();
-    while (TRAILING_PAREN.test(name)) name = name.replace(TRAILING_PAREN, "").trim();
+    name = stripDegreeBrackets(name);
     return name && /[\p{L}\p{N}]/u.test(name) ? name : "";
   }
   if (GRAD.test(name)) return "";
-  while (TRAILING_PAREN.test(name)) name = name.replace(TRAILING_PAREN, "").trim();
+  name = stripDegreeBrackets(name);
   name = name.replace(DEGREE_PREFIX, "").replace(/\s*[-–,]?\s*\(?\b(?:hons|honours)\b\.?\)?\s*$/i, "").trim();
   return name && /[\p{L}\p{N}]/u.test(name) ? name : "";
 }
