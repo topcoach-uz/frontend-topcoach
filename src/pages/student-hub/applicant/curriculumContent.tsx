@@ -64,7 +64,7 @@ export function useProgrammeCurriculum(university: { id: string; curricula?: unk
 
 /** Lists for "What you'll study": core subjects, tracks, example courses, capstone. */
 export function CurriculumBlock({ data }: { data: NonNullable<CurriculumResult> }) {
-  const { programme, verifiedAt, academicYear } = data;
+  const { programme, verifiedAt } = data;
   const facts = [programme.award, programme.length, programme.units].filter(Boolean).join(" · ");
   return <div className="applicant-degree-page__curriculum">
     {programme.overview && <p className="applicant-degree-page__curriculum-overview">{programme.overview}</p>}
@@ -86,6 +86,6 @@ export function CurriculumBlock({ data }: { data: NonNullable<CurriculumResult> 
       <ul className="applicant-degree-page__courses">{programme.sampleCourses.map((course) => <li key={`${course.code ?? ""}${course.title}`}>{course.code && <code>{course.code}</code>}<span>{course.title}</span></li>)}</ul>
     </div>}
     {programme.capstone && <p className="applicant-degree-page__curriculum-capstone"><strong>Final project: </strong>{programme.capstone}</p>}
-    <p className="applicant-university-detail__checked">Source: <a href={programme.sourceUrl} target="_blank" rel="noopener noreferrer">{programme.sourceTitle}</a>{academicYear ? ` · ${academicYear}` : ""}{Number.isFinite(Date.parse(verifiedAt)) && ` · Checked ${displayDate(verifiedAt)}`}</p>
+    <p className="applicant-university-detail__checked">Source: <a href={programme.sourceUrl} target="_blank" rel="noopener noreferrer">{programme.sourceTitle}</a>{Number.isFinite(Date.parse(verifiedAt)) && ` · Checked ${displayDate(verifiedAt)}`}</p>
   </div>;
 }
