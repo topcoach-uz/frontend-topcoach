@@ -55,7 +55,7 @@ import {
   type OrgStudent,
 } from 'src/app/services/counselorConsoleApi';
 import type { OrgMembership } from 'src/app/services/counselorConsoleApi';
-import { PeopleEmpty, PeopleTableShell } from './peopleChrome';
+import { PeopleEmpty, PeopleTableShell, apiErrorMessage } from './peopleChrome';
 import { MEMBER_STATUS_PILL } from './roleLabels';
 import './roster.scss';
 
