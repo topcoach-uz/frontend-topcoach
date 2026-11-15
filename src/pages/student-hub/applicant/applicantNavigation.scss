@@ -469,17 +469,9 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   .applicant-panel-slot {
     display: none;
   }
-  // Sticks under the site header while the page scrolls.
   .applicant-section-tabs {
     display: block;
-    position: sticky;
-    top: $nav-top;
-    z-index: 20;
     margin: 0 0 12px;
-    padding-top: 10px;
-    background: rgba(251, 249, 246, 0.86);
-    -webkit-backdrop-filter: saturate(180%) blur(16px);
-    backdrop-filter: saturate(180%) blur(16px);
   }
   .applicant-org-mobile {
     display: block;
