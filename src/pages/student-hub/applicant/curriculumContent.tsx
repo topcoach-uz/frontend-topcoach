@@ -11,6 +11,8 @@ export interface ProgrammeCurriculum {
   core: Array<{ title: string; detail?: string }>;
   tracks: string[];
   capstone?: string;
+  /** What Stanford says to take before or early in the major. */
+  preparation?: string[];
   sampleCourses: Array<{ code?: string; title: string }>;
   sourceUrl: string;
   sourceTitle: string;
@@ -67,6 +69,10 @@ export function CurriculumBlock({ data }: { data: NonNullable<CurriculumResult> 
   return <div className="applicant-degree-page__curriculum">
     {programme.overview && <p className="applicant-degree-page__curriculum-overview">{programme.overview}</p>}
     {facts && <p className="applicant-degree-page__curriculum-facts">{facts}</p>}
+    {(programme.preparation?.length ?? 0) > 0 && <div>
+      <h3 className="applicant-university-detail__list-title">Prepare for this major</h3>
+      <ul className="applicant-degree-page__prep">{programme.preparation!.map((line) => <li key={line}>{line}</li>)}</ul>
+    </div>}
     {programme.core.length > 0 && <div>
       <h3 className="applicant-university-detail__list-title">Core subjects</h3>
       <ul className="applicant-degree-page__core">{programme.core.map((item) => <li key={item.title}><strong>{item.title}</strong>{item.detail && <span>{item.detail}</span>}</li>)}</ul>

@@ -43,3 +43,4 @@
   code { flex: 0 0 auto; min-width: 72px; font-family: inherit; font-size: 12px; font-weight: 600; color: #8b0000; font-variant-numeric: tabular-nums; } }
 @media (min-width: 768px) { .applicant-degree-page__courses { grid-template-columns: 1fr 1fr; column-gap: 24px; } }
 .applicant-degree-page__curriculum-capstone { margin: 0; font-size: 14px; line-height: 1.5; color: #302b28; strong { font-weight: 600; } }
+.applicant-degree-page__prep { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.5; color: #302b28; li { margin: 2px 0; } li::marker { color: #8b0000; } }
