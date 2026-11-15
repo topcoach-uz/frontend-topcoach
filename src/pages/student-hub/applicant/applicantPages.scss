@@ -1930,9 +1930,13 @@
 .applicant-university-detail .applicant-university-detail__preview-empty { margin: 0; font-size: 14px; line-height: 1.5; color: #655c55; }
 
 .applicant-university-detail__scores { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; min-width: 0; }
-.applicant-university-detail__score-tiles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px;
-  li { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 1px solid #e7e2dc; border-radius: 12px; background: #fff; min-width: 0; }
-  strong { font-size: 22px; line-height: 1.2; font-weight: 600; color: #302b28; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-  small { font-size: 13px; line-height: 1.4; color: #655c55; } }
-.applicant-university-detail__score-test { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #655c55; }
-.applicant-university-detail__score-tiles strong.applicant-university-detail__score-long { font-size: 15px; line-height: 1.4; font-weight: 600; }
+.applicant-university-detail__score-group { display: flex; flex-direction: column; gap: 4px;
+  h4 { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: 14px; font-weight: 600; color: #302b28;
+    span { font-size: 13px; font-weight: 400; color: #655c55; } } }
+.applicant-university-detail__score-rows { list-style: none; margin: 0; padding: 0;
+  li { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 4px 16px; align-items: baseline; padding: 10px 0; border-top: 1px solid #e7e2dc; }
+  li:first-child { border-top: 0; } }
+.applicant-university-detail__score-test { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #655c55; }
+.applicant-university-detail__score-main { display: flex; flex-direction: column; gap: 2px; min-width: 0;
+  strong { font-size: 16px; font-weight: 600; color: #302b28; font-variant-numeric: tabular-nums; }
+  small { font-size: 13px; line-height: 1.45; color: #655c55; } }

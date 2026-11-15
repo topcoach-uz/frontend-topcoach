@@ -36,31 +36,62 @@ const STATUS: { key: StructuredUniversityContent["entryRequirements"][number]["s
   { key: "not-required", title: "Not required", icon: <Minus size={16} aria-hidden="true" /> },
 ];
 
-const SCORE_KIND = { minimum: "Minimum", recommended: "Recommended", "admitted-range": "Admitted, middle 50%" } as const;
+const SCORE_KIND = { minimum: "Minimum", recommended: "Recommended", "admitted-range": "Admitted students, middle 50%" } as const;
+const ENGLISH_TESTS = new Set(["IELTS", "TOEFL", "Duolingo", "PTE", "Cambridge"]);
+type ScoreRow = NonNullable<StructuredUniversityContent["scores"]>[number];
 
-/** First sentence of a note, minus wording the tile label already says. */
-const shortNote = (row: { kind: string; note?: string }) => {
+/** "7.0 overall, minimum 6.5 in all elements" → headline "7.0 overall", detail "Minimum 6.5 in all elements". */
+export function splitScore(value: string): { headline: string; detail?: string } {
+  const match = value.match(/^(.*?)(?:,\s+|;\s+|\s+(?=with\b|including\b|plus\b))(.+)$/i);
+  if (!match || match[1].length < 1) return { headline: value };
+  const detail = match[2].trim();
+  return { headline: match[1].trim(), detail: detail.charAt(0).toUpperCase() + detail.slice(1) };
+}
+
+/** Note text minus wording the label already says; undefined when nothing is left. */
+const cleanNote = (row: ScoreRow) => {
   let note = (row.note ?? "").replace(/^middle 50%,?\s*/i, "").trim();
   if (row.kind === "admitted-range") note = note.replace(/[^.]*no minimum[^.]*\.?/gi, "").trim();
-  const first = note.split(/(?<=\.)\s+/)[0]?.replace(/\.$/, "").trim();
-  return first && first.length <= 60 ? first : undefined;
+  return note.replace(/\.$/, "") || undefined;
 };
 
-/** Score numbers as tiles; admitted ranges are labelled and footnoted so they don't read as cutoffs. */
+function ScoreGroup({ title, rows, shared }: { title: string; rows: ScoreRow[]; shared: boolean }) {
+  const kinds = new Set(rows.map((row) => row.kind));
+  const allIntl = rows.every((row) => row.appliesTo === "international");
+  // Note parts (split on ";" / ". ") that every row shares go to the group label once; the rest stay on the row.
+  const parts = rows.map((row) => (cleanNote(row) ?? "").split(/;\s+|\.\s+/).map((part) => part.trim()).filter(Boolean));
+  const common = parts[0]?.filter((part) => parts.every((list) => list.includes(part))) ?? [];
+  const sameNote = common.length ? common.join("; ") : undefined;
+  const notes = parts.map((list) => { const rest = list.filter((part) => !common.includes(part)).join("; "); return rest ? rest.charAt(0).toUpperCase() + rest.slice(1) : undefined; });
+  const subtitle = [kinds.size === 1 ? SCORE_KIND[rows[0].kind] : "", allIntl ? "International applicants" : "", sameNote ?? ""].filter(Boolean).join(" · ");
+  return <div className="applicant-university-detail__score-group">
+    <h4>{title}{subtitle && <span>{subtitle}</span>}</h4>
+    <ul className="applicant-university-detail__score-rows">{rows.map((row, index) => {
+      const { headline, detail } = splitScore(row.value);
+      const extra = [kinds.size > 1 ? SCORE_KIND[row.kind] : "", !allIntl && row.appliesTo === "international" ? "International applicants" : "", notes[index] ?? ""].filter(Boolean).join(" · ");
+      return <li key={`${row.test}-${row.kind}-${row.value}`}>
+        <span className="applicant-university-detail__score-test">{row.test}</span>
+        <span className="applicant-university-detail__score-main"><strong>{headline}</strong>{detail && <small>{detail}</small>}{extra && <small>{extra}</small>}</span>
+        {!shared && <SourceLink src={row} />}
+      </li>;
+    })}</ul>
+  </div>;
+}
+
+/** Score numbers grouped as Academic / English tests, with shared labels stated once per group. */
 export function ScoresBlock({ content }: { content: StructuredUniversityContent }) {
   if (content.scores === undefined) return null;
   const rows = content.scores;
   const shared = sharedSource(rows);
+  const academic = rows.filter((row) => !ENGLISH_TESTS.has(row.test));
+  const english = rows.filter((row) => ENGLISH_TESTS.has(row.test));
   const onlyRanges = rows.length > 0 && rows.every((row) => row.kind === "admitted-range");
   return <div className="applicant-university-detail__scores">
     <h3 className="applicant-university-detail__list-title">Scores</h3>
-    {rows.length === 0 ? <p className="applicant-university-detail__preview-empty">No minimum scores are published.</p> : <ul className="applicant-university-detail__score-tiles">
-      {rows.map((row) => { const note = shortNote(row); return <li key={`${row.test}-${row.kind}-${row.value}`} title={row.note}>
-        <span className="applicant-university-detail__score-test">{row.test}{!shared && <SourceLink src={row} />}</span>
-        <strong className={row.value.length > 16 ? "applicant-university-detail__score-long" : undefined}>{row.value}</strong>
-        <small>{SCORE_KIND[row.kind]}{note ? ` · ${note}` : ""}{row.appliesTo === "international" ? " · International applicants" : ""}</small>
-      </li>; })}
-    </ul>}
+    {rows.length === 0 ? <p className="applicant-university-detail__preview-empty">No minimum scores are published.</p> : <>
+      {academic.length > 0 && <ScoreGroup title="Academic" rows={academic} shared={!!shared} />}
+      {english.length > 0 && <ScoreGroup title="English tests" rows={english} shared={!!shared} />}
+    </>}
     {rows.length > 0 && <p className="applicant-university-detail__checked">{onlyRanges && "These are scores of admitted students, not cutoffs; no minimum is published. "}{shared && <>Source: <a href={shared.sourceUrl} target="_blank" rel="noopener noreferrer">{shared.sourceTitle}</a>{Number.isFinite(Date.parse(content.verifiedAt)) && ` · Checked ${displayDate(content.verifiedAt)}`}</>}</p>}
   </div>;
 }
