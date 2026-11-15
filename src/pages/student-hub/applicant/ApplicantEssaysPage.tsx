@@ -541,10 +541,10 @@ export function ApplicantEssayEditorPage() {
   const sidePanelBody = shownPanel ? (<>
               {shownPanel === "ideas" ? <>
                 {essay && <EssayAnglesPanel essayId={essay.id} result={anglesByEssay[essay.id]} onResult={(id, r) => setAnglesByEssay((prev) => ({ ...prev, [id]: r }))} />}
-                {essay.prompt?.trim() && <blockquote className="applicant-writing-desk__prompt-quote"><strong>Your prompt</strong>{essay.prompt.trim()}</blockquote>}
+                {essay?.prompt?.trim() && <blockquote className="applicant-writing-desk__prompt-quote"><strong>Your prompt</strong>{essay?.prompt?.trim()}</blockquote>}
                 <h4 className="essay-angles__quick">Quick questions</h4>
                 <ol className="applicant-writing-desk__ideas">
-                  {ideasForEssay(essay.essayType, essay.prompt).map((idea) => <li key={idea}>{idea}</li>)}
+                  {essay && ideasForEssay(essay.essayType, essay.prompt).map((idea) => <li key={idea}>{idea}</li>)}
                 </ol>
                 <small>These are writing prompts from TopCoach, not official admission requirements.</small>
               </> : <>
