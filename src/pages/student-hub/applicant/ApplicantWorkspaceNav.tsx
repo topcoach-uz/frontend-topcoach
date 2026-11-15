@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Skeleton } from 'antd';
+import { universityApi } from 'src/app/services/universities';
 import {
   BookOpen,
   Calendar,
@@ -331,12 +332,24 @@ function useNavSections() {
   return { sections, active };
 }
 
+// Start loading the university catalogue as soon as the pointer or keyboard reaches the link,
+// so the page often opens with data already cached.
+function useCataloguePrefetch(link: NavLinkItem) {
+  const prefetchCatalogue = universityApi.usePrefetch('getReviewedUniversities');
+  const prefetchFilters = universityApi.usePrefetch('getUniversityFilters');
+  const enabled = link.key === 'findUniversities';
+  return enabled ? () => { prefetchCatalogue({}); prefetchFilters(); } : undefined;
+}
+
 function PanelLink({ link, onNavigate }: { link: NavLinkItem; onNavigate?: () => void }) {
   const { t } = useTranslation();
+  const prefetch = useCataloguePrefetch(link);
   return (
     <Link
       to={link.to}
       onClick={onNavigate}
+      onPointerEnter={prefetch}
+      onFocus={prefetch}
       aria-current={link.active ? 'page' : undefined}
       className={`applicant-section-panel-link${link.active ? ' is-active' : ''}`}
     >
