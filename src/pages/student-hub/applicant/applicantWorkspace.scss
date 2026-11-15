@@ -1,7 +1,6 @@
 @import '/src/styles/variables.scss';
 
-.applicant-shell,
-.applicant-drawer {
+.applicant-shell {
   --applicant-brand: #8b0000;
   --applicant-ink: #302b28;
   --applicant-muted: #655c55;
@@ -124,8 +123,7 @@
     background-color 150ms ease-out,
     color 150ms ease-out;
 }
-.applicant-shell .applicant-nav-link:focus-visible,
-.applicant-drawer .applicant-nav-link:focus-visible {
+.applicant-shell .applicant-nav-link:focus-visible {
   outline-offset: -2px;
 }
 .applicant-nav-link span {
@@ -182,9 +180,6 @@
 }
 .applicant-skip:focus {
   top: 12px;
-}
-.applicant-drawer .ant-drawer-body {
-  background: #fbf9f6;
 }
 .applicant-overview {
   display: flex;
@@ -658,7 +653,7 @@
 }
 
 @media (max-width: 1199px) {
-  // Tablet: rail stays on the left, the section panel moves into the drawer.
+  // Tablet: rail stays on the left; the section links become a chip row above the content.
   .applicant-content {
     padding: 24px 24px 64px;
   }
@@ -810,8 +805,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .applicant-shell,
-  .applicant-drawer {
+  .applicant-shell {
     .applicant-button,
     .applicant-menu-button,
     .applicant-summary,
@@ -829,8 +823,7 @@
 }
 
 @media (prefers-contrast: more) {
-  .applicant-shell,
-  .applicant-drawer {
+  .applicant-shell {
     --applicant-muted: #3f3a36;
     --applicant-border: #8a8178;
     .applicant-muted,

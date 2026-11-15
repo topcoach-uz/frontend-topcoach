@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Skeleton } from 'antd';
-import { ArrowRight, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowRight, Heart, RefreshCw, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -385,6 +385,15 @@ export default function ApplicantOverviewPage() {
           />
         </div>
       </header>
+
+      <Link className="ov-fs-link" to={applicantLinks.fullSupport}>
+        <Heart size={18} strokeWidth={1.75} aria-hidden />
+        <span className="ov-fs-link__text">
+          <strong>{t('applicant.nav.fullSupport', 'Full Support')}</strong>
+          <span>{t('applicant.nav.fullSupportSubtitle', '1:1 mentorship program')}</span>
+        </span>
+        <ArrowRight size={16} aria-hidden />
+      </Link>
 
       {focus && needsAssessment && (
         <section

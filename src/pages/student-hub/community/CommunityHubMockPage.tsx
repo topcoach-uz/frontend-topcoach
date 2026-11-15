@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useMyLearningPath } from 'src/pages/student-hub/applicant/useMyLearningPath';
 import { Button, Card, Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
@@ -89,6 +90,7 @@ function ResearchPrepSection() {
 }
 
 export default function CommunityHubMockPage() {
+  const myLearningPath = useMyLearningPath();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -192,8 +194,9 @@ export default function CommunityHubMockPage() {
     if (panel === 'admissions') navigate('/student-hub?section=admissions-program', { replace: true });
     else if (panel === 'sat') navigate('/student-hub?section=sat-course', { replace: true });
     else if (panel === 'ai') navigate('/student-hub?section=ai-major-match', { replace: true });
-    else navigate(defaultHubSectionPath, { replace: true });
-  }, [location.search, navigate, defaultHubSectionPath]);
+    else if (params.get('tab') === 'admissions') navigate('/student-hub?section=admissions-program', { replace: true });
+    else navigate(myLearningPath, { replace: true });
+  }, [location.search, navigate, myLearningPath]);
 
   /** Workshops → public events (no hub section) */
   useEffect(() => {
@@ -480,7 +483,7 @@ export default function CommunityHubMockPage() {
                   <button
                     type="button"
                     className={styles.admissionsBackBtn}
-                    onClick={() => navigate(defaultHubSectionPath)}
+                    onClick={() => navigate(myLearningPath)}
                   >
                     <ArrowLeft size={13} />
                     {t('studentHub.hub.backToMainMenu', 'Back to main menu')}

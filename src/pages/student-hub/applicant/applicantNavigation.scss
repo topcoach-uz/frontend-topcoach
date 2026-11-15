@@ -128,7 +128,6 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
     outline-offset: -2px;
   }
 }
-.applicant-rail__item--more,
 .applicant-rail__label--phone {
   display: none;
 }
@@ -413,20 +412,73 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   }
 }
 
-// ---------- Drawer ----------
-.applicant-drawer-nav {
+// ---------- Section tabs (below 1200px, where the panel is hidden) ----------
+.applicant-section-tabs,
+.applicant-org-mobile {
+  display: none;
+}
+.applicant-section-tabs__list {
   display: flex;
-  flex-direction: column;
-  gap: 22px;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 10px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+.applicant-section-tabs__link {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid #e7e2dc;
+  border-radius: 999px;
+  background: #fff;
+  color: $nav-muted;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    background-color 150ms $ease-out,
+    color 150ms $ease-out,
+    border-color 150ms $ease-out,
+    transform 150ms $ease-out;
+  &:hover {
+    color: $nav-brand;
+  }
+  &:active {
+    transform: scale(0.97);
+  }
+  &.is-active {
+    border-color: rgba(139, 0, 0, 0.3);
+    background: $nav-active-bg;
+    color: $nav-brand;
+    font-weight: 600;
+  }
+  &:focus-visible {
+    outline: 2px solid $nav-brand;
+    outline-offset: 2px;
+  }
 }
 
-// Tablet: rail only; More opens the panel's links in the drawer.
 @media (max-width: 1199px) {
   .applicant-panel-slot {
     display: none;
   }
-  .applicant-rail__item--more {
-    display: flex;
+  .applicant-section-tabs {
+    display: block;
+    margin: 0 0 12px;
+  }
+  .applicant-org-mobile {
+    display: block;
+    margin-top: 24px;
+    &:empty {
+      display: none;
+    }
   }
 }
 
@@ -466,9 +518,6 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   }
   .applicant-rail__item.is-phone-hidden {
     display: none;
-  }
-  .applicant-rail__item--more {
-    display: flex;
   }
   .applicant-rail__label--wide {
     display: none;

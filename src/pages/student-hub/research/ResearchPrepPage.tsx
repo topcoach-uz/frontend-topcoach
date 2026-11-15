@@ -13,6 +13,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
+import { useMyLearningPath } from 'src/pages/student-hub/applicant/useMyLearningPath';
 import { Spin, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -37,6 +38,7 @@ interface ResearchPrepPageProps {
 }
 
 const ResearchPrepPage: React.FC<ResearchPrepPageProps> = ({ isFullSupport = false, onExit }) => {
+  const myLearningPath = useMyLearningPath();
   const navigate = useNavigate();
   const { data: weeks, isLoading: weeksLoading } = useGetResearchStructureQuery();
   const { data: lockState, isLoading: lockLoading } = useGetResearchLockStateQuery();
@@ -71,8 +73,8 @@ const ResearchPrepPage: React.FC<ResearchPrepPageProps> = ({ isFullSupport = fal
       onExit();
       return;
     }
-    // Land on the dashboard so the community sidebar is back.
-    navigate('/student-hub?section=dashboard');
+    // Return to My learning, where research prep is opened from.
+    navigate(myLearningPath);
   };
 
   const handleBookMentorReview = (submissionId: string) => {

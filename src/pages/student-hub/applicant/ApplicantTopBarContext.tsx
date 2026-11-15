@@ -10,7 +10,6 @@ export function ApplicantMobileTrail({ children }: { children: ReactNode }) {
   return target
     ? createPortal(
         <nav className="applicant-mobile-trail" aria-label="Breadcrumb">
-          <span aria-hidden="true">/</span>
           <span className="applicant-mobile-trail__page">{children}</span>
         </nav>,
         target,

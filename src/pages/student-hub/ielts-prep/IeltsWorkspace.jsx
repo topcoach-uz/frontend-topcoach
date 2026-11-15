@@ -5,6 +5,7 @@ import React, {
   useContext,
   createContext,
 } from "react";
+import { useMyLearningPath } from "../applicant/useMyLearningPath";
 import { Logo } from "../../../components/logos";
 import {
   ArrowLeft,
@@ -385,6 +386,7 @@ export default function IeltsWorkspace(props) {
   );
 }
 function App() {
+  const myLearningPath = useMyLearningPath();
   const { path, navigate, href, profile, storagePrefix, onStorageError, listeningLibrary, readingLibrary, writingLibrary, speakingLibrary } =
     useContext(WorkspaceContext);
   const [dark, setDark] = useStored("workspace:dark", false),
@@ -513,7 +515,7 @@ function App() {
             </IconButton>
             <IconButton
               label="Back to main menu"
-              onClick={() => go("/student-hub")}
+              onClick={() => go(myLearningPath)}
             >
               <ArrowLeft />
             </IconButton>
@@ -533,7 +535,7 @@ function App() {
                     <button onClick={() => go("/settings/account")}>
                       Account Settings
                     </button>
-                    <button onClick={() => go("/student-hub")}>
+                    <button onClick={() => go(myLearningPath)}>
                       Back to main menu
                     </button>
                   </div>

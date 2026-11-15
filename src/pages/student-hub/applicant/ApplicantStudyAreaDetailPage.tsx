@@ -1,8 +1,12 @@
 import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useProgrammeCurriculum } from './curriculumContent';
+import { useStudyAreaProgrammes } from './programmeList';
 import { useGetUniversityDetailQuery } from 'src/app/services/universities';
 import { useGetUndergraduateDegreesQuery, type UndergraduateDegree } from 'src/app/services/undergraduateDegreesApi';
 import { getTranslation } from 'src/lib/i18n/translationUtils';
 import { QueryState } from './ApplicantPage';
+import { UniversityDetailSkeleton } from './UniversitySections';
+import { useStructuredContent } from './StructuredSections';
 import { ApplicantMobileTrail } from './ApplicantTopBarContext';
 import { publishedDegreeForStudyArea } from './degreePlanning';
 import { DegreeContent } from './ApplicantDegreeDetailPage';
@@ -16,6 +20,9 @@ export default function ApplicantStudyAreaDetailPage() {
   const query = useGetUniversityDetailQuery(universityId, { skip: !universityId });
   const degreesQuery = useGetUndergraduateDegreesQuery(universityId, { skip: !universityId });
   const university = query.data;
+  const structured = useStructuredContent(university);
+  const curriculum = useProgrammeCurriculum(university, majorId);
+  const programmes = useStudyAreaProgrammes(universityId, majorId);
   const major = university?.majors?.find(item => item.id === majorId && item.type === 'undergraduate');
   const name = major ? getTranslation(major.name) : '';
   const publishedDegree = publishedDegreeForStudyArea(degreesQuery.data ?? [], name);
@@ -37,10 +44,10 @@ export default function ApplicantStudyAreaDetailPage() {
     verifiedAt: '', fieldAliases: [name],
   }, university?.verifiedStudyAreaContent);
   const saveHref = '/student-hub/applications/new?' + new URLSearchParams({ university: universityId, major: name, degreeLevel: 'bachelor' });
-  return <section className="applicant-page applicant-degree-page">
+  return <section className="applicant-page applicant-degree-page applicant-university-detail">
     <ApplicantMobileTrail><Link to="/student-hub/universities">Find universities</Link><span> / </span><Link to={universityHref}>{universityName}</Link><span> / </span>{name || 'Study area'}</ApplicantMobileTrail>
-    <QueryState loading={query.isLoading || degreesQuery.isLoading} error={query.isError || degreesQuery.isError} retry={() => { query.refetch(); degreesQuery.refetch(); }}>
-      {university && major ? <DegreeContent key={publishedDegree?.id ?? universityId + majorId} degree={withVerifiedUniversityFinance(publishedDegree ?? degree, university.undergraduateFinanceContent)} studyArea={!publishedDegree} universityName={universityName} location={[getTranslation(university.location?.region), getTranslation(university.location?.country)].filter(Boolean).join(', ')} logoUrl={getUniversityLogoUrl(university)} saveHrefOverride={publishedDegree ? undefined : saveHref} /> : <div className="applicant-degree-page__missing"><h1>Study area not found</h1><p>This study area is not listed for this university.</p><Link to={universityHref}>Return to university</Link></div>}
-    </QueryState>
+    {query.isLoading || degreesQuery.isLoading ? <UniversityDetailSkeleton /> : <QueryState loading={false} error={query.isError || degreesQuery.isError} retry={() => { query.refetch(); degreesQuery.refetch(); }}>
+      {university && major ? <DegreeContent key={publishedDegree?.id ?? universityId + majorId} degree={withVerifiedUniversityFinance(publishedDegree ?? degree, university.undergraduateFinanceContent)} studyArea={!publishedDegree} universityName={universityName} location={[getTranslation(university.location?.region), getTranslation(university.location?.country)].filter(Boolean).join(', ')} logoUrl={getUniversityLogoUrl(university)} saveHrefOverride={publishedDegree ? undefined : saveHref} universityHref={universityHref} deadlines={university.deadlines ?? []} structured={structured} curriculum={curriculum} programmes={programmes} /> : <div className="applicant-degree-page__missing"><h1>Study area not found</h1><p>This study area is not listed for this university.</p><Link to={universityHref}>Return to university</Link></div>}
+    </QueryState>}
   </section>;
 }

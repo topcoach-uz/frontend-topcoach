@@ -46,7 +46,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: nowrap;
+  flex-wrap: wrap; // the scope label drops below the button rather than squeezing it
   gap: 14px;
   width: min(100%, 405px);
   margin-top: 46px;
@@ -56,6 +56,7 @@
 
 .mm3-motion-intro__button {
   display: inline-flex;
+  flex: none; // never shrink below its label + arrow
   align-items: center;
   justify-content: center;
   gap: 8px;

@@ -1,5 +1,4 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Drawer } from 'antd';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from 'src/app/store';
@@ -8,10 +7,11 @@ import { ApplicantOverviewContext } from './ApplicantOverviewContext';
 import { isOverviewLocation } from 'src/lib/applicantWorkspace';
 import { ApplicantTopBarContext } from './ApplicantTopBarContext';
 import {
-  ApplicantDrawerNavigation,
   ApplicantPanel,
   ApplicantRail,
+  ApplicantSectionTabs,
 } from './ApplicantWorkspaceNav';
+import OrgMembershipSidebar from '../components/OrgMembershipSidebar';
 import { readPanelCollapsed, writePanelCollapsed } from './applicantNavState';
 import './applicantWorkspace.scss';
 import './liquidGlassWorkspace.scss';
@@ -25,7 +25,6 @@ export default function ApplicantShell({ children }: { children: ReactNode }) {
   });
   const { pathname, search } = useLocation();
   const { t } = useTranslation();
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [trailTarget, setTrailTarget] = useState<HTMLElement | null>(null);
   const [panelCollapsed, setPanelCollapsed] = useState(readPanelCollapsed);
   const togglePanel = () =>
@@ -34,7 +33,6 @@ export default function ApplicantShell({ children }: { children: ReactNode }) {
       return !value;
     });
   useEffect(() => {
-    setDrawerOpen(false);
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, [pathname, search]);
 
@@ -46,10 +44,7 @@ export default function ApplicantShell({ children }: { children: ReactNode }) {
           {t('applicant.skip')}
         </a>
         <div className="applicant-shell__grid">
-          <ApplicantRail
-            onOpenMenu={() => setDrawerOpen(true)}
-            menuOpen={drawerOpen}
-          />
+          <ApplicantRail />
           <ApplicantPanel collapsed={panelCollapsed} onToggle={togglePanel} />
           <main
             id="applicant-content"
@@ -59,20 +54,13 @@ export default function ApplicantShell({ children }: { children: ReactNode }) {
             <div className="applicant-mobile-bar">
               <div className="applicant-mobile-bar__trail" ref={setTrailTarget} />
             </div>
+            <ApplicantSectionTabs />
             <div className="applicant-content__inner">{children}</div>
+            <div className="applicant-org-mobile">
+              <OrgMembershipSidebar />
+            </div>
           </main>
         </div>
-        <Drawer
-          open={drawerOpen}
-          placement="left"
-          width={280}
-          title={t('applicant.myJourney')}
-          onClose={() => setDrawerOpen(false)}
-          destroyOnClose
-          rootClassName="applicant-drawer"
-        >
-          <ApplicantDrawerNavigation onNavigate={() => setDrawerOpen(false)} />
-        </Drawer>
       </div>
       </ApplicantTopBarContext.Provider>
     </ApplicantOverviewContext.Provider>

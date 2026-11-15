@@ -1040,3 +1040,50 @@ $vibrant-muted: #5f5650;
     opacity: 1;
   }
 }
+
+// Full Support shortcut: phone only (the tab bar has no room for it; tablet and desktop rails list it).
+.ov-fs-link {
+  display: none;
+}
+@media (max-width: 760px) {
+  .ov-fs-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1px solid #e7e2dc;
+    border-radius: 16px;
+    background: #fff;
+    color: #8b0000;
+    text-decoration: none;
+    transition: transform 150ms ease-out, border-color 150ms ease-out;
+    &:active {
+      transform: scale(0.98);
+    }
+    &:focus-visible {
+      outline: 2px solid #8b0000;
+      outline-offset: 2px;
+    }
+  }
+  .ov-fs-link__text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    color: #655c55;
+    font-size: 0.8125rem;
+    strong {
+      color: #302b28;
+      font-size: 0.9375rem;
+      font-weight: 600;
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ov-fs-link {
+    transition: none;
+    &:active {
+      transform: none;
+    }
+  }
+}

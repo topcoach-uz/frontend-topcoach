@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useMyLearningPath } from "../applicant/useMyLearningPath";
 import {
   ArrowLeft,
   ArrowRight,
@@ -77,6 +78,7 @@ const testCount = (type, book) =>
   book === "og" ? 8 : type === "general-training" && book === 10 ? 2 : 4;
 
 export default function IeltsBrowse({ pagePath, Link, profile, last }) {
+  const myLearningPath = useMyLearningPath();
   const overview = pagePath === "/";
   const type = pagePath === generalPath ? "general-training" : "academic";
   const nav = [
@@ -122,7 +124,7 @@ export default function IeltsBrowse({ pagePath, Link, profile, last }) {
         </aside>
         <main className="ib-main">
           <div className="ib-breadcrumb">
-            <Link className="ib-hub-link" to="/student-hub"><ArrowLeft size={16} /> Student hub</Link>
+            <Link className="ib-hub-link" to={myLearningPath}><ArrowLeft size={16} /> My learning</Link>
             <ChevronRight size={13} />
             <Link to="/">IELTS prep</Link>
             {!overview && (
