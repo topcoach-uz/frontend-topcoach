@@ -22,8 +22,9 @@ export type OrgStaffStatus = 'active' | 'invited' | 'archived';
 /** One row of `GET /org/:orgId/staff`. */
 export interface OrgStaffMember {
   userId: string;
-  name: string;
-  email: string;
+  /** Null when the member's profile is missing or was removed. */
+  name: string | null;
+  email: string | null;
   /** Profile picture URL, or null when the member has none. */
   avatarUrl: string | null;
   role: OrgMembershipRole;
