@@ -10,12 +10,14 @@
    an invitation reached from the Staff page is a counselor invitation, full
    stop. The old shared page offered a role dropdown, which is precisely the
    ambiguity this restructure removes. */
-import { Form, Input, InputNumber, Modal, message } from 'antd';
+import { Form, Input, InputNumber, Modal, Select, message } from 'antd';
 
 import {
   useCreateInvitationMutation,
   type OrgMembershipRole,
 } from 'src/app/services/counselorConsoleApi';
+import { useCounselorConsole } from '../CounselorConsoleContext';
+import { activeBranches, defaultInviteBranchId } from './branchHelpers';
 import { apiErrorMessage } from './peopleChrome';
 
 /**
@@ -32,6 +34,7 @@ interface InviteFormValues {
   gradeLevel?: number;
   graduationYear?: number;
   phone?: string;
+  branchId?: string;
 }
 
 export function InviteByEmailModal({
@@ -51,6 +54,8 @@ export function InviteByEmailModal({
 }) {
   const [form] = Form.useForm<InviteFormValues>();
   const [createInvitation, { isLoading }] = useCreateInvitationMutation();
+  const { branches, branchId, hasBranches } = useCounselorConsole();
+  const defaultBranchId = defaultInviteBranchId(branches, branchId);
 
   const isStudent = role === 'student';
   const noun = isStudent ? 'student' : 'counselor';
@@ -74,6 +79,7 @@ export function InviteByEmailModal({
         gradeLevel: values.gradeLevel ?? undefined,
         graduationYear: values.graduationYear ?? undefined,
         phone: values.phone?.trim() || undefined,
+        branchId: hasBranches ? (values.branchId ?? defaultBranchId) : undefined,
       }).unwrap();
       // The email itself goes out in the background (it may retry a
       // throttled relay for a while) — the invitations list shows
@@ -109,7 +115,12 @@ export function InviteByEmailModal({
         TopCoach account. They will get an invitation to join{' '}
         <b>{orgName ?? 'this organization'}</b> as a {noun}.
       </p>
-      <Form form={form} layout="vertical" requiredMark={false}>
+      <Form
+        form={form}
+        layout="vertical"
+        requiredMark={false}
+        initialValues={{ branchId: defaultBranchId }}
+      >
         {isStudent ? (
           <Form.Item name="name" label="Full name">
             <Input placeholder="Jane Doe" autoComplete="off" />
@@ -129,6 +140,16 @@ export function InviteByEmailModal({
             onPressEnter={submit}
           />
         </Form.Item>
+        {hasBranches ? (
+          <Form.Item name="branchId" label="Branch">
+            <Select
+              options={activeBranches(branches).map((b) => ({
+                value: b.id,
+                label: b.name,
+              }))}
+            />
+          </Form.Item>
+        ) : null}
         {isStudent ? (
           <>
             <div className="cc-invite-form-row">

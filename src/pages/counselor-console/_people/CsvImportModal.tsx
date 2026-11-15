@@ -19,12 +19,14 @@ import {
   type CreateInvitationBody,
 } from 'src/app/services/counselorConsoleApi';
 import { apiErrorMessage } from './peopleChrome';
+import { useCounselorConsole } from '../CounselorConsoleContext';
+import { defaultInviteBranchId, resolveCsvBranch } from './branchHelpers';
 import { buildPreviewRows, type ParsedCsvRow } from './csvImport';
 
 /** Above this the preview paginates rather than growing the modal past the fold. */
 const PREVIEW_PAGE_SIZE = 8;
 
-const previewColumns: ColumnsType<ParsedCsvRow> = [
+const baseColumns: ColumnsType<ParsedCsvRow> = [
   {
     title: '',
     key: 'flag',
@@ -81,6 +83,31 @@ export function CsvImportModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [bulkInvite, { isLoading: submitting }] = useBulkInviteMutation();
+  const { branches, branchId, hasBranches } = useCounselorConsole();
+  const fallbackBranchId = defaultInviteBranchId(branches, branchId);
+
+  // Same columns plus, when the org has several branches, the branch each row
+  // will actually land in (named cell, or the fallback).
+  const previewColumns = useMemo<ColumnsType<ParsedCsvRow>>(() => {
+    if (!hasBranches) return baseColumns;
+    const branchCol: ColumnsType<ParsedCsvRow>[number] = {
+      title: 'Branch',
+      key: 'branch',
+      width: 130,
+      render: (_, r) => {
+        const res = resolveCsvBranch(r.branch, branches, fallbackBranchId);
+        return (
+          <span title={res.matched || !r.branch ? undefined : `"${r.branch}" not found - using the default`}>
+            {res.name ?? '-'}
+            {!res.matched && r.branch ? ' *' : ''}
+          </span>
+        );
+      },
+    };
+    const next = [...baseColumns];
+    next.splice(next.length - 1, 0, branchCol);
+    return next;
+  }, [hasBranches, branches, fallbackBranchId]);
 
   const validRows = useMemo(() => rows.filter((r) => r.valid), [rows]);
   const invalidCount = rows.length - validRows.length;
@@ -120,9 +147,14 @@ export function CsvImportModal({
       gradeLevel: r.gradeLevel ?? undefined,
       graduationYear: r.graduationYear ? Number(r.graduationYear) : undefined,
       phone: r.phone.trim() || undefined,
+      branchName: hasBranches && r.branch.trim() ? r.branch.trim() : undefined,
     }));
     try {
-      const res = await bulkInvite({ orgId, invitations }).unwrap();
+      const res = await bulkInvite({
+        orgId,
+        invitations,
+        branchId: hasBranches ? fallbackBranchId : undefined,
+      }).unwrap();
       setResult(res);
       const createdCount = res.created.length;
       message.success(
@@ -207,8 +239,15 @@ export function CsvImportModal({
         <>
           <p className="cc-invite-import-help">
             Upload a CSV with the columns{' '}
-            <code>name,email,grade,graduationYear,phone</code>. Only{' '}
-            <b>email</b> is required, and <b>grade</b> must be a number from 1
+            <code>name,email,grade,graduationYear,phone</code>
+            {hasBranches ? (
+              <>
+                {' '}
+                and an optional <code>branch</code> (matched by name; blank or
+                unknown rows go to the selected/default branch, marked *)
+              </>
+            ) : null}
+            . Only <b>email</b> is required, and <b>grade</b> must be a number from 1
             to 13. Rows are validated below before anything is sent.
           </p>
           <input

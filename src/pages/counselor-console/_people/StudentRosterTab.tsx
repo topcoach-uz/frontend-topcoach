@@ -29,6 +29,7 @@ import {
   Search as SearchIcon,
   UserMinus,
   Users,
+  MapPin,
 } from 'lucide-react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -49,6 +50,7 @@ import {
   useGetOrgStudentsQuery,
   useArchiveStudentMutation,
   useTransferStudentMutation,
+  useMoveStudentBranchMutation,
   useRemoveStudentMutation,
   type OrgStudent,
 } from 'src/app/services/counselorConsoleApi';
@@ -58,6 +60,9 @@ import { MEMBER_STATUS_PILL } from './roleLabels';
 import './roster.scss';
 
 dayjs.extend(relativeTime);
+
+import { useCounselorConsole } from '../CounselorConsoleContext';
+import { activeBranches } from './branchHelpers';
 
 const PAGE_SIZE = 20;
 /**
@@ -141,6 +146,7 @@ export function StudentRosterTab({
   const dispatch = useAppDispatch();
 
   const isArchived = mode === 'archived';
+  const { branches, branchId, hasBranches } = useCounselorConsole();
 
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
@@ -161,18 +167,19 @@ export function StudentRosterTab({
   // Reset to the first page whenever the filters change.
   useEffect(() => {
     setPage(1);
-  }, [search, status, orgId]);
+  }, [search, status, orgId, branchId]);
 
   const queryArgs = useMemo(
     () => ({
       orgId,
+      branchId,
       search: search || undefined,
       status,
       page,
       limit: PAGE_SIZE,
       sort,
     }),
-    [orgId, search, status, page, sort],
+    [orgId, branchId, search, status, page, sort],
   );
 
   const { data, isLoading, isFetching, isError, refetch } =
@@ -182,6 +189,15 @@ export function StudentRosterTab({
   const [transferStudent, { isLoading: transferring }] =
     useTransferStudentMutation();
   const [removeStudent] = useRemoveStudentMutation();
+  const [moveStudentBranch, { isLoading: movingBranch }] =
+    useMoveStudentBranchMutation();
+  const [moveTarget, setMoveTarget] = useState<OrgStudent | null>(null);
+  const [moveBranchId, setMoveBranchId] = useState<string | undefined>();
+  const moveOptions = useMemo(
+    () =>
+      activeBranches(branches).map((b) => ({ value: b.id, label: b.name })),
+    [branches],
+  );
 
   // Transfer modal state
   const [transferTarget, setTransferTarget] = useState<OrgStudent | null>(null);
@@ -256,6 +272,32 @@ export function StudentRosterTab({
     setTransferOrgId(transferOptions[0]?.value);
   };
 
+  const openMove = (s: OrgStudent) => {
+    setMoveTarget(s);
+    setMoveBranchId(
+      moveOptions.find((o) => o.value !== s.branchId)?.value ?? s.branchId ?? undefined,
+    );
+  };
+
+  const submitMove = async () => {
+    if (!moveTarget || !moveBranchId) return;
+    try {
+      await moveStudentBranch({
+        orgId,
+        userId: moveTarget.userId,
+        branchId: moveBranchId,
+      }).unwrap();
+      const dest =
+        moveOptions.find((o) => o.value === moveBranchId)?.label ?? 'the branch';
+      message.success(`${moveTarget.name} moved to ${dest}`);
+      setMoveTarget(null);
+    } catch (err) {
+      message.error(
+        apiErrorMessage(err, 'Could not move this student. Please try again.'),
+      );
+    }
+  };
+
   const submitTransfer = async () => {
     if (!transferTarget || !transferOrgId) return;
     try {
@@ -291,6 +333,16 @@ export function StudentRosterTab({
       icon: <Eye size={15} />,
       onClick: () => handleView(s.userId),
     },
+    ...(hasBranches
+      ? [
+          {
+            key: 'move-branch',
+            label: 'Move to branch…',
+            icon: <MapPin size={15} />,
+            onClick: () => openMove(s),
+          } as CcMenuItem,
+        ]
+      : []),
     {
       key: 'transfer',
       label: 'Transfer to…',
@@ -331,6 +383,7 @@ export function StudentRosterTab({
       const result = await dispatch(
         counselorConsoleApi.endpoints.getOrgStudents.initiate({
           orgId,
+          branchId,
           search: search || undefined,
           status,
           page: p,
@@ -472,6 +525,17 @@ export function StudentRosterTab({
         </div>
       ),
     },
+    ...(hasBranches && branchId === 'all'
+      ? [
+          {
+            title: 'Branch',
+            key: 'branch',
+            width: 140,
+            render: (_: unknown, s: OrgStudent) =>
+              s.branchName ?? <span className="cc-roster-muted">-</span>,
+          },
+        ]
+      : []),
     {
       title: 'Grade',
       key: 'grade',
@@ -726,6 +790,33 @@ export function StudentRosterTab({
           }}
         />
       </PeopleTableShell>
+
+      {/* ── Move to branch modal ── */}
+      <Modal
+        title={moveTarget ? `Move ${moveTarget.name} to a branch` : 'Move to branch'}
+        open={!!moveTarget}
+        onCancel={() => setMoveTarget(null)}
+        onOk={submitMove}
+        okText="Move"
+        confirmLoading={movingBranch}
+        okButtonProps={{ disabled: !moveBranchId }}
+        destroyOnClose
+      >
+        <p className="cc-roster-transfer-lead">
+          Change which branch of <b>{org?.name ?? 'this organization'}</b> this
+          student belongs to. Everything else about them stays the same.
+        </p>
+        <div className="cc-roster-transfer-field">
+          <label className="cc-roster-transfer-label">Branch</label>
+          <Select
+            style={{ width: '100%' }}
+            value={moveBranchId}
+            onChange={(v) => setMoveBranchId(v)}
+            options={moveOptions}
+            placeholder="Select a branch"
+          />
+        </div>
+      </Modal>
 
       {/* ── Transfer student modal ── */}
       <Modal

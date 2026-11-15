@@ -164,3 +164,16 @@
     color: var(--cc-accent);
   }
 }
+
+.cc-staff-branches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.cc-staff-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}

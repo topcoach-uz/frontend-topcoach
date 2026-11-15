@@ -26,12 +26,20 @@ export interface ParsedCsvRow {
   gradeLevel: number | null;
   graduationYear: string;
   phone: string;
+  /** Optional `branch` cell, matched to a branch by name at preview time. */
+  branch: string;
   valid: boolean;
   error: string | null;
 }
 
 /** The five columns a row can carry, as parsed field names. */
-type CsvField = 'name' | 'email' | 'grade' | 'graduationYear' | 'phone';
+type CsvField =
+  | 'name'
+  | 'email'
+  | 'grade'
+  | 'graduationYear'
+  | 'phone'
+  | 'branch';
 
 /**
  * RFC-4180-ish CSV reader. papaparse is not a dependency and this is not worth
@@ -93,6 +101,9 @@ const HEADER_ALIASES: Record<string, CsvField> = {
   gradyear: 'graduationYear',
   phone: 'phone',
   'phone number': 'phone',
+  branch: 'branch',
+  filial: 'branch',
+  'branch name': 'branch',
 };
 
 const NUMERIC_HEADER_ORDER: CsvField[] = [
@@ -155,6 +166,7 @@ export function buildPreviewRows(text: string): ParsedCsvRow[] {
       grade: '',
       graduationYear: '',
       phone: '',
+      branch: '',
     };
     colMap.forEach((field, ci) => {
       if (field) rec[field] = (cells[ci] ?? '').trim();
@@ -185,6 +197,7 @@ export function buildPreviewRows(text: string): ParsedCsvRow[] {
       gradeLevel: gradeLevel ?? null,
       graduationYear: rec.graduationYear,
       phone: rec.phone,
+      branch: rec.branch,
       valid: !error,
       error,
     };
