@@ -2140,3 +2140,23 @@
   .applicant-shell .applicant-content .applicant-writing-card:hover,
   .applicant-shell .applicant-content .applicant-writing-card:active { transform: none; }
 }
+
+// ---------- Essay toolbar toggles (Ideas / Review & versions) ----------
+// Hover is neutral; only the open panel's toggle is tinted maroon, like the selected section chip.
+// The solid maroon fill is reserved for the one real action (Submit to mentor).
+.applicant-shell .applicant-content .ant-btn.applicant-desk-toggle {
+  background: #fff;
+  border-color: #e7e2dc;
+  color: #302b28;
+  font-size: 15px;
+  .anticon, svg { color: #655c55; }
+  &:not(:disabled):hover { background: #faf7f4; border-color: #d9cfc8; color: #302b28; }
+  &:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+  &[aria-pressed="true"],
+  &[aria-pressed="true"]:not(:disabled):hover {
+    background: #f6e8e7;
+    border-color: #e3c4c1;
+    color: #8b0000;
+    svg { color: #8b0000; }
+  }
+}

@@ -730,12 +730,15 @@ export function ApplicantEssayEditorPage() {
                   >Save draft</Button>
                 )}
                 <Button
-                  icon={<Lightbulb size={17} />}
-                  type={sidePanel === "ideas" ? "primary" : "default"}
+                  className="applicant-desk-toggle"
+                  icon={<Lightbulb size={16} />}
+                  aria-pressed={sidePanel === "ideas"}
                   onClick={() => setSidePanel(sidePanel === "ideas" ? null : "ideas")}
                 >Ideas</Button>
                 <Button
-                  type={sidePanel === "review" ? "primary" : "default"}
+                  className="applicant-desk-toggle"
+                  icon={<History size={16} />}
+                  aria-pressed={sidePanel === "review"}
                   onClick={() => setSidePanel(sidePanel === "review" ? null : "review")}
                 >Review & versions</Button>
                 </>)}
