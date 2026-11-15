@@ -324,6 +324,7 @@ export function ApplicantEssayEditorPage() {
   const [reviewTab, setReviewTab] = useState<"preview" | "feedback" | "versions">("preview");
   const [sidePanel, setSidePanel] = useState<"ideas" | "review" | null>(null);
   useEffect(() => { if (params.get('helper') === 'ai') setSidePanel('review'); }, [params.get('helper')]);
+  const [previewVersion, setPreviewVersion] = useState<{ label: string; content: string; date?: string } | null>(null);
   const [aiFeedbackRequested, setAiFeedbackRequested] = useState(false);
   const essay = query.data?.data;
   const aiFeedbackQuery = useGetEnhancedFeedbackQuery(essayId, {
@@ -476,6 +477,12 @@ export function ApplicantEssayEditorPage() {
     const timer = window.setTimeout(() => { void save(); }, 2500);
     return () => window.clearTimeout(timer);
   }, [essay?.id, content, title, status, dirty, updateState.isLoading]);
+  const restoreContent = (label: string, restored: string) => {
+    setContent(restored);
+    setDirty(true);
+    setPreviewVersion(null);
+    message.success(`${label} restored to the editor. Your newer versions are kept.`);
+  };
   const saveVersion = async () => {
     if (!essay || !content.trim()) {
       message.error("Write your statement before saving a version.");
@@ -692,16 +699,39 @@ export function ApplicantEssayEditorPage() {
                     catch { message.error("Could not withdraw the request."); }
                   }}>Withdraw request</Button>}
                 </div>)}
-                {reviewedRequests.map((request) => <div key={request.id} className="applicant-panel" style={{ marginTop: 16, padding: 16 }}>
-                  <strong>Feedback from {request.mentorName || "mentor"} · Version {request.snapshotVersion}</strong>
-                  <p style={{ whiteSpace: "pre-wrap" }}>{request.feedback}</p>
-                </div>)}
+                {reviewedRequests.map((request) => {
+                  const reviewed = (versionsQuery.data?.data ?? []).find((v) => v.version === request.snapshotVersion);
+                  return <article key={request.id} className="applicant-feedback-card">
+                    <header>
+                      <strong>{request.mentorName || "Your mentor"}</strong>
+                      <small>on Version {request.snapshotVersion} · {displayDate(request.feedbackAt || request.createdAt)}</small>
+                    </header>
+                    <p>{request.feedback}</p>
+                    <Button size="small" onClick={() => setPreviewVersion({
+                      label: `Version ${request.snapshotVersion}`,
+                      content: reviewed?.content ?? request.snapshotContent,
+                      date: displayDate(reviewed?.createdAt ?? request.createdAt),
+                    })}>View that version</Button>
+                  </article>;
+                })}
                 <h3>Saved versions</h3>
                 <QueryState loading={versionsQuery.isLoading} error={versionsQuery.isError} retry={versionsQuery.refetch}>
                   {(versionsQuery.data?.data ?? []).length ? (
                     <ol className="applicant-writing-desk__versions">
                       {[...(versionsQuery.data?.data ?? [])].sort((a, b) => b.version - a.version).map((version) => (
-                        <li key={version.id}><strong>Version {version.version}</strong><small>{displayDate(version.createdAt)}</small></li>
+                        <li key={version.id}>
+                          <strong>Version {version.version}</strong>
+                          <small>{displayDate(version.createdAt)} · {countWords(version.content)} words</small>
+                          <div className="applicant-writing-desk__version-actions">
+                            <Button size="small" onClick={() => setPreviewVersion({ label: `Version ${version.version}`, content: version.content, date: displayDate(version.createdAt) })}>Preview</Button>
+                            <Popconfirm
+                              title={`Replace the editor text with Version ${version.version}?`}
+                              description="Your current text is replaced; save a version first if you want to keep it."
+                              okText="Restore"
+                              onConfirm={() => restoreContent(`Version ${version.version}`, version.content)}
+                            ><Button size="small">Restore</Button></Popconfirm>
+                          </div>
+                        </li>
                       ))}
                     </ol>
                   ) : <p>No versions saved yet.</p>}
@@ -713,6 +743,22 @@ export function ApplicantEssayEditorPage() {
           </div>
         )}
       </QueryState>
+      <Modal
+        title={previewVersion ? `${previewVersion.label}${previewVersion.date ? ` · ${previewVersion.date}` : ""}` : ""}
+        open={Boolean(previewVersion)}
+        onCancel={() => setPreviewVersion(null)}
+        footer={previewVersion ? [
+          <Button key="close" onClick={() => setPreviewVersion(null)}>Close</Button>,
+          <Popconfirm key="restore" title="Replace the editor text with this version?" okText="Restore" onConfirm={() => restoreContent(previewVersion.label, previewVersion.content)}>
+            <Button type="primary">Restore this version</Button>
+          </Popconfirm>,
+        ] : null}
+      >
+        {previewVersion && <>
+          <p className="applicant-version-preview__meta">{countWords(previewVersion.content)} words · read-only</p>
+          <div className="applicant-version-preview">{previewVersion.content || "This version is empty."}</div>
+        </>}
+      </Modal>
       <Modal
         title="Submit this draft for mentor review"
         open={reviewModalOpen}

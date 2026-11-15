@@ -808,6 +808,15 @@
 .applicant-editor__status.is-near { color: #8a5a00; .applicant-editor__bar > span { background: #d98e04; } }
 .applicant-editor__status.is-over { color: #b3261e; .applicant-editor__bar > span { background: #b3261e; } }
 .applicant-editor__retry { border: 0; background: none; padding: 0; color: #8b0000; font: inherit; text-decoration: underline; cursor: pointer; }
+.applicant-writing-desk__version-actions { display: flex; gap: 8px; margin-top: 8px; }
+.applicant-feedback-card {
+  margin-top: 16px; padding: 14px 16px; border: 1px solid #e7e2dc; border-left: 3px solid #8b0000; border-radius: 12px; background: #fff;
+  header { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+  header small { color: #655c55; }
+  p { white-space: pre-wrap; margin: 0 0 12px; line-height: 1.6; }
+}
+.applicant-version-preview__meta { margin: 0 0 8px; color: #655c55; font-size: 13px; }
+.applicant-version-preview { max-height: 55vh; overflow: auto; white-space: pre-wrap; line-height: 1.7; padding: 14px 16px; border: 1px solid #e7e2dc; border-radius: 12px; background: #fbf9f6; }
 .applicant-writing-desk__submit { display: inline-flex; }
 .applicant-writing-desk__hint { margin: -8px 0 16px; text-align: right; color: #655c55; font-size: 13px; }
 .applicant-writing-desk__side {
