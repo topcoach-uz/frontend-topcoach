@@ -18,7 +18,7 @@ import { ApplicantPage, Breadcrumb, QueryState, displayDate } from "./ApplicantP
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import { getUniversityLogoUrl, universityLogoNeedsDarkBackground } from "./universityLogo";
-import { buildUniversityFieldOptions } from "./universityFieldOptions";
+import { buildUniversityFieldOptions, buildUniversitySubjectOptions, subjectKey } from "./universityFieldOptions";
 import { hasStructuredCosts } from './structuredContent';
 import { useStructuredContent } from './StructuredSections';
 import { DetailHero, SaveToListButton } from "./DetailHero";
@@ -55,7 +55,9 @@ export default function ApplicantUniversitiesPage() {
   const isError = isMasters ? programsQuery.isError : universityQuery.isError;
   const total = isMasters ? programsQuery.data?.total ?? 0 : filteredUniversities.length;
   const perPage = isMasters ? programsQuery.data?.limit ?? 20 : UNIVERSITIES_PER_PAGE;
-  const subjectOptions = useMemo(() => buildUniversityFieldOptions(filtersQuery.data?.majors ?? []), [filtersQuery.data]);
+  const subjectOptions = useMemo(() => buildUniversitySubjectOptions(filtersQuery.data?.majors ?? []), [filtersQuery.data]);
+  const majorKey = useMemo(() => subjectKey(major), [major]);
+  const majorLabel = useMemo(() => subjectOptions.find((option) => option.value === majorKey)?.label ?? major, [subjectOptions, majorKey, major]);
   const countryOptions = useMemo(() => (filtersQuery.data?.countries ?? []).map((item) => ({ value: item, label: item })), [filtersQuery.data]);
   const savedUniversityIds = useMemo(() => new Set((applications.data?.data ?? []).map((app) => app.universityId).filter((id): id is string => Boolean(id))), [applications.data]);
   const setPage = (nextPage: number) => { const next = new URLSearchParams(params); next.set("page", String(nextPage)); setParams(next); };
@@ -66,13 +68,13 @@ export default function ApplicantUniversitiesPage() {
       <Button type="primary" htmlType="submit">Search</Button>
     </form>
     <div className="applicant-find-filters">
-      <label className={major ? "applicant-find-filter applicant-find-filter--active" : "applicant-find-filter"}><span>Field of interest</span><Select value={major || undefined} placeholder="Any field" allowClear showSearch optionFilterProp="label" onChange={(selected) => setFilter("major", selected ?? "")} loading={filtersQuery.isLoading} options={subjectOptions} aria-label="Field of interest" /></label>
+      <label className={major ? "applicant-find-filter applicant-find-filter--active" : "applicant-find-filter"}><span>Field of interest</span><Select value={majorKey || undefined} placeholder="Any field" allowClear showSearch optionFilterProp="label" onChange={(selected) => setFilter("major", selected ?? "")} loading={filtersQuery.isLoading} options={subjectOptions} aria-label="Field of interest" /></label>
       <label className={country ? "applicant-find-filter applicant-find-filter--active" : "applicant-find-filter"}><span>Destination</span><Select value={country || undefined} placeholder="Any country" allowClear showSearch optionFilterProp="label" onChange={(selected) => setFilter("country", selected ?? "")} loading={filtersQuery.isLoading} options={countryOptions} aria-label="Destination" /></label>
       <label className="applicant-find-filter applicant-find-filter--disabled" title="Intake dates are not available in the university catalogue"><span>Intake</span><Select value="Any intake" disabled options={[{ value: "Any intake", label: "Any intake" }]} aria-label="Intake unavailable" /></label>
     </div>
     {filtersQuery.isError && <Alert type="warning" message="Filters could not be loaded. Search is still available." />}
     <QueryState loading={isLoading} error={isError} retry={universityQuery.refetch}>
-      <UniversityResults universities={universities} rankOffset={(page - 1) * UNIVERSITIES_PER_PAGE} selectedField={major} savedIds={savedUniversityIds} applicationsLoading={applications.isLoading} applicationsError={applications.isError} />
+      <UniversityResults universities={universities} rankOffset={(page - 1) * UNIVERSITIES_PER_PAGE} selectedField={majorLabel} savedIds={savedUniversityIds} applicationsLoading={applications.isLoading} applicationsError={applications.isError} />
       {total > perPage && <div className="applicant-actions applicant-actions--end"><Button disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button><span>Page {page} of {Math.ceil(total / perPage)}</span><Button disabled={page >= Math.ceil(total / perPage)} onClick={() => setPage(page + 1)}>Next</Button></div>}
     </QueryState>
     <Link className="applicant-find-open-list" to="/student-hub/applications">Open College List <ArrowRight size={21} /></Link>
@@ -185,8 +187,8 @@ function BachelorUniversityDetail({ university, selectedField, collegeList, exis
   const degrees = [...(degreesQuery.data ?? [])].sort((a, b) => Number(degreeMatchesField(b, selectedField)) - Number(degreeMatchesField(a, selectedField)));
   const matchingDegreeCount = degrees.filter((degree) => degreeMatchesField(degree, selectedField)).length;
   const catalogueFields = buildUniversityFieldOptions(university.majors ?? [])
-    .sort((a, b) => Number(b.value.toLocaleLowerCase() === selectedField.toLocaleLowerCase()) - Number(a.value.toLocaleLowerCase() === selectedField.toLocaleLowerCase()));
-  const matchingCatalogueFieldCount = catalogueFields.filter((field) => field.value.toLocaleLowerCase() === selectedField.toLocaleLowerCase()).length;
+    .sort((a, b) => Number(subjectKey(b.value) === subjectKey(selectedField)) - Number(subjectKey(a.value) === subjectKey(selectedField)));
+  const matchingCatalogueFieldCount = catalogueFields.filter((field) => subjectKey(field.value) === subjectKey(selectedField)).length;
   const name = getTranslation(university.name);
   const location = [getTranslation(university.location?.region), getTranslation(university.location?.country)].filter(Boolean).join(", ");
   const logoUrl = getUniversityLogoUrl(university);

@@ -1,3 +1,5 @@
+import { subjectKey } from 'src/pages/student-hub/applicant/universityFieldOptions';
+
 export const universityListParams = ({
   page = 1,
   limit = 20,
@@ -77,10 +79,20 @@ export const slimUniversityRow = <T extends ListRow>(row: T): T & { ugMajorKeys:
   } as T & { ugMajorKeys: string[] };
 };
 
-/** Same semantics as the server's country / majorName filters (exact, case-insensitive, trimmed). */
+const subjectKeyCache = new WeakMap<object, Set<string>>();
+const rowSubjectKeys = (row: ListRow & { ugMajorKeys?: string[] }): Set<string> => {
+  let keys = subjectKeyCache.get(row);
+  if (!keys) {
+    keys = new Set(undergraduateMajorKeys(row).map(subjectKey).filter(Boolean));
+    subjectKeyCache.set(row, keys);
+  }
+  return keys;
+};
+
+/** Country is exact (case-insensitive); the field matches any undergraduate major with the same subject key. */
 export const filterUniversityRows = <T extends ListRow & { ugMajorKeys?: string[] }>(rows: T[], filters: { country?: string; majorName?: string }): T[] => {
   const country = filters.country ? normalise(filters.country) : '';
-  const major = filters.majorName ? normalise(filters.majorName) : '';
+  const major = filters.majorName ? subjectKey(filters.majorName) : '';
   if (!country && !major) return rows;
-  return rows.filter((row) => (!country || normalise(enName(row.location?.country)) === country) && (!major || (row.ugMajorKeys ?? []).includes(major)));
+  return rows.filter((row) => (!country || normalise(enName(row.location?.country)) === country) && (!major || rowSubjectKeys(row).has(major)));
 };
