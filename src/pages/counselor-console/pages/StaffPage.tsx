@@ -189,7 +189,9 @@ export default function CounselorConsoleStaffPage() {
           <CcAvatar name={staffName(s)} src={s.avatarUrl} className="cc-staff-avatar" />
           <div className="cc-staff-member-meta">
             <div className="cc-staff-member-name">{staffName(s)}</div>
-            <div className="cc-staff-member-email">{s.email}</div>
+            {s.name?.trim() && s.email && (
+              <div className="cc-staff-member-email">{s.email}</div>
+            )}
           </div>
         </div>
       ),
