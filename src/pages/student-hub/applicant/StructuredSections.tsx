@@ -41,12 +41,14 @@ export function EntryRequirementsList({ content, statuses }: { content: Structur
   const supplementary = statuses ? [] : content.supplementary;
   if (!requirements.length && !supplementary.length) return null;
   const shared = sharedSource([...requirements, ...supplementary]);
+  // Group headings only help when there is more than one group to tell apart.
+  const groupCount = STATUS.filter(({ key }) => requirements.some((item) => item.status === key)).length + (supplementary.length > 0 ? 1 : 0);
   return <div className="applicant-university-detail__reqs">
     {STATUS.map(({ key, title, icon }) => {
       const rows = requirements.filter((item) => item.status === key);
       if (!rows.length) return null;
       return <div key={key} className={`applicant-university-detail__req-group applicant-university-detail__req-group--${key}`}>
-        <h3 className="applicant-university-detail__list-title">{title}</h3>
+        {groupCount > 1 && <h3 className="applicant-university-detail__list-title">{title}</h3>}
         <ul className="applicant-university-detail__list">{rows.map((item) => <li key={item.label}>
           <span className="applicant-university-detail__list-icon">{icon}</span>
           <span className="applicant-university-detail__list-body"><strong>{item.label}</strong>{item.appliesTo === "international" && <em>International applicants</em>}<span>{item.detail}</span></span>

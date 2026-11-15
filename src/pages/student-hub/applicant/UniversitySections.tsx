@@ -34,7 +34,7 @@ export function UniversityAdmissions({ deadlines, exams, structured }: { deadlin
           <dd>{row.note && <small>{row.note}</small>}{row.lines?.map((line, i) => <p key={i}>{line.text}{line.note && <span> · {line.note}</span>}</p>)}</dd>
         </div>)}
       </div>}
-      {structuredRequired && <div><dt>Required entry</dt><dd><EntryRequirementsList content={structured!} statuses={["required"]} /></dd></div>}
+      {structuredRequired && <div><dt>What you need</dt><dd><EntryRequirementsList content={structured!} statuses={["required"]} /></dd></div>}
       {!structuredRequired && exams.length > 0 && <div><dt>Required exams</dt><dd><ul className="applicant-university-detail__fact-chips">{exams.map((exam) => <li key={exam}>{exam}</li>)}</ul></dd></div>}
     </dl>
   </section>;
