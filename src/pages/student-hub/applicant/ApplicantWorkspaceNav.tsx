@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Skeleton } from 'antd';
 import {
   BookOpen,
@@ -36,7 +36,6 @@ import {
   Users,
   Bell,
   Signpost,
-  Menu,
   Settings,
   type LucideIcon,
 } from 'lucide-react';
@@ -76,7 +75,7 @@ export type NavSection = {
   to: string;
   groups: NavGroup[];
   bottom?: boolean;
-  /** Left out of the phone tab bar; reachable through More. */
+  /** Left out of the phone tab bar; reachable from the header menu or the Home page. */
   phoneHidden?: boolean;
   /** Pages in this area use the full width (no section panel). */
   hidePanel?: boolean;
@@ -406,13 +405,7 @@ function PanelGroups({ groups, onNavigate }: { groups: NavGroup[]; onNavigate?: 
 }
 
 /** Primary icon rail: one entry per workspace area. */
-export function ApplicantRail({
-  onOpenMenu,
-  menuOpen,
-}: {
-  onOpenMenu: () => void;
-  menuOpen: boolean;
-}) {
+export function ApplicantRail() {
   const { sections, active } = useNavSections();
   const { t } = useTranslation();
   const railRef = useRef<HTMLElement>(null);
@@ -474,16 +467,6 @@ export function ApplicantRail({
       <div className="applicant-rail__items">{sections.filter((s) => !s.bottom).map(item)}</div>
       <div className="applicant-rail__items applicant-rail__items--bottom">
         {sections.filter((s) => s.bottom).map(item)}
-        <button
-          type="button"
-          className="applicant-rail__item applicant-rail__item--more"
-          onClick={onOpenMenu}
-          aria-expanded={menuOpen}
-          aria-haspopup="dialog"
-        >
-          <Menu size={22} strokeWidth={1.75} aria-hidden />
-          <span>{t('applicant.nav.more', 'More')}</span>
-        </button>
       </div>
     </nav>
   );
@@ -525,24 +508,46 @@ export function ApplicantPanel({ collapsed, onToggle }: { collapsed: boolean; on
   );
 }
 
-/** Small screens: every area stacked in the drawer. */
-export function ApplicantDrawerNavigation({ onNavigate }: { onNavigate: () => void }) {
-  const { sections } = useNavSections();
+/**
+ * Below 1200px the section panel is hidden, so the active area's links show as a
+ * compact horizontally scrollable chip row at the top of the content.
+ */
+export function ApplicantSectionTabs() {
+  const { active } = useNavSections();
   const { t } = useTranslation();
+  const listRef = useRef<HTMLDivElement>(null);
+  const seen = new Set<string>();
+  const links = active.hidePanel
+    ? []
+    : active.groups
+        .flatMap((group) => group.links)
+        .filter((link) => (seen.has(link.to) ? false : (seen.add(link.to), true)));
+  const activeKey = links.find((link) => link.active)?.key;
+
+  useEffect(() => {
+    const target = listRef.current?.querySelector<HTMLElement>('.is-active');
+    target?.scrollIntoView?.({ block: 'nearest', inline: 'center' });
+  }, [active.key, activeKey]);
+
+  if (links.length < 2) return null;
   return (
-    <nav className="applicant-drawer-nav" aria-label={t('applicant.workspaceNavigation')}>
-      <ProfileCard onNavigate={onNavigate} />
-      {sections.map((section) => (
-        <PanelGroups
-          key={section.key}
-          groups={section.groups.map((group, index) => ({
-            ...group,
-            label: index === 0 ? section.label : group.label,
-          }))}
-          onNavigate={onNavigate}
-        />
-      ))}
-      <OrgMembershipSidebar />
+    <nav className="applicant-section-tabs" aria-label={active.label}>
+      <div className="applicant-section-tabs__list" ref={listRef}>
+        {links.map((link) => (
+          <Link
+            key={link.key}
+            to={link.to}
+            aria-current={link.active ? 'page' : undefined}
+            className={`applicant-section-tabs__link${link.active ? ' is-active' : ''}`}
+          >
+            <link.Icon size={15} strokeWidth={1.75} aria-hidden />
+            <span>{link.label}</span>
+            {link.locked && (
+              <Lock size={11} strokeWidth={2} aria-label={t('applicant.nav.locked', 'Locked')} />
+            )}
+          </Link>
+        ))}
+      </div>
     </nav>
   );
 }
