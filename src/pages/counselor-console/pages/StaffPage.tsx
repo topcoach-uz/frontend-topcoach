@@ -57,6 +57,10 @@ type TabKey = 'staff' | 'invitations' | 'removed';
 
 const ID_BASE = 'cc-staff';
 
+/** Display name for a staff row; the API returns null when a profile is missing. */
+const staffName = (s: OrgStaffMember): string =>
+  s.name?.trim() || s.email || 'Unnamed member';
+
 export default function CounselorConsoleStaffPage() {
   const { orgId, org, role } = useCounselorConsole();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -152,10 +156,10 @@ export default function CounselorConsoleStaffPage() {
 
   const handleRemove = (s: OrgStaffMember) => {
     Modal.confirm({
-      title: `Remove ${s.name}?`,
+      title: `Remove ${staffName(s)}?`,
       content: (
         <span>
-          {s.name} will lose access to <b>{org?.name ?? 'this organization'}</b>{' '}
+          {staffName(s)} will lose access to <b>{org?.name ?? 'this organization'}</b>{' '}
           immediately. Their students and data stay with the organization. You
           can re-invite them later.
         </span>
@@ -166,7 +170,7 @@ export default function CounselorConsoleStaffPage() {
       async onOk() {
         try {
           await removeStaff({ orgId, userId: s.userId }).unwrap();
-          message.success(`${s.name} removed`);
+          message.success(`${staffName(s)} removed`);
           refetch();
         } catch {
           message.error('Could not remove this staff member. Please try again.');
@@ -182,10 +186,12 @@ export default function CounselorConsoleStaffPage() {
       key: 'name',
       render: (_, s) => (
         <div className="cc-staff-member">
-          <CcAvatar name={s.name} src={s.avatarUrl} className="cc-staff-avatar" />
+          <CcAvatar name={staffName(s)} src={s.avatarUrl} className="cc-staff-avatar" />
           <div className="cc-staff-member-meta">
-            <div className="cc-staff-member-name">{s.name}</div>
-            <div className="cc-staff-member-email">{s.email}</div>
+            <div className="cc-staff-member-name">{staffName(s)}</div>
+            {s.name?.trim() && s.email && (
+              <div className="cc-staff-member-email">{s.email}</div>
+            )}
           </div>
         </div>
       ),
