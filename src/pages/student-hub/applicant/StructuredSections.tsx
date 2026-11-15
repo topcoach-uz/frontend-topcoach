@@ -36,23 +36,32 @@ const STATUS: { key: StructuredUniversityContent["entryRequirements"][number]["s
   { key: "not-required", title: "Not required", icon: <Minus size={16} aria-hidden="true" /> },
 ];
 
-const SCORE_KIND = { minimum: "Minimum", recommended: "Recommended", "admitted-range": "Admitted students (middle 50%)" } as const;
+const SCORE_KIND = { minimum: "Minimum", recommended: "Recommended", "admitted-range": "Admitted, middle 50%" } as const;
 
-/** Score numbers, kept apart from the checklist; admitted ranges are labelled so they don't read as cutoffs. */
+/** First sentence of a note, minus wording the tile label already says. */
+const shortNote = (row: { kind: string; note?: string }) => {
+  let note = (row.note ?? "").replace(/^middle 50%,?\s*/i, "").trim();
+  if (row.kind === "admitted-range") note = note.replace(/[^.]*no minimum[^.]*\.?/gi, "").trim();
+  const first = note.split(/(?<=\.)\s+/)[0]?.replace(/\.$/, "").trim();
+  return first && first.length <= 60 ? first : undefined;
+};
+
+/** Score numbers as tiles; admitted ranges are labelled and footnoted so they don't read as cutoffs. */
 export function ScoresBlock({ content }: { content: StructuredUniversityContent }) {
   if (content.scores === undefined) return null;
   const rows = content.scores;
   const shared = sharedSource(rows);
+  const onlyRanges = rows.length > 0 && rows.every((row) => row.kind === "admitted-range");
   return <div className="applicant-university-detail__scores">
     <h3 className="applicant-university-detail__list-title">Scores</h3>
-    {rows.length === 0 ? <p className="applicant-university-detail__preview-empty">No minimum scores are published.</p> : <table className="applicant-university-detail__score-table">
-      <tbody>{rows.map((row) => <tr key={`${row.test}-${row.kind}-${row.value}`}>
-        <th scope="row">{row.test}{row.appliesTo === "international" && <small>International applicants</small>}</th>
-        <td><strong>{row.value}</strong><small>{SCORE_KIND[row.kind]}{(() => { const note = row.kind === "admitted-range" ? row.note?.replace(/^middle 50%,?\s*/i, "") : row.note; return note ? ` · ${note}` : ""; })()}</small></td>
-        {!shared && <td className="applicant-university-detail__score-src"><SourceLink src={row} /></td>}
-      </tr>)}</tbody>
-    </table>}
-    {rows.length > 0 && <SourceLine items={rows} verifiedAt={content.verifiedAt} />}
+    {rows.length === 0 ? <p className="applicant-university-detail__preview-empty">No minimum scores are published.</p> : <ul className="applicant-university-detail__score-tiles">
+      {rows.map((row) => { const note = shortNote(row); return <li key={`${row.test}-${row.kind}-${row.value}`} title={row.note}>
+        <span className="applicant-university-detail__score-test">{row.test}{!shared && <SourceLink src={row} />}</span>
+        <strong className={row.value.length > 16 ? "applicant-university-detail__score-long" : undefined}>{row.value}</strong>
+        <small>{SCORE_KIND[row.kind]}{note ? ` · ${note}` : ""}{row.appliesTo === "international" ? " · International applicants" : ""}</small>
+      </li>; })}
+    </ul>}
+    {rows.length > 0 && <p className="applicant-university-detail__checked">{onlyRanges && "These are scores of admitted students, not cutoffs; no minimum is published. "}{shared && <>Source: <a href={shared.sourceUrl} target="_blank" rel="noopener noreferrer">{shared.sourceTitle}</a>{Number.isFinite(Date.parse(content.verifiedAt)) && ` · Checked ${displayDate(content.verifiedAt)}`}</>}</p>}
   </div>;
 }
 
