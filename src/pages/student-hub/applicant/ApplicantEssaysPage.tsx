@@ -7,6 +7,7 @@ import {
   Modal,
   Popconfirm,
   Select,
+  Tooltip,
   message,
 } from "antd";
 import { History, Lightbulb, MessageSquareText, Plus, Save, Trash2 } from "lucide-react";
@@ -373,6 +374,32 @@ export function ApplicantEssayEditorPage() {
   const openReview = reviewRequests.find((request) => ["pending", "in_review"].includes(request.status));
   const openReviews = reviewRequests.filter((request) => ["pending", "in_review"].includes(request.status));
   const availableMentors = eligibleMentors.filter((mentor) => !openReviews.some((request) => request.mentorUserId === mentor.id));
+  const submitBlockedReason = eligibilityLoading
+    ? "Checking mentor availability…"
+    : eligibilityError
+      ? "We couldn’t check mentor availability. Try again in a moment."
+      : eligibleMentors.length === 0
+        ? "Mentor review opens after you’re assigned a mentor or complete a 1:1 meeting."
+        : availableMentors.length === 0
+          ? `Your draft is already with ${openReviews[0]?.mentorName || "your mentor"} for review.`
+          : !content.trim()
+            ? "Write something first, then send it to your mentor."
+            : "";
+  const submitLabel = availableMentors.length === 1 ? `Submit to ${availableMentors[0].name}` : "Submit to mentor";
+  const submitToMentorButton = (
+    <Tooltip title={submitBlockedReason || undefined}>
+      <span className="applicant-writing-desk__submit">
+        <Button
+          type="primary"
+          disabled={Boolean(submitBlockedReason)}
+          onClick={() => {
+            setSelectedMentor(availableMentors[0]?.id);
+            setReviewModalOpen(true);
+          }}
+        >{submitLabel}</Button>
+      </span>
+    </Tooltip>
+  );
   const reviewedRequests = reviewRequests.filter((request) => request.status === "feedback_ready");
   const requestMentorReview = async () => {
     if (!essay || !selectedMentor || !content.trim() || updateState.isLoading || savingRef.current) return;
@@ -534,10 +561,7 @@ export function ApplicantEssayEditorPage() {
                 const next = new URLSearchParams(params); next.delete("view"); setParams(next);
               }}>Open draft editor</Button>
               <Button onClick={saveVersion} loading={createVersionState.isLoading}>Save new version</Button>
-              {availableMentors.length > 0 && <Button disabled={!content.trim()} onClick={() => {
-                setSelectedMentor(availableMentors[0]?.id);
-                setReviewModalOpen(true);
-              }}>{availableMentors.length === 1 ? `Submit to ${availableMentors[0].name}` : "Submit to mentor"}</Button>}
+              {submitToMentorButton}
             </div>
             {openReview && <p role="status">Version {openReview.snapshotVersion} is awaiting {openReview.mentorName || "mentor"}’s feedback.</p>}
           </div>
@@ -562,18 +586,10 @@ export function ApplicantEssayEditorPage() {
                   type={sidePanel === "review" ? "primary" : "default"}
                   onClick={() => setSidePanel(sidePanel === "review" ? null : "review")}
                 >Review & versions</Button>
-                {availableMentors.length > 0 && (
-                  <Button
-                    type="primary"
-                    disabled={!content.trim()}
-                    onClick={() => {
-                      setSelectedMentor(availableMentors[0]?.id);
-                      setReviewModalOpen(true);
-                    }}
-                  >{availableMentors.length === 1 ? `Submit to ${availableMentors[0].name}` : "Submit to mentor"}</Button>
-                )}
+                {submitToMentorButton}
               </div>
             </div>
+            {submitBlockedReason && <p className="applicant-writing-desk__hint" id="essay-submit-hint">{submitBlockedReason}</p>}
             <div className={`applicant-editor-layout${sidePanel ? " has-side-panel" : ""}`}>
             <div className="applicant-panel applicant-editor">
               <label className="applicant-editor__title-label" htmlFor="applicant-essay-title">DRAFT TITLE</label>

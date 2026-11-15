@@ -796,6 +796,8 @@
 .applicant-editor__status.is-near { color: #8a5a00; .applicant-editor__bar > span { background: #d98e04; } }
 .applicant-editor__status.is-over { color: #b3261e; .applicant-editor__bar > span { background: #b3261e; } }
 .applicant-editor__retry { border: 0; background: none; padding: 0; color: #8b0000; font: inherit; text-decoration: underline; cursor: pointer; }
+.applicant-writing-desk__submit { display: inline-flex; }
+.applicant-writing-desk__hint { margin: -8px 0 16px; text-align: right; color: #655c55; font-size: 13px; }
 .applicant-writing-desk__side {
   position: sticky;
   top: 24px;
