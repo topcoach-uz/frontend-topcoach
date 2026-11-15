@@ -52,6 +52,8 @@ import {
 } from "src/app/services/student-hub/essayReviewApi";
 import { getMentorFeedbackText } from "./essayFeedbackModel";
 import { EssayPromptBox } from "./EssayPromptBox";
+import { EssayAnglesPanel } from "./EssayAnglesPanel";
+import type { EssayIdeasResponse } from "src/app/services/student-hub/essayManagementApi";
 import { countWords, ideasForEssay, essayWordLimit, formatSavedTime, limitLevel, limitMessage, saveState } from "./essayWriting";
 
 const essayTypes: Array<{ value: StudentEssay["essayType"]; label: string }> = [
@@ -96,6 +98,7 @@ export default function ApplicantEssaysPage() {
   const [createEssay, createState] = useCreateStudentEssayMutation();
   const [deleteEssay] = useDeleteStudentEssayMutation();
   const [deletingId, setDeletingId] = useState<string>();
+  const [anglesByEssay, setAnglesByEssay] = useState<Record<string, EssayIdeasResponse>>({});
   const removeEssay = async (essay: StudentEssay) => {
     setDeletingId(essay.id);
     try {
@@ -537,8 +540,9 @@ export function ApplicantEssayEditorPage() {
   }, [params.get("feedback"), latestFeedback]);
   const sidePanelBody = shownPanel ? (<>
               {shownPanel === "ideas" ? <>
-                <p>Use a question if it helps. Your essay does not have to follow a template.</p>
+                <EssayAnglesPanel essayId={essay.id} result={anglesByEssay[essay.id]} onResult={(id, r) => setAnglesByEssay((prev) => ({ ...prev, [id]: r }))} />
                 {essay.prompt?.trim() && <blockquote className="applicant-writing-desk__prompt-quote"><strong>Your prompt</strong>{essay.prompt.trim()}</blockquote>}
+                <h4 className="essay-angles__quick">Quick questions</h4>
                 <ol className="applicant-writing-desk__ideas">
                   {ideasForEssay(essay.essayType, essay.prompt).map((idea) => <li key={idea}>{idea}</li>)}
                 </ol>

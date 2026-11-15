@@ -10,6 +10,21 @@ import {
   ApiResponse,
 } from './types';
 
+export interface EssayIdeaAngle {
+  id: string;
+  title: string;
+  why: string;
+  sources: Array<{ kind: 'major_match' | 'profile' | 'college_list' | 'prompt'; label: string }>;
+  questions: string[];
+}
+
+export interface EssayIdeasResponse {
+  angles: EssayIdeaAngle[];
+  generatedAt: string;
+  cached: boolean;
+  remainingToday: number;
+}
+
 export const essayManagementApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
     // ========================================
@@ -407,6 +422,18 @@ export const essayManagementApi = RtkApi.injectEndpoints({
       ],
     }),
 
+    // AI story angles for the Ideas panel
+    getEssayIdeas: builder.mutation<
+      EssayIdeasResponse,
+      { essayId: string; refresh?: boolean }
+    >({
+      query: ({ essayId, refresh }) => ({
+        url: `/essay-management/essays/${essayId}/ideas`,
+        method: 'POST',
+        body: { refresh: Boolean(refresh) },
+      }),
+    }),
+
     // ========================================
     // 📊 ESSAY ANALYTICS
     // ========================================
@@ -475,4 +502,5 @@ export const {
   useGenerateOutlineMutation,
   useGetEnhancedFeedbackQuery,
   useAutoSaveEssayMutation,
+  useGetEssayIdeasMutation,
 } = essayManagementApi;
