@@ -21,7 +21,7 @@ function renderPage(path) {
 
 test("the IELTS dashboard uses the new dev browse design", () => {
   const html = renderPage("/");
-  assert.ok(html.includes("Your IELTS prep"));
+  assert.ok(html.includes("IELTS prep"));
   assert.ok(html.includes("Choose a skill"));
   assert.ok(html.includes("ielts-browse"));
   assert.ok(!html.includes("Coordinator surname"));
@@ -31,12 +31,12 @@ test("both practice lists retain their formats and open existing practice routes
   vi.stubGlobal("window", { location: { search: "?skill=listening" } });
   try {
     const academic = renderPage("/ielts/practice/home");
-    assert.ok(academic.includes("Academic practice"));
-    assert.ok(academic.includes("96 tests available"));
+    assert.ok(academic.includes("Academic tests"));
+    assert.ok(academic.includes("96 Listening tests"));
     assert.ok(academic.includes('/ielts/practice/academic/21/1/listening/1'));
     const general = renderPage("/ielts/practice/general-training");
-    assert.ok(general.includes("General Training practice"));
-    assert.ok(general.includes("34 tests available"));
+    assert.ok(general.includes("General Training tests"));
+    assert.ok(general.includes("34 Reading tests"));
     assert.ok(general.includes('/ielts/practice/general-training/17/1/reading/1'));
     assert.ok(!general.includes('/general-training/17/1/listening/1'));
   } finally { vi.unstubAllGlobals(); }
