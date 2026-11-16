@@ -135,7 +135,7 @@ const SKILL_NAME = (s) => s[0].toUpperCase() + s.slice(1);
 export const bookName = (book) =>
   book === "og" ? "Official Guide" : book === "eg" ? "Exam Essentials" : `Book ${book}`;
 
-/** Up to `limit` unfinished practices, newest first, ready to render. */
+/** Up to `limit` unfinished tests, newest first, ready to render. */
 export function unfinishedPractices(entries, markers, recent, limit = 3) {
   const out = [];
   for (const item of recent) {

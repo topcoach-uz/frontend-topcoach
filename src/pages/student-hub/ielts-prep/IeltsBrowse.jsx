@@ -1,7 +1,8 @@
 import React, { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import { useMyLearningPath } from "../applicant/useMyLearningPath";
+import { Breadcrumb } from "../applicant/Breadcrumb";
 import {
-  ArrowLeft,
   ArrowRight,
   BookOpen,
   Headphones,
@@ -22,22 +23,22 @@ const skillMeta = {
   listening: {
     label: "Listening",
     Icon: Headphones,
-    description: "Tune your ear to conversations and lectures.",
+    description: "4 parts · 40 questions · audio",
   },
   reading: {
     label: "Reading",
     Icon: BookOpen,
-    description: "Build comprehension, one passage at a time.",
+    description: "3 passages · 40 questions",
   },
   writing: {
     label: "Writing",
     Icon: PenLine,
-    description: "Develop clear, well-structured responses.",
+    description: "2 tasks · 60 minutes",
   },
   speaking: {
     label: "Speaking",
     Icon: Mic,
-    description: "Practice expressing your ideas with confidence.",
+    description: "3 parts · record your answers",
   },
 };
 const years = {
@@ -77,8 +78,8 @@ export default function IeltsBrowse({ pagePath, Link, profile, last, progress })
   const type = pagePath === generalPath ? "general-training" : "academic";
   const nav = [
     { to: "/", label: "Overview", Icon: House },
-    { to: academicPath, label: "Academic", Icon: Library },
-    { to: generalPath, label: "General Training", Icon: BookOpen },
+    { to: academicPath, label: "Academic", hint: "For university study", Icon: Library },
+    { to: generalPath, label: "General Training", hint: "For work or migration", Icon: BookOpen },
   ];
   return (
     <div className="ib-layout">
@@ -90,12 +91,11 @@ export default function IeltsBrowse({ pagePath, Link, profile, last, progress })
             </span>
             <div>
               <strong>{profile?.name || "Student"}</strong>
-              <span>Your learning space</span>
             </div>
           </div>
-          <div className="ib-nav-label">IELTS PREPARATION</div>
-          <nav aria-label="IELTS preparation">
-            {nav.map(({ to, label, Icon }) => (
+          <div className="ib-nav-label">IELTS prep</div>
+          <nav aria-label="IELTS prep">
+            {nav.map(({ to, label, hint, Icon }) => (
               <Link
                 key={to}
                 to={to}
@@ -103,35 +103,35 @@ export default function IeltsBrowse({ pagePath, Link, profile, last, progress })
                 aria-current={pagePath === to ? "page" : undefined}
               >
                 <Icon size={18} />
-                {label}
+                <span className="ib-nav-text">
+                  {label}
+                  {hint && <small>{hint}</small>}
+                </span>
               </Link>
             ))}
           </nav>
           <div className="ib-sidebar-note">
-            <BookOpen size={22} />
-            <strong>A little practice, every day.</strong>
-            <p>Choose a skill and work through a test at your own pace.</p>
             <Link to="/ielts/vocabulary">
-              Explore vocabulary <ArrowRight size={14} />
+              Vocabulary <ArrowRight size={14} />
             </Link>
           </div>
         </aside>
         <main className="ib-main">
-          <div className="ib-breadcrumb">
-            <Link className="ib-hub-link" to={myLearningPath}><ArrowLeft size={16} /> Back to My learning</Link>
-            <ChevronRight size={13} />
-            <Link to="/">IELTS prep</Link>
-            {!overview && (
+          <Breadcrumb>
+            <RouterLink to={myLearningPath}>My learning</RouterLink>
+            <span>/</span>
+            {overview ? (
+              "IELTS prep"
+            ) : (
               <>
-                <ChevronRight size={13} />
-                <span>
-                  {type === "academic" ? "Academic" : "General Training"}
-                </span>
+                <Link to="/">IELTS prep</Link>
+                <span>/</span>
+                {type === "academic" ? "Academic" : "General Training"}
               </>
             )}
-          </div>
+          </Breadcrumb>
           {overview ? (
-            <Overview Link={Link} profile={profile} last={last} progress={progress} />
+            <Overview Link={Link} last={last} progress={progress} />
           ) : (
             <PracticeLibrary key={type} type={type} Link={Link} progress={progress} />
           )}
@@ -140,62 +140,46 @@ export default function IeltsBrowse({ pagePath, Link, profile, last, progress })
     </div>
   );
 }
-function Overview({ Link, profile, last, progress }) {
-  const validLast = last && route(last.path);
+const skillName = (skill) => skillMeta[skill]?.label || skill;
+const readableTitle = (r) =>
+  `${bookLabel(r.book)}${r.type === "general-training" ? " General Training" : ""} · Test ${r.test} · ${skillName(r.skill)}`;
+function Overview({ Link, last, progress }) {
   const unfinished = progress
     ? unfinishedPractices(progress.entries, progress.markers, progress.recent, 3)
     : [];
+  const lastRoute = last && last.path ? route(last.path) : null;
+  const validLast = !!lastRoute;
+  // No stored format setting exists; only a last-opened General Training
+  // test sends the Reading tile to the General Training library.
+  const readingPath =
+    lastRoute?.type === "general-training" ? generalPath : academicPath;
   return (
     <>
       <div className="ib-heading">
-        <span className="ib-eyebrow">YOUR NEXT STEP</span>
-        <h1>Your IELTS journey</h1>
-        <p>
-          Welcome back{profile?.name ? `, ${profile.name.split(" ")[0]}` : ""}.
-          Make room for a little progress today.
-        </p>
+        <h1>IELTS prep</h1>
+        <p>{validLast ? "Pick up where you left off." : "Choose a skill to start."}</p>
       </div>
-      <section className="ib-hero">
+      <section className="ib-next" aria-label="Your next step">
         <div>
-          <span className="ib-eyebrow">
-            {validLast ? "PICK UP WHERE YOU LEFT OFF" : "LET’S GET STARTED"}
-          </span>
           <h2>
             {validLast
-              ? "Keep your momentum."
-              : "One practice closer to your goal."}
+              ? `Continue: ${readableTitle(lastRoute)}`
+              : "Start with a Reading test"}
           </h2>
-          <p>
-            {validLast
-              ? last.title
-              : "Explore IELTS tests and build your confidence across all four skills."}
-          </p>
-          <Link className="ib-button" to={validLast ? last.path : academicPath}>
-            {validLast ? "Continue practice" : "Find a practice test"}
-            <ArrowRight size={17} />
-          </Link>
         </div>
-        <div className="ib-hero-visual" aria-hidden="true">
-          <BookOpen size={32} strokeWidth={1.6} />
-          <span className="ib-visual-label">IELTS PREPARATION</span>
-          <strong>Build your confidence.</strong>
-          <span className="ib-visual-caption">A little practice, every day.</span>
-          <div className="ib-visual-skills">
-            {skills.map((skill) => {
-              const { Icon, label } = skillMeta[skill];
-              return <span key={skill}><Icon size={20} strokeWidth={1.6} />{label}</span>;
-            })}
-          </div>
-        </div>
+        <Link
+          className="ib-button"
+          to={validLast ? last.path : `${academicPath}?skill=reading`}
+        >
+          {validLast ? "Continue" : "Start Reading test"}
+          <ArrowRight size={17} />
+        </Link>
       </section>
       {unfinished.length > 0 && (
         <section aria-labelledby="ib-unfinished-title">
-          <div className="ib-section-heading">
-            <div>
-              <h2 id="ib-unfinished-title">Unfinished</h2>
-              <p>Pick up the practices you started.</p>
-            </div>
-          </div>
+          <h2 id="ib-unfinished-title" className="ib-section-title">
+            Unfinished
+          </h2>
           <ul className="ib-unfinished">
             {unfinished.map((item) => (
               <li key={item.path}>
@@ -209,65 +193,30 @@ function Overview({ Link, profile, last, progress }) {
           </ul>
         </section>
       )}
-      <section>
-        <div className="ib-section-heading">
-          <div>
-            <h2>Choose your focus</h2>
-            <p>Four skills. Your own pace.</p>
-          </div>
-        </div>
-        <div className="ib-skills">
+      <section aria-label="Choose a skill">
+        <div className="ib-tiles">
           {skills.map((skill) => {
             const { label, Icon, description } = skillMeta[skill];
             return (
               <Link
                 key={skill}
-                className="ib-skill-card"
-                to={`${academicPath}?skill=${skill}`}
+                className="ib-tile"
+                to={
+                  skill === "reading"
+                    ? readingPath === generalPath
+                      ? generalPath
+                      : `${academicPath}?skill=reading`
+                    : `${academicPath}?skill=${skill}`
+                }
               >
-                <span className="ib-icon">
-                  <Icon size={22} />
+                <span className="ib-tile-icon">
+                  <Icon size={20} />
                 </span>
                 <h3>{label}</h3>
                 <p>{description}</p>
-                <span className="ib-text-link">
-                  Browse practices <ArrowRight size={15} />
-                </span>
               </Link>
             );
           })}
-        </div>
-      </section>
-      <section>
-        <div className="ib-section-heading">
-          <div>
-            <h2>Your practice library</h2>
-            <p>Choose the IELTS format you’re preparing for.</p>
-          </div>
-        </div>
-        <div className="ib-collections">
-          <Link className="ib-collection" to={academicPath}>
-            <span className="ib-icon">
-              <Library size={23} />
-            </span>
-            <div>
-              <h3>Academic</h3>
-              <p>Listening, Reading, Writing and Speaking</p>
-              <span>IELTS 1–21, Exam Essentials & Official Guide</span>
-            </div>
-            <ArrowRight size={22} />
-          </Link>
-          <Link className="ib-collection" to={generalPath}>
-            <span className="ib-icon">
-              <BookOpen size={23} />
-            </span>
-            <div>
-              <h3>General Training</h3>
-              <p>Explore the General Training reading collection.</p>
-              <span>IELTS 14–21 & IELTS 10</span>
-            </div>
-            <ArrowRight size={22} />
-          </Link>
         </div>
       </section>
     </>
@@ -311,28 +260,46 @@ function PracticeLibrary({ type, Link, progress }) {
   return (
     <>
       <div className="ib-heading">
-        <span className="ib-eyebrow">PRACTICE LIBRARY</span>
         <h1>
-          {isAcademic ? "Academic practice" : "General Training practice"}
+          {isAcademic ? "Academic tests" : "General Training tests"}
         </h1>
         <p>
           {isAcademic
             ? "Find your next test. Choose a book, then focus on the skill you want to build."
-            : "Build your reading confidence with General Training practice tests."}
+            : "Reading tests only for now."}
         </p>
       </div>
+      <div className="ib-seg" role="group" aria-label="IELTS format">
+        <Link
+          to={`${academicPath}${skill !== "all" ? `?skill=${skill}` : ""}`}
+          className={isAcademic ? "is-active" : ""}
+          aria-current={isAcademic ? "page" : undefined}
+        >
+          Academic
+        </Link>
+        <Link
+          to={generalPath}
+          className={!isAcademic ? "is-active" : ""}
+          aria-current={!isAcademic ? "page" : undefined}
+        >
+          General Training
+        </Link>
+      </div>
+      <p className="ib-format-hint">
+        {isAcademic ? "Academic is for university study." : "General Training is for work or migration."}
+      </p>
       <div className="ib-filters">
         <label className="ib-search">
           <Search size={18} />
           <input
-            aria-label="Search practice tests"
+            aria-label="Search tests"
             placeholder="Search books or tests…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </label>
         <label className="ib-select">
-          Book
+          <span className="ib-sr-only">Book</span>
           <select
             value={bookFilter}
             onChange={(e) => setBookFilter(e.target.value)}
@@ -347,7 +314,7 @@ function PracticeLibrary({ type, Link, progress }) {
         </label>
         {isAcademic && (
           <label className="ib-select">
-            Skill
+            <span className="ib-sr-only">Skill</span>
             <select value={skill} onChange={(e) => setSkill(e.target.value)}>
               <option value="all">All skills</option>
               {skills.map((s) => (
@@ -361,8 +328,8 @@ function PracticeLibrary({ type, Link, progress }) {
       </div>
       <div className="ib-results">
         <span aria-live="polite">
-          {count} {count === 1 ? "test" : "tests"} available
-          {skill !== "all" ? ` · ${skillMeta[skill].label}` : ""}
+          {count} {skill !== "all" || !isAcademic ? `${skillMeta[isAcademic ? skill : "reading"].label} ` : ""}
+          {count === 1 ? "test" : "tests"}
         </span>
         {(query || bookFilter !== "all" || (isAcademic && skill !== "all")) && (
           <button
@@ -388,11 +355,10 @@ function PracticeLibrary({ type, Link, progress }) {
                 <span>{isAcademic ? "Academic" : "General Training"}</span>
               </h2>
               <p>
-                {years[book]} collection · {testCount(type, book)} practice
-                tests
+                {years[book]} · {testCount(type, book)} tests
               </p>
             </div>
-            {book === 21 && <span className="ib-badge">Latest collection</span>}
+            {book === 21 && <span className="ib-badge">Newest</span>}
           </div>
           <div className="ib-tests">
             {tests.map((test) => (
@@ -407,7 +373,7 @@ function PracticeLibrary({ type, Link, progress }) {
       {!count && (
         <div className="ib-empty">
           <Search size={28} />
-          <h2>No practices found</h2>
+          <h2>No tests found</h2>
           <p>Try a different search or clear your filters.</p>
           <button
             className="ib-button"
@@ -417,7 +383,7 @@ function PracticeLibrary({ type, Link, progress }) {
               setSkill(isAcademic ? "all" : "reading");
             }}
           >
-            Reset filters
+            Clear filters
           </button>
         </div>
       )}
@@ -442,7 +408,7 @@ function TestCard({ type, book, test, Link, progress, selectedSkills, isAcademic
                     to={testPath({ type, book, test }, "score")}
                     className="ib-review"
                   >
-                    Results <ChevronRight size={14} />
+                    Score &amp; answers <ChevronRight size={14} />
                   </Link>
                 </div>
                 {summary && (

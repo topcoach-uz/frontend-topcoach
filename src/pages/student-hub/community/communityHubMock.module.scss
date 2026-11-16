@@ -2763,31 +2763,6 @@
   flex-wrap: wrap;
   margin-bottom: 22px;
 }
-.admissionsCrumb {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.86rem;
-  color: #6b7280;
-}
-.admissionsCrumbBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: #fbe9ec;
-  color: #7B1F2F;
-  font-weight: 600;
-  font-size: 0.78rem;
-}
-.admissionsCrumbSep {
-  color: #cbcbb6;
-}
-.admissionsCrumbCurrent {
-  color: #1f2937;
-  font-weight: 500;
-}
 .admissionsBackBtn {
   display: inline-flex;
   align-items: center;

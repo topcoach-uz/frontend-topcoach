@@ -27,17 +27,17 @@ export function ImportedSpeakingPrompt({ library, onSelect, question = 0, onQues
     total === 1 && topic.questions[0]?.prompt?.trim() === topic.title?.trim();
   return (
     <>
-      <h2>PART {part}</h2>
+      <h2>Part {part}</h2>
       <p className="muted">
         {topic.testIdentity
-          ? `Cambridge ${topic.testIdentity.book} Test ${topic.testIdentity.test}. Questions verified against the source practice page.`
-          : "Imported topic bank. These topics are not mapped to Cambridge books or tests."}
+          ? `Cambridge ${topic.testIdentity.book} Test ${topic.testIdentity.test}.`
+          : "More topics. These are not tied to a specific book or test."}
       </p>
       <label>
-        Practice topic
+        Speaking topic
         <select
           className="match-select"
-          aria-label="Practice topic"
+          aria-label="Speaking topic"
           value={topic.id}
           onChange={(e) => onSelect(e.target.value)}
           style={{ width: "100%", minWidth: 0 }}
@@ -45,7 +45,7 @@ export function ImportedSpeakingPrompt({ library, onSelect, question = 0, onQues
           {[
             ["cambridge", "This test"],
             ["examiner", "Examiner recordings"],
-            ["topics", "Imported topics"],
+            ["topics", "More topics"],
           ].map(([source, title]) => (
             <optgroup key={source} label={title}>
               {catalog
@@ -106,7 +106,7 @@ export function ImportedSpeakingPrompt({ library, onSelect, question = 0, onQues
         (q) => q.ideas.length || q.vocabulary.length || q.sampleAnswer,
       ) && (
         <details>
-          <summary>Practice notes and sample answers</summary>
+          <summary>Notes and sample answers</summary>
           {topic.questions.map((q, i) => (
             <section key={i}>
               <h3>{q.prompt}</h3>

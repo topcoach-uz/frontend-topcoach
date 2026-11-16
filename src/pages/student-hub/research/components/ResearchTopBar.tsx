@@ -12,7 +12,10 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { ArrowLeft, Check, ChevronRight, FlaskConical, LayoutDashboard, Lock } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowLeft, Check, LayoutDashboard, Lock } from 'lucide-react';
+import { Breadcrumb } from '../../applicant/ApplicantPage';
+import { useMyLearningPath } from '../../applicant/useMyLearningPath';
 import type { ResearchWeek, WeekLockState } from 'src/app/services/research-prep/types';
 
 interface ResearchTopBarProps {
@@ -42,6 +45,7 @@ const ResearchTopBar: React.FC<ResearchTopBarProps> = ({
   onSwitchView,
   onBackToMain,
 }) => {
+  const myLearningPath = useMyLearningPath();
   const weekShort = selectedWeekTitle?.split(/[—:·]/)[0].trim();
   const stripRef = useRef<HTMLDivElement>(null);
   // Keep the open week visible when the strip is wider than the screen.
@@ -56,26 +60,19 @@ const ResearchTopBar: React.FC<ResearchTopBarProps> = ({
       <div className="rp-topbar-row rp-topbar-row--head">
         <div className="rp-topbar-row-inner">
           <div className="rp-topbar-left">
-            <span className="rp-brand">
-              <span className="rp-brand-mark" aria-hidden>
-                <FlaskConical size={13} />
-              </span>
-              <span className="rp-brand-name">Research Program</span>
-            </span>
-            <ChevronRight size={13} className="rp-crumb-sep" aria-hidden />
-            {view === 'overview' ? (
-              <span className="rp-crumb-leaf">Dashboard</span>
-            ) : (
-              <>
-                <span className="rp-crumb-leaf">Week {selectedWeekNumber}</span>
-                {weekShort && (
-                  <>
-                    <ChevronRight size={13} className="rp-crumb-sep" aria-hidden />
-                    <span className="rp-crumb-trail">{weekShort}</span>
-                  </>
-                )}
-              </>
-            )}
+            <Breadcrumb>
+              <Link to={myLearningPath}>My learning</Link>
+              <span>/</span>
+              {view === 'overview' ? (
+                'Research Program'
+              ) : (
+                <>
+                  <span>Research Program</span>
+                  <span>/</span>
+                  {`Week ${selectedWeekNumber}${weekShort ? ` · ${weekShort}` : ''}`}
+                </>
+              )}
+            </Breadcrumb>
           </div>
           <div className="rp-topbar-right">
             <div className="rp-progress-chip" aria-label="Program progress">
