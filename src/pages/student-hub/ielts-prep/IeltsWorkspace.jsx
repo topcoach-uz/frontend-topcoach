@@ -514,7 +514,7 @@ function App() {
               <BookOpen />
             </IconButton>
             <IconButton
-              label="Back to main menu"
+              label="Back to My learning"
               onClick={() => go(myLearningPath)}
             >
               <ArrowLeft />
@@ -536,7 +536,7 @@ function App() {
                       Account Settings
                     </button>
                     <button onClick={() => go(myLearningPath)}>
-                      Back to main menu
+                      Back to My learning
                     </button>
                   </div>
                 )}

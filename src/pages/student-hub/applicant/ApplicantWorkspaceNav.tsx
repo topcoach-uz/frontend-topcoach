@@ -133,9 +133,7 @@ function useNavSections() {
       ];
 
   const learningLinks: NavLinkItem[] = [
-    ...(degree === 'master'
-      ? [{ key: 'myProgress', label: t('applicant.myProgress'), to: applicantLinks.learning, Icon: Target, active: matches(applicantLinks.learning) }]
-      : []),
+    { key: 'myProgress', label: t('applicant.myLearning', 'My learning'), to: applicantLinks.learning, Icon: Target, active: matches(applicantLinks.learning) },
     { key: 'mySessions', label: t('applicant.mySessions', 'My sessions'), to: applicantLinks.sessions, Icon: Calendar, active: matches(applicantLinks.sessions, true) },
     { key: 'admissions', label: t('applicant.admissions'), to: applicantLinks.admissions, Icon: GraduationCap, active: matches(applicantLinks.admissions), locked: locked(true) },
     { key: 'researchPrep', label: t('applicant.researchPrepShort'), to: '/student-hub/research-prep', Icon: FlaskConical, active: matches('/student-hub/research-prep', true) || current.get('section') === 'research-program', locked: locked(true) },
