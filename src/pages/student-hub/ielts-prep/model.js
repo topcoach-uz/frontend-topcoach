@@ -125,3 +125,9 @@ export function answerStats(answers, keys = []) {
   });
   return stats;
 }
+export const booksFor = (type) =>
+  type === "academic"
+    ? [...Array.from({ length: 21 }, (_, i) => 21 - i), "eg", "og"]
+    : [...Array.from({ length: 8 }, (_, i) => 21 - i), 10];
+export const testCount = (type, book) =>
+  book === "og" ? 8 : type === "general-training" && book === 10 ? 2 : 4;
