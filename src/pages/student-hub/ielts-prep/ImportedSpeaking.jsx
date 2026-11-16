@@ -15,8 +15,16 @@ export function speakingQuestionText(question) {
 export function speakingStorageKey(library) {
   return `speaking:library:${practiceRelease(library)}:${library.topic.id}`;
 }
-export function ImportedSpeakingPrompt({ library, onSelect }) {
+export function ImportedSpeakingPrompt({ library, onSelect, question = 0, onQuestionChange }) {
   const { topic, catalog, part } = library;
+  const total = topic.questions.length;
+  // Parts 1 and 3 are asked one question at a time; part 2 is a single cue card.
+  const stepped = part !== 2 && total > 1 && !!onQuestionChange;
+  const index = Math.min(Math.max(question, 0), Math.max(total - 1, 0));
+  const visible = stepped ? [[topic.questions[index], index]] : topic.questions.map((q, i) => [q, i]);
+  // A single-question topic is titled with that very question; repeating it as a heading is noise.
+  const titleRepeatsQuestion =
+    total === 1 && topic.questions[0]?.prompt?.trim() === topic.title?.trim();
   return (
     <>
       <h2>PART {part}</h2>
@@ -66,9 +74,22 @@ export function ImportedSpeakingPrompt({ library, onSelect }) {
         </p>
       )}
       {part === 3 && <h2>Discussion topics:</h2>}
-      <h1>{topic.title}</h1>
-      <ul>
-        {topic.questions.map((q, i) => (
+      {!titleRepeatsQuestion && <h1>{topic.title}</h1>}
+      {stepped && (
+        <div className="speaking-stepper">
+          <b aria-live="polite">Question {index + 1} of {total}</b>
+          <span>
+            <button disabled={index === 0} onClick={() => onQuestionChange(index - 1)}>
+              Previous
+            </button>
+            <button disabled={index === total - 1} onClick={() => onQuestionChange(index + 1)}>
+              Next
+            </button>
+          </span>
+        </div>
+      )}
+      <ul className={stepped ? "speaking-single" : undefined}>
+        {visible.map(([q, i]) => (
           <li key={i}>
             {q.prompt}
             {!!q.cuePoints.length && (
