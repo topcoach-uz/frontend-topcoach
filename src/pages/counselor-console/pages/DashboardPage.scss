@@ -152,17 +152,11 @@
 .cc-dash-attn-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
-  padding: 11px 12px;
+  padding: 4px 6px 4px 0;
   border: 1px solid transparent;
   border-radius: 10px;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  text-decoration: none;
-  color: inherit;
-  font: inherit;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 .cc-dash-attn-row + .cc-dash-attn-row {
@@ -170,20 +164,125 @@
   border-radius: 0;
 }
 .cc-dash-attn-row:hover,
-.cc-dash-attn-row:focus-visible {
+.cc-dash-attn-row:focus-within {
   background: var(--cc-bg-hover);
   border-color: var(--cc-accent-ring);
   border-radius: 10px;
-  outline: none;
-}
-.cc-dash-attn-row:focus-visible {
-  outline: 2px solid var(--cc-accent);
-  outline-offset: 1px;
 }
 /* keep the divider from doubling up when the row above is hovered */
 .cc-dash-attn-row:hover + .cc-dash-attn-row,
-.cc-dash-attn-row:focus-visible + .cc-dash-attn-row {
+.cc-dash-attn-row:focus-within + .cc-dash-attn-row {
   border-top-color: transparent;
+}
+
+.cc-dash-attn-open {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+  padding: 7px 8px 7px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+.cc-dash-attn-open:focus-visible,
+.cc-dash-attn-action:focus-visible,
+.cc-dash-invite-cta:focus-visible,
+.cc-dash-setup-step:focus-visible {
+  outline: 2px solid var(--cc-accent);
+  outline-offset: 1px;
+}
+
+.cc-dash-attn-action {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border: 1px solid var(--cc-hairline);
+  border-radius: 8px;
+  background: var(--cc-bg-surface);
+  color: var(--cc-accent);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background: var(--cc-accent-soft);
+    border-color: var(--cc-accent-ring);
+  }
+}
+
+/* Needs-attention card is a scroll/focus target from the KPI tile. */
+.cc-dash-attn-card {
+  scroll-margin-top: 16px;
+  &:focus {
+    outline: none;
+  }
+}
+
+/* ── Empty-org setup ── */
+.cc-dash-invite-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--cc-accent);
+  border-radius: 10px;
+  background: var(--cc-accent);
+  color: var(--cc-inverse-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cc-dash-setup {
+  margin-top: 16px;
+}
+.cc-dash-setup-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+.cc-dash-setup-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--cc-hairline);
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--cc-bg-hover);
+    border-color: var(--cc-accent-ring);
+  }
+  &.is-done .cc-dash-quick-label {
+    color: var(--cc-text-muted);
+  }
+}
+.cc-dash-setup-mark {
+  flex-shrink: 0;
+  display: inline-flex;
+  color: var(--cc-text-muted);
+  .is-done & {
+    color: var(--cc-accent);
+  }
 }
 
 .cc-dash-attn-avatar {
