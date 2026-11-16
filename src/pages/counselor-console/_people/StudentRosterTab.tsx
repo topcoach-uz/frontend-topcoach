@@ -227,7 +227,6 @@ export function StudentRosterTab({
       content:
         'Archived students no longer appear in your active students list, but their data is kept. You can find them again under the Archived tab.',
       okText: 'Archive',
-      okButtonProps: { danger: true },
       cancelText: 'Cancel',
       async onOk() {
         try {
@@ -247,7 +246,8 @@ export function StudentRosterTab({
       content: (
         <span className="cc-roster-remove-desc">
           Remove <b>{s.name}</b> from <b>{org?.name ?? 'this organization'}</b>?
-          They keep their TopCoach account, but leave your student list.
+          They keep their TopCoach account, but leave your student list. This
+          cannot be undone from here; you would need to invite them again.
         </span>
       ),
       okText: 'Remove',
@@ -355,7 +355,6 @@ export function StudentRosterTab({
       key: 'archive',
       label: 'Archive',
       icon: <Archive size={15} />,
-      danger: true,
       disabled: s.status === 'archived',
       onClick: () => handleArchive(s),
     },

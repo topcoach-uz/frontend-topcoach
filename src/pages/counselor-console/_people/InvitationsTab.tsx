@@ -202,8 +202,8 @@ export function InvitationsTab({
       content: (
         <span>
           The invitation to <b>{inv.email}</b> will be removed from this list
-          for good. Any link already sent stops working. You can always invite
-          them again.
+          for good and this cannot be undone. Any link already sent stops
+          working. You can invite them again later.
         </span>
       ),
       okText: 'Delete',

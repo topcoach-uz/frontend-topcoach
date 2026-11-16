@@ -174,8 +174,8 @@ export default function CounselorConsoleStaffPage() {
       content: (
         <span>
           {staffName(s)} will lose access to <b>{org?.name ?? 'this organization'}</b>{' '}
-          immediately. Their students and data stay with the organization. You
-          can re-invite them later.
+          immediately. Their students and data stay with the organization. This
+          cannot be undone; you would need to re-invite them.
         </span>
       ),
       okText: 'Remove access',
