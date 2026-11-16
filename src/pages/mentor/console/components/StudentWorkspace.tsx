@@ -8,6 +8,7 @@ import { useUpdateMentorApplicationRequirementsMutation } from 'src/app/services
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   Button,
+  Checkbox,
   DatePicker,
   Form,
   Input,
@@ -27,8 +28,10 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import dayjs, { type Dayjs } from 'dayjs';
 import {
+  AlertCircle,
   Calendar,
   CalendarCheck,
+  CalendarClock,
   CheckCircle2,
   CheckSquare,
   Circle,
@@ -52,6 +55,7 @@ import {
   useGetMentorTasksQuery,
   useUpdateMentorMilestoneMutation,
   useUpdateMentorTaskFeedbackMutation,
+  useDecideTaskExtensionMutation,
   type CurriculumWatchlistItemDto,
   type MilestoneDto,
   type PipelineDto,
@@ -76,6 +80,7 @@ import { programNames, roleNames } from 'src/pages/student-hub/my-programs/progr
 import type { ProgramKey } from 'src/app/services/studentProgramsApi';
 import type { MentorRosterProgram } from 'src/app/services/fullSupportApi';
 import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
+import { deadlineDay, isTaskOverdue, pendingExtension } from 'src/lib/taskDeadline';
 import { hostName } from 'src/app/services/api/const';
 import './StudentWorkspace.scss';
 
@@ -238,7 +243,12 @@ export default function StudentWorkspace({
   const [quickTaskDescription, setQuickTaskDescription] = useState('');
   const [quickTaskDeadline, setQuickTaskDeadline] = useState<Dayjs | null>(null);
   const [feedbackTask, setFeedbackTask] = useState<TaskDto | null>(null);
-  const [feedbackForm] = Form.useForm<{ feedback: string; decision: 'approved' | 'revision_requested' }>();
+  const [feedbackForm] = Form.useForm<{ feedback: string; decision: 'approved' | 'revision_requested'; revisionFileUrls?: string[] }>();
+  const feedbackDecision = Form.useWatch('decision', feedbackForm);
+  // Deadline extension request being answered.
+  const [extensionTask, setExtensionTask] = useState<TaskDto | null>(null);
+  const [extensionDeadline, setExtensionDeadline] = useState<Dayjs | null>(null);
+  const [extensionResponse, setExtensionResponse] = useState('');
   const [addMilestoneOpen, setAddMilestoneOpen] = useState(false);
   const [milestoneForm] = Form.useForm<{ label: string; date: Dayjs | null }>();
   const [logSessionOpen, setLogSessionOpen] = useState(false);
@@ -328,6 +338,7 @@ export default function StudentWorkspace({
 
   const [createTask, { isLoading: creatingTask }] = useCreateMentorTaskMutation();
   const [updateFeedback, { isLoading: savingFeedback }] = useUpdateMentorTaskFeedbackMutation();
+  const [decideExtension, { isLoading: decidingExtension }] = useDecideTaskExtensionMutation();
   const [deleteTask] = useDeleteMentorTaskMutation();
   const [createMilestone, { isLoading: creatingMs }] = useCreateMentorMilestoneMutation();
   const [updateMilestone] = useUpdateMentorMilestoneMutation();
@@ -372,6 +383,7 @@ export default function StudentWorkspace({
       feedback: values.feedback,
       decision: values.decision,
       feedbackFileUrls: feedbackTask.feedbackFileUrls,
+      revisionFileUrls: values.decision === 'revision_requested' ? values.revisionFileUrls ?? [] : [],
     })
       .unwrap()
       .then(() => {
@@ -417,7 +429,34 @@ export default function StudentWorkspace({
 
   const openFeedbackModal = (t: TaskDto) => {
     setFeedbackTask(t);
-    feedbackForm.setFieldsValue({ feedback: '', decision: 'approved' });
+    feedbackForm.setFieldsValue({ feedback: '', decision: 'approved', revisionFileUrls: [] });
+  };
+
+  const openExtensionModal = (t: TaskDto) => {
+    const pending = pendingExtension(t);
+    setExtensionTask(t);
+    setExtensionDeadline(pending ? dayjs(pending.requestedDeadline) : null);
+    setExtensionResponse('');
+  };
+
+  const answerExtension = (decision: 'approved' | 'declined') => {
+    if (!extensionTask) return;
+    if (decision === 'approved' && !extensionDeadline) {
+      message.warning('Pick the new deadline');
+      return;
+    }
+    decideExtension({
+      id: extensionTask.id,
+      decision,
+      response: extensionResponse.trim() || undefined,
+      deadline: decision === 'approved' ? extensionDeadline?.format('YYYY-MM-DD') : undefined,
+    })
+      .unwrap()
+      .then(() => {
+        message.success(decision === 'approved' ? 'Deadline extended' : 'Request declined');
+        setExtensionTask(null);
+      })
+      .catch((error: { data?: { message?: string } }) => message.error(error?.data?.message || 'Could not save'));
   };
 
   const sectionHead = (
@@ -441,10 +480,10 @@ export default function StudentWorkspace({
   const renderTaskRow = (t: TaskDto) => {
     const s = taskStatus(t);
     const done = s === 'done';
-    const overdue =
-      !done && t.deadline && new Date(t.deadline).getTime() < Date.now();
+    const overdue = isTaskOverdue(t);
+    const extension = pendingExtension(t);
     const expanded = expandedTaskId === t.id;
-    const hasDetail = !!(t.description || t.submissionText || t.feedback);
+    const hasDetail = !!(t.description || t.submissionText || t.feedback || t.submissionFileUrls?.length);
 
     return (
       <div key={t.id} className={`mc-ws-task${done ? ' mc-ws-task--done' : ''}`}>
@@ -465,12 +504,24 @@ export default function StudentWorkspace({
             <span className="mc-ws-task-title">{t.task}</span>
             {s === 'awaiting-review' && <McPill variant="warning">Awaiting review</McPill>}
             {t.status === 'revision_requested' && <McPill variant="warning">Revision requested</McPill>}
+            {overdue && (
+              <McPill variant="danger">
+                <AlertCircle size={11} style={{ marginRight: 3, verticalAlign: '-1px' }} />
+                Overdue
+              </McPill>
+            )}
+            {extension && <McPill variant="info">Extension requested</McPill>}
           </button>
 
           <span className={`mc-ws-task-due${overdue ? ' mc-ws-task-due--overdue' : ''}`}>
             {t.deadline ? `Due ${formatDate(t.deadline)}` : ''}
           </span>
 
+          {extension ? (
+            <Button size="small" icon={<CalendarClock size={13} />} onClick={() => openExtensionModal(t)}>
+              Extension
+            </Button>
+          ) : null}
           {s === 'awaiting-review' ? (
             <Button type="primary" size="small" onClick={() => openFeedbackModal(t)}>
               Review
@@ -502,6 +553,20 @@ export default function StudentWorkspace({
                 </Text>
                 <div className="mc-ws-task-detail-text">{t.submissionText}</div>
               </>
+            ) : null}
+            {t.submissionFileUrls?.length ? (
+              <ul className="mc-ws-files">
+                {t.submissionFileUrls.map((file) => (
+                  <li key={file.url}>
+                    <a href={`${hostName}${file.url}`} target="_blank" rel="noreferrer">
+                      <FileText size={13} /> {file.fileName}
+                    </a>
+                    {t.status === 'revision_requested' && t.revisionFileUrls?.includes(file.url) && (
+                      <McPill variant="warning">Needs revision</McPill>
+                    )}
+                  </li>
+                ))}
+              </ul>
             ) : null}
             {t.feedback ? (
               <>
@@ -1010,21 +1075,102 @@ export default function StudentWorkspace({
                 </div>
               </>
             ) : null}
-            {feedbackTask.submissionFileUrls?.map((file) => (
-              <a key={file.url} href={`${hostName}${file.url}`} target="_blank" rel="noreferrer" style={{ display: 'block', marginBottom: 8 }}>
-                {file.fileName}
-              </a>
-            ))}
+            {feedbackTask.submissionFileUrls?.length ? (
+              <ul className="mc-ws-files" style={{ marginBottom: 14 }}>
+                {feedbackTask.submissionFileUrls.map((file) => (
+                  <li key={file.url}>
+                    <a href={`${hostName}${file.url}`} target="_blank" rel="noreferrer">
+                      <FileText size={13} /> {file.fileName}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
             <Form form={feedbackForm} layout="vertical">
               <Form.Item name="decision" label="Decision" rules={[{ required: true }]}>
                 <Select options={[{ value: 'approved', label: 'Approve task' }, { value: 'revision_requested', label: 'Request revision' }]} />
               </Form.Item>
+              {feedbackDecision === 'revision_requested' && (feedbackTask.submissionFileUrls?.length ?? 0) > 0 && (
+                <Form.Item
+                  name="revisionFileUrls"
+                  label="Which files need revision?"
+                  extra="Leave all unticked to ask for the whole submission again. The student only re-uploads the ticked files."
+                >
+                  <Checkbox.Group className="mc-ws-revision-files">
+                    {feedbackTask.submissionFileUrls!.map((file) => (
+                      <Checkbox key={file.url} value={file.url}>
+                        {file.fileName}
+                      </Checkbox>
+                    ))}
+                  </Checkbox.Group>
+                </Form.Item>
+              )}
               <Form.Item name="feedback" label="Feedback" rules={[{ required: true, message: 'Write your feedback' }]}>
                 <Input.TextArea rows={5} placeholder="What went well, what to improve…" />
               </Form.Item>
             </Form>
           </>
         )}
+      </Modal>
+
+      <Modal
+        title="Deadline extension request"
+        open={!!extensionTask}
+        onCancel={() => setExtensionTask(null)}
+        destroyOnClose
+        width={520}
+        footer={[
+          <Button key="decline" danger disabled={decidingExtension} onClick={() => answerExtension('declined')}>
+            Decline
+          </Button>,
+          <Button key="approve" type="primary" loading={decidingExtension} onClick={() => answerExtension('approved')}>
+            Approve new deadline
+          </Button>,
+        ]}
+      >
+        {extensionTask && (() => {
+          const request = pendingExtension(extensionTask);
+          if (!request) return <Text type="secondary">This request was already answered.</Text>;
+          const current = deadlineDay(extensionTask.deadline);
+          return (
+            <div className="mc-ws-extension">
+              <div className="mc-ws-extension-task">{extensionTask.task}</div>
+              <div className="mc-ws-extension-dates">
+                <div>
+                  <span>Current deadline</span>
+                  <strong>{formatDate(extensionTask.deadline)}</strong>
+                </div>
+                <div>
+                  <span>Requested</span>
+                  <strong>{formatDate(request.requestedDeadline)}</strong>
+                </div>
+              </div>
+              <div className="mc-ws-extension-reason">
+                <span>Reason</span>
+                <p>{request.reason}</p>
+              </div>
+              <label className="mc-ws-extension-field">
+                <span>New deadline</span>
+                <DatePicker
+                  value={extensionDeadline}
+                  onChange={setExtensionDeadline}
+                  format="D MMM YYYY"
+                  disabledDate={(date) => !!current && !date.isAfter(dayjs(current), 'day')}
+                  style={{ width: '100%' }}
+                />
+              </label>
+              <label className="mc-ws-extension-field">
+                <span>Message to the student (optional)</span>
+                <Input.TextArea
+                  rows={2}
+                  value={extensionResponse}
+                  onChange={(event) => setExtensionResponse(event.target.value)}
+                  placeholder="e.g. Fine — but please send the outline by Friday."
+                />
+              </label>
+            </div>
+          );
+        })()}
       </Modal>
 
       <Modal

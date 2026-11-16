@@ -1,4 +1,6 @@
 import { SessionTypeEnum } from "src/app/api/Api";
+import type { SessionLogDto } from "src/app/services/fullSupportApi";
+import { lessonMinutes, lessonOutcome } from "src/pages/mentor/console/fullSupportLessons";
 
 /** Loose shape of a row from `GET /sessions/me` (backend returns the entity). */
 export interface StudentSessionRow {
@@ -105,3 +107,31 @@ export function mentorTitle(session: StudentSessionRow, viewerId?: string | null
   const name = mentorName(session, viewerId);
   return name === "your mentor" ? "Mentor session" : name;
 }
+
+/**
+ * Full Support / program lessons the mentor scheduled (from
+ * `GET /full-support/mentee/sessions`). Upcoming = still scheduled and not yet
+ * over (so a lesson in progress keeps its Join link); everything else is past.
+ */
+export function splitLessons(lessons: SessionLogDto[], now = Date.now()) {
+  const valid = lessons.filter((l) => Number.isFinite(new Date(l.dateTime).getTime()));
+  const end = (l: SessionLogDto) => new Date(l.dateTime).getTime() + lessonMinutes(l.duration) * 60_000;
+  const isUpcoming = (l: SessionLogDto) => lessonOutcome(l) === "scheduled" && end(l) > now;
+  const upcoming = valid
+    .filter(isUpcoming)
+    .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
+  // A rescheduled lesson is replaced by its new booking, so it isn't listed.
+  const past = valid
+    .filter((l) => !isUpcoming(l) && lessonOutcome(l) !== "rescheduled")
+    .sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime());
+  return { upcoming, past };
+}
+
+export const LESSON_OUTCOME_LABELS: Record<SessionLogDto["outcome"], string> = {
+  scheduled: "Scheduled",
+  held: "Held",
+  cancelled: "Cancelled",
+  student_no_show: "Missed",
+  mentor_no_show: "Mentor didn’t join",
+  rescheduled: "Rescheduled",
+};

@@ -14,6 +14,7 @@ import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import MyProgressEditorialView from '../MyProgressEditorialView';
 import styles from './communityHubMock.module.scss';
+import { useFitToViewport } from 'src/hooks/useFitToViewport';
 import { ENABLE_COMMUNITY_FEED } from './communityFeedFlags';
 import CommunityFeedEditorialView from './CommunityFeedEditorialView';
 import FullSupportStudentPage from '../full-support/FullSupportStudentPage';
@@ -90,6 +91,8 @@ function ResearchPrepSection() {
 }
 
 export default function CommunityHubMockPage() {
+  // The messenger fills exactly the space left in the window (no page scroll).
+  const fitMessenger = useFitToViewport<HTMLDivElement>(320);
   const myLearningPath = useMyLearningPath();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -710,7 +713,7 @@ export default function CommunityHubMockPage() {
               behind the unlock modal — same shape as SAT Prep). */}
 
           {activeSection === 'messages' && isCommunityEnrolled && (
-            <div className={styles.messengerHubWrap}>
+            <div ref={fitMessenger} className={styles.messengerHubWrap}>
               <MessengerExperience
                 embedded
                 conversationId={messagesConversationId}

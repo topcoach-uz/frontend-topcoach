@@ -16,6 +16,7 @@ import {
   weakestSkills,
 } from "./sat-overview-model";
 import { answeredCount, findResumableRun } from "./satRunState";
+import { useStudentProfile } from "src/hooks/useStudentHub";
 import "./sat-platform.scss";
 
 const BASE = "/student-hub/sat-prep";
@@ -27,10 +28,16 @@ const SatDashboardPage: React.FC = () => {
   const { data: goal } = useGetSatStudyGoalQuery();
   const [resumable] = React.useState(() => findResumableRun());
   const score = scoreBreakdown(data?.mockSessions ?? []);
+  // The SAT the student reported in their Academic profile (official score).
+  const { profile } = useStudentProfile();
+  const reported = profileSatScore(profile?.academicProfile?.testScores?.sat);
+  // Headline: latest mock estimate; until both mocks exist, the profile score.
+  const headline = score.total ?? reported?.total ?? null;
+  const fromProfile = score.total == null && reported?.total != null;
   const target = goal?.targetScore ?? null;
   const scale = journeyScale({
-    current: score.total,
-    baseline: baselineTotal(data?.mockSessions ?? []),
+    current: headline,
+    baseline: baselineTotal(data?.mockSessions ?? []) ?? reported?.total ?? null,
     target,
   });
   const streak = streakState({
@@ -130,18 +137,21 @@ const SatDashboardPage: React.FC = () => {
       <section className="sat-platform__hero">
         <div className="sat-platform__journey-top">
           <h1 className="sat-platform__eyebrow">SAT score journey</h1>
-          {score.total != null && <span>Latest section mock estimates</span>}
+          {score.total != null ? <span>Latest section mock estimates</span> : fromProfile ? <span>From your Academic profile</span> : null}
         </div>
         <div className="sat-platform__score-line">
-          {score.total != null ? (
+          {headline != null ? (
             <div>
-              <strong>{score.total}</strong>
-              <span>Latest combined estimate</span>
+              <strong>{headline}</strong>
+              <span>{fromProfile ? "Your SAT score · from your profile" : "Latest combined estimate"}</span>
+              {!fromProfile && reported?.total != null && (
+                <small className="sat-platform__profile-score">Official SAT in your profile: {reported.total}</small>
+              )}
             </div>
           ) : (
             <div />
           )}
-          <SatTargetScore score={score.total} />
+          <SatTargetScore score={headline} />
         </div>
         <div className="sat-platform__score-track" aria-hidden="true">
           <i style={{ width: `${scale.pct}%` }} />
@@ -152,9 +162,18 @@ const SatDashboardPage: React.FC = () => {
             />
           )}
         </div>
-        {score.total != null && (
+        {headline != null && (
           <div className="sat-platform__journey-meta">
-            <span>Based on your latest Math and Reading & Writing mocks</span>
+            <span>
+              {fromProfile
+                ? [
+                    reported?.math != null ? `Math ${reported.math}` : null,
+                    reported?.readingWriting != null ? `Reading & Writing ${reported.readingWriting}` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ") || "From your Academic profile"
+                : "Based on your latest Math and Reading & Writing mocks"}
+            </span>
             {target != null && (
               <span>
                 {scale.toGo
@@ -342,6 +361,10 @@ const SatDashboardPage: React.FC = () => {
                         {s.estimatedScore ?? "—"}
                         <small> / 800</small>
                       </strong>
+                      {(() => {
+                        const official = label === "Math" ? reported?.math : reported?.readingWriting;
+                        return official != null ? <em className="sat-platform__profile-section">Profile: {official}</em> : null;
+                      })()}
                       <p>
                         {new Date(s.completedAt).toLocaleDateString("en-US", {
                           month: "short",
@@ -363,3 +386,14 @@ const SatDashboardPage: React.FC = () => {
   );
 };
 export default SatDashboardPage;
+
+/** Valid SAT numbers from the profile (sections 200–800, total 400–1600). */
+function profileSatScore(sat?: { math?: number; readingWriting?: number; total?: number }) {
+  if (!sat) return null;
+  const inRange = (value: unknown, min: number, max: number) =>
+    typeof value === "number" && Number.isFinite(value) && value >= min && value <= max ? value : undefined;
+  const math = inRange(sat.math, 200, 800);
+  const readingWriting = inRange(sat.readingWriting, 200, 800);
+  const total = inRange(sat.total, 400, 1600) ?? (math != null && readingWriting != null ? math + readingWriting : undefined);
+  return math == null && readingWriting == null && total == null ? null : { math, readingWriting, total };
+}

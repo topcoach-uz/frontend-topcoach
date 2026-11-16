@@ -54,4 +54,18 @@
     min-height: 40px;
     border-radius: 10px;
   }
+
+  // Footer: live conflict status on the left, actions on the right.
+  .ant-modal-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .lesson-plan-modal__check {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+    font-size: 13px;
+    color: #736b60;
+  }
 }

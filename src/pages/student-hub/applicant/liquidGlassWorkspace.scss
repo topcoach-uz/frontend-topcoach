@@ -54,8 +54,10 @@
     .ant-segmented-item {
       border-radius: 999px;
     }
-    .ant-segmented-item-selected {
+    .ant-segmented-item-selected,
+    .ant-segmented-thumb {
       background: #fff;
+      border-radius: 999px;
       box-shadow: 0 4px 12px -6px rgba(48, 43, 40, 0.35);
     }
   }

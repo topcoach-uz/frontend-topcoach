@@ -363,3 +363,26 @@
 .mc-ws-focus p.mc-ws-who-meta { margin: 14px 0 0; font-size: 13px; color: var(--mc-text-muted); }
 .mc-ws-hero .mc-ws-identity-goal { margin-top: 4px; }
 .mc-ws-hero > .ant-btn { margin-top: 16px; }
+
+/* Task files (one per line), per-file revision picker, extension review. */
+.mc-ws-files { display: flex; flex-direction: column; gap: 6px; margin: 6px 0 0; padding: 0; list-style: none;
+  li { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  a { display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; color: var(--mc-accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+.mc-ws-revision-files { display: flex; flex-direction: column; gap: 8px;
+  .ant-checkbox-wrapper { margin-inline-start: 0; }
+}
+.mc-ws-extension { display: flex; flex-direction: column; gap: 14px; }
+.mc-ws-extension-task { font-weight: 600; font-size: 15px; color: var(--mc-text); }
+.mc-ws-extension-dates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;
+  > div { padding: 10px 12px; border: 1px solid var(--mc-border); border-radius: 10px; background: var(--mc-bg-surface); display: flex; flex-direction: column; gap: 2px; }
+  span { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--mc-text-muted); }
+  strong { font-size: 15px; color: var(--mc-text); }
+}
+.mc-ws-extension-reason { padding: 10px 12px; border-radius: 10px; background: var(--mc-bg-subtle);
+  span { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--mc-text-muted); }
+  p { margin: 4px 0 0; font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+}
+.mc-ws-extension-field { display: flex; flex-direction: column; gap: 6px;
+  > span { font-size: 13px; font-weight: 600; color: var(--mc-text); }
+}

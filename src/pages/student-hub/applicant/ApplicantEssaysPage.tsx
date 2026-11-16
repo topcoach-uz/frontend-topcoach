@@ -90,6 +90,15 @@ function useIsMobile() {
   return mobile;
 }
 
+const ESSAY_STAGE_LABELS: Record<string, string> = {
+  draft: "Draft",
+  review: "In review",
+  revision: "Revising",
+  final: "Final",
+  submitted: "Submitted",
+  archived: "Archived",
+};
+
 export default function ApplicantEssaysPage() {
   const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
   const writingTypes = isMasters ? masterEssayTypes : essayTypes;
@@ -192,56 +201,80 @@ export default function ApplicantEssaysPage() {
             </Button>
           </div>
         ) : (
-          <div className="applicant-panel applicant-card-grid">
-            {query.data.data.map((essay) => (
-              <div className="applicant-writing-card-wrap" key={essay.id}>
-                <Link
-                  className="applicant-writing-card"
-                  to={`/student-hub/essays/${essay.id}`}
-                >
-                  {(() => {
-                    const typeLabel = writingTypes.find((type) => type.value === essay.essayType)?.label ?? "Essay";
-                    const limit = essayWordLimit(essay.essayType);
-                    const words = essay.wordCount ?? 0;
-                    const level = limitLevel(words, limit);
-                    return (
-                      <>
-                        {/* Skip the type label when the title already says it ("Personal statement" twice). */}
-                        {typeLabel.trim().toLowerCase() !== (essay.title || "").trim().toLowerCase() && (
-                          <span className="applicant-writing-card__type">{typeLabel}</span>
-                        )}
-                        <h2>{essay.title}</h2>
-                        {essay.prompt?.trim() && <p className="applicant-writing-card__prompt">{essay.prompt.trim()}</p>}
-                        <small className={`applicant-writing-card__meta is-${level}`}>
-                          {limit ? `${words} / ${limit} words` : `${words} words`} · Edited {displayDate(essay.updatedAt)}
-                        </small>
-                      </>
-                    );
-                  })()}
-                  {getMentorFeedbackText(essay.mentorFeedback) && (
-                    <span className="applicant-feedback-badge">
-                      <MessageSquareText size={14} /> Mentor feedback available
-                    </span>
-                  )}
-                </Link>
-                <Popconfirm
-                  title="Delete this draft?"
-                  description="This removes the draft from your writing list."
-                  okText="Delete"
-                  okButtonProps={{ danger: true }}
-                  onConfirm={() => removeEssay(essay)}
-                >
-                  <Button
-                    className="applicant-writing-card__delete"
-                    danger
-                    type="text"
-                    aria-label={`Delete ${essay.title}`}
-                    icon={<Trash2 size={16} />}
-                    loading={deletingId === essay.id}
-                  />
-                </Popconfirm>
-              </div>
-            ))}
+          <div className="applicant-panel applicant-card-grid applicant-essay-grid">
+            {query.data.data.map((essay) => {
+              const typeLabel = writingTypes.find((type) => type.value === essay.essayType)?.label ?? "Essay";
+              const limit = essayWordLimit(essay.essayType);
+              const words = essay.wordCount ?? 0;
+              const level = limitLevel(words, limit);
+              const progress = limit ? Math.min(100, Math.round((words / limit) * 100)) : null;
+              const application = (applications.data?.data ?? []).find((app) => app.id === essay.collegeApplicationId);
+              const stage = ESSAY_STAGE_LABELS[essay.status] ?? "Draft";
+              return (
+                <div className="applicant-writing-card-wrap" key={essay.id}>
+                  <Link className="applicant-writing-card" to={`/student-hub/essays/${essay.id}`}>
+                    <div className="applicant-writing-card__top">
+                      {/* Skip the type label when the title already says it ("Personal statement" twice). */}
+                      {typeLabel.trim().toLowerCase() !== (essay.title || "").trim().toLowerCase() ? (
+                        <span className="applicant-writing-card__type">{typeLabel}</span>
+                      ) : (
+                        <span className="applicant-writing-card__type">Essay</span>
+                      )}
+                      <span className={`applicant-writing-card__stage is-${essay.status}`}>{stage}</span>
+                    </div>
+                    <h2>{essay.title}</h2>
+                    {essay.prompt?.trim() ? (
+                      <p className="applicant-writing-card__prompt">{essay.prompt.trim()}</p>
+                    ) : (
+                      <p className="applicant-writing-card__prompt is-empty">No prompt added — open the draft to add one.</p>
+                    )}
+                    {application && (
+                      <span className="applicant-writing-card__for">
+                        For <RelatedApplicationLabel application={application} />
+                      </span>
+                    )}
+                    {getMentorFeedbackText(essay.mentorFeedback) && (
+                      <span className="applicant-feedback-badge">
+                        <MessageSquareText size={14} /> Mentor feedback available
+                      </span>
+                    )}
+                    <div className="applicant-writing-card__foot">
+                      {progress !== null && (
+                        <span className={`applicant-writing-card__bar is-${level}`} aria-hidden>
+                          <span style={{ width: `${Math.max(progress, words ? 3 : 0)}%` }} />
+                        </span>
+                      )}
+                      <small className={`applicant-writing-card__meta is-${level}`}>
+                        {limit ? `${words} / ${limit} words` : `${words} words`} · Edited {displayDate(essay.updatedAt)}
+                      </small>
+                    </div>
+                  </Link>
+                  <Popconfirm
+                    title="Delete this draft?"
+                    description="This removes the draft from your writing list."
+                    okText="Delete"
+                    okButtonProps={{ danger: true }}
+                    onConfirm={() => removeEssay(essay)}
+                  >
+                    <Button
+                      className="applicant-writing-card__delete"
+                      danger
+                      type="text"
+                      aria-label={`Delete ${essay.title}`}
+                      icon={<Trash2 size={16} />}
+                      loading={deletingId === essay.id}
+                    />
+                  </Popconfirm>
+                </div>
+              );
+            })}
+            <button type="button" className="applicant-writing-card applicant-writing-card--new" onClick={open}>
+              <span className="applicant-writing-card__plus" aria-hidden>
+                <Plus size={20} />
+              </span>
+              <strong>New draft</strong>
+              <small>Personal statement, supplement or scholarship essay</small>
+            </button>
           </div>
         )}
       </QueryState>

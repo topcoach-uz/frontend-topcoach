@@ -249,12 +249,50 @@
 .applicant-master-empty__notice-icon { display: grid; flex: 0 0 34px; place-items: center; width: 34px; height: 34px; border: 1px solid #e4e9ef; border-radius: 8px; background: #fff; color: #647387; }
 .applicant-master-empty__notice strong { display: block; font-size: 14px; font-weight: 500; }
 .applicant-master-empty__notice small { display: block; margin-top: 4px; font-size: 12px; }
+/* Page trail — matches the Admissions Program header (badge › current). */
 .applicant-breadcrumb {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
-  color: #606976;
-  font-size: 13px;
+  color: #6b7280;
+  font-size: 0.86rem;
+  line-height: 1.3;
+}
+/* Admissions order: the trail sits above the page title, not under it. */
+.applicant-page > .applicant-breadcrumb {
+  order: -1;
+  margin-bottom: -8px;
+}
+.applicant-breadcrumb__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fbe9ec;
+  color: #7b1f2f;
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: background-color 160ms ease-out, transform 100ms ease-out;
+  &:hover { background: #f7dce1; color: #7b1f2f; }
+  &:active { transform: scale(0.97); }
+  &:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+}
+.applicant-breadcrumb__sep {
+  flex: none;
+  color: #cbcbb6;
+}
+.applicant-breadcrumb__step {
+  color: #6b7280;
+  a { color: inherit; }
+  a:hover { color: #7b1f2f; text-decoration: underline; text-underline-offset: 3px; }
+}
+.applicant-breadcrumb__current {
+  min-width: 0;
+  color: #1f2937;
+  font-weight: 500;
+  a { color: inherit; }
 }
 .applicant-two-columns {
   display: grid;
@@ -1437,8 +1475,6 @@
   &__status--approved { background: #edf6ee; color: #226334; }
   &__status--revision_requested { background: #fff0e7; color: #994212; }
   &__status--submitted { background: #edf2fa; color: #27558e; }
-  &__item a { display: inline-flex; align-items: center; gap: 4px; margin: 0 12px 12px 0; }
-  &__item button { display: block; }
   @media (max-width: 600px) { &__head, &__top { flex-direction: column; } }
 }
 
@@ -2338,4 +2374,446 @@ details.essay-angles__quick {
 .essay-review__skeleton-card { display: block; height: 84px; border-radius: 10px; }
 @media (prefers-reduced-motion: reduce) {
   .essay-review__find { transition: none; &:active { transform: none; } }
+}
+
+/* Results pager: round glass arrows around compact page numbers. */
+.applicant-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.applicant-pager__pages {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.95), 0 6px 16px -10px rgba(48, 43, 40, 0.3);
+}
+.applicant-pager__arrow,
+.applicant-pager__page {
+  display: grid;
+  place-items: center;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 160ms ease-out, color 160ms ease-out, transform 100ms ease-out, box-shadow 160ms ease-out;
+  &:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+  &:active:not(:disabled) { transform: scale(0.94); }
+}
+.applicant-pager__arrow {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: #8b0000;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.95), 0 6px 16px -10px rgba(48, 43, 40, 0.3);
+  &:hover:not(:disabled) { background: #8b0000; color: #fff; box-shadow: 0 8px 18px -10px rgba(139, 0, 0, 0.6); }
+  &:disabled { color: #c9c1bb; cursor: not-allowed; box-shadow: none; }
+}
+.applicant-pager__page {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: transparent;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  &:hover:not(.is-active) { background: rgba(139, 0, 0, 0.07); color: #8b0000; }
+  &.is-active { background: #8b0000; color: #fff; font-weight: 600; cursor: default; box-shadow: 0 4px 10px -4px rgba(139, 0, 0, 0.5); }
+}
+.applicant-pager__gap {
+  min-width: 20px;
+  color: #a39890;
+  text-align: center;
+  font-size: 13px;
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .applicant-pager__pages,
+  .applicant-pager__arrow { background: #fff; backdrop-filter: none; -webkit-backdrop-filter: none; border-color: #e5ded8; }
+}
+@media (max-width: 480px) {
+  .applicant-pager { gap: 6px; }
+  .applicant-pager__arrow { width: 38px; height: 38px; }
+  .applicant-pager__page { min-width: 30px; height: 30px; }
+}
+
+// ---------- Essay list: paper tiles that adapt to the available width ----------
+// auto-fill: 1 column on phones, 2–4 on desktop depending on whether the
+// section panel is open — no fixed column count to break.
+.applicant-shell .applicant-content .applicant-essay-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 18px;
+  padding: 20px;
+}
+
+.applicant-shell .applicant-content .applicant-essay-grid .applicant-writing-card {
+  min-height: 260px;
+  padding: 22px 24px 20px;
+  padding-right: 56px;
+  border-radius: 18px;
+  gap: 10px;
+  box-shadow: inset 0 1px 0 #fff, 0 1px 2px rgba(48, 43, 40, 0.04), 0 10px 24px -20px rgba(48, 43, 40, 0.35);
+  transition:
+    transform 240ms cubic-bezier(0.32, 0.72, 0, 1),
+    box-shadow 240ms cubic-bezier(0.32, 0.72, 0, 1),
+    border-color 240ms ease;
+
+  h2 { font-size: 21px; line-height: 1.25; }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: inset 0 1px 0 #fff, 0 2px 4px rgba(48, 43, 40, 0.05), 0 18px 32px -22px rgba(48, 43, 40, 0.45);
+  }
+}
+
+.applicant-writing-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.applicant-writing-card__stage {
+  flex: none;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #f4f1ee;
+  color: #655c55;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 18px;
+
+  &.is-review { background: #eef2fb; color: #3b5ba9; }
+  &.is-revision { background: #fff4e5; color: #9a5b00; }
+  &.is-final, &.is-submitted { background: #e9f6ee; color: #1f7a45; }
+}
+
+.applicant-shell .applicant-content .applicant-essay-grid .applicant-writing-card__prompt {
+  -webkit-line-clamp: 3;
+  font-size: 14px;
+
+  &.is-empty { color: #a39a92; font-style: italic; }
+}
+
+.applicant-writing-card__for {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f7e6e4;
+  color: #8b0000;
+  font-size: 12.5px;
+  font-weight: 500;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+}
+
+.applicant-writing-card__foot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 6px;
+
+  .applicant-writing-card__meta { margin-top: 0; padding-top: 0; }
+}
+
+.applicant-writing-card__bar {
+  position: relative;
+  height: 4px;
+  border-radius: 999px;
+  background: #efeae5;
+  overflow: hidden;
+
+  > span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: inherit;
+    background: #8b0000;
+    transition: width 420ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  &.is-near > span { background: #c27c0e; }
+  &.is-over > span { background: #b3261e; }
+}
+
+// "New draft" tile: same footprint, quiet dashed outline.
+.applicant-shell .applicant-content .applicant-essay-grid .applicant-writing-card--new {
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  border: 1.5px dashed #ddd3cb;
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: none;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+
+  gap: 6px;
+  strong { margin: 0; font-size: 16px; font-weight: 600; color: #302b28; }
+  small { margin: 0; padding: 0; max-width: 220px; color: #8a8079; font-size: 13px; line-height: 1.45; }
+
+  &:hover {
+    border-color: #8b0000;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: none;
+    .applicant-writing-card__plus { background: #8b0000; color: #fff; }
+  }
+}
+
+.applicant-writing-card__plus {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 4px;
+  border-radius: 14px;
+  background: #f7e6e4;
+  color: #8b0000;
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+@media (max-width: 640px) {
+  .applicant-shell .applicant-content .applicant-essay-grid { padding: 12px; gap: 12px; }
+  .applicant-shell .applicant-content .applicant-essay-grid .applicant-writing-card { min-height: 0; }
+  // Phones already have the full-width "New draft" button above the list.
+  .applicant-shell .applicant-content .applicant-essay-grid .applicant-writing-card--new { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .applicant-writing-card__bar > span { transition: none; }
+}
+
+/* =====================================================================
+   Glass search capsule (apple-design §12 materials, §1 response).
+   One floating capsule holds the field and its action — like Safari's
+   address bar — instead of two separate boxes. Light catches the top
+   edge; on focus the material thickens and picks up a faint brand tint.
+   ===================================================================== */
+.applicant-shell form.applicant-glass-search,
+form.applicant-glass-search {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 60px;
+  padding: 6px 6px 6px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 18px 22px -18px rgba(255, 255, 255, 0.8),
+    inset 0 -10px 18px -14px rgba(48, 43, 40, 0.07),
+    0 18px 36px -26px rgba(48, 43, 40, 0.38),
+    0 1px 3px rgba(48, 43, 40, 0.05);
+  transition:
+    background-color 240ms cubic-bezier(0.32, 0.72, 0, 1),
+    box-shadow 240ms cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Specular rim: bright at the top-left, thinning across the lens. */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    padding: 1px;
+    pointer-events: none;
+    background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 1) 0%,
+      rgba(255, 255, 255, 0.45) 30%,
+      rgba(48, 43, 40, 0.08) 65%,
+      rgba(255, 255, 255, 0.85) 100%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    transition: background 240ms ease-out;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.62);
+  }
+
+  /* Focus: the material thickens, a soft brand halo, rim warms. */
+  &:focus-within {
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 1),
+      inset 0 18px 22px -18px rgba(255, 255, 255, 0.9),
+      0 0 0 4px rgba(139, 0, 0, 0.08),
+      0 22px 44px -26px rgba(139, 0, 0, 0.32),
+      0 1px 3px rgba(48, 43, 40, 0.05);
+
+    &::before {
+      background: linear-gradient(
+        160deg,
+        rgba(255, 255, 255, 1) 0%,
+        rgba(139, 0, 0, 0.22) 45%,
+        rgba(139, 0, 0, 0.12) 75%,
+        rgba(255, 255, 255, 0.9) 100%
+      );
+    }
+    .ant-input-prefix {
+      color: #8b0000;
+    }
+  }
+
+  /* The field itself is clear — it lives on the capsule, not on its own glass. */
+  .ant-input-affix-wrapper,
+  .ant-input-affix-wrapper:not(.ant-input-affix-wrapper-borderless),
+  .ant-input-affix-wrapper:hover,
+  .ant-input-affix-wrapper-focused,
+  .ant-input-affix-wrapper:focus-within {
+    flex: 1;
+    min-width: 0;
+    min-height: 48px;
+    padding: 0 10px 0 14px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    font-size: 16px;
+  }
+  .ant-input-affix-wrapper > input.ant-input {
+    background: transparent;
+    color: #221d1a;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+
+    &::placeholder {
+      color: #8a8079;
+      opacity: 1;
+    }
+  }
+  .ant-input-prefix {
+    margin-right: 12px;
+    color: #7a706a;
+    transition: color 200ms ease-out;
+  }
+  .ant-input-clear-icon {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(118, 107, 99, 0.16);
+    color: #5f5650;
+    font-size: 10px;
+    transition: background-color 160ms ease-out;
+
+    &:hover {
+      background: rgba(118, 107, 99, 0.28);
+      color: #221d1a;
+    }
+  }
+
+  /* Action button: a solid brand pill nested in the capsule. */
+  .ant-btn,
+  .ant-btn-primary:not(:disabled):not(.ant-btn-dangerous) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex: none;
+    min-width: 0;
+    height: 48px;
+    min-height: 48px;
+    padding: 0 18px 0 22px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 8px 18px -10px rgba(139, 0, 0, 0.65);
+    transition:
+      background-color 160ms ease-out,
+      transform 100ms ease-out,
+      box-shadow 160ms ease-out;
+
+    &:active {
+      transform: scale(0.96);
+    }
+    &:focus-visible {
+      outline: 2px solid #8b0000;
+      outline-offset: 3px;
+    }
+  }
+  .applicant-glass-search__go {
+    transition: transform 220ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .ant-btn:hover .applicant-glass-search__go {
+    transform: translateX(2px);
+  }
+}
+
+/* Phone: the action collapses to a round arrow so the field keeps its width. */
+@media (max-width: 650px) {
+  .applicant-shell form.applicant-glass-search,
+  form.applicant-glass-search {
+    min-height: 56px;
+    padding: 5px 5px 5px 6px;
+
+    .ant-input-affix-wrapper,
+    .ant-input-affix-wrapper:not(.ant-input-affix-wrapper-borderless) {
+      min-height: 46px;
+      padding: 0 6px 0 12px;
+    }
+    .ant-btn,
+    .ant-btn-primary:not(:disabled):not(.ant-btn-dangerous) {
+      width: 46px;
+      height: 46px;
+      min-height: 46px;
+      padding: 0;
+    }
+    .applicant-glass-search__label {
+      display: none;
+    }
+  }
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .applicant-shell form.applicant-glass-search,
+  form.applicant-glass-search {
+    background: #fff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 0 0 1px #d8d0c9;
+
+    &::before { display: none; }
+    &:focus-within { background: #fff; box-shadow: 0 0 0 2px #8b0000; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  form.applicant-glass-search .ant-btn:active,
+  form.applicant-glass-search .ant-btn:hover .applicant-glass-search__go {
+    transform: none;
+  }
 }

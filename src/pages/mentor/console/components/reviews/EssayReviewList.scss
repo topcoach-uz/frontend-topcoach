@@ -1,0 +1,298 @@
+/* Mentor essay review queue. Uses the mentor-console tokens (--mc-*). */
+.mc-essay-reviews {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.mc-essay-reviews__lead {
+  margin: 0;
+  color: var(--mc-text-secondary, #5b5347);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.mc-essay-reviews__filter {
+  align-self: flex-start;
+  margin-bottom: 4px;
+}
+.mc-essay-reviews__list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---------- Review card ---------- */
+.mc-essay-review {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 22px 24px;
+  border: 1px solid var(--mc-border, #e7e3d8);
+  border-radius: var(--mc-radius, 16px);
+  background: var(--mc-bg-surface, #fbfaf6);
+  box-shadow: var(--mc-shadow-sm, 0 1px 2px rgba(28, 25, 23, 0.04));
+  transition: box-shadow 200ms ease-out, border-color 200ms ease-out;
+
+  &.is-open {
+    border-color: var(--mc-border-strong, #ddd6c8);
+    box-shadow: var(--mc-shadow-md, 0 12px 32px rgba(123, 31, 47, 0.08));
+  }
+
+  @media (max-width: 600px) {
+    padding: 18px 16px;
+  }
+}
+
+.mc-essay-review__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.mc-essay-review__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+
+  h3 {
+    margin: 0;
+    color: var(--mc-text, #1c1a17);
+    font-family: var(--mc-serif, Georgia, serif);
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+  }
+}
+.mc-essay-review__student {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--mc-text-secondary, #5b5347);
+  font-size: 13px;
+  font-weight: 500;
+}
+.mc-essay-review__avatar {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--mc-accent-soft-strong, rgba(123, 31, 47, 0.13));
+  color: var(--mc-accent, #7b1f2f);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Status chip — color sits on a solid tint, with a leading dot. */
+.mc-essay-review__status {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+}
+.mc-essay-review__status--pending {
+  background: var(--mc-warning-soft, rgba(180, 83, 9, 0.12));
+  color: var(--mc-warning, #b45309);
+}
+.mc-essay-review__status--progress {
+  background: var(--mc-info-soft, rgba(29, 78, 216, 0.08));
+  color: var(--mc-info, #1d4ed8);
+}
+.mc-essay-review__status--done {
+  background: var(--mc-success-soft, rgba(21, 128, 61, 0.1));
+  color: var(--mc-success, #15803d);
+}
+
+.mc-essay-review__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+.mc-essay-review__facts {
+  color: var(--mc-text-muted, #9a8f7d);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Which university application an essay draft is for. */
+.mc-essay-target {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--mc-accent-soft, #fbf1ef);
+  color: var(--mc-accent, #8b0000);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+
+  strong { font-weight: 600; }
+}
+.mc-essay-target--none {
+  background: var(--mc-bg-subtle, #f4f1ee);
+  color: var(--mc-text-muted, #6e6a66);
+}
+
+.mc-essay-review__note {
+  margin: 0;
+  padding: 10px 14px;
+  border-left: 3px solid var(--mc-accent-ring, rgba(123, 31, 47, 0.18));
+  border-radius: 0 var(--mc-radius-sm, 10px) var(--mc-radius-sm, 10px) 0;
+  background: var(--mc-bg-subtle, #f6f3ec);
+  color: var(--mc-text, #1c1a17);
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+
+  > span {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--mc-text-muted, #9a8f7d);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+}
+
+.mc-essay-review__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+/* ---------- Opened review ---------- */
+.mc-essay-review__prompt {
+  > span {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--mc-text-muted, #9a8f7d);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  p {
+    margin: 0;
+    color: var(--mc-text-secondary, #5b5347);
+    font-size: 14px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* The essay reads like paper: white sheet, roomy leading, scrolls on its own. */
+.mc-essay-review__paper {
+  max-height: min(60vh, 520px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px 28px;
+  border: 1px solid var(--mc-hairline, #ece6da);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--mc-text, #1c1a17);
+  font-family: var(--mc-serif, Georgia, serif);
+  font-size: 16px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  /* Long unbroken strings (pasted links) wrap instead of running wide. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+
+  em { color: var(--mc-text-muted, #9a8f7d); }
+
+  &:focus-visible {
+    outline: 2px solid var(--mc-accent-ring, rgba(123, 31, 47, 0.18));
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 600px) {
+    padding: 18px;
+    font-size: 15px;
+  }
+}
+
+.mc-essay-review__composer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 18px;
+  border-top: 1px solid var(--mc-hairline, #ece6da);
+
+  textarea.ant-input {
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .ant-input-textarea-show-count .ant-input-data-count,
+  .ant-input-data-count {
+    color: var(--mc-text-muted, #9a8f7d);
+    font-size: 12px;
+  }
+}
+.mc-essay-review__composer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  label {
+    color: var(--mc-text, #1c1a17);
+    font-size: 15px;
+    font-weight: 600;
+  }
+}
+.mc-essay-review__composer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  /* Room for the character counter that sits under the textarea. */
+  margin-top: 14px;
+}
+
+.mc-essay-review__sent {
+  padding: 14px 16px;
+  border: 1px solid var(--mc-success-soft, rgba(21, 128, 61, 0.1));
+  border-radius: 12px;
+  background: rgba(21, 128, 61, 0.05);
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    color: var(--mc-success, #15803d);
+    font-size: 14px;
+    font-weight: 600;
+  }
+  p {
+    margin: 0;
+    color: var(--mc-text, #1c1a17);
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}
