@@ -410,7 +410,6 @@ const SatMockTestPage: React.FC = () => {
             <span className="sat-runner__briefing-dot" /> MISSION BRIEFING
           </div>
           <h1 className="sat-runner__briefing-title">{meta.title ?? 'Mock Test'}</h1>
-          <div className="sat-runner__briefing-sub">System check complete. Ready for launch.</div>
 
           <div className="sat-runner__briefing-stats">
             <div className="sat-runner__briefing-stat">
@@ -502,7 +501,7 @@ const SatMockTestPage: React.FC = () => {
               </div>
               <h1 className="sat-review__title">{meta.title ?? 'Practice session'}</h1>
               <p className="sat-review__subtitle">
-                {isMath ? 'Math' : 'Reading & Writing'} · {meta.mode === 'mock' ? 'Bluebook-style mock' : meta.mode === 'pack' ? 'Test pack' : 'Practice'}
+                {isMath ? 'Math' : 'Reading & Writing'}
               </p>
               <div className="sat-review__actions">
                 {wrongCount > 0 ? (
@@ -1042,30 +1041,10 @@ const SatMockTestPage: React.FC = () => {
       >
         <div className="sat-runner__exit-options">
           <p className="sat-runner__exit-lead">
-            Leave test? Your answers are saved and you can resume from the SAT Overview.
-          </p>
-          <p className="sat-runner__exit-lead">
             You've answered{' '}
             <strong>{answeredCount({ answers })}</strong>{' '}
             of <strong>{total}</strong> questions so far.
           </p>
-          <ul className="sat-runner__exit-list">
-            <li>
-              <strong>Leave &amp; resume later</strong> — keep your answers and timer, and pick up
-              from the SAT Overview.
-            </li>
-            <li>
-              <strong>Finish &amp; submit</strong> — score this attempt and add it to your study
-              history. Unanswered questions count as incorrect.
-            </li>
-            <li>
-              <strong>Exit without saving</strong> — leave now and discard this attempt. Nothing is
-              recorded.
-            </li>
-            <li>
-              <strong>Keep going</strong> — close this dialog and return to the test.
-            </li>
-          </ul>
         </div>
       </RunnerModal>
 

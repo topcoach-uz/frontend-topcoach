@@ -106,6 +106,8 @@ const SatDashboardPage: React.FC = () => {
         </button>
       </div>
     );
+  const hasMocks =
+    typeof score.math === "object" || typeof score.reading === "object";
   return (
     <div className="sat-platform">
       {resumable && (
@@ -128,13 +130,17 @@ const SatDashboardPage: React.FC = () => {
       <section className="sat-platform__hero">
         <div className="sat-platform__journey-top">
           <h1 className="sat-platform__eyebrow">SAT score journey</h1>
-          <span>Latest section mock estimates</span>
+          {score.total != null && <span>Latest section mock estimates</span>}
         </div>
         <div className="sat-platform__score-line">
-          <div>
-            <strong>{score.total ?? "—"}</strong>
-            <span>Latest combined estimate</span>
-          </div>
+          {score.total != null ? (
+            <div>
+              <strong>{score.total}</strong>
+              <span>Latest combined estimate</span>
+            </div>
+          ) : (
+            <div />
+          )}
           <SatTargetScore score={score.total} />
         </div>
         <div className="sat-platform__score-track" aria-hidden="true">
@@ -146,22 +152,18 @@ const SatDashboardPage: React.FC = () => {
             />
           )}
         </div>
-        <div className="sat-platform__journey-meta">
-          <span>
-            {score.total
-              ? "Based on your latest Math and Reading & Writing mocks"
-              : "Complete both section mocks to establish your baseline"}
-          </span>
-          {target != null && score.total != null ? (
-            <span>
-              {scale.toGo
-                ? `${scale.toGo} points to go · ${scale.min} → ${target}`
-                : "Target reached"}
-            </span>
-          ) : (
-            <span>Score scale: 400–1600</span>
-          )}
-        </div>
+        {score.total != null && (
+          <div className="sat-platform__journey-meta">
+            <span>Based on your latest Math and Reading & Writing mocks</span>
+            {target != null && (
+              <span>
+                {scale.toGo
+                  ? `${scale.toGo} points to go · ${scale.min} → ${target}`
+                  : "Target reached"}
+              </span>
+            )}
+          </div>
+        )}
         <div className="sat-platform__hero-action">
           <button
             className="sat-action sat-action--primary"
@@ -185,33 +187,29 @@ const SatDashboardPage: React.FC = () => {
           <strong>
             {streak.count
               ? `${streak.count}-day streak`
-              : "Start a study streak"}
+              : "Practise today to start a streak"}
           </strong>
-          <span>
-            {streak.atRisk
-              ? `Practise today to keep your ${streak.count}-day streak`
-              : streak.doneToday
-                ? "Daily goal done: you practised today"
-                : "Daily goal: one practice session today"}
-          </span>
+          {streak.count > 0 && (
+            <span>
+              {streak.atRisk
+                ? "Practise today to keep it going"
+                : streak.doneToday
+                  ? "You practised today"
+                  : "One practice session today"}
+            </span>
+          )}
         </div>
-        <span
-          className={`sat-streak__goal${streak.doneToday ? " is-done" : ""}`}
-        >
-          {streak.doneToday ? "Done today" : "Not done yet"}
-        </span>
+        {streak.count > 0 && (
+          <span
+            className={`sat-streak__goal${streak.doneToday ? " is-done" : ""}`}
+          >
+            {streak.doneToday ? "Done today" : "Not done yet"}
+          </span>
+        )}
       </section>
       <section className="sat-platform__plan">
         <header>
-          <div>
-            <h2>Today’s score-building plan</h2>
-            <p>
-              {focus
-                ? "Practice your focus skill, review saved questions, then test under timing."
-                : "A clear starting point for your next session."}
-            </p>
-          </div>
-          <span>Your next steps</span>
+          <h2>Your next steps</h2>
         </header>
         <div className="sat-platform__tasks">
           <div className="sat-platform__task sat-platform__task--active">
@@ -225,7 +223,7 @@ const SatDashboardPage: React.FC = () => {
               <p>
                 {focus
                   ? `${focus.pct}% accuracy · ${focus.attempts} tracked answers`
-                  : "Math or Reading & Writing · Choose your difficulty"}
+                  : "Math or Reading & Writing"}
               </p>
             </div>
             <button
@@ -249,8 +247,8 @@ const SatDashboardPage: React.FC = () => {
               </h3>
               <p>
                 {marked.length
-                  ? "Open the question, check your reasoning, read the explanation."
-                  : "Flag questions during practice to keep them here."}
+                  ? "Check your reasoning and read the explanation."
+                  : "Flag questions during practice."}
               </p>
             </div>
             <Link className="sat-action" to={`${BASE}/library?tab=marked`}>
@@ -286,81 +284,81 @@ const SatDashboardPage: React.FC = () => {
           </span>
         </div>
       )}
-      <section className="sat-platform__performance">
-        <div>
-          <header>
-            <h2>Where to focus next</h2>
-            <Link to={`${BASE}/review`}>
-              All progress <ArrowRight size={14} />
-            </Link>
-          </header>
-          {skills.length ? (
-            skills.slice(0, 3).map((skill) => (
-              <div
-                className="sat-platform__skill"
-                key={`${skill.section}-${skill.skill}`}
-              >
-                <div>
-                  <strong>{skill.skill}</strong>
-                  <span>{skill.pct}%</span>
+      {(skills.length > 0 || hasMocks) && (
+        <section className="sat-platform__performance">
+          {skills.length > 0 && (
+            <div>
+              <header>
+                <h2>Where to focus next</h2>
+                <Link to={`${BASE}/review`}>
+                  All progress <ArrowRight size={14} />
+                </Link>
+              </header>
+              {skills.slice(0, 3).map((skill) => (
+                <div
+                  className="sat-platform__skill"
+                  key={`${skill.section}-${skill.skill}`}
+                >
+                  <div>
+                    <strong>{skill.skill}</strong>
+                    <span>{skill.pct}%</span>
+                  </div>
+                  <p>
+                    {skill.domain} · {skill.attempts} answers
+                  </p>
+                  <div className="sat-platform__bar">
+                    <i
+                      style={{
+                        width: `${Math.min(100, Math.max(0, skill.pct))}%`,
+                      }}
+                    />
+                  </div>
                 </div>
-                <p>
-                  {skill.domain} · {skill.attempts} answers
-                </p>
-                <div className="sat-platform__bar">
-                  <i
-                    style={{
-                      width: `${Math.min(100, Math.max(0, skill.pct))}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="sat-platform__empty">
-              <BookOpen size={22} />
-              <p>Your skill breakdown appears after your first practice.</p>
+              ))}
             </div>
           )}
-        </div>
-        <div className="sat-platform__breakdown">
-          <header>
-            <h2>Your section mocks</h2>
-            <span className="sat-platform__combined">
-              {score.total ?? "—"}
-              <small> combined</small>
-            </span>
-          </header>
-          <div className="sat-platform__sections">
-            {[
-              ["Math", score.math],
-              ["Reading & Writing", score.reading],
-            ].map(([label, session]) => {
-              const s = typeof session === "object" ? session : undefined;
-              return (
-                <div key={String(label)}>
-                  <span>{String(label)}</span>
-                  <strong>
-                    {s?.estimatedScore ?? "—"}
-                    <small> / 800</small>
-                  </strong>
-                  <p>
-                    {s
-                      ? new Date(s.completedAt).toLocaleDateString("en-US", {
+          {hasMocks && (
+            <div className="sat-platform__breakdown">
+              <header>
+                <h2>Your section mocks</h2>
+                {score.total != null && (
+                  <span className="sat-platform__combined">
+                    {score.total}
+                    <small> combined</small>
+                  </span>
+                )}
+              </header>
+              <div className="sat-platform__sections">
+                {[
+                  ["Math", score.math],
+                  ["Reading & Writing", score.reading],
+                ].map(([label, session]) => {
+                  const s = typeof session === "object" ? session : undefined;
+                  if (!s) return null;
+                  return (
+                    <div key={String(label)}>
+                      <span>{String(label)}</span>
+                      <strong>
+                        {s.estimatedScore ?? "—"}
+                        <small> / 800</small>
+                      </strong>
+                      <p>
+                        {new Date(s.completedAt).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
-                        })
-                      : "No completed mock yet"}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-          <Link className="sat-platform__text-link" to={`${BASE}/review`}>
-            View your practice history <ArrowRight size={15} />
-          </Link>
-        </div>
-      </section>
+                        })}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+              <Link className="sat-platform__text-link" to={`${BASE}/review`}>
+                View your practice history <ArrowRight size={15} />
+              </Link>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 };

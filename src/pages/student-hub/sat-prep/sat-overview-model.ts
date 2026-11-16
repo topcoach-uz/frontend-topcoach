@@ -78,12 +78,7 @@ export function resultInsights(input: {
   }
   const prev = previousAttempt(saved, sessions);
   if (!prev) {
-    out.push({
-      key: "delta",
-      tone: "neutral",
-      value: "First",
-      label: "attempt of this kind",
-    });
+    // No previous attempt: show no change row.
   } else if (est != null && prev.estimatedScore != null) {
     const d = est - prev.estimatedScore;
     out.push({

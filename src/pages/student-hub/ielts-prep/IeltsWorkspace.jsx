@@ -85,6 +85,7 @@ import {
 } from "./general-reading.jsx";
 import { ImportedSpeakingPrompt, speakingQuestionText, speakingStorageKey } from "./ImportedSpeaking.jsx";
 import { ImportedWritingPrompt } from "./ImportedWriting.jsx";
+import { EXAM_TIMING, expiryAction, timingFor } from "./timer.js";
 import { ImportedListeningQuestions } from "./ImportedListening.jsx";
 import { listeningPart, listeningKeys, completeListeningKeys, listeningPartForQuestion, practiceRelease } from "./listening-library.js";
 import { extraPassages, ExtraReadingQuestions } from "./reading-extra.jsx";
@@ -425,8 +426,9 @@ function App() {
   const readBrowse = useRead();
   const dialogRef = useRef(null);
   const trackedSkill = r && r.skill !== "score" ? r.skill : null;
+  const isMock = new URLSearchParams(path.split("?")[1] || "").get("mode") === "mock";
   const clockKey = trackedSkill
-    ? `workspace:clock:${r.type}:${r.book}:${r.test}:${trackedSkill}`
+    ? `workspace:clock:${r.type}:${r.book}:${r.test}:${trackedSkill}${trackedSkill === "writing" && !isMock ? `:${r.part}` : ""}`
     : "workspace:clock:none";
   const [clock, setClock] = useStored(clockKey, null);
   const [timerChoice, setTimerChoice] = useStored(
@@ -694,26 +696,9 @@ function App() {
     </div>
   );
 }
-const EXAM_TIMING = {
-  listening: {
-    minutes: 30,
-    label: "Listening",
-    note: "30 minutes of audio. In the computer-delivered test you also get about 2 minutes at the end to review your answers.",
-  },
-  reading: {
-    minutes: 60,
-    label: "Reading",
-    note: "60 minutes for all three passages. There is no extra time to transfer answers.",
-  },
-  writing: {
-    minutes: 60,
-    label: "Writing",
-    note: "60 minutes in total. Spend about 20 minutes on Task 1 and 40 minutes on Task 2.",
-  },
-};
 const pad = (n) => String(n).padStart(2, "0");
 function StartPanel({ r, timer }) {
-  const info = EXAM_TIMING[r.skill];
+  const info = timingFor(r.skill, r.part, false);
   return (
     <div className="scrim">
       <section
@@ -756,6 +741,10 @@ function Clock({ r, timer, setModal, go, mark }) {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
+  // Remember the deadline we watched while it was still in the future, so a
+  // deadline that expired before we opened this test is not announced.
+  const seenLive = useRef(null);
+  if (clock?.deadline && clock.deadline > now) seenLive.current = clock.deadline;
   const remaining = clock?.deadline
     ? Math.max(0, Math.ceil((clock.deadline - now) / 1000))
     : clock?.remaining || 0;
@@ -771,6 +760,8 @@ function Clock({ r, timer, setModal, go, mark }) {
     const unanswered = progress ? QUESTION_TOTAL - progress.answered : 0;
     const finish = () => {
       mark(r, r.skill, "done");
+      setClock(null);
+      setChoice(null);
       go(testPath(r, "score"));
     };
     setModal({
@@ -783,7 +774,12 @@ function Clock({ r, timer, setModal, go, mark }) {
     });
   };
   useEffect(() => {
-    if (clock?.deadline && remaining === 0) {
+    const action = expiryAction(clock, seenLive.current, Date.now());
+    if (action === "discard") {
+      // Finished in an earlier attempt: start fresh instead of a stale alert.
+      setClock(null);
+      setChoice(null);
+    } else if (action === "announce") {
       setClock(null);
       setModal({
         title: "Time is up",
@@ -791,11 +787,12 @@ function Clock({ r, timer, setModal, go, mark }) {
         actionLabel: "Submit and see score",
         action: () => {
           mark(r, r.skill, "done");
+          setChoice(null);
           go(testPath(r, "score"));
         },
       });
     }
-  }, [remaining]);
+  }, [remaining, clock?.deadline]);
   const start = (minutes, mode = "part") => {
     setClock({
       deadline: Date.now() + minutes * 60000,
@@ -1036,6 +1033,20 @@ function ListeningAudio({ src }) {
     </>
   );
 }
+function PracticeSkeleton({ skill }) {
+  return (
+    <div className="practice-skeleton" role="status" aria-live="polite" aria-busy="true">
+      <span className="sr-only">Loading {skill} test…</span>
+      <div className="sk-line sk-title" />
+      <div className="sk-line" />
+      <div className="sk-line" />
+      <div className="sk-line sk-short" />
+      <div className="sk-block" />
+      <div className="sk-line" />
+      <div className="sk-line sk-short" />
+    </div>
+  );
+}
 function Practice({ r, go, setModal, setToast, mark, timer }) {
   const { storagePrefix, onStorageError, listeningLibrary, readingLibrary, writingLibrary, speakingLibrary } = useContext(WorkspaceContext);
   const library = r.skill === "speaking" ? speakingLibrary : r.skill === "writing" ? writingLibrary : r.skill === "reading" ? readingLibrary : listeningLibrary;
@@ -1046,6 +1057,15 @@ function Practice({ r, go, setModal, setToast, mark, timer }) {
   const currentKeys = ["listening", "reading"].includes(r.skill) ? listeningKeys(library?.data) : answerKeys(r);
   const practiceKey = r.skill === "speaking" && speakingLibrary?.data ? speakingStorageKey(speakingLibrary.data) : ["listening", "reading", "writing"].includes(r.skill) ? `${storageKey(r)}:library:${practiceRelease(library?.data)}` : storageKey(r);
   const mock = new URLSearchParams(location.search).get("mode") === "mock";
+  // The writing sample answer stays hidden until this task has been submitted.
+  const hasSubmittedDraft = () => {
+    const stored = read(`${storagePrefix}${practiceKey}:versions:${r.part}`, []);
+    return Array.isArray(stored) && stored.length > 0;
+  };
+  const [speakingQuestion, setSpeakingQuestion] = useState(0);
+  useEffect(() => { setSpeakingQuestion(0); }, [speakingLibrary?.data?.topic?.id, r.part]);
+  const [sampleUnlocked, setSampleUnlocked] = useState(hasSubmittedDraft);
+  useEffect(() => { setSampleUnlocked(hasSubmittedDraft()); }, [practiceKey, r.part]);
   const [answers, setAnswers] = useStored(practiceKey, {}),
     [revealed, setRevealed] = useState(false),
     [notesOn, setNotesOn] = useState(false),
@@ -1253,12 +1273,12 @@ function Practice({ r, go, setModal, setToast, mark, timer }) {
     <>
       {showStart && <StartPanel r={r} timer={timer} />}
       <main
-        className={`practice skill-${r.skill} ${mock ? "mock-practice" : ""} ${mock && r.skill === "listening" ? "mock-listening" : ""}`}
+        className={`practice skill-${r.skill} ${!imported ? "no-answer-pane" : ""} ${mock ? "mock-practice" : ""} ${mock && r.skill === "listening" ? "mock-listening" : ""}`}
       >
         <section className="pane left">
           {r.skill !== "writing" && r.skill !== "speaking" && tools}
           {!imported ? (
-            ["listening", "reading", "writing", "speaking"].includes(r.skill) ? <div className="empty" role="status"><p>{library?.loading ? `Loading…` : "This part isn't available yet."}</p>{library?.error && <button onClick={() => library.retry()}>Try again</button>}</div> : <Missing r={r} />
+            ["listening", "reading", "writing", "speaking"].includes(r.skill) ? library?.loading ? <PracticeSkeleton skill={r.skill} /> : <div className="empty" role="status"><p>{"This part isn't available yet."}</p>{library?.error && <button onClick={() => library.retry()}>Try again</button>}</div> : <Missing r={r} />
           ) : r.skill === "reading" ? (
             <>
               <h2>
@@ -1293,12 +1313,12 @@ function Practice({ r, go, setModal, setToast, mark, timer }) {
               </details>
             </>
           ) : r.skill === "writing" ? (
-            <ImportedWritingPrompt task={writing} part={r.part} book={r.book} test={r.test} />
+            <ImportedWritingPrompt task={writing} part={r.part} book={r.book} test={r.test} sampleUnlocked={sampleUnlocked} />
           ) : (
-            <ImportedSpeakingPrompt library={speakingLibrary.data} onSelect={id => go(testPath(r, "speaking", r.part) + `?topic=${encodeURIComponent(id)}${mock ? "&mode=mock" : ""}`)} />
+            <ImportedSpeakingPrompt library={speakingLibrary.data} question={speakingQuestion} onQuestionChange={setSpeakingQuestion} onSelect={id => go(testPath(r, "speaking", r.part) + `?topic=${encodeURIComponent(id)}${mock ? "&mode=mock" : ""}`)} />
           )}
         </section>
-        <section className="pane right">
+        {imported && <section className="pane right">
           <div className="clear">
             <IconButton
               label={
@@ -1329,17 +1349,17 @@ function Practice({ r, go, setModal, setToast, mark, timer }) {
               </div>
             )}
           </div>
-          {!imported ? (
-            <div className="empty">No answers on file for this test.</div>
-          ) : r.skill === "reading" ? (
+          {r.skill === "reading" ? (
             <ImportedListeningQuestions part={reading} input={input} answers={answers} update={update} setAnswers={setAnswers} revealed={revealed} keys={currentKeys || []} />
           ) : r.skill === "listening" ? (
             <ImportedListeningQuestions part={listening} input={input} answers={answers} update={update} setAnswers={setAnswers} revealed={revealed} keys={currentKeys || []} />
           ) : r.skill === "writing" ? (
-            <WritingEditor key={`${r.part}-${resetVersion}`} r={r} setToast={setToast} task={writing} release={practiceRelease(writingLibrary?.data)} draftKey={practiceKey} />
+            <WritingEditor key={`${r.part}-${resetVersion}`} onSubmitted={() => setSampleUnlocked(true)} r={r} setToast={setToast} task={writing} release={practiceRelease(writingLibrary?.data)} draftKey={practiceKey} />
           ) : (
             <SpeakingEditor
               key={`${speakingLibrary?.data?.topic.id}-${r.part}-${resetVersion}`}
+              question={speakingQuestion}
+              setQuestion={setSpeakingQuestion}
               library={speakingLibrary?.data}
               draftKey={practiceKey}
               r={r}
@@ -1348,7 +1368,7 @@ function Practice({ r, go, setModal, setToast, mark, timer }) {
               onComplete={() => { setSpeakingCompleted(true); mark(r, "speaking", "done"); }}
             />
           )}
-        </section>
+        </section>}
       </main>
       {mock && ["listening", "reading"].includes(r.skill) ? (
         <nav className="bottom-nav question-strip">
@@ -1878,7 +1898,7 @@ function RestaurantQuestions({ input }) {
     </>
   );
 }
-function WritingEditor({ r, setToast, task, release, draftKey }) {
+function WritingEditor({ r, setToast, task, release, draftKey, onSubmitted }) {
   const canAssess = !!(task?.prompt && task?.assessmentAvailable);
   const assessment = usePracticeAssessment(r, release, canAssess);
   const [essay, setEssay] = useStored(`${draftKey}:essay:${r.part}`, ""),
@@ -1891,6 +1911,8 @@ function WritingEditor({ r, setToast, task, release, draftKey }) {
       null,
     );
   const count = wordCount(essay);
+  const submittedCount = assessment.submissions.length;
+  useEffect(() => { if (submittedCount) onSubmitted?.(); }, [submittedCount]);
   async function submit() {
     if (!canAssess) { setToast("Feedback isn't available for this task yet."); return; }
     if (!count) {
@@ -1898,6 +1920,7 @@ function WritingEditor({ r, setToast, task, release, draftKey }) {
       return;
     }
     setVersions((v) => [{ text: essay, time: new Date().toISOString() }, ...v]);
+    onSubmitted?.();
     const success = await assessment.run({ text: essay, prompt: task.assessmentPrompt || task.prompt });
     if (success) setToast('Your practice feedback is ready.');
   }
@@ -1906,7 +1929,7 @@ function WritingEditor({ r, setToast, task, release, draftKey }) {
       {essay && savedAt && (
         <div className="autosaved">Autosaved @ {dateLabel(savedAt)}.</div>
       )}
-      <p>{canAssess ? "Your response is saved to your account when submitted. Text is sent to OpenAI for automated feedback." : task?.prompt && r.part === 1 ? "Drafts are saved in this browser. Automated feedback for chart tasks is not available yet." : "Drafts are saved in this browser. Automated feedback isn't available for this task yet."}</p>
+      <p className="writing-note">{canAssess ? "Your response is saved to your account when submitted. Text is sent to OpenAI for automated feedback." : task?.prompt && r.part === 1 ? "Drafts are saved in this browser. Automated feedback for chart tasks is not available yet." : "Drafts are saved in this browser. Automated feedback isn't available for this task yet."}</p>
       <textarea
         className="essay"
         placeholder="Write your answer here"
@@ -1946,10 +1969,9 @@ function WritingEditor({ r, setToast, task, release, draftKey }) {
     </>
   );
 }
-function SpeakingEditor({ r, setToast, onStart, onComplete, library, draftKey }) {
+function SpeakingEditor({ r, setToast, onStart, onComplete, library, draftKey, question, setQuestion }) {
   const assessment = usePracticeAssessment(r, library.release, true, draftKey);
   const d = { questions: library.topic.questions.map(speakingQuestionText) },
-    [question, setQuestion] = useState(0),
     [played, setPlayed] = useState(false),
     [playing, setPlaying] = useState(false),
     [recording, setRecording] = useState(false),

@@ -150,12 +150,12 @@ test("standalone speaking topics retain cues and notes without Cambridge identit
   assert.ok((speakingStorageKey(library) + ':2').length <= 160);
 });
 
-test("all normalized speaking sets render prompts, cue points and practice notes", { skip: !process.env.IELTS_SPEAKING_RECORDS }, () => {
+test("all normalized speaking sets render prompts, cue points and notes", { skip: !process.env.IELTS_SPEAKING_RECORDS }, () => {
   const records = JSON.parse(readFileSync(process.env.IELTS_SPEAKING_RECORDS, 'utf8'));
   assert.ok(records.length >= 632);
   for (const topic of records) {
     const html = renderToStaticMarkup(<ImportedSpeakingPrompt library={{ topic, part: topic.part, catalog: [topic] }} onSelect={() => {}} />);
-    assert.ok(html.includes('Practice topic'));
+    assert.ok(html.includes('Speaking topic'));
     assert.ok(topic.questions.every(q => speakingQuestionText(q).length > 0));
     assert.equal(speakingQuestionText(topic.questions[0]).includes('\n'), false);
   }

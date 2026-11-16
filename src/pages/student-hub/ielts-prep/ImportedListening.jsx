@@ -58,6 +58,21 @@ function Rich({ node, answer }) {
     </>
   );
 }
+// A cell holding several atoms is a list of separate lines (bullet points in the
+// source); render each on its own line so phrases do not run together.
+function CellContent({ cell, answer }) {
+  if (!Array.isArray(cell) || cell.length < 2)
+    return <Rich node={cell} answer={answer} />;
+  return (
+    <>
+      {cell.map((line, i) => (
+        <div key={i} className="cell-line">
+          <Rich node={line} answer={answer} />
+        </div>
+      ))}
+    </>
+  );
+}
 function Table({ rows, answer, header = true }) {
   return (
     <table className="exam-table">
@@ -72,7 +87,7 @@ function Table({ rows, answer, header = true }) {
                   rowSpan={cell?.rowspan || undefined}
                   colSpan={cell?.colspan || undefined}
                 >
-                  <Rich node={cell} answer={answer} />
+                  <CellContent cell={cell} answer={answer} />
                 </Cell>
               );
             })}
