@@ -487,6 +487,21 @@ function App() {
       previous?.focus?.();
     };
   }, [modal]);
+  // Remember the last overview/library page so the header Back arrow returns
+  // to where the student opened a test from, not always to My learning.
+  useEffect(() => {
+    if (browsing) {
+      try { sessionStorage.setItem("ielts:back-to", path); } catch {}
+    }
+  }, [browsing, path]);
+  function goBack() {
+    if (pagePath === "/") return go(myLearningPath);
+    if (browsing) return go("/");
+    let saved = null;
+    try { saved = sessionStorage.getItem("ielts:back-to"); } catch {}
+    if (saved) return go(saved);
+    return go(r?.type === "general-training" ? "/ielts/practice/general-training" : "/ielts/practice/home");
+  }
   function go(p) {
     navigate(p);
     setMenu(false);
@@ -601,8 +616,8 @@ function App() {
               <BookOpen />
             </IconButton>
             <IconButton
-              label="Back to My learning"
-              onClick={() => go(myLearningPath)}
+              label={pagePath === "/" ? "Back to My learning" : "Back"}
+              onClick={goBack}
             >
               <ArrowLeft />
             </IconButton>
