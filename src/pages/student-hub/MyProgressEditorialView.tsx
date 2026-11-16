@@ -67,6 +67,7 @@ import {
   ivyEssayWorkshopHasJoinLink,
 } from '../events/_components/ivyEssayWorkshop';
 import { isAlmostThere, pickMostProgressed, unitsLeftText } from './learningTracks';
+import { applicantLinks } from 'src/lib/applicantWorkspace';
 import './MyProgressEditorialView.scss';
 
 interface TrackInfo {
@@ -813,6 +814,13 @@ const MyProgressEditorialView: React.FC = () => {
             <h3 className="myprog__sessions-title">
               {t('studentHub.myProgress.mentorSessionsTitle', 'Mentor sessions')}
             </h3>
+            <button
+              type="button"
+              className="myprog__sessions-all"
+              onClick={() => navigate(applicantLinks.sessions)}
+            >
+              {t('studentHub.myProgress.allSessions', 'All sessions')} <ArrowRight size={13} aria-hidden />
+            </button>
           </div>
           <div className="myprog__sessions-tabs">
             {(['upcoming', 'past', 'cancelled'] as const).map((tab) => {
