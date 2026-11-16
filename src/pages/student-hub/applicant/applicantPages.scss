@@ -2272,3 +2272,6 @@
 }
 button.applicant-find-save { background: #fff; font-family: inherit; cursor: pointer; }
 button.applicant-find-save:disabled { cursor: not-allowed; }
+
+.animated-placeholder-input input::placeholder,
+.applicant-find-filter .ant-select-selection-placeholder { color: #a39a92; }

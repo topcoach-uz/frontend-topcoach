@@ -31,7 +31,7 @@ export const MM3Analyzing: React.FC = () => {
     <div className="mm2__state mm2__state--analyzing" role="status" aria-live="polite">
       <span className="mm2__spinner" />
       <p className="mm2__state-title">{t('majorMatch3.analyzing.title', 'Analyzing your profile…')}</p>
-      <p className="mm3-analyzing__stage">{t(`majorMatch3.analyzing.stage.${stage.key}`, stage.fallback)}…</p>
+      <p className="mm3-analyzing__stage mm3-analyzing__stage--shimmer">{t(`majorMatch3.analyzing.stage.${stage.key}`, stage.fallback)}…</p>
       <p className="mm3-analyzing__elapsed">
         {t('majorMatch3.analyzing.elapsed', '{{seconds}}s elapsed', { seconds: elapsed })}
       </p>

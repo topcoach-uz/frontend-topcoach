@@ -53,6 +53,8 @@ import {
 } from "src/app/services/student-hub/essayReviewApi";
 import { getMentorFeedbackText } from "./essayFeedbackModel";
 import { EssayPromptBox } from "./EssayPromptBox";
+import { AnimatedPlaceholderInput } from "./AnimatedPlaceholderInput";
+import { essayTitleHint, ESSAY_TITLE_EXAMPLES } from "./essayWriting";
 import { EssayAnglesPanel } from "./EssayAnglesPanel";
 import type { EssayIdeasResponse } from "src/app/services/student-hub/essayManagementApi";
 import { countWords, ideasForEssay, essayWordLimit, formatSavedTime, limitLevel, limitMessage, saveState } from "./essayWriting";
@@ -363,6 +365,7 @@ export function ApplicantEssayEditorPage() {
   const [aiFeedbackRequested, setAiFeedbackRequested] = useState(false);
   const [anglesByEssay, setAnglesByEssay] = useState<Record<string, EssayIdeasResponse>>({});
   const essay = query.data?.data;
+  const titleHint = essayTitleHint(essay?.prompt);
   const aiFeedbackQuery = useGetEnhancedFeedbackQuery(essayId, {
     skip: !essayId || !aiFeedbackRequested,
   });
@@ -756,7 +759,9 @@ export function ApplicantEssayEditorPage() {
             <div className="applicant-panel applicant-editor">
               {essay.prompt?.trim() && <EssayPromptBox prompt={essay.prompt.trim()} />}
               <label className="applicant-editor__title-label" htmlFor="applicant-essay-title">Draft title</label>
-              <Input
+              <AnimatedPlaceholderInput
+                examples={titleHint ? [] : ESSAY_TITLE_EXAMPLES}
+                staticPlaceholder={titleHint || "Give your draft a title"}
                 id="applicant-essay-title"
                 className="applicant-title-input"
                 value={title}

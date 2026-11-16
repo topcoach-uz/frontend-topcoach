@@ -22,6 +22,8 @@ import { getUniversityLogoUrl, universityLogoNeedsDarkBackground } from "./unive
 import { buildUniversityFieldOptions, buildUniversitySubjectOptions, matchSubjectOption, subjectKey } from "./universityFieldOptions";
 import { useGetLatestMm3ReportQuery } from "src/app/services/student-hub/majorMatchApi";
 import { NextStepCard } from "./NextStepCard";
+import { AnimatedPlaceholderInput } from "./AnimatedPlaceholderInput";
+import { useRotatingPlaceholder } from "./rotatingPlaceholder";
 import { useQuickAddToCollegeList } from "./useQuickAddToCollegeList";
 import { hasStructuredCosts } from './structuredContent';
 import { useStructuredContent } from './StructuredSections';
@@ -82,6 +84,13 @@ export default function ApplicantUniversitiesPage() {
     return [{ label: "Your matches", options: matchedFields }, { label: "All fields", options: subjectOptions.filter((option) => !pinned.has(option.value)) }];
   }, [matchedFields, subjectOptions]);
   const majorKey = useMemo(() => subjectKey(major, degreeType), [major, degreeType]);
+  const searchExamples = useMemo(() => {
+    const names = (universityQuery.data?.data ?? []).map((row) => String((row as { name?: unknown }).name ?? "").trim()).filter((name) => name && name.length <= 40).slice(0, 4);
+    const base = names.length >= 2 ? names : ["MIT", "University of Oxford", "Stanford University"];
+    return [...base.slice(0, 3), "Computer Science"].map((item) => `Search ${item}…`);
+  }, [universityQuery.data]);
+  const fieldExamples = useMemo(() => matchedFields.map((option) => `e.g. ${option.label}`), [matchedFields]);
+  const fieldPlaceholder = useRotatingPlaceholder(fieldExamples, "Any field", !major);
   const quickAdd = useQuickAddToCollegeList();
   const majorLabel = useMemo(() => subjectOptions.find((option) => option.value === majorKey)?.label ?? major, [subjectOptions, majorKey, major]);
   const countryOptions = useMemo(() => (filtersQuery.data?.countries ?? []).map((item) => ({ value: item, label: item })), [filtersQuery.data]);
@@ -92,11 +101,11 @@ export default function ApplicantUniversitiesPage() {
   if (!isMasters) return <ApplicantPage title="Find universities" subtitle="Explore Bachelor’s options. Check course availability before adding a university to your College List.">
     <NextStepCard current="universities" />
     <form className="applicant-find-search" onSubmit={(event) => { event.preventDefault(); const next = new URLSearchParams(params); if (value.trim()) next.set("q", value.trim()); else next.delete("q"); next.delete("page"); setParams(next); }}>
-      <Input prefix={<Search size={21} />} value={value} onChange={(event) => setValue(event.target.value)} placeholder="Search universities" allowClear aria-label="Search universities" />
+      <AnimatedPlaceholderInput prefix={<Search size={21} />} value={value} onChange={(event) => setValue(event.target.value)} examples={searchExamples} staticPlaceholder="Search universities" allowClear aria-label="Search universities" />
       <Button type="primary" htmlType="submit">Search</Button>
     </form>
     <div className="applicant-find-filters">
-      <label className={major ? "applicant-find-filter applicant-find-filter--active" : "applicant-find-filter"}><span>Field of interest</span><Select value={majorKey || undefined} placeholder="Any field" allowClear showSearch optionFilterProp="label" onChange={(selected) => setFilter("major", selected ?? "")} loading={filtersQuery.isLoading} options={selectOptions} aria-label="Field of interest" /></label>
+      <label className={major ? "applicant-find-filter applicant-find-filter--active" : "applicant-find-filter"}><span>Field of interest</span><Select value={majorKey || undefined} placeholder={fieldPlaceholder} allowClear showSearch optionFilterProp="label" onChange={(selected) => setFilter("major", selected ?? "")} loading={filtersQuery.isLoading} options={selectOptions} aria-label="Field of interest" /></label>
       <label className={country ? "applicant-find-filter applicant-find-filter--active" : "applicant-find-filter"}><span>Destination</span><Select value={country || undefined} placeholder="Any country" allowClear showSearch optionFilterProp="label" onChange={(selected) => setFilter("country", selected ?? "")} loading={filtersQuery.isLoading} options={countryOptions} aria-label="Destination" /></label>
       <label className="applicant-find-filter applicant-find-filter--disabled" title="Intake dates are not available in the university catalogue"><span>Intake</span><Select value="Any intake" disabled options={[{ value: "Any intake", label: "Any intake" }]} aria-label="Intake unavailable" /></label>
     </div>
