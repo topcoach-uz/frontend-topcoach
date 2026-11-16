@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { useMyLearningPath } from "../applicant/useMyLearningPath";
-import { Breadcrumb } from "../applicant/ApplicantPage";
+import { Breadcrumb } from "../applicant/Breadcrumb";
 import {
   ArrowRight,
   BookOpen,

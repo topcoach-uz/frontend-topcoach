@@ -1,5 +1,6 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { MemoryRouter } from "react-router-dom";
 import { test, vi } from "vitest";
 import assert from "node:assert/strict";
 import IeltsWorkspace from "./IeltsWorkspace.jsx";
@@ -11,8 +12,10 @@ vi.mock("../../../components/logos", () => ({
 
 function renderPage(path) {
   return renderToStaticMarkup(
-    <IeltsWorkspace path={path} navigate={() => {}} href={(path) => path}
-      storagePrefix="test:" profile={null} />,
+    <MemoryRouter>
+      <IeltsWorkspace path={path} navigate={() => {}} href={(path) => path}
+        storagePrefix="test:" profile={null} />
+    </MemoryRouter>,
   );
 }
 
