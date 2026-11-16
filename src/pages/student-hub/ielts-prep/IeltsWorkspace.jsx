@@ -2199,7 +2199,10 @@ function Scores({ r, Link }) {
     }
     setHistory(next);
   }, [signature, r.type, r.book, r.test]);
-  const mistakes = stats.Listening.incorrect + stats.Listening.unanswered * Number(!!lk) + stats.Reading.incorrect + stats.Reading.unanswered * Number(!!rk);
+  // Only skills the student actually attempted count towards "Review mistakes".
+  const attempted = (s) => s.correct + s.incorrect > 0;
+  const mistakesFor = (s, key) => (attempted(s) ? s.incorrect + s.unanswered * Number(!!key) : 0);
+  const mistakes = mistakesFor(stats.Listening, lk) + mistakesFor(stats.Reading, rk);
   const firstSection = lk ? "listening" : "reading";
   const reviewMistakes = () => {
     setMistakesOnly(true);
