@@ -660,11 +660,14 @@ const MyProgressEditorialView: React.FC = () => {
               <div className="myprog__resume">
                 <div className="myprog__resume-text">
                   <div className="myprog__card-eyebrow">
-                    {t('studentHub.myProgress.resumeEyebrow', 'Pick up where you left off')}
+                    {resumeTrack.progressPct > 0
+                      ? t('studentHub.myProgress.resumeEyebrow', 'Pick up where you left off')
+                      : t('studentHub.myProgress.startEyebrow', 'Start here')}
                   </div>
                   <div className="myprog__resume-title">
-                    {resumeTrack.title} · {resumeTrack.progressPct}%{' '}
-                    {t('studentHub.myProgress.doneSuffix', 'done')}
+                    {resumeTrack.progressPct > 0
+                      ? `${resumeTrack.title} · ${resumeTrack.progressPct}% ${t('studentHub.myProgress.doneSuffix', 'done')}`
+                      : `${resumeTrack.title} · ${resumeTrack.total} ${resumeTrack.unitLabel}`}
                   </div>
                 </div>
                 <button
@@ -672,7 +675,10 @@ const MyProgressEditorialView: React.FC = () => {
                   className="myprog__btn myprog__btn--primary"
                   onClick={() => navigate(resumeTrack.ctaPath)}
                 >
-                  {t('studentHub.myProgress.resume', 'Resume')} <ArrowRight size={13} aria-hidden />
+                  {resumeTrack.progressPct > 0
+                    ? t('studentHub.myProgress.resume', 'Resume')
+                    : t('studentHub.myProgress.start', 'Start')}{' '}
+                  <ArrowRight size={13} aria-hidden />
                 </button>
               </div>
             ) : null}
