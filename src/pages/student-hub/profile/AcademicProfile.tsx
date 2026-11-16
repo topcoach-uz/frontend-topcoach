@@ -851,8 +851,7 @@ const AcademicProfile: React.FC<AcademicProfileProps> = ({ data, readOnly = fals
             <Col xs={24} lg={12}>
               <Form.Item
                 name="gpaUnweighted"
-                label={t('studentHub.profile.unweightedGpa', 'Unweighted GPA')}
-                rules={[{ required: true, message: t('studentHub.profile.pleaseEnterUnweightedGpa', 'Please enter your unweighted GPA') }]}
+                label={t('studentHub.profile.unweightedGpaOptional', 'Unweighted GPA (optional)')}
               >
                 <InputNumber
                   min={0}
