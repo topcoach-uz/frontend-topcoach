@@ -33,6 +33,29 @@ export interface EssayIdeasDocument {
   reason?: string;
 }
 
+export interface EssayReviewComment {
+  id: string;
+  paragraph: number;
+  quote: string;
+  kind: 'clarity' | 'specificity' | 'structure' | 'voice' | 'prompt_fit' | 'length';
+  comment: string;
+  question?: string;
+}
+
+export interface EssayReviewResponse {
+  summary: string;
+  promptFit: { rating: 'strong' | 'partial' | 'weak'; note: string };
+  strengths: string[];
+  comments: EssayReviewComment[];
+  unusedMaterial: Array<{ label: string; kind: 'major_match' | 'profile' | 'college_list' | 'document'; why: string }>;
+  words: number;
+  limit?: number;
+  generatedAt: string;
+  cached: boolean;
+  remainingToday: number;
+  documents?: EssayIdeasDocument[];
+}
+
 export const essayManagementApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
     // ========================================
@@ -445,6 +468,21 @@ export const essayManagementApi = RtkApi.injectEndpoints({
       }),
     }),
 
+    // AI review of the saved draft
+    reviewEssay: builder.mutation<
+      EssayReviewResponse,
+      { essayId: string; refresh?: boolean; documentIds?: string[] }
+    >({
+      query: ({ essayId, refresh, documentIds }) => ({
+        url: `/essay-management/essays/${essayId}/review`,
+        method: 'POST',
+        body: {
+          refresh: Boolean(refresh),
+          ...(documentIds && documentIds.length > 0 ? { documentIds } : {}),
+        },
+      }),
+    }),
+
     // ========================================
     // 📊 ESSAY ANALYTICS
     // ========================================
@@ -514,4 +552,5 @@ export const {
   useGetEnhancedFeedbackQuery,
   useAutoSaveEssayMutation,
   useGetEssayIdeasMutation,
+  useReviewEssayMutation,
 } = essayManagementApi;

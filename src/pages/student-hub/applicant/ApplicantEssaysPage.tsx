@@ -12,6 +12,7 @@ import {
   Tooltip,
   message,
 } from "antd";
+import type { TextAreaRef } from "antd/es/input/TextArea";
 import { MoreHorizontal, History, Lightbulb, MessageSquareText, Plus, Save, Trash2 } from "lucide-react";
 import {
   Link,
@@ -25,7 +26,6 @@ import {
   useGetStudentEssayQuery,
   useGetStudentEssaysQuery,
   useGetEssayVersionsQuery,
-  useGetEnhancedFeedbackQuery,
   useCreateEssayVersionMutation,
   useDeleteStudentEssayMutation,
   useUpdateStudentEssayMutation,
@@ -53,6 +53,8 @@ import {
 import { getMentorFeedbackText } from "./essayFeedbackModel";
 import { EssayPromptBox } from "./EssayPromptBox";
 import { EssayAnglesPanel } from "./EssayAnglesPanel";
+import { EssayAiReview, type StoredReview } from "./EssayAiReview";
+import { findQuoteRange } from "./essayReview";
 import { PinnedAngleStrip } from "./PinnedAngleStrip";
 import { clearPinnedAngle, loadPinnedAngle, pinnedAngleFrom, savePinnedAngle, type PinnedAngle } from "./essayAngles";
 import type { EssayIdeaAngle, EssayIdeasResponse } from "src/app/services/student-hub/essayManagementApi";
@@ -330,6 +332,8 @@ export function ApplicantEssayEditorPage() {
   const { essayId = "" } = useParams();
   // Last AI angles result per essay, kept for the session so closing the panel/drawer does not lose it.
   const [anglesByEssay, setAnglesByEssay] = useState<Record<string, EssayIdeasResponse>>({});
+  const [reviewByEssay, setReviewByEssay] = useState<Record<string, StoredReview>>({});
+  const draftRef = useRef<TextAreaRef>(null);
   const [pinnedByEssay, setPinnedByEssay] = useState<Record<string, PinnedAngle | null>>({});
   const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
   const query = useGetStudentEssayQuery(essayId, { skip: !essayId });
@@ -363,12 +367,7 @@ export function ApplicantEssayEditorPage() {
   useEffect(() => { if (params.get('helper') === 'ai') setSidePanel('review'); }, [params.get('helper')]);
   const isMobile = useIsMobile();
   const [previewVersion, setPreviewVersion] = useState<{ label: string; content: string; date?: string } | null>(null);
-  const [aiFeedbackRequested, setAiFeedbackRequested] = useState(false);
   const essay = query.data?.data;
-  const aiFeedbackQuery = useGetEnhancedFeedbackQuery(essayId, {
-    skip: !essayId || !aiFeedbackRequested,
-  });
-  const aiFeedback = aiFeedbackQuery.data?.data;
   const profileId = useTypedSelector((state) => state.auth.profile?.id);
   const localDraftKey = essayId
     ? `topcoach:essay-draft:${profileId || "current"}:${essayId}`
@@ -560,6 +559,30 @@ export function ApplicantEssayEditorPage() {
     clearPinnedAngle(essay.id);
     setPinnedByEssay((prev) => ({ ...prev, [essay.id]: null }));
   };
+  const findInDraft = (paragraph: number, quote: string): boolean => {
+    const range = findQuoteRange(content, paragraph, quote);
+    const el = draftRef.current?.resizableTextArea?.textArea;
+    if (!range || !el) return false;
+    if (isMobile) setSidePanel(null);
+    window.setTimeout(() => {
+      el.focus({ preventScroll: true });
+      el.setSelectionRange(range.start, range.end);
+      // Measure the quote's vertical position with a hidden mirror of the textarea.
+      const cs = getComputedStyle(el);
+      const mirror = document.createElement("div");
+      mirror.style.cssText = `position:absolute;visibility:hidden;white-space:pre-wrap;overflow-wrap:break-word;width:${el.clientWidth}px;font:${cs.font};letter-spacing:${cs.letterSpacing};padding:${cs.padding};box-sizing:border-box;`;
+      mirror.textContent = el.value.slice(0, range.start);
+      const marker = document.createElement("span");
+      marker.textContent = "\u200b";
+      mirror.appendChild(marker);
+      document.body.appendChild(mirror);
+      const offsetTop = marker.offsetTop;
+      document.body.removeChild(mirror);
+      const top = el.getBoundingClientRect().top + window.scrollY + offsetTop - window.innerHeight / 3;
+      window.scrollTo({ top: Math.max(0, top), behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    }, isMobile ? 280 : 0);
+    return true;
+  };
   const sidePanelBody = shownPanel && essay ? (<>
               {shownPanel === "ideas" ? <>
                 {essay.prompt?.trim() && <blockquote className="applicant-writing-desk__prompt-quote"><strong>Your prompt</strong>{essay.prompt.trim()}</blockquote>}
@@ -578,26 +601,14 @@ export function ApplicantEssayEditorPage() {
                 </details>
                 <small>These are writing prompts from TopCoach, not official admission requirements.</small>
               </> : <>
-                <h3>Writing helper</h3>
-                <p>Get suggestions for your saved draft. This is automated guidance, not mentor feedback.</p>
-                <Button
-                  onClick={() => {
-                    if (aiFeedbackRequested) void aiFeedbackQuery.refetch();
-                    else setAiFeedbackRequested(true);
-                  }}
-                  loading={aiFeedbackQuery.isFetching}
-                  disabled={!content.trim() || dirty}
-                >
-                  {aiFeedbackRequested ? 'Refresh suggestions' : 'Review saved draft'}
-                </Button>
-                {dirty && <p>Save your latest changes before requesting suggestions.</p>}
-                {aiFeedbackQuery.isError && <Alert type="warning" message="Could not review this draft. Please try again." />}
-                {aiFeedback && <div className="applicant-panel" style={{ marginTop: 16, padding: 16 }}>
-                  {aiFeedback.analysisVersion === 'checklist' && <Alert type="info" message="AI is unavailable. This is a general writing checklist, not an analysis of your draft." />}
-                  {aiFeedback.strengths?.length ? <><strong>What works</strong><ul>{aiFeedback.strengths.map((item) => <li key={item}>{item}</li>)}</ul></> : null}
-                  {aiFeedback.weaknesses?.length ? <><strong>What to improve</strong><ul>{aiFeedback.weaknesses.map((item) => <li key={item}>{item}</li>)}</ul></> : null}
-                  {aiFeedback.suggestions?.length ? <><strong>Suggestions</strong><ul>{aiFeedback.suggestions.map((item, index) => <li key={index}>{item.text}</li>)}</ul></> : null}
-                </div>}
+                <EssayAiReview
+                  essayId={essay.id}
+                  content={content}
+                  saved={!dirty && !updateState.isLoading}
+                  result={reviewByEssay[essay.id]}
+                  onResult={(id, r) => setReviewByEssay((prev) => ({ ...prev, [id]: r }))}
+                  onFind={findInDraft}
+                />
                 <label className="applicant-writing-desk__stage-label" htmlFor="applicant-essay-stage">Stage</label>
                 <Select
                   id="applicant-essay-stage"
@@ -796,6 +807,7 @@ export function ApplicantEssayEditorPage() {
                 aria-label="Draft title"
               />
               <Input.TextArea
+                ref={draftRef}
                 className="applicant-writing"
                 autoSize={{ minRows: 16 }}
                 value={content}

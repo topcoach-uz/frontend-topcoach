@@ -38,7 +38,7 @@ interface Props {
   onTogglePin: (angle: EssayIdeaAngle) => void;
 }
 
-function SourceChips({ sources }: { sources: EssayIdeaAngle["sources"] }) {
+export function SourceChips({ sources }: { sources: EssayIdeaAngle["sources"] }) {
   return (
     <>
       {sources.map((s, i) => {
@@ -59,7 +59,7 @@ interface DocsPickerProps {
   onChange: (ids: string[]) => void;
 }
 
-function DocumentsPicker({ selected, onChange }: DocsPickerProps) {
+export function DocumentsPicker({ selected, onChange }: DocsPickerProps) {
   const [open, setOpen] = useState(false);
   const listId = useId();
   const { data, isLoading, isError } = useGetDocumentsQuery({ page: 1, limit: 100 });
