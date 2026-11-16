@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { testPath, route, skills, booksFor, testCount } from "./model.js";
 import { testProgress, unfinishedPractices, STATE_LABEL } from "./progress.js";
+import { availableLibrary } from "./catalog.js";
 import "./browse.css";
 
 const academicPath = "/ielts/practice/home";
@@ -71,7 +72,7 @@ const bookLabel = (book) =>
     : book === "eg"
       ? "Exam Essentials"
       : `IELTS ${book}`;
-export default function IeltsBrowse({ pagePath, Link, profile, last, progress }) {
+export default function IeltsBrowse({ pagePath, Link, profile, last, progress, catalog }) {
   const myLearningPath = useMyLearningPath();
   const overview = pagePath === "/";
   const type = pagePath === generalPath ? "general-training" : "academic";
@@ -133,7 +134,7 @@ export default function IeltsBrowse({ pagePath, Link, profile, last, progress })
           {overview ? (
             <Overview Link={Link} profile={profile} last={last} progress={progress} />
           ) : (
-            <PracticeLibrary key={type} type={type} Link={Link} progress={progress} />
+            <PracticeLibrary key={type} type={type} Link={Link} progress={progress} catalog={catalog} />
           )}
         </main>
       </div>
@@ -273,7 +274,7 @@ function Overview({ Link, profile, last, progress }) {
     </>
   );
 }
-function PracticeLibrary({ type, Link, progress }) {
+function PracticeLibrary({ type, Link, progress, catalog }) {
   const [query, setQuery] = useState("");
   const [bookFilter, setBookFilter] = useState("all");
   const initialSkill = new URLSearchParams(window.location.search).get("skill");
@@ -284,23 +285,31 @@ function PracticeLibrary({ type, Link, progress }) {
         ? initialSkill
         : "all",
   );
-  const books = booksFor(type),
-    isAcademic = type === "academic";
+  const isAcademic = type === "academic";
+  // `catalog` is undefined while loading or on error: show the full static list.
+  const library = availableLibrary(
+    type,
+    booksFor(type),
+    testCount,
+    catalog,
+    isAcademic ? skills : ["reading"],
+  );
+  const books = library.map((g) => g.book);
   const selectedSkills = isAcademic
     ? skill === "all"
       ? skills
       : [skill]
     : ["reading"];
-  const groups = books
-    .map((book) => ({
+  const groups = library
+    .map(({ book, tests: available }) => ({
       book,
-      tests: Array.from(
-        { length: testCount(type, book) },
-        (_, i) => i + 1,
-      ).filter((test) =>
-        `${bookLabel(book)} ${isAcademic ? "Academic" : "General Training"} ${years[book]} Test ${test}`
-          .toLowerCase()
-          .includes(query.trim().toLowerCase()),
+      total: available.length,
+      tests: available.filter(
+        ({ test, skills: have }) =>
+          (skill === "all" || !isAcademic || have.includes(skill)) &&
+          `${bookLabel(book)} ${isAcademic ? "Academic" : "General Training"} ${years[book]} Test ${test}`
+            .toLowerCase()
+            .includes(query.trim().toLowerCase()),
       ),
     }))
     .filter(
@@ -376,7 +385,7 @@ function PracticeLibrary({ type, Link, progress }) {
           </button>
         )}
       </div>
-      {groups.map(({ book, tests }) => (
+      {groups.map(({ book, tests, total }) => (
         <section className="ib-book" key={book}>
           <div className="ib-book-heading">
             <span className="ib-book-icon">
@@ -388,17 +397,21 @@ function PracticeLibrary({ type, Link, progress }) {
                 <span>{isAcademic ? "Academic" : "General Training"}</span>
               </h2>
               <p>
-                {years[book]} collection · {testCount(type, book)} practice
-                tests
+                {years[book]} collection · {total} practice{" "}
+                {total === 1 ? "test" : "tests"}
               </p>
             </div>
-            {book === 21 && <span className="ib-badge">Latest collection</span>}
+            {book === books[0] && (
+              <span className="ib-badge">Latest collection</span>
+            )}
           </div>
           <div className="ib-tests">
-            {tests.map((test) => (
+            {tests.map(({ test, skills: have }) => (
               <TestCard
                 key={test}
-                {...{ type, book, test, Link, progress, selectedSkills, isAcademic }}
+                {...{ type, book, test, Link, progress, isAcademic }}
+                availableSkills={have}
+                selectedSkills={selectedSkills.filter((s) => have.includes(s))}
               />
             ))}
           </div>
@@ -424,8 +437,8 @@ function PracticeLibrary({ type, Link, progress }) {
     </>
   );
 }
-function TestCard({ type, book, test, Link, progress, selectedSkills, isAcademic }) {
-  const trackable = isAcademic ? skills : ["reading"];
+function TestCard({ type, book, test, Link, progress, selectedSkills, availableSkills }) {
+  const trackable = availableSkills;
   const summary = progress
     ? testProgress(
         progress.entries,
