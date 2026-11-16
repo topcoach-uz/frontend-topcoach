@@ -5,7 +5,7 @@ import { displayName } from "src/utils/displayName";
 import IeltsWorkspace from "./IeltsWorkspace";
 import Header from "src/components/layouts/components/header";
 import { ieltsStoragePrefix, toIeltsPath, toTopCoachPath } from "./routes";
-import { useGetIeltsListeningQuery, useGetIeltsReadingQuery, useGetIeltsWritingQuery, useGetIeltsSpeakingQuery } from 'src/app/services/ieltsListeningApi';
+import { useGetIeltsListeningQuery, useGetIeltsReadingQuery, useGetIeltsWritingQuery, useGetIeltsSpeakingQuery, useGetIeltsCatalogQuery } from 'src/app/services/ieltsListeningApi';
 import { useLazyGetIeltsSubmissionsQuery, useCreateIeltsSubmissionMutation, useUploadIeltsRecordingMutation, useAssessIeltsSubmissionMutation, useDownloadIeltsRecordingMutation } from 'src/app/services/ieltsPracticeApi';
 
 export default function IeltsPrepPage() {
@@ -29,6 +29,7 @@ export default function IeltsPrepPage() {
   const writing = useGetIeltsWritingQuery({ type: writingMatch?.[1] || '', book: writingMatch?.[2] || '', test: Number(writingMatch?.[3] || 1) }, { skip: !writingMatch || !profile?.id, refetchOnMountOrArgChange: true });
   const speakingMatch = pagePath.match(/^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/speaking(?:\/([1-3]))?(?:\/|$)/);
   const speaking = useGetIeltsSpeakingQuery({ type: speakingMatch?.[1] || '', book: speakingMatch?.[2] || '', test: Number(speakingMatch?.[3] || 1), part: Number(speakingMatch?.[4] || 1), topic: new URLSearchParams(location.search).get('topic') || undefined }, { skip: !speakingMatch || !profile?.id, refetchOnMountOrArgChange: true });
+  const { data: catalog } = useGetIeltsCatalogQuery(undefined, { skip: !profile?.id });
   const browsing = ["/", "/ielts/practice/home", "/ielts/practice/general-training"].includes(pagePath);
 
   // Parent StudentHubGate owns authentication, role routing and profile loading.
@@ -57,6 +58,7 @@ export default function IeltsPrepPage() {
         }}
         storagePrefix={ieltsStoragePrefix(String(profile.id))}
         onStorageError={onStorageError}
+        catalog={catalog}
         speakingLibrary={{ data: speaking.currentData, loading: speaking.isFetching, error: !!speaking.error, retry: speaking.refetch }}
         writingLibrary={{ data: writing.currentData, loading: writing.isFetching, error: !!writing.error, retry: writing.refetch }}
         readingLibrary={{ data: reading.currentData, loading: reading.isFetching, error: !!reading.error, retry: reading.refetch }}

@@ -77,6 +77,7 @@ import {
   nextTest,
 } from "./scores.js";
 import { booksFor, testCount } from "./model.js";
+import { nextAvailableTest, isSkillAvailable } from "./catalog.js";
 import "./style.css";
 import IeltsBrowse from "./IeltsBrowse";
 import {
@@ -414,7 +415,7 @@ export default function IeltsWorkspace(props) {
 }
 function App() {
   const myLearningPath = useMyLearningPath();
-  const { path, navigate, href, profile, storagePrefix, onStorageError, listeningLibrary, readingLibrary, writingLibrary, speakingLibrary } =
+  const { path, navigate, href, profile, storagePrefix, onStorageError, catalog, listeningLibrary, readingLibrary, writingLibrary, speakingLibrary } =
     useContext(WorkspaceContext);
   const [dark, setDark] = useStored("workspace:dark", false),
     [modal, setModal] = useState(null),
@@ -590,7 +591,7 @@ function App() {
   );
   return (
     <div className={`ielts-workspace${browsing ? " ielts-browse" : dark ? " dark" : ""}`}>
-      {browsing ? <IeltsBrowse pagePath={pagePath} Link={Link} profile={profile} last={readBrowse("workspace:last", null)} progress={progress} /> : <>
+      {browsing ? <IeltsBrowse pagePath={pagePath} Link={Link} profile={profile} last={readBrowse("workspace:last", null)} progress={progress} catalog={catalog} /> : <>
       <header>
         <div className="brand">
           <Link to="/student-hub" aria-label="Back to topCoach">
@@ -2193,7 +2194,7 @@ function deltaText(stored) {
 }
 function Scores({ r, Link }) {
   const read = useRead();
-  const { listeningLibrary, readingLibrary, storagePrefix, onStorageError } =
+  const { listeningLibrary, readingLibrary, storagePrefix, onStorageError, catalog: catalogData } =
     useContext(WorkspaceContext);
   const a = read(`${storageKey({ ...r, skill: "listening" })}:library:${practiceRelease(listeningLibrary?.data)}`, {}),
     b = read(`${storageKey({ ...r, skill: "reading" })}:library:${practiceRelease(readingLibrary?.data)}`, {}),
@@ -2248,8 +2249,20 @@ function Scores({ r, Link }) {
     setShow({ listening: true, reading: true });
     setTimeout(() => document.getElementById(`review-${firstSection}`)?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   };
-  const next = nextTest(r, booksFor(r.type), testCount);
-  const nextSkill = r.type === "general-training" ? "reading" : "listening";
+  const catalog = catalogData;
+  const trackable = r.type === "general-training" ? ["reading"] : undefined;
+  const next = catalog
+    ? nextAvailableTest(r, booksFor(r.type), testCount, catalog, trackable)
+    : nextTest(r, booksFor(r.type), testCount);
+  const nextSkill =
+    r.type === "general-training"
+      ? "reading"
+      : (next &&
+          catalog &&
+          ["listening", "reading", "writing", "speaking"].find((sk) =>
+            isSkillAvailable(next.type, next.book, next.test, sk, catalog),
+          )) ||
+        "listening";
   const nextLabel = next
     ? `Next test: ${next.book === "og" ? "Official Guide" : next.book === "eg" ? "Exam Essentials" : `Book ${next.book}`} Test ${next.test}`
     : null;
