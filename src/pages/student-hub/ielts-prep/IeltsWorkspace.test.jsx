@@ -21,8 +21,8 @@ function renderPage(path) {
 
 test("the IELTS dashboard uses the new dev browse design", () => {
   const html = renderPage("/");
-  assert.ok(html.includes("Your IELTS journey"));
-  assert.ok(html.includes("Choose your focus"));
+  assert.ok(html.includes("Your IELTS prep"));
+  assert.ok(html.includes("Choose a skill"));
   assert.ok(html.includes("ielts-browse"));
   assert.ok(!html.includes("Coordinator surname"));
 });
