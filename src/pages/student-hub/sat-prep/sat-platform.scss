@@ -1437,3 +1437,143 @@
     margin: 0;
   }
 }
+
+/* Target marker on the score track */
+.sat-platform__score-track {
+  position: relative;
+}
+.sat-platform__score-marker {
+  position: absolute;
+  top: -5px;
+  width: 3px;
+  height: 16px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: #8b0000;
+}
+
+/* Resume banner */
+.sat-platform__resume {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  border: 1px solid #e7e2dc;
+  border-left: 3px solid #8b0000;
+  border-radius: 12px;
+  background: #fff;
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  strong {
+    color: #302b28;
+    font-weight: 600;
+  }
+  span {
+    color: #655c55;
+    font-size: 0.875rem;
+  }
+}
+
+/* Streak card */
+.sat-streak {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 20px;
+  padding: 14px 18px;
+  border: 1px solid #e7e2dc;
+  border-radius: 12px;
+  background: #fff;
+  color: #655c55;
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+  strong {
+    color: #302b28;
+    font-weight: 600;
+  }
+  > div span {
+    font-size: 0.875rem;
+  }
+  &--risk {
+    border-color: #e9c7c4;
+    background: #fbf1f0;
+    > svg {
+      color: #8b0000;
+    }
+  }
+}
+.sat-streak__goal {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f3f1ed;
+  color: #655c55;
+  font-size: 0.75rem;
+  font-weight: 600;
+  &.is-done {
+    background: #e4f2ea;
+    color: #1f7a45;
+  }
+}
+
+/* Target quick picks */
+.sat-target-quick {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.sat-target-nudge {
+  margin: 0;
+  color: #565e68;
+  font-size: 0.875rem;
+}
+.sat-target-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sat-target-chip {
+  min-height: 44px;
+  padding: 8px 16px;
+  background: #fff;
+  border: 1px solid #dce0e5;
+  border-radius: 999px;
+  color: #302b28;
+  font:
+    500 0.9375rem "DM Sans",
+    sans-serif;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  &:hover:not(:disabled) {
+    border-color: #8b0000;
+    color: #8b0000;
+  }
+  &:focus-visible {
+    outline: 2px solid #8b0000;
+    outline-offset: 2px;
+  }
+  &--custom {
+    color: #8b0000;
+  }
+}
+@media (max-width: 640px) {
+  .sat-platform__resume {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .sat-streak {
+    flex-wrap: wrap;
+  }
+}

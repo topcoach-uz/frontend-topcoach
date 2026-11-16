@@ -1,12 +1,21 @@
 import SatTargetScore from './SatTargetScore';
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, BookOpen, RotateCcw, Timer } from "lucide-react";
+import { ArrowRight, BookOpen, Flame, RotateCcw, Timer } from "lucide-react";
 import { message } from "antd";
 import { useLazyFilterSatQuestionsQuery } from "src/app/services/sat-prep";
 import { useGetSatProgressQuery } from "src/app/services/sat-prep/local-progress";
 import { useGetMarkedQuestionsQuery } from "src/app/services/sat-prep/library";
-import { scoreBreakdown, weakestSkills } from "./sat-overview-model";
+import { useGetSatStudyGoalQuery } from "src/app/services/sat-prep/study-goal";
+import {
+  baselineTotal,
+  continueAction,
+  journeyScale,
+  scoreBreakdown,
+  streakState,
+  weakestSkills,
+} from "./sat-overview-model";
+import { answeredCount, findResumableRun } from "./satRunState";
 import "./sat-platform.scss";
 
 const BASE = "/student-hub/sat-prep";
@@ -15,9 +24,39 @@ const SatDashboardPage: React.FC = () => {
   const { data, isLoading, isError, refetch } = useGetSatProgressQuery();
   const { data: marked = [] } = useGetMarkedQuestionsQuery();
   const [getQuestions, { isFetching }] = useLazyFilterSatQuestionsQuery();
+  const { data: goal } = useGetSatStudyGoalQuery();
+  const [resumable] = React.useState(() => findResumableRun());
   const score = scoreBreakdown(data?.mockSessions ?? []);
+  const target = goal?.targetScore ?? null;
+  const scale = journeyScale({
+    current: score.total,
+    baseline: baselineTotal(data?.mockSessions ?? []),
+    target,
+  });
+  const streak = streakState({
+    count: data?.streak.count ?? 0,
+    lastPracticeDate: data?.streak.lastPracticeDate ?? null,
+    sessions: [
+      ...(data?.recentSessions ?? []),
+      ...(data?.mockSessions ?? []),
+      ...(data?.packSessions ?? []),
+    ],
+  });
   const skills = weakestSkills(data?.masteryRows ?? []);
   const focus = skills[0];
+  const next = continueAction({
+    resume: resumable
+      ? { answered: answeredCount(resumable.run), total: resumable.total }
+      : null,
+    hasScore: score.total != null,
+    mockCount: data?.mockSessions.length ?? 0,
+    focusSkill: focus?.skill ?? null,
+  });
+  const runContinue = () => {
+    if (next.kind === "resume") navigate(`${BASE}/runner`);
+    else if (next.kind === "practice") void startPractice();
+    else navigate(`${BASE}/mock-tests`);
+  };
   const startPractice = async () => {
     if (!focus) {
       navigate(`${BASE}/practice`);
@@ -69,6 +108,23 @@ const SatDashboardPage: React.FC = () => {
     );
   return (
     <div className="sat-platform">
+      {resumable && (
+        <div className="sat-platform__resume" role="status">
+          <div>
+            <strong>Resume your test</strong>
+            <span>
+              {resumable.title} · {answeredCount(resumable.run)} of{" "}
+              {resumable.total} answered
+            </span>
+          </div>
+          <button className="sat-action" onClick={() => navigate(`${BASE}/runner`)}>
+            Resume
+            <span>
+              <ArrowRight size={15} />
+            </span>
+          </button>
+        </div>
+      )}
       <section className="sat-platform__hero">
         <div className="sat-platform__journey-top">
           <h1 className="sat-platform__eyebrow">SAT score journey</h1>
@@ -82,11 +138,13 @@ const SatDashboardPage: React.FC = () => {
           <SatTargetScore score={score.total} />
         </div>
         <div className="sat-platform__score-track" aria-hidden="true">
-          <i
-            style={{
-              width: `${score.total ? ((score.total - 400) / 1200) * 100 : 0}%`,
-            }}
-          />
+          <i style={{ width: `${scale.pct}%` }} />
+          {target != null && scale.markerPct != null && (
+            <b
+              className="sat-platform__score-marker"
+              style={{ left: `${scale.markerPct}%` }}
+            />
+          )}
         </div>
         <div className="sat-platform__journey-meta">
           <span>
@@ -94,29 +152,54 @@ const SatDashboardPage: React.FC = () => {
               ? "Based on your latest Math and Reading & Writing mocks"
               : "Complete both section mocks to establish your baseline"}
           </span>
-          <span>Score scale: 400–1600</span>
+          {target != null && score.total != null ? (
+            <span>
+              {scale.toGo
+                ? `${scale.toGo} points to go · ${scale.min} → ${target}`
+                : "Target reached"}
+            </span>
+          ) : (
+            <span>Score scale: 400–1600</span>
+          )}
         </div>
         <div className="sat-platform__hero-action">
           <button
             className="sat-action sat-action--primary"
             disabled={isFetching}
-            onClick={startPractice}
+            onClick={runContinue}
           >
-            {isFetching
-              ? "Preparing practice…"
-              : focus
-                ? "Start today’s plan"
-                : "Choose your first practice"}
+            {isFetching ? "Preparing practice…" : `Continue: ${next.label}`}
             <span>
               <ArrowRight size={16} />
             </span>
           </button>
-          <p>
-            {focus
-              ? `${focus.skill} · Up to 10 questions`
-              : "Pick a topic. Start with a short set."}
-          </p>
+          <p>{next.detail}</p>
         </div>
+      </section>
+      <section
+        className={`sat-streak${streak.atRisk ? " sat-streak--risk" : ""}`}
+        aria-label="Study streak"
+      >
+        <Flame size={22} aria-hidden="true" />
+        <div>
+          <strong>
+            {streak.count
+              ? `${streak.count}-day streak`
+              : "Start a study streak"}
+          </strong>
+          <span>
+            {streak.atRisk
+              ? `Practise today to keep your ${streak.count}-day streak`
+              : streak.doneToday
+                ? "Daily goal done: you practised today"
+                : "Daily goal: one practice session today"}
+          </span>
+        </div>
+        <span
+          className={`sat-streak__goal${streak.doneToday ? " is-done" : ""}`}
+        >
+          {streak.doneToday ? "Done today" : "Not done yet"}
+        </span>
       </section>
       <section className="sat-platform__plan">
         <header>
@@ -128,11 +211,7 @@ const SatDashboardPage: React.FC = () => {
                 : "A clear starting point for your next session."}
             </p>
           </div>
-          <span>
-            {data?.streak.count
-              ? `${data.streak.count}-day study streak`
-              : "Your next steps"}
-          </span>
+          <span>Your next steps</span>
         </header>
         <div className="sat-platform__tasks">
           <div className="sat-platform__task sat-platform__task--active">
@@ -150,7 +229,7 @@ const SatDashboardPage: React.FC = () => {
               </p>
             </div>
             <button
-              className="sat-action sat-action--soft"
+              className="sat-action"
               disabled={isFetching}
               onClick={startPractice}
             >
