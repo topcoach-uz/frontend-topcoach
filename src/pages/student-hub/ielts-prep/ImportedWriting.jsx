@@ -4,7 +4,7 @@ export function ImportedWritingPrompt({ task, part, book, test }) {
   const [imageFailed, setImageFailed] = useState(false);
   return (
     <>
-      <h2>TASK {part}</h2>
+      <h2>Task {part}</h2>
       <p>You should spend about {part === 1 ? 20 : 40} minutes on this task.</p>
       {task.prompt ? (
         <div className="writing-prompt">
@@ -18,8 +18,7 @@ export function ImportedWritingPrompt({ task, part, book, test }) {
       ) : (
         <>
           <p className="hint" role="status">
-            The chart is available, but the written task prompt has not been
-            imported.
+            This task's written prompt isn't available yet.
           </p>
           {part === 1 && (
             <div className="writing-prompt">
@@ -52,7 +51,7 @@ export function ImportedWritingPrompt({ task, part, book, test }) {
         ))}
       {task.sampleAnswer ? (
         <details open className="sample-writing">
-          <summary>Sample Writing Answer</summary>
+          <summary>Sample answer</summary>
           {task.sampleTitle && <h2 className="center">{task.sampleTitle}</h2>}
           {task.sampleAnswer.split("\n\n").map((text, index) => (
             <p key={index}>{text}</p>
@@ -60,7 +59,7 @@ export function ImportedWritingPrompt({ task, part, book, test }) {
         </details>
       ) : (
         <p className="hint">
-          A sample writing answer has not been imported for this task.
+          A sample answer isn't available for this task yet.
         </p>
       )}
     </>

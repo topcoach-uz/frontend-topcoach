@@ -447,8 +447,8 @@ function App() {
         onStorageError?.();
       }
     document.title = r
-      ? `${cap(r.skill)} – IELTS Practice | TopCoach`
-      : "IELTS Practice | TopCoach";
+      ? `${cap(r.skill)} · IELTS prep | TopCoach`
+      : "IELTS prep | TopCoach";
   }, [path, profile]);
   useEffect(() => {
     if (!toast) return;
@@ -491,10 +491,10 @@ function App() {
       {browsing ? <IeltsBrowse pagePath={pagePath} Link={Link} profile={profile} last={readBrowse("workspace:last", null)} /> : <>
       <header>
         <div className="brand">
-          <Link to="/student-hub" aria-label="Back to TopCoach">
+          <Link to="/student-hub" aria-label="Back to topCoach">
             <Logo width={100} height={36} color={dark ? "white" : "black"} />
           </Link>
-          <Link to="/ielts/practice/home">IELTS Practice</Link>
+          <Link to="/">IELTS prep</Link>
         </div>
         {r && r.skill !== "score" && r.skill !== "speaking" && (
           <Clock r={r} setModal={setModal} go={go} />
@@ -502,7 +502,7 @@ function App() {
         {pagePath !== "/login" && (
           <div className="header-actions">
             <IconButton
-              label={`Current theme: ${dark ? "Dark" : "Light"} Mode, click to switch`}
+              label={dark ? "Switch to light mode" : "Switch to dark mode"}
               onClick={() => setDark(!dark)}
             >
               {dark ? <Moon /> : <Sun />}
@@ -533,7 +533,7 @@ function App() {
                     <b>{profile.name}</b>
                     <small>{profile.email}</small>
                     <button onClick={() => go("/settings/account")}>
-                      Account Settings
+                      Account settings
                     </button>
                     <button onClick={() => go(myLearningPath)}>
                       Back to My learning
@@ -649,18 +649,18 @@ function Clock({ r, setModal, go }) {
             {String(remaining % 60).padStart(2, "0")}
           </>
         ) : (
-          "Mock Test"
+          "Timed test"
         )}
         <ChevronDown size={12} />
       </button>
       {mock && (
         <IconButton
-          label="Submit Test"
+          label="Submit test"
           onClick={() =>
             setModal({
-              title: "Submit Test?",
+              title: "Submit test?",
               body: "Finish this test and review your answers?",
-              actionLabel: "Submit Test",
+              actionLabel: "Submit test",
               action: () => go(testPath(r, "score")),
             })
           }
@@ -673,7 +673,7 @@ function Clock({ r, setModal, go }) {
           <button
             onClick={() => start(r.skill === "listening" ? 30 : 60, "full")}
           >
-            Full Section Timer (Mock Test)
+            Time the whole section
           </button>
           <button
             onClick={() =>
@@ -686,7 +686,7 @@ function Clock({ r, setModal, go }) {
               )
             }
           >
-            Single Part Timer
+            Time this part
           </button>
           {clock && (
             <>
@@ -733,13 +733,16 @@ function Vocabulary({ setToast }) {
           }}
         >
           <input
-            placeholder="IELTS Dictionary"
-            aria-label="IELTS Dictionary"
+            placeholder="Search a word"
+            aria-label="Search a word"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
           <button className="solid">Search</button>
         </form>
+        {!word && (
+          <p className="muted">Type a word to see its meaning and examples.</p>
+        )}
         {word && (
           <>
             <div className="tab-title">Definition &amp; Examples</div>
@@ -749,7 +752,7 @@ function Vocabulary({ setToast }) {
                 <div className="word-title">
                   <h1>{word}</h1>
                   <IconButton
-                    label={stars.includes(word) ? "Unstar word" : "Star word"}
+                    label={stars.includes(word) ? "Remove from saved" : "Save word"}
                     onClick={() =>
                       setStars(
                         stars.includes(word)
@@ -823,7 +826,7 @@ function speak(text, onend) {
 function InfoPage({ path, Link }) {
   return (
     <main className="settings">
-      <h1>{path === "/about" ? "About IELTS Practice" : "Page not found"}</h1>
+      <h1>{path === "/about" ? "About IELTS prep" : "Page not found"}</h1>
       <p>
         {path === "/about"
           ? "Practise Academic and General Training IELTS with reading, listening, writing, speaking, vocabulary and answer review."
@@ -978,7 +981,7 @@ function Practice({ r, go, setModal, setToast }) {
             : ""
         }
       />
-      {revealed && <small>{currentKeys?.[n - 1] || "Key not available"}</small>}
+      {revealed && <small>{currentKeys?.[n - 1] || "No answer on file"}</small>}
     </span>
   );
   const tools = (
@@ -1087,11 +1090,11 @@ function Practice({ r, go, setModal, setToast }) {
         <section className="pane left">
           {r.skill !== "writing" && r.skill !== "speaking" && tools}
           {!imported ? (
-            ["listening", "reading", "writing", "speaking"].includes(r.skill) ? <div className="empty" role="status"><p>{library?.loading ? `Loading ${r.skill} practice…` : `${cap(r.skill)} content has not been imported for this test or part.`}</p>{library?.error && <button onClick={() => library.retry()}>Retry loading</button>}</div> : <Missing r={r} />
+            ["listening", "reading", "writing", "speaking"].includes(r.skill) ? <div className="empty" role="status"><p>{library?.loading ? `Loading…` : "This part isn't available yet."}</p>{library?.error && <button onClick={() => library.retry()}>Try again</button>}</div> : <Missing r={r} />
           ) : r.skill === "reading" ? (
             <>
               <h2>
-                PASSAGE {r.part}{" "}
+                Passage {r.part}{" "}
                 {r.type === "general-training" && (
                   <small>
                     (Section {r.part <= 2 ? 1 : r.part <= 4 ? 2 : 3})
@@ -1105,7 +1108,7 @@ function Practice({ r, go, setModal, setToast }) {
               {reading.article.subtitles.map((text, i) => <p className="subtitle" key={i}>{text}</p>)}
               <div onClick={onWord} onContextMenu={contextMenu}>
                 {reading.article.blocks.map((block, i) => block.type === "heading" ? <h3 className="section-letter" key={i}>{block.text}</h3> : block.type === "image" ? (
-                  block.image ? <img key={i} src={block.image} alt="Passage illustration" style={{ maxWidth: "100%", height: "auto" }} /> : <p className="hint" key={i}>Passage illustration is not available in the imported data.</p>
+                  block.image ? <img key={i} src={block.image} alt="Passage illustration" style={{ maxWidth: "100%", height: "auto" }} /> : <p className="hint" key={i}>Passage illustration is not available.</p>
                 ) : <p key={i}>{paragraph(block.text, i)}</p>)}
               </div>
               {reading.article.footer.map((text, i) => <p className="muted" key={i}>{text}</p>)}
@@ -1113,7 +1116,7 @@ function Practice({ r, go, setModal, setToast }) {
             </>
           ) : r.skill === "listening" ? (
             <>
-              <h2>PART {r.part}</h2>
+              <h2>Part {r.part}</h2>
               {listening.audio ? <ListeningAudio key={listening.audio} src={listening.audio} /> : <p className="hint">Audio is not available for this part.</p>}
               <details>
                 <summary>Audioscript</summary>
@@ -1150,16 +1153,16 @@ function Practice({ r, go, setModal, setToast }) {
             {clearOpen && (
               <div className="menu clear-menu" role="menu">
                 <button role="menuitem" onClick={() => clear("part")}>
-                  Clear This Part
+                  Clear this part
                 </button>
                 <button role="menuitem" onClick={() => clear("all")}>
-                  Clear All Parts
+                  Clear all parts
                 </button>
               </div>
             )}
           </div>
           {!imported ? (
-            <div className="empty">No answer data available</div>
+            <div className="empty">No answers on file for this test.</div>
           ) : r.skill === "reading" ? (
             <ImportedListeningQuestions part={reading} input={input} answers={answers} update={update} setAnswers={setAnswers} revealed={revealed} keys={currentKeys || []} />
           ) : r.skill === "listening" ? (
@@ -1231,7 +1234,7 @@ function Practice({ r, go, setModal, setToast }) {
                         ["listening", "reading"].includes(r.skill)
                           ? setModal({
                               kind: "answers",
-                              title: "Answer Keys",
+                              title: "Answer key",
                               r,
                               answers,
                             })
@@ -1366,7 +1369,7 @@ function AnswerDrawer({ r, answers, go, close }) {
   const questionNumbers = listeningPart((r.skill === "reading" ? readingLibrary : listeningLibrary)?.data, r.part)?.questionNumbers || [];
   return (
     <>
-      <h2>Answer Keys</h2>
+      <h2>Answer key</h2>
       <p className="muted">Review completed answers</p>
       <button
         className="solid drawer-scores"
@@ -1375,7 +1378,7 @@ function AnswerDrawer({ r, answers, go, close }) {
           go(testPath(r, "score"));
         }}
       >
-        Band Scores <ArrowRight size={16} />
+        Scores <ArrowRight size={16} />
       </button>
       <label className="toggle">
         <input
@@ -1391,8 +1394,8 @@ function AnswerDrawer({ r, answers, go, close }) {
           <thead>
             <tr>
               <th>Question</th>
-              <th>My Answer</th>
-              <th>Correct Answer</th>
+              <th>Your answer</th>
+              <th>Correct answer</th>
             </tr>
           </thead>
           <tbody>
@@ -1410,14 +1413,14 @@ function AnswerDrawer({ r, answers, go, close }) {
                   }
                 >
                   <td>{n}</td>
-                  <td>{answers[n] || "-"}</td>
+                  <td>{answers[n] || "No answer"}</td>
                   <td>
                     <span
                       className={
                         !hasAnswer(answers[n]) && !show ? "blurred" : ""
                       }
                     >
-                      {key ? key.replaceAll("|", " | ") : "Key not available"}
+                      {key ? key.replaceAll("|", " | ") : "No answer on file"}
                     </span>
                   </td>
                 </tr>
@@ -1426,7 +1429,7 @@ function AnswerDrawer({ r, answers, go, close }) {
           </tbody>
         </table>
       ) : (
-        <p>Answer keys not imported for this test.</p>
+        <p>No answers on file for this test.</p>
       )}
       <button className="drawer-close" onClick={close}>
         Close
@@ -1438,9 +1441,9 @@ function Missing({ r }) {
   return (
     <div className="missing">
       <h2>
-        {r.skill === "writing" ? "TASK" : "PART"} {r.part}
+        {r.skill === "writing" ? "Task" : "Part"} {r.part}
       </h2>
-      <p className="muted">No answer data available</p>
+      <p className="muted">No answers on file for this test.</p>
     </div>
   );
 }
@@ -1452,7 +1455,7 @@ function WordCard({ word }) {
       <div className="word-title">
         <h2>{word}</h2>
         <IconButton
-          label="Star word"
+          label="Save word"
           onClick={() =>
             setStars(
               stars.includes(word)
@@ -1720,9 +1723,9 @@ function WritingEditor({ r, setToast, task, release, draftKey }) {
     );
   const count = wordCount(essay);
   async function submit() {
-    if (!canAssess) { setToast("Feedback is unavailable until the full task prompt is imported."); return; }
+    if (!canAssess) { setToast("Feedback isn't available for this task yet."); return; }
     if (!count) {
-      setToast("Please input your response.");
+      setToast("Write your response before submitting.");
       return;
     }
     setVersions((v) => [{ text: essay, time: new Date().toISOString() }, ...v]);
@@ -1734,11 +1737,11 @@ function WritingEditor({ r, setToast, task, release, draftKey }) {
       {essay && savedAt && (
         <div className="autosaved">Autosaved @ {dateLabel(savedAt)}.</div>
       )}
-      <p>{canAssess ? "Your response is saved to your account when submitted. Text is sent to OpenAI for automated feedback." : task?.prompt && r.part === 1 ? "Drafts are saved in this browser. Automated feedback for chart tasks is not available yet." : "Drafts are saved in this browser. Automated feedback is unavailable until the full task prompt is imported."}</p>
+      <p>{canAssess ? "Your response is saved to your account when submitted. Text is sent to OpenAI for automated feedback." : task?.prompt && r.part === 1 ? "Drafts are saved in this browser. Automated feedback for chart tasks is not available yet." : "Drafts are saved in this browser. Automated feedback isn't available for this task yet."}</p>
       <textarea
         className="essay"
-        placeholder="Please input"
-        aria-label="Please input"
+        placeholder="Write your answer here"
+        aria-label="Your answer"
         value={essay}
         onChange={(e) => {
           setEssay(e.target.value);
@@ -1746,13 +1749,13 @@ function WritingEditor({ r, setToast, task, release, draftKey }) {
         }}
       />
       <div className="editor-footer">
-        <span>Words: {count}</span>
+        <span>{count} {count === 1 ? "word" : "words"} (aim for {r.part === 1 ? 150 : 250})</span>
         <button className="pill green" disabled={!canAssess || assessment.busy || !count} onClick={submit}>
-          Submit for Feedback
+          Submit for feedback
         </button>
       </div>
       <details open>
-        <summary>Writing Feedback</summary>
+        <summary>Feedback</summary>
         <PracticeFeedback assessment={assessment} onRestore={value => { setEssay(value); setSavedAt(new Date().toISOString()); }} />
       </details>
       {versions.length > 0 &&
@@ -1845,8 +1848,7 @@ function SpeakingEditor({ r, setToast, onComplete, library, draftKey }) {
     return (
       <>
         <div className="speaking-complete">
-          <p>This is the end of part {r.part}.</p>
-          <p>All questions are completed.</p>
+          <p>Part {r.part} complete.</p>
         </div>
         <p className="retention-note">
           Submitted recordings are private and available for seven days. Your
@@ -1981,12 +1983,12 @@ function Scores({ r, Link }) {
         ].map(([label, value]) => (
           <article className={label === "Overall" ? "overall" : ""} key={label}>
             <h3>{label}</h3>
-            <strong>{(label === "Listening" && !lk || label === "Reading" && !rk) ? "—" : value.toFixed(1)}</strong>
+            <strong>{(label === "Listening" && !lk || label === "Reading" && !rk || !["Listening", "Reading"].includes(label)) ? "—" : value.toFixed(1)}</strong>
             {(label === "Listening" || label === "Reading") && (
               <small>
-                ✓ {stats[label].correct}
-                <br />⊗ {stats[label].incorrect}
-                <br />⊖ {stats[label].unanswered}
+                <span title="Correct" aria-label={`${stats[label].correct} correct`}>✓ {stats[label].correct} correct</span>
+                <br /><span title="Wrong" aria-label={`${stats[label].incorrect} wrong`}>⊗ {stats[label].incorrect} wrong</span>
+                <br /><span title="Skipped" aria-label={`${stats[label].unanswered} skipped`}>⊖ {stats[label].unanswered} skipped</span>
               </small>
             )}
           </article>
@@ -1994,8 +1996,7 @@ function Scores({ r, Link }) {
       </div>
       {!valid && (
         <p className="hint">
-          Answer keys for this test have not been imported. No score can be
-          calculated.
+          We don't have answers for this test yet, so we can't score it.
         </p>
       )}
       {valid &&
@@ -2008,7 +2009,7 @@ function Scores({ r, Link }) {
                 <Link className="pill" to={testPath(r, skill)}>
                   {cap(skill)} <ArrowRight size={16} />
                 </Link>
-                <p>{skill === "listening" ? "A band score requires all 40 answer keys. Review available keys within each part." : "No answer data available"}</p>
+                <p>{skill === "listening" ? "A band score requires all 40 answers. Review the available answers within each part." : "No answers on file for this test."}</p>
               </section>
             );
           return (
@@ -2031,8 +2032,8 @@ function Scores({ r, Link }) {
                 <thead>
                   <tr>
                     <th>Question</th>
-                    <th>My Answer</th>
-                    <th>Correct Answer</th>
+                    <th>Your answer</th>
+                    <th>Correct answer</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2048,7 +2049,7 @@ function Scores({ r, Link }) {
                       }
                     >
                       <td>{i + 1}</td>
-                      <td>{data[i + 1] || "-"}</td>
+                      <td>{data[i + 1] || "No answer"}</td>
                       <td>
                         <span
                           className={
@@ -2057,7 +2058,7 @@ function Scores({ r, Link }) {
                               : ""
                           }
                         >
-                          {key ? key.replaceAll("|", " | ") : "Key not available"}
+                          {key ? key.replaceAll("|", " | ") : "No answer on file"}
                         </span>
                       </td>
                     </tr>
@@ -2078,7 +2079,7 @@ function Scores({ r, Link }) {
           ).map((part) => (
             <h3 key={part}>
               <Link to={testPath(r, skill, part)}>
-                {cap(skill)} Task {part} Band Score: 0.0
+                {cap(skill)} {skill === "writing" ? "task" : "part"} {part}: not scored
               </Link>
             </h3>
           ))}
@@ -2097,7 +2098,7 @@ function Scores({ r, Link }) {
           className="solid"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         >
-          Back to Top
+          Back to top
         </button>
         <Link
           to={testPath(

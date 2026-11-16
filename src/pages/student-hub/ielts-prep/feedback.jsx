@@ -11,7 +11,7 @@ export function WritingFeedback({ essay }) {
       </div>
       {[
         [
-          "Task Response",
+          "Task response",
           "The response identifies the main trends and provides a useful overview. A fuller comparison of the beginning and ending values would make the summary more precise.",
           "Key Points",
           [
@@ -89,7 +89,7 @@ export function SpeakingFeedback({ questions }) {
   return (
     <div className="assessment">
       <small className="fixture-label">Sample feedback · UI preview</small>
-      <h2>Speaking Feedback</h2>
+      <h2>Speaking feedback</h2>
       <div className="band-value">6.5</div>
       <section className="criterion">
         <h3>Comments</h3>

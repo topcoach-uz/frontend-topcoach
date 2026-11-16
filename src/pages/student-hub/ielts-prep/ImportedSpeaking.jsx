@@ -19,11 +19,11 @@ export function ImportedSpeakingPrompt({ library, onSelect }) {
   const { topic, catalog, part } = library;
   return (
     <>
-      <h2>PART {part}</h2>
+      <h2>Part {part}</h2>
       <p className="muted">
         {topic.testIdentity
-          ? `Cambridge ${topic.testIdentity.book} Test ${topic.testIdentity.test}. Questions verified against the source practice page.`
-          : "Imported topic bank. These topics are not mapped to Cambridge books or tests."}
+          ? `Cambridge ${topic.testIdentity.book} Test ${topic.testIdentity.test}.`
+          : "More topics. These are not tied to a specific book or test."}
       </p>
       <label>
         Practice topic
@@ -37,7 +37,7 @@ export function ImportedSpeakingPrompt({ library, onSelect }) {
           {[
             ["cambridge", "This test"],
             ["examiner", "Examiner recordings"],
-            ["topics", "Imported topics"],
+            ["topics", "More topics"],
           ].map(([source, title]) => (
             <optgroup key={source} label={title}>
               {catalog

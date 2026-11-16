@@ -107,7 +107,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
           </option>
         ))}
       </select>
-      {revealed && <small>{keys[n - 1] || "Key not available"}</small>}
+      {revealed && <small>{keys[n - 1] || "No answer on file"}</small>}
     </span>
   );
   const answer = (n, slot) => {
@@ -129,7 +129,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
               update(n, next.join(" & "));
             }}
           />
-          {revealed && <small>{keys[n - 1] || "Key not available"}</small>}
+          {revealed && <small>{keys[n - 1] || "No answer on file"}</small>}
         </span>
       );
     }
@@ -178,7 +178,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
       )}
       {group.imageMissing && (
         <p className="hint" role="status">
-          Diagram is not available in the imported data.
+          Diagram is not available.
         </p>
       )}
       {group.type === "option-true-false" || group.type === "option-yes-no" ? (
@@ -212,7 +212,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
                   </label>
                 ))}
                 {revealed && (
-                  <small>{keys[n - 1] || "Key not available"}</small>
+                  <small>{keys[n - 1] || "No answer on file"}</small>
                 )}
               </fieldset>
             );
@@ -249,7 +249,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
                   );
                 })}
                 {revealed && (
-                  <small>{keys[n - 1] || "Key not available"}</small>
+                  <small>{keys[n - 1] || "No answer on file"}</small>
                 )}
               </fieldset>
             );
@@ -290,7 +290,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
             <small>
               {Array.from(
                 { length: group.end - group.start + 1 },
-                (_, i) => keys[group.start + i - 1] || "Key not available",
+                (_, i) => keys[group.start + i - 1] || "No answer on file",
               ).join(", ")}
             </small>
           )}
