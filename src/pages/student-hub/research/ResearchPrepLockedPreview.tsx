@@ -1,5 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Lock, Star, BookOpen } from 'lucide-react';
+import { Breadcrumb } from '../applicant/ApplicantPage';
+import { useMyLearningPath } from '../applicant/useMyLearningPath';
 import '../applicant/applicantPages.scss';
 import './research-prep.scss';
 
@@ -47,6 +50,7 @@ const MODULES: Module[] = [
 ];
 
 export default function ResearchPrepLockedPreview() {
+  const myLearningPath = useMyLearningPath();
   return (
     <div className="applicant-page applicant-specialist-page rp-locked-preview" style={{ padding: '24px 32px', maxWidth: 1200, margin: '0 auto', fontFamily: 'inherit' }}>
       {/* Top bar */}
@@ -60,25 +64,11 @@ export default function ResearchPrepLockedPreview() {
           flexWrap: 'wrap',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, color: '#6b6258' }}>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '6px 12px',
-              borderRadius: 999,
-              background: '#f5ecec',
-              color: '#8b1f2f',
-              fontSize: 13,
-              fontWeight: 600,
-            }}
-          >
-            <BookOpen size={14} /> Research Program
-          </span>
-          <span style={{ fontSize: 14 }}>›</span>
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#1a1a1a' }}>Dashboard</span>
-        </div>
+        <Breadcrumb>
+          <Link to={myLearningPath}>My learning</Link>
+          <span>/</span>
+          Research Program
+        </Breadcrumb>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
             <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#8a7f70' }}>

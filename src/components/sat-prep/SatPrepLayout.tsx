@@ -9,11 +9,11 @@
 
 import React from 'react';
 import { useMyLearningPath } from 'src/pages/student-hub/applicant/useMyLearningPath';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Breadcrumb } from 'src/pages/student-hub/applicant/ApplicantPage';
 import {
   ArrowLeft,
   BookmarkCheck,
-  GraduationCap,
   Layers,
   LayoutDashboard,
   ListChecks,
@@ -54,14 +54,13 @@ const SatPrepLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     <div className="applicant-page applicant-specialist-page sat-shell">
       <header className="sat-shell__header">
         <div className="sat-shell__header-inner">
-          <div className="sat-shell__crumb">
-            <span className="sat-shell__brand-badge">
-              <GraduationCap size={13} />
-              SAT Test Prep
-            </span>
-            <span className="sat-shell__crumb-sep">›</span>
-            <span className="sat-shell__crumb-current">{activeTab?.label ?? 'Overview'}</span>
-          </div>
+          <Breadcrumb>
+            <Link to={myLearningPath}>My learning</Link>
+            <span>/</span>
+            <span>SAT Test Prep</span>
+            <span>/</span>
+            {activeTab?.label ?? 'Overview'}
+          </Breadcrumb>
           <button className="sat-shell__back-btn" onClick={() => navigate(myLearningPath)}>
             <ArrowLeft size={13} />
             Back to My learning

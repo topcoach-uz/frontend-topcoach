@@ -10,7 +10,7 @@ function SampleAnswer({ task, unlocked }) {
         {confirming ? (
           <>
             <p>
-              Seeing a sample first makes this practice less useful. Show
+              Seeing a sample first makes this test less useful. Show
               anyway?
             </p>
             <div className="sample-actions">
@@ -18,7 +18,7 @@ function SampleAnswer({ task, unlocked }) {
                 Show anyway
               </button>
               <button className="link-button" onClick={() => setConfirming(false)}>
-                Keep practising
+                Keep trying
               </button>
             </div>
           </>
@@ -45,7 +45,7 @@ export function ImportedWritingPrompt({ task, part, book, test, sampleUnlocked =
   const [imageFailed, setImageFailed] = useState(false);
   return (
     <>
-      <h2>TASK {part}</h2>
+      <h2>Task {part}</h2>
       <p>You should spend about {part === 1 ? 20 : 40} minutes on this task.</p>
       {task.prompt ? (
         <div className="writing-prompt">
@@ -59,8 +59,7 @@ export function ImportedWritingPrompt({ task, part, book, test, sampleUnlocked =
       ) : (
         <>
           <p className="hint" role="status">
-            The chart is available, but the written task prompt has not been
-            imported.
+            This task's written prompt isn't available yet.
           </p>
           {part === 1 && (
             <div className="writing-prompt">
@@ -95,7 +94,7 @@ export function ImportedWritingPrompt({ task, part, book, test, sampleUnlocked =
         <SampleAnswer key={`${book}-${test}-${part}`} task={task} unlocked={sampleUnlocked} />
       ) : (
         <p className="hint">
-          A sample writing answer has not been imported for this task.
+          A sample answer isn't available for this task yet.
         </p>
       )}
     </>
