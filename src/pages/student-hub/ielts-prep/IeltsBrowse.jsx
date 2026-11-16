@@ -12,7 +12,8 @@ import {
   Search,
   ChevronRight,
 } from "lucide-react";
-import { testPath, route, skills } from "./model.js";
+import { testPath, route, skills, booksFor, testCount } from "./model.js";
+import { testProgress, unfinishedPractices, STATE_LABEL } from "./progress.js";
 import "./browse.css";
 
 const academicPath = "/ielts/practice/home";
@@ -70,14 +71,7 @@ const bookLabel = (book) =>
     : book === "eg"
       ? "Exam Essentials"
       : `IELTS ${book}`;
-const booksFor = (type) =>
-  type === "academic"
-    ? [...Array.from({ length: 21 }, (_, i) => 21 - i), "eg", "og"]
-    : [...Array.from({ length: 8 }, (_, i) => 21 - i), 10];
-const testCount = (type, book) =>
-  book === "og" ? 8 : type === "general-training" && book === 10 ? 2 : 4;
-
-export default function IeltsBrowse({ pagePath, Link, profile, last }) {
+export default function IeltsBrowse({ pagePath, Link, profile, last, progress }) {
   const myLearningPath = useMyLearningPath();
   const overview = pagePath === "/";
   const type = pagePath === generalPath ? "general-training" : "academic";
@@ -137,17 +131,20 @@ export default function IeltsBrowse({ pagePath, Link, profile, last }) {
             )}
           </div>
           {overview ? (
-            <Overview Link={Link} profile={profile} last={last} />
+            <Overview Link={Link} profile={profile} last={last} progress={progress} />
           ) : (
-            <PracticeLibrary key={type} type={type} Link={Link} />
+            <PracticeLibrary key={type} type={type} Link={Link} progress={progress} />
           )}
         </main>
       </div>
     </div>
   );
 }
-function Overview({ Link, profile, last }) {
+function Overview({ Link, profile, last, progress }) {
   const validLast = last && route(last.path);
+  const unfinished = progress
+    ? unfinishedPractices(progress.entries, progress.markers, progress.recent, 3)
+    : [];
   return (
     <>
       <div className="ib-heading">
@@ -191,6 +188,27 @@ function Overview({ Link, profile, last }) {
           </div>
         </div>
       </section>
+      {unfinished.length > 0 && (
+        <section aria-labelledby="ib-unfinished-title">
+          <div className="ib-section-heading">
+            <div>
+              <h2 id="ib-unfinished-title">Unfinished</h2>
+              <p>Pick up the practices you started.</p>
+            </div>
+          </div>
+          <ul className="ib-unfinished">
+            {unfinished.map((item) => (
+              <li key={item.path}>
+                <span>{item.label}</span>
+                <Link className="ib-button" to={item.path}>
+                  Continue
+                  <ArrowRight size={16} />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <section>
         <div className="ib-section-heading">
           <div>
@@ -255,7 +273,7 @@ function Overview({ Link, profile, last }) {
     </>
   );
 }
-function PracticeLibrary({ type, Link }) {
+function PracticeLibrary({ type, Link, progress }) {
   const [query, setQuery] = useState("");
   const [bookFilter, setBookFilter] = useState("all");
   const initialSkill = new URLSearchParams(window.location.search).get("skill");
@@ -378,31 +396,10 @@ function PracticeLibrary({ type, Link }) {
           </div>
           <div className="ib-tests">
             {tests.map((test) => (
-              <article className="ib-test" key={test}>
-                <div className="ib-test-top">
-                  <h3>Test {test}</h3>
-                  <Link
-                    to={testPath({ type, book, test }, "score")}
-                    className="ib-review"
-                  >
-                    Results <ChevronRight size={14} />
-                  </Link>
-                </div>
-                <div className="ib-test-skills">
-                  {selectedSkills.map((s) => {
-                    const { Icon, label } = skillMeta[s];
-                    return (
-                      <Link key={s} to={testPath({ type, book, test }, s)}>
-                        <span className="ib-mini-icon">
-                          <Icon size={16} />
-                        </span>
-                        {label}
-                        <ArrowRight size={14} />
-                      </Link>
-                    );
-                  })}
-                </div>
-              </article>
+              <TestCard
+                key={test}
+                {...{ type, book, test, Link, progress, selectedSkills, isAcademic }}
+              />
             ))}
           </div>
         </section>
@@ -425,5 +422,54 @@ function PracticeLibrary({ type, Link }) {
         </div>
       )}
     </>
+  );
+}
+function TestCard({ type, book, test, Link, progress, selectedSkills, isAcademic }) {
+  const trackable = isAcademic ? skills : ["reading"];
+  const summary = progress
+    ? testProgress(
+        progress.entries,
+        progress.markers,
+        { type, book: String(book), test },
+        trackable,
+      )
+    : null;
+  return (
+              <article className="ib-test">
+                <div className="ib-test-top">
+                  <h3>Test {test}</h3>
+                  <Link
+                    to={testPath({ type, book, test }, "score")}
+                    className="ib-review"
+                  >
+                    Results <ChevronRight size={14} />
+                  </Link>
+                </div>
+                {summary && (
+                  <p className="ib-test-progress">
+                    {summary.done} of {summary.total}{" "}
+                    {summary.total === 1 ? "skill" : "skills"} done
+                  </p>
+                )}
+                <div className="ib-test-skills">
+                  {selectedSkills.map((s) => {
+                    const { Icon, label } = skillMeta[s];
+                    return (
+                      <Link key={s} to={testPath({ type, book, test }, s)}>
+                        <span className="ib-mini-icon">
+                          <Icon size={16} />
+                        </span>
+                        {label}
+                        {summary && (
+                          <span className={`ib-state ib-state-${summary.skills[s].state}`}>
+                            {STATE_LABEL[summary.skills[s].state]}
+                          </span>
+                        )}
+                        <ArrowRight size={14} />
+                      </Link>
+                    );
+                  })}
+                </div>
+              </article>
   );
 }
