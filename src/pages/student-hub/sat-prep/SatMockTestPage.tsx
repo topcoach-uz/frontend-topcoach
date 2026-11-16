@@ -1051,6 +1051,10 @@ const SatMockTestPage: React.FC = () => {
           </p>
           <ul className="sat-runner__exit-list">
             <li>
+              <strong>Leave &amp; resume later</strong> — keep your answers and timer, and pick up
+              from the SAT Overview.
+            </li>
+            <li>
               <strong>Finish &amp; submit</strong> — score this attempt and add it to your study
               history. Unanswered questions count as incorrect.
             </li>

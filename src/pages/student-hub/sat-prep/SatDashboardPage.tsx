@@ -211,11 +211,7 @@ const SatDashboardPage: React.FC = () => {
                 : "A clear starting point for your next session."}
             </p>
           </div>
-          <span>
-            {data?.streak.count
-              ? `${data.streak.count}-day study streak`
-              : "Your next steps"}
-          </span>
+          <span>Your next steps</span>
         </header>
         <div className="sat-platform__tasks">
           <div className="sat-platform__task sat-platform__task--active">
