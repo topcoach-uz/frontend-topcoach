@@ -19,6 +19,7 @@ import {
   RelatedApplicationLabel,
   displayDate,
 } from "./ApplicantPage";
+import { NextStepCard } from "./NextStepCard";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 
 const documentLabels: Record<string, string> = {
@@ -140,6 +141,7 @@ export default function ApplicantDocumentsPage() {
       }
     >
       <Breadcrumb>Documents</Breadcrumb>
+      <NextStepCard current="documents" />
       <div className="applicant-document-toolbar">
         <Input
           className="applicant-document-search"
@@ -183,6 +185,7 @@ export default function ApplicantDocumentsPage() {
                 ? "Try another search or choose All files to see your library."
                 : "Add a transcript, test score, CV or other reusable application file."}
             </p>
+            {!search && tab === "all" && <Button type="primary" icon={<Plus size={16} />} onClick={open}>Add document</Button>}
           </div>
         ) : (
           <div className="applicant-panel applicant-document-list">

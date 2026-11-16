@@ -41,6 +41,7 @@ import ScholarshipManagement from "./ScholarshipManagement";
 import ApplicationRequirements from './ApplicationRequirements';
 import ApplicationMentor from './ApplicationMentor';
 import ApplicationTimeline from "../applications/components/ApplicationTimeline";
+import { NextStepCard } from "./NextStepCard";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 
 export default function ApplicantApplicationsPage() {
@@ -345,6 +346,7 @@ export default function ApplicantApplicationsPage() {
         </Button>
       ) : undefined}
     >
+      <NextStepCard />
       {mentorPlans.isError && <Alert type="warning" message="Mentor plans are temporarily unavailable." action={<Button onClick={() => void mentorPlans.refetch()}>Retry</Button>} />}
       {!!mentorPlans.data?.data.length && <details className="applicant-panel" aria-label="Earlier mentor notes">
         <summary>Earlier mentor notes</summary><p>These older notes are awaiting review by your application mentor. Once converted, they appear in your application list.</p>

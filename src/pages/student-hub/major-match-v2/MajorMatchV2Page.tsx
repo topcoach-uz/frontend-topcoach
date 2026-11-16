@@ -19,6 +19,7 @@ import {
 } from './mm3-payload';
 import { isMM3Answered, MM3Answer } from './components/MM3Inputs';
 import { MM3Intro } from './components/MM3Intro';
+import { NextStepCard } from '../applicant/NextStepCard';
 import { MM3Runner } from './components/MM3Runner';
 import { MM3Review } from './components/MM3Review';
 import { readMm3Location, writeMm3Location, type MM3Step } from './mm3-navigation';
@@ -324,6 +325,7 @@ const MajorMatchV2Page: React.FC<MajorMatchV2PageProps> = ({
         </div>
       ) : (
         <>
+          {step === 'intro' && !readOnly && <NextStepCard current="major-match" />}
           {step === 'intro' && (
             <MM3Intro
               targetDegree={targetDegree}

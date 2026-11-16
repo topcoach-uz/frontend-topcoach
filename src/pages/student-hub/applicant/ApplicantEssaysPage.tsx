@@ -43,6 +43,7 @@ import {
   RelatedApplicationLabel,
   displayDate,
 } from "./ApplicantPage";
+import { NextStepCard } from "./NextStepCard";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 import {
   useGetEligibleEssayMentorsQuery,
@@ -170,6 +171,7 @@ export default function ApplicantEssaysPage() {
       ) : undefined}
     >
       <Breadcrumb>Statements & essays</Breadcrumb>
+      <NextStepCard current="essays" />
       <QueryState
         loading={query.isLoading}
         error={query.isError}
