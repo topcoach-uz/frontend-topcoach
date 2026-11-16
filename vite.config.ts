@@ -1,4 +1,6 @@
+/// <reference types="vitest" />
 import { defineConfig, type Plugin } from 'vite';
+import { configDefaults } from 'vitest/config';
 import react from '@vitejs/plugin-react-swc';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
@@ -39,6 +41,16 @@ function preloadLandingChunk(): Plugin {
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), tsconfigPaths(), preloadLandingChunk()],
+  test: {
+    // These two are node:test files, run by CI with `node --test`
+    // (.github/workflows/dev.yml). Vitest has no node:test runner, so it
+    // reports them as "No test suite found".
+    exclude: [
+      ...configDefaults.exclude,
+      '**/ielts-prep/ImportedListening.test.jsx',
+      '**/ielts-prep/listening-library.test.js',
+    ],
+  },
   define: {
     __LOCALE_VERSION__: JSON.stringify(LOCALE_VERSION),
   },

@@ -918,3 +918,51 @@
   .ielts-browse .ib-heading p { font-size: 14px; }
   .ielts-browse .ib-skills { grid-template-columns: 1fr; }
 }
+
+/* Progress: per-test summary, per-skill state, unfinished shelf */
+.ielts-browse .ib-test-progress {
+  margin: 2px 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #655c55;
+}
+.ielts-browse .ib-state {
+  margin-left: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid #e7e2dc;
+  font-size: 12px;
+  font-weight: 600;
+  color: #655c55;
+  background: #fff;
+  white-space: nowrap;
+}
+.ielts-browse .ib-state-in-progress {
+  color: #302b28;
+  background: #f6efe6;
+}
+.ielts-browse .ib-state-done {
+  color: #8b0000;
+  background: #f6e8e7;
+  border-color: #ecc9c6;
+}
+.ielts-browse .ib-unfinished {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.ielts-browse .ib-unfinished li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  background: #fff;
+  border: 1px solid #e7e2dc;
+  border-radius: 14px;
+  color: #302b28;
+  font-weight: 600;
+}
