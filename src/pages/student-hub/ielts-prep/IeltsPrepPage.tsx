@@ -25,7 +25,7 @@ export default function IeltsPrepPage() {
   const listening = useGetIeltsListeningQuery({ type: listeningMatch?.[1] || '', book: listeningMatch?.[2] || '', test: Number(listeningMatch?.[3] || 1) }, { skip: !listeningMatch || !profile?.id, refetchOnMountOrArgChange: true });
   const readingMatch = pagePath.match(/^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/(reading|score)(?:\/|$)/);
   const reading = useGetIeltsReadingQuery({ type: readingMatch?.[1] || '', book: readingMatch?.[2] || '', test: Number(readingMatch?.[3] || 1) }, { skip: !readingMatch || !profile?.id, refetchOnMountOrArgChange: true });
-  const writingMatch = pagePath.match(/^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/writing(?:\/|$)/);
+  const writingMatch = pagePath.match(/^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/(writing|score)(?:\/|$)/);
   const writing = useGetIeltsWritingQuery({ type: writingMatch?.[1] || '', book: writingMatch?.[2] || '', test: Number(writingMatch?.[3] || 1) }, { skip: !writingMatch || !profile?.id, refetchOnMountOrArgChange: true });
   const speakingMatch = pagePath.match(/^\/ielts\/practice\/(academic|general-training)\/([^/]+)\/([1-8])\/speaking(?:\/([1-3]))?(?:\/|$)/);
   const speaking = useGetIeltsSpeakingQuery({ type: speakingMatch?.[1] || '', book: speakingMatch?.[2] || '', test: Number(speakingMatch?.[3] || 1), part: Number(speakingMatch?.[4] || 1), topic: new URLSearchParams(location.search).get('topic') || undefined }, { skip: !speakingMatch || !profile?.id, refetchOnMountOrArgChange: true });

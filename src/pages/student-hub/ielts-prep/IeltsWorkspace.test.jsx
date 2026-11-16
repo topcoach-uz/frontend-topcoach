@@ -61,3 +61,22 @@ test("the six-part General Training test reaches questions 28–40 without addin
   assert.equal(route("/ielts/practice/general-training/17/2/reading/6"), null);
   assert.equal(route("/ielts/practice/academic/17/1/reading/4"), null);
 });
+
+test("the catalog and overview show saved progress", async () => {
+  const { default: IeltsBrowse } = await import("./IeltsBrowse.jsx");
+  const Link = ({ to, children, ...p }) => <a href={to} {...p}>{children}</a>;
+  const answers = JSON.stringify(Object.fromEntries(Array.from({ length: 14 }, (_, i) => [i + 1, "x"])));
+  const progress = {
+    entries: [["workspace:academic:21:1:reading:library:r1", answers]],
+    markers: {},
+    recent: [{ path: "/ielts/practice/academic/21/1/reading/1", title: "t", type: "academic", book: "21", test: 1, skill: "reading", part: 1 }],
+  };
+  vi.stubGlobal("window", { location: { search: "" } });
+  try {
+    const overview = renderToStaticMarkup(<MemoryRouter><IeltsBrowse pagePath="/" Link={Link} profile={null} last={null} progress={progress} /></MemoryRouter>);
+    assert.ok(overview.includes("Reading · Book 21 Test 1 · 14/40 answered"));
+    const library = renderToStaticMarkup(<MemoryRouter><IeltsBrowse pagePath="/ielts/practice/home" Link={Link} profile={null} last={null} progress={progress} /></MemoryRouter>);
+    assert.ok(library.includes("0 of 4 skills done"));
+    assert.ok(library.includes("In progress"));
+  } finally { vi.unstubAllGlobals(); }
+});

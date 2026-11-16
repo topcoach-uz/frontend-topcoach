@@ -57,6 +57,26 @@ import {
   dictionary,
   answerKeys,
 } from "./content.js";
+import {
+  loadEntries,
+  normalizeRecent,
+  pushRecent,
+  setMarker,
+  skillProgress,
+  QUESTION_TOTAL,
+  markerKey,
+} from "./progress.js";
+import {
+  overallBand,
+  writingBand,
+  latestWritingBand,
+  formatBand,
+  speakingStatus,
+  recordResult,
+  resultDelta,
+  nextTest,
+} from "./scores.js";
+import { booksFor, testCount } from "./model.js";
 import "./style.css";
 import IeltsBrowse from "./IeltsBrowse";
 import {
@@ -252,7 +272,7 @@ function SavedRecording({ recording }) {
 }
 function PracticeFeedback({ assessment, onRestore }) {
   return (
-    <section aria-label="Saved practice feedback">
+    <section aria-label="Saved feedback">
       <p>
         Automated practice guidance. This is not an official IELTS result.
         Speaking guidance covers transcript vocabulary, grammar and relevance;
@@ -318,7 +338,7 @@ function PracticeFeedback({ assessment, onRestore }) {
         </details>
       ))}
       {assessment.busy && (
-        <p role="status">Saving and assessing your practice…</p>
+        <p role="status">Saving and assessing your answers…</p>
       )}
     </section>
   );
@@ -338,7 +358,11 @@ function useStored(key, fallback) {
   const { storagePrefix, onStorageError } = useContext(WorkspaceContext);
   key = storagePrefix + key;
   const [value, setValue] = useState(() => read(key, fallback));
-  useEffect(() => setValue(read(key, fallback)), [key]);
+  const [loadedKey, setLoadedKey] = useState(key);
+  useEffect(() => {
+    setValue(read(key, fallback));
+    setLoadedKey(key);
+  }, [key]);
   const save = (v) => {
     setValue((old) => {
       const next = typeof v === "function" ? v(old) : v;
@@ -350,7 +374,9 @@ function useStored(key, fallback) {
       return next;
     });
   };
-  return [value, save];
+  // Until the effect above catches up with a new key, read it directly so a
+  // caller never sees the previous key's value.
+  return [loadedKey === key ? value : read(key, fallback), save];
 }
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
 function dateLabel(value) {
@@ -398,6 +424,38 @@ function App() {
   const browsing = ["/", "/ielts/practice/home", "/ielts/practice/general-training"].includes(pagePath);
   const readBrowse = useRead();
   const dialogRef = useRef(null);
+  const trackedSkill = r && r.skill !== "score" ? r.skill : null;
+  const clockKey = trackedSkill
+    ? `workspace:clock:${r.type}:${r.book}:${r.test}:${trackedSkill}`
+    : "workspace:clock:none";
+  const [clock, setClock] = useStored(clockKey, null);
+  const [timerChoice, setTimerChoice] = useStored(
+    clockKey.replace(":clock:", ":timer-choice:"),
+    null,
+  );
+  const timer = {
+    clock,
+    choice: timerChoice,
+    start: (minutes, mode = "section") => {
+      setClock({ deadline: Date.now() + minutes * 60000, mode });
+      setTimerChoice("started");
+    },
+    skip: () => setTimerChoice("off"),
+    setClock,
+    setChoice: setTimerChoice,
+  };
+  const writeKey = (key, value) => {
+    try {
+      localStorage.setItem(storagePrefix + key, JSON.stringify(value));
+    } catch {
+      onStorageError?.();
+    }
+  };
+  const mark = (rr, skill, state) => {
+    const markers = readBrowse("workspace:progress", {});
+    const next = setMarker(markers, rr, skill, state);
+    if (next !== markers) writeKey("workspace:progress", next);
+  };
   useEffect(() => {
     if (!modal || !dialogRef.current) return;
     const node = dialogRef.current,
@@ -434,18 +492,31 @@ function App() {
     window.scrollTo(0, 0);
   }
   useEffect(() => {
-    if (profile && r && r.skill !== "score")
-      try {
-        localStorage.setItem(
-          storagePrefix + "workspace:last",
-          JSON.stringify({
-            path,
-            title: `${cap(r.type)} ${r.book} Test ${r.test} ${cap(r.skill)} ${r.part}`,
-          }),
-        );
-      } catch {
-        onStorageError?.();
-      }
+    if (profile && r && r.skill !== "score") {
+      const entry = {
+        path,
+        title: `${cap(r.type)} ${r.book} Test ${r.test} ${cap(r.skill)} ${r.part}`,
+      };
+      // `workspace:last` stays a single value for older readers; the recent
+      // list is what the Overview "Unfinished" shelf uses.
+      const recent = normalizeRecent(
+        readBrowse("workspace:recent", null),
+        readBrowse("workspace:last", null),
+      );
+      writeKey("workspace:last", entry);
+      writeKey(
+        "workspace:recent",
+        pushRecent(recent, {
+          ...entry,
+          type: r.type,
+          book: r.book,
+          test: r.test,
+          skill: r.skill,
+          part: r.part,
+          at: new Date().toISOString(),
+        }),
+      );
+    }
     document.title = r
       ? `${cap(r.skill)} · IELTS prep | TopCoach`
       : "IELTS prep | TopCoach";
@@ -465,7 +536,21 @@ function App() {
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, []);
-  const ctx = { go, setToast, setModal };
+  const ctx = { go, setToast, setModal, mark, timer };
+  const progress =
+    browsing && profile
+      ? {
+          entries: loadEntries(
+            typeof localStorage === "undefined" ? null : localStorage,
+            storagePrefix,
+          ),
+          markers: readBrowse("workspace:progress", {}),
+          recent: normalizeRecent(
+            readBrowse("workspace:recent", null),
+            readBrowse("workspace:last", null),
+          ),
+        }
+      : null;
   const Link = ({ to, children, ...props }) => (
     <a
       href={href(to)}
@@ -488,7 +573,7 @@ function App() {
   );
   return (
     <div className={`ielts-workspace${browsing ? " ielts-browse" : dark ? " dark" : ""}`}>
-      {browsing ? <IeltsBrowse pagePath={pagePath} Link={Link} profile={profile} last={readBrowse("workspace:last", null)} /> : <>
+      {browsing ? <IeltsBrowse pagePath={pagePath} Link={Link} profile={profile} last={readBrowse("workspace:last", null)} progress={progress} /> : <>
       <header>
         <div className="brand">
           <Link to="/student-hub" aria-label="Back to topCoach">
@@ -497,7 +582,7 @@ function App() {
           <Link to="/">IELTS prep</Link>
         </div>
         {r && r.skill !== "score" && r.skill !== "speaking" && (
-          <Clock r={r} setModal={setModal} go={go} />
+          <Clock r={r} timer={timer} setModal={setModal} go={go} mark={mark} />
         )}
         {pagePath !== "/login" && (
           <div className="header-actions">
@@ -609,11 +694,63 @@ function App() {
     </div>
   );
 }
-function Clock({ r, setModal, go }) {
+const EXAM_TIMING = {
+  listening: {
+    minutes: 30,
+    label: "Listening",
+    note: "30 minutes of audio. In the computer-delivered test you also get about 2 minutes at the end to review your answers.",
+  },
+  reading: {
+    minutes: 60,
+    label: "Reading",
+    note: "60 minutes for all three passages. There is no extra time to transfer answers.",
+  },
+  writing: {
+    minutes: 60,
+    label: "Writing",
+    note: "60 minutes in total. Spend about 20 minutes on Task 1 and 40 minutes on Task 2.",
+  },
+};
+const pad = (n) => String(n).padStart(2, "0");
+function StartPanel({ r, timer }) {
+  const info = EXAM_TIMING[r.skill];
+  return (
+    <div className="scrim">
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="start-practice-title"
+        className="dialog start-panel"
+      >
+        <h2 id="start-practice-title">Start {info.label.toLowerCase()} test</h2>
+        <p>
+          <b>{info.minutes} minutes.</b> {info.note}
+        </p>
+        <p className="muted">
+          Your answers are saved as you go. The timer starts when you press
+          Start.
+        </p>
+        <div className="start-actions">
+          <button
+            className="solid"
+            autoFocus
+            onClick={() => timer.start(info.minutes)}
+          >
+            Start practice
+          </button>
+          <button className="link-button" onClick={timer.skip}>
+            Practice without timer
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+function Clock({ r, timer, setModal, go, mark }) {
+  const { storagePrefix } = useContext(WorkspaceContext);
   const mock = new URLSearchParams(location.search).get("mode") === "mock";
-  const key = `workspace:clock:${r.type}:${r.book}:${r.test}:${r.skill}`;
-  const [clock, setClock] = useStored(key, null),
-    [open, setOpen] = useState(false),
+  const { clock, setClock, setChoice } = timer;
+  const [open, setOpen] = useState(false),
     [now, setNow] = useState(Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -622,12 +759,40 @@ function Clock({ r, setModal, go }) {
   const remaining = clock?.deadline
     ? Math.max(0, Math.ceil((clock.deadline - now) / 1000))
     : clock?.remaining || 0;
+  const submit = () => {
+    const progress = ["listening", "reading"].includes(r.skill)
+      ? skillProgress(
+          loadEntries(localStorage, storagePrefix),
+          {},
+          r,
+          r.skill,
+        )
+      : null;
+    const unanswered = progress ? QUESTION_TOTAL - progress.answered : 0;
+    const finish = () => {
+      mark(r, r.skill, "done");
+      go(testPath(r, "score"));
+    };
+    setModal({
+      title: "Submit Test?",
+      body: unanswered
+        ? `You have ${unanswered} unanswered. Submit anyway?`
+        : "Finish this test and review your answers?",
+      actionLabel: unanswered ? "Submit anyway" : "Submit Test",
+      action: finish,
+    });
+  };
   useEffect(() => {
     if (clock?.deadline && remaining === 0) {
       setClock(null);
       setModal({
         title: "Time is up",
-        body: "Your answers have been saved. You can review your scores or keep practising.",
+        body: "Your time is up and your answers are saved. Submit to see your score, or close this to keep practising.",
+        actionLabel: "Submit and see score",
+        action: () => {
+          mark(r, r.skill, "done");
+          go(testPath(r, "score"));
+        },
       });
     }
   }, [remaining]);
@@ -636,35 +801,34 @@ function Clock({ r, setModal, go }) {
       deadline: Date.now() + minutes * 60000,
       mode,
     });
+    setChoice("started");
     setOpen(false);
     if (mode === "full") go(testPath(r, r.skill, r.part) + "?mode=mock");
   };
+  const mmss = `${pad(Math.floor(remaining / 60))} : ${pad(remaining % 60)}`;
   return (
     <div className="clock">
-      <button onClick={() => setOpen(!open)} aria-label="Switch timer mode">
+      <button
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-label={
+          clock
+            ? `Timer: ${Math.floor(remaining / 60)} minutes ${remaining % 60} seconds left${clock.deadline ? "" : " (paused)"}. Open timer options`
+            : "Timer is off. Open timer options"
+        }
+      >
         {clock ? (
           <>
             <Timer size={15} />
-            {String(Math.floor(remaining / 60)).padStart(2, "0")} :{" "}
-            {String(remaining % 60).padStart(2, "0")}
+            {mmss}
           </>
         ) : (
-          "Timed test"
+          "Timer off"
         )}
         <ChevronDown size={12} />
       </button>
-      {mock && (
-        <IconButton
-          label="Submit test"
-          onClick={() =>
-            setModal({
-              title: "Submit test?",
-              body: "Finish this test and review your answers?",
-              actionLabel: "Submit test",
-              action: () => go(testPath(r, "score")),
-            })
-          }
-        >
+      {(mock || ["listening", "reading"].includes(r.skill)) && (
+        <IconButton label="Submit test" onClick={submit}>
           <Send size={17} />
         </IconButton>
       )}
@@ -705,6 +869,7 @@ function Clock({ r, setModal, go }) {
               <button
                 onClick={() => {
                   setClock(null);
+                  setChoice("off");
                   setOpen(false);
                 }}
               >
@@ -830,13 +995,13 @@ function InfoPage({ path, Link }) {
       <p>
         {path === "/about"
           ? "Practise Academic and General Training IELTS with reading, listening, writing, speaking, vocabulary and answer review."
-          : "This practice page could not be found."}
+          : "This test page could not be found."}
       </p>
       <p>
         Practice content uses representative samples. Submitted writing and
         speaking receive automated guidance on your own response.
       </p>
-      <Link to="/ielts/practice/home">Browse practice tests</Link>
+      <Link to="/ielts/practice/home">Browse tests</Link>
     </main>
   );
 }
@@ -871,7 +1036,7 @@ function ListeningAudio({ src }) {
     </>
   );
 }
-function Practice({ r, go, setModal, setToast }) {
+function Practice({ r, go, setModal, setToast, mark, timer }) {
   const { storagePrefix, onStorageError, listeningLibrary, readingLibrary, writingLibrary, speakingLibrary } = useContext(WorkspaceContext);
   const library = r.skill === "speaking" ? speakingLibrary : r.skill === "writing" ? writingLibrary : r.skill === "reading" ? readingLibrary : listeningLibrary;
   const listening = listeningPart(listeningLibrary?.data, r.part);
@@ -1082,8 +1247,11 @@ function Practice({ r, go, setModal, setToast }) {
     setNotes((n) => ({ ...n, [noteEditor.key]: noteDraft }));
     setNoteEditor(null);
   }
+  const showStart =
+    !!EXAM_TIMING[r.skill] && imported && !mock && !timer.clock && !timer.choice;
   return (
     <>
+      {showStart && <StartPanel r={r} timer={timer} />}
       <main
         className={`practice skill-${r.skill} ${mock ? "mock-practice" : ""} ${mock && r.skill === "listening" ? "mock-listening" : ""}`}
       >
@@ -1176,7 +1344,8 @@ function Practice({ r, go, setModal, setToast }) {
               draftKey={practiceKey}
               r={r}
               setToast={setToast}
-              onComplete={() => setSpeakingCompleted(true)}
+              onStart={() => mark(r, "speaking", "started")}
+              onComplete={() => { setSpeakingCompleted(true); mark(r, "speaking", "done"); }}
             />
           )}
         </section>
@@ -1777,7 +1946,7 @@ function WritingEditor({ r, setToast, task, release, draftKey }) {
     </>
   );
 }
-function SpeakingEditor({ r, setToast, onComplete, library, draftKey }) {
+function SpeakingEditor({ r, setToast, onStart, onComplete, library, draftKey }) {
   const assessment = usePracticeAssessment(r, library.release, true, draftKey);
   const d = { questions: library.topic.questions.map(speakingQuestionText) },
     [question, setQuestion] = useState(0),
@@ -1791,6 +1960,9 @@ function SpeakingEditor({ r, setToast, onComplete, library, draftKey }) {
     [live, setLive] = useState(false),
     [clips, setClips] = useState([]),
     [done, setDone] = useState(false);
+  useEffect(() => {
+    if (clips.length) onStart?.();
+  }, [clips.length]);
   const recorder = useRef(null),
     stream = useRef(null),
     urls = useRef([]),
@@ -1859,7 +2031,7 @@ function SpeakingEditor({ r, setToast, onComplete, library, draftKey }) {
     );
   return (
     <>
-      <p>Finish practice to save recordings privately and send audio to OpenAI for transcription and automated feedback. Unsubmitted recordings are lost when you leave this part.</p>
+      <p>Finish the test to save recordings privately and send audio to OpenAI for transcription and automated feedback. Unsubmitted recordings are lost when you leave this part.</p>
       <PracticeFeedback assessment={assessment} />
       <div className="live">
         <button
@@ -1944,7 +2116,7 @@ function SpeakingEditor({ r, setToast, onComplete, library, draftKey }) {
             }}
           >
             {question === d.questions.length - 1
-              ? "Finish practice"
+              ? "Finish test"
               : "Next question"}
           </button>
         </div>
@@ -1952,44 +2124,173 @@ function SpeakingEditor({ r, setToast, onComplete, library, draftKey }) {
     </>
   );
 }
+function useWritingTaskBands(r) {
+  const { writingLibrary, assessmentApi } = useContext(WorkspaceContext);
+  const release = writingLibrary?.data ? practiceRelease(writingLibrary.data) : "";
+  const enabled = !!(release && assessmentApi);
+  const task1 = usePracticeAssessment({ ...r, skill: "writing", part: 1 }, release, enabled);
+  const task2 = usePracticeAssessment({ ...r, skill: "writing", part: 2 }, release, enabled);
+  const describe = (assessment, part) => {
+    const band = latestWritingBand(assessment.submissions);
+    const rows = assessment.submissions;
+    const task = listeningPart(writingLibrary?.data, part);
+    let note = "Not assessed yet";
+    if (!enabled) note = writingLibrary?.loading ? "Loading…" : "Not assessed yet";
+    else if (task && task.assessmentAvailable === false)
+      note = "Automated feedback is not available for this task yet";
+    else if (rows.some((x) => x.state === "processing")) note = "Assessment in progress";
+    else if (rows.some((x) => x.state === "failed")) note = "Assessment did not finish";
+    else if (rows.length) note = "Submitted, no band estimate returned";
+    return { band, note };
+  };
+  const tasks = [describe(task1, 1), describe(task2, 2)];
+  return { tasks, band: writingBand(tasks[0].band, tasks[1].band) };
+}
+const signed = (n) => `${n > 0 ? "+" : ""}${n}`;
+function deltaText(stored) {
+  const d = resultDelta(stored);
+  if (!d) return "First recorded attempt";
+  if (d.correct === 0) return "Same score as your last attempt";
+  const band = d.band ? ` (band ${signed(d.band.toFixed(1))})` : "";
+  return `${d.correct > 0 ? "Up" : "Down"} ${Math.abs(d.correct)} correct vs your last attempt${band}`;
+}
 function Scores({ r, Link }) {
   const read = useRead();
-  const { listeningLibrary, readingLibrary } = useContext(WorkspaceContext);
+  const { listeningLibrary, readingLibrary, storagePrefix, onStorageError } =
+    useContext(WorkspaceContext);
   const a = read(`${storageKey({ ...r, skill: "listening" })}:library:${practiceRelease(listeningLibrary?.data)}`, {}),
     b = read(`${storageKey({ ...r, skill: "reading" })}:library:${practiceRelease(readingLibrary?.data)}`, {}),
     lk = completeListeningKeys(listeningLibrary?.data),
     rk = completeListeningKeys(readingLibrary?.data, 3),
-    valid = !!(lk || rk),
-    l = lk ? band(grade(a, lk)) : 0,
-    rd = rk ? band(grade(b, rk)) : 0;
-  const [show, setShow] = useState({ listening: false, reading: false });
+    valid = !!(lk || rk);
   const stats = {
     Listening: answerStats(a, lk || []),
     Reading: answerStats(b, rk || []),
   };
+  const answeredOf = (s) => s.correct + s.incorrect;
+  const bandOf = (label, keys, data) =>
+    keys && answeredOf(stats[label]) > 0 ? band(grade(data, keys)) : null;
+  const l = bandOf("Listening", lk, a),
+    rd = bandOf("Reading", rk, b);
+  const writing = useWritingTaskBands(r);
+  const speakingState = read("workspace:progress", {})[markerKey(r, "speaking")]?.state;
+  const overall = overallBand({ listening: l, reading: rd, writing: writing.band, speaking: null });
+  const [show, setShow] = useState({ listening: false, reading: false });
+  const [mistakesOnly, setMistakesOnly] = useState(false);
+  const [history, setHistory] = useState({});
+  const resultKey = (skill) => `workspace:result:${r.type}:${r.book}:${r.test}:${skill}`;
+  const signature = [l, rd, stats.Listening.correct, stats.Reading.correct, answeredOf(stats.Listening), answeredOf(stats.Reading)].join("|");
+  useEffect(() => {
+    const next = {};
+    for (const [skill, label, keys, value] of [["listening", "Listening", lk, l], ["reading", "Reading", rk, rd]]) {
+      if (!keys || value === null) continue;
+      const result = {
+        correct: stats[label].correct,
+        answered: answeredOf(stats[label]),
+        total: keys.length,
+        band: value,
+        at: new Date().toISOString(),
+      };
+      const stored = recordResult(read(resultKey(skill), null), result);
+      next[skill] = stored;
+      try {
+        localStorage.setItem(storagePrefix + resultKey(skill), JSON.stringify(stored));
+      } catch {
+        onStorageError?.();
+      }
+    }
+    setHistory(next);
+  }, [signature, r.type, r.book, r.test]);
+  // Only skills the student actually attempted count towards "Review mistakes".
+  const attempted = (s) => s.correct + s.incorrect > 0;
+  const mistakesFor = (s, key) => (attempted(s) ? s.incorrect + s.unanswered * Number(!!key) : 0);
+  const mistakes = mistakesFor(stats.Listening, lk) + mistakesFor(stats.Reading, rk);
+  const firstSection = lk ? "listening" : "reading";
+  const reviewMistakes = () => {
+    setMistakesOnly(true);
+    setShow({ listening: true, reading: true });
+    setTimeout(() => document.getElementById(`review-${firstSection}`)?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  };
+  const next = nextTest(r, booksFor(r.type), testCount);
+  const nextSkill = r.type === "general-training" ? "reading" : "listening";
+  const nextLabel = next
+    ? `Next test: ${next.book === "og" ? "Official Guide" : next.book === "eg" ? "Exam Essentials" : `Book ${next.book}`} Test ${next.test}`
+    : null;
+  const libraryPath = r.type === "academic" ? "/ielts/practice/home" : "/ielts/practice/general-training";
+  const cards = [
+    ["Listening", l, lk],
+    ["Reading", rd, rk],
+  ];
+  const heroLines = cards
+    .filter(([label, , keys]) => keys && answeredOf(stats[label]) > 0)
+    .map(([label, value, keys]) => ({ label, value, keys, stored: history[label.toLowerCase()] }));
   return (
     <main className="scores">
       <h2>
         {r.type === "academic" ? "Academic" : "General Training"} {r.book} Test{" "}
         {r.test}
       </h2>
+      <section className="score-hero" aria-labelledby="score-hero-title">
+        <h3 id="score-hero-title">Your results</h3>
+        {heroLines.length ? (
+          <ul>
+            {heroLines.map(({ label, value, keys, stored }) => (
+              <li key={label}>
+                <strong>{label}</strong>: band {formatBand(value)} · {stats[label].correct}/{keys.length} correct · {answeredOf(stats[label])}/{keys.length} answered
+                <small>{deltaText(stored)}</small>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>Answer Listening or Reading questions to see your band here.</p>
+        )}
+        <div className="score-hero-actions">
+          <button className="solid" onClick={reviewMistakes} disabled={!valid || !mistakes}>
+            {valid && !mistakes ? "No mistakes to review" : `Review mistakes${mistakes ? ` (${mistakes})` : ""}`}
+          </button>
+          {next ? (
+            <Link className="pill" to={testPath(next, nextSkill)}>
+              {nextLabel} <ArrowRight size={16} />
+            </Link>
+          ) : (
+            <Link className="pill" to={libraryPath}>
+              Back to tests <ArrowRight size={16} />
+            </Link>
+          )}
+        </div>
+      </section>
       <div className="score-grid">
         {[
           ["Listening", l],
-          ["Overall", 0],
+          ["Overall", overall.value],
           ["Reading", rd],
-          ["Writing", 0],
-          ["Speaking", 0],
+          ["Writing", writing.band],
+          ["Speaking", null],
         ].map(([label, value]) => (
           <article className={label === "Overall" ? "overall" : ""} key={label}>
             <h3>{label}</h3>
-            <strong>{(label === "Listening" && !lk || label === "Reading" && !rk || !["Listening", "Reading"].includes(label)) ? "—" : value.toFixed(1)}</strong>
-            {(label === "Listening" || label === "Reading") && (
+            <strong>{formatBand(value)}</strong>
+            {(label === "Listening" || label === "Reading") && value === null && (
+              <p className="score-note">{(label === "Listening" ? lk : rk) ? "Not started" : "Answer keys unavailable"}</p>
+            )}
+            {(label === "Listening" || label === "Reading") && (label === "Listening" ? lk : rk) && (
               <small>
                 <span title="Correct" aria-label={`${stats[label].correct} correct`}>✓ {stats[label].correct} correct</span>
                 <br /><span title="Wrong" aria-label={`${stats[label].incorrect} wrong`}>⊗ {stats[label].incorrect} wrong</span>
                 <br /><span title="Skipped" aria-label={`${stats[label].unanswered} skipped`}>⊖ {stats[label].unanswered} skipped</span>
               </small>
+            )}
+            {label === "Overall" && overall.value === null && (
+              <p className="score-note">
+                Complete all 4 skills for an overall band. Still needed:{" "}
+                {overall.missing.map((s) => cap(s)).join(", ")}.
+              </p>
+            )}
+            {label === "Writing" && writing.band === null && (
+              <p className="score-note">Needs a feedback band for both tasks</p>
+            )}
+            {label === "Speaking" && (
+              <p className="score-note">{speakingStatus(speakingState)} · no band is estimated</p>
             )}
           </article>
         ))}
@@ -2005,7 +2306,7 @@ function Scores({ r, Link }) {
             keys = skill === "listening" ? lk : rk;
           if (!keys)
             return (
-              <section key={skill}>
+              <section key={skill} id={`review-${skill}`}>
                 <Link className="pill" to={testPath(r, skill)}>
                   {cap(skill)} <ArrowRight size={16} />
                 </Link>
@@ -2013,7 +2314,7 @@ function Scores({ r, Link }) {
               </section>
             );
           return (
-            <section key={skill}>
+            <section key={skill} id={`review-${skill}`}>
               <Link className="pill" to={testPath(r, skill)}>
                 {cap(skill)} <ArrowRight size={16} />
               </Link>
@@ -2028,6 +2329,15 @@ function Scores({ r, Link }) {
                 />
                 Show answers for unanswered
               </label>
+              <label className="toggle">
+                <input
+                  role="switch"
+                  type="checkbox"
+                  checked={mistakesOnly}
+                  onChange={(e) => setMistakesOnly(e.target.checked)}
+                />
+                Show only mistakes
+              </label>
               <table className="review-table">
                 <thead>
                   <tr>
@@ -2037,7 +2347,7 @@ function Scores({ r, Link }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {keys.map((key, i) => (
+                  {keys.map((key, i) => ({ key, i })).filter(({ key, i }) => !mistakesOnly || !isCorrect(data[i + 1], key)).map(({ key, i }) => (
                     <tr
                       key={i}
                       className={
@@ -2068,23 +2378,34 @@ function Scores({ r, Link }) {
             </section>
           );
         })}
-      {["writing", "speaking"].map((skill) => (
-        <section key={skill}>
-          <Link className="pill" to={testPath(r, skill)}>
-            {cap(skill)} <ArrowRight size={16} />
-          </Link>
-          {Array.from(
-            { length: skill === "writing" ? 2 : 3 },
-            (_, i) => i + 1,
-          ).map((part) => (
+      <section>
+        <Link className="pill" to={testPath(r, "writing")}>
+          Writing <ArrowRight size={16} />
+        </Link>
+        {[1, 2].map((part) => {
+          const task = writing.tasks[part - 1];
+          return (
             <h3 key={part}>
-              <Link to={testPath(r, skill, part)}>
-                {cap(skill)} {skill === "writing" ? "task" : "part"} {part}: not scored
+              <Link to={testPath(r, "writing", part)}>
+                Writing task {part}:{" "}
+                {task.band !== null ? `Estimated band ${formatBand(task.band)}` : task.note}
               </Link>
             </h3>
-          ))}
-        </section>
-      ))}
+          );
+        })}
+        <p className="muted">Estimated bands come from automated feedback on your submitted tasks. Task 2 counts double in the writing band.</p>
+      </section>
+      <section>
+        <Link className="pill" to={testPath(r, "speaking")}>
+          Speaking <ArrowRight size={16} />
+        </Link>
+        {[1, 2, 3].map((part) => (
+          <h3 key={part}>
+            <Link to={testPath(r, "speaking", part)}>Speaking part {part}</Link>
+          </h3>
+        ))}
+        <p className="muted">Status: {speakingStatus(speakingState)}. Open each part to read your feedback; no speaking band is estimated.</p>
+      </section>
       <nav className="bottom-nav">
         <Link
           to={testPath(
@@ -2094,12 +2415,15 @@ function Scores({ r, Link }) {
         >
           {r.type === "general-training" ? "Reading" : "Speaking"}
         </Link>
-        <button
-          className="solid"
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        >
-          Back to top
-        </button>
+        {next ? (
+          <Link className="solid" to={testPath(next, nextSkill)}>
+            {nextLabel}
+          </Link>
+        ) : (
+          <Link className="solid" to={libraryPath}>
+            Back to tests
+          </Link>
+        )}
         <Link
           to={testPath(
             r,

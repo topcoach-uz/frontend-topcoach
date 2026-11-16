@@ -2200,3 +2200,71 @@
  .ielts-workspace .header-actions .avatar { width: 30px; height: 30px; }
  .ielts-workspace .clock { order: 3; width: 100%; justify-content: center; }
 }
+
+/* Start-practice panel, results hero and score notes */
+.ielts-workspace .dialog.start-panel {
+  max-width: 440px;
+}
+.ielts-workspace .start-panel .start-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 18px;
+}
+.ielts-workspace .link-button {
+  background: none;
+  border: 0;
+  padding: 6px 2px;
+  color: var(--fg);
+  font-size: 14px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.ielts-workspace .score-hero {
+  margin: 0 0 24px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--soft);
+}
+.ielts-workspace .scores .score-hero h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+.ielts-workspace .score-hero ul {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  font-size: 14px;
+}
+.ielts-workspace .score-hero li small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.ielts-workspace .score-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.ielts-workspace .score-hero-actions button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.ielts-workspace .score-grid article {
+  height: auto;
+  min-height: 188px;
+}
+.ielts-workspace .score-grid .score-note {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+.ielts-workspace .bottom-nav .solid {
+  color: #fff;
+}
