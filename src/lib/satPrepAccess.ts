@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { RoleEnum } from 'src/app/api/Api';
 
 /**
@@ -14,39 +15,72 @@ import { RoleEnum } from 'src/app/api/Api';
 export const SAT_PREP_SHOW_ALL = false;
 
 /**
- * Internal-tester email whitelist. These accounts bypass the kill-switch
- * even though their `managementRole` is `User`, so we can run real-world
- * QA on the SAT Prep flows before the public launch. Compared case-
- * insensitively against the user's email.
+ * Internal-tester allow-list. Entries are SHA-256 hex digests of the
+ * lowercased, trimmed email, so no addresses ship in the client bundle.
+ * These accounts bypass the kill-switch even though their `managementRole`
+ * is `User`, so we can run real-world QA before the public launch.
  *
- * Add / remove entries here (no other files touched). Always keep the
- * list small — every entry effectively pre-launches the product for
- * that account.
+ * To add one: sha256 of the lowercased, trimmed email, as hex. Keep the
+ * list small — every entry effectively pre-launches the product.
  */
-export const SAT_PREP_INTERNAL_TESTERS: ReadonlySet<string> = new Set([
-  'shahriyoraliboyev23@gmail.com',
-  'adhamjanovbahmanyor@gmail.com',
-  'dinararuzimuratova@gmail.com',
-  'jamolovamadinabonu02@gmail.com',
-  'orzu@topcoach.uz'
+export const SAT_PREP_INTERNAL_TESTER_HASHES: ReadonlySet<string> = new Set([
+  'd2ae429ebdc5be13584a0fed774fa4b5b209c366a15a7506d63cf98b7e00c123',
+  'bb3ddecbf7977de2f4729b37304fae11e174434e1b08a9324db5626bc8a2ab4e',
+  'ecd5572f40b3e3cdb2a156180bb046d8ea3258b82ec767991cfddde5a69bc870',
+  'c0e6f9f90a69ae78a4114b087c9159e5a7d2c6f8d595786b7eb5564c8fff8c68',
+  '9ef1f7442e912f87f7aac27e117e9a21c9d01f122fbbb3ee79b2870a70af4a3d',
 ]);
 
+export async function sha256Hex(input: string): Promise<string> {
+  const bytes = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+/** Synchronous part of the check: roles and the global switch. */
+export function canUseSatPrepByRole(managementRole: string | null | undefined): boolean {
+  const role = managementRole ?? '';
+  if (role === RoleEnum.SuperAdmin || role === RoleEnum.Owner) return true;
+  return SAT_PREP_SHOW_ALL;
+}
+
+export async function isSatPrepTester(email?: string | null): Promise<boolean> {
+  const normalized = (email ?? '').trim().toLowerCase();
+  if (!normalized || !globalThis.crypto?.subtle) return false;
+  try {
+    return SAT_PREP_INTERNAL_TESTER_HASHES.has(await sha256Hex(normalized));
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Returns true when the current user should see the live SAT Prep flows
+ * Whether the current user should see the live SAT Prep flows
  * (Dashboard / Practice / Test Packs / Mock Tests / Library / Runner).
  *
  * Order of precedence:
  *   1) SuperAdmin / Owner always pass.
- *   2) Email is in `SAT_PREP_INTERNAL_TESTERS` → pass (internal QA).
- *   3) Otherwise gated by `SAT_PREP_SHOW_ALL`.
+ *   2) `SAT_PREP_SHOW_ALL` is on → pass.
+ *   3) Email hash is in the tester list → pass (resolved async; false until then).
  */
-export function canUseSatPrep(
+export function useCanUseSatPrep(
   managementRole: string | null | undefined,
   email?: string | null,
 ): boolean {
-  const role = managementRole ?? '';
-  if (role === RoleEnum.SuperAdmin || role === RoleEnum.Owner) return true;
-  const normalized = (email ?? '').trim().toLowerCase();
-  if (normalized && SAT_PREP_INTERNAL_TESTERS.has(normalized)) return true;
-  return SAT_PREP_SHOW_ALL;
+  const byRole = canUseSatPrepByRole(managementRole);
+  const [tester, setTester] = useState(false);
+  useEffect(() => {
+    if (byRole) return;
+    let cancelled = false;
+    setTester(false);
+    void isSatPrepTester(email).then((ok) => {
+      if (!cancelled) setTester(ok);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [byRole, email]);
+  return byRole || tester;
 }
