@@ -7,9 +7,9 @@ import {
   GraduationCap,
   Play,
   ArrowLeft,
-  BookOpen,
 } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Breadcrumb } from '../applicant/ApplicantPage';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import MyProgressEditorialView from '../MyProgressEditorialView';
@@ -471,15 +471,11 @@ export default function CommunityHubMockPage() {
             {isAdmissionsFullBleed && (
               <header className={styles.admissionsShellHeader}>
                 <div className={styles.admissionsShellInner}>
-                  <div className={styles.admissionsCrumb}>
-                    <span className={styles.admissionsCrumbBadge}>
-                      <BookOpen size={13} /> {t('studentHub.hub.admissionsPageTitle', 'Admissions Program')}
-                    </span>
-                    <span className={styles.admissionsCrumbSep}>›</span>
-                    <span className={styles.admissionsCrumbCurrent}>
-                      {t('studentHub.hub.lessonsCatalog', 'Lessons catalog')}
-                    </span>
-                  </div>
+                  <Breadcrumb>
+                    <Link to={myLearningPath}>{t('studentHub.hub.myLearning', 'My learning')}</Link>
+                    <span>/</span>
+                    {t('studentHub.hub.admissionsPageTitle', 'Admissions Program')}
+                  </Breadcrumb>
                   <button
                     type="button"
                     className={styles.admissionsBackBtn}

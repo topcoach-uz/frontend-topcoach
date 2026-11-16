@@ -1,7 +1,8 @@
 import React, { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import { useMyLearningPath } from "../applicant/useMyLearningPath";
+import { Breadcrumb } from "../applicant/ApplicantPage";
 import {
-  ArrowLeft,
   ArrowRight,
   BookOpen,
   Headphones,
@@ -123,19 +124,19 @@ export default function IeltsBrowse({ pagePath, Link, profile, last }) {
           </div>
         </aside>
         <main className="ib-main">
-          <div className="ib-breadcrumb">
-            <Link className="ib-hub-link" to={myLearningPath}><ArrowLeft size={16} /> Back to My learning</Link>
-            <ChevronRight size={13} />
-            <Link to="/">IELTS prep</Link>
-            {!overview && (
+          <Breadcrumb>
+            <RouterLink to={myLearningPath}>My learning</RouterLink>
+            <span>/</span>
+            {overview ? (
+              "IELTS prep"
+            ) : (
               <>
-                <ChevronRight size={13} />
-                <span>
-                  {type === "academic" ? "Academic" : "General Training"}
-                </span>
+                <Link to="/">IELTS prep</Link>
+                <span>/</span>
+                {type === "academic" ? "Academic" : "General Training"}
               </>
             )}
-          </div>
+          </Breadcrumb>
           {overview ? (
             <Overview Link={Link} profile={profile} last={last} />
           ) : (
