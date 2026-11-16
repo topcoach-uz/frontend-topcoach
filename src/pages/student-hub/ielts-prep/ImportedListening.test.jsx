@@ -161,9 +161,13 @@ test("all normalized speaking sets render prompts, cue points and practice notes
 });
 
 test("full Task 2 content renders its actual instructions and sample without a chart placeholder", () => {
-  const html = renderToStaticMarkup(<ImportedWritingPrompt part={2} book="20" test={1} task={{ prompt: 'Access to clean water is a basic human right.', instructions: ['Do you agree or disagree?'], sampleTitle: 'A source sample', sampleAnswer: 'An imported essay.' }} />);
-  assert.ok(html.includes('Access to clean water'));
-  assert.ok(html.includes('Do you agree or disagree?'));
-  assert.ok(html.includes('A source sample'));
-  assert.ok(!html.includes('Chart is not available'));
+  const task = { prompt: 'Access to clean water is a basic human right.', instructions: ['Do you agree or disagree?'], sampleTitle: 'A source sample', sampleAnswer: 'An imported essay.' };
+  const locked = renderToStaticMarkup(<ImportedWritingPrompt part={2} book="20" test={1} task={task} />);
+  assert.ok(locked.includes('Access to clean water'));
+  assert.ok(locked.includes('Do you agree or disagree?'));
+  assert.ok(!locked.includes('An imported essay.'), 'sample stays hidden until the task is submitted');
+  assert.ok(!locked.includes('Chart is not available'));
+  const unlocked = renderToStaticMarkup(<ImportedWritingPrompt part={2} book="20" test={1} task={task} sampleUnlocked />);
+  assert.ok(unlocked.includes('A source sample'));
+  assert.ok(unlocked.includes('An imported essay.'));
 });
