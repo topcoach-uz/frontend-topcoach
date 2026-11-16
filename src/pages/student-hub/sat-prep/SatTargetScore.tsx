@@ -44,9 +44,6 @@ export default function SatTargetScore({ score }: { score: number | null }) {
         </span>
         {!target && !isLoading && !isError && (
           <div className="sat-target-quick" role="group" aria-label="Quick-pick target score">
-            <p className="sat-target-nudge">
-              A target turns practice into a plan. Pick one to start.
-            </p>
             <div className="sat-target-chips">
               {QUICK_TARGETS.map((t) => (
                 <button

@@ -90,10 +90,10 @@ describe("SAT result + overview helpers", () => {
     expect(out.find((i) => i.key === "delta")?.value).toBe("+40 pts");
     expect(out.find((i) => i.key === "target")?.value).toBe("150 pts");
   });
-  it("marks first attempt", () => {
+  it("omits delta on first attempt", () => {
     const saved = mock("b", "math", 640, "2026-01-05T10:00:00Z");
     const out = resultInsights({ saved, sessions: [saved], combined: null, target: null });
-    expect(out.find((i) => i.key === "delta")?.value).toBe("First");
+    expect(out.find((i) => i.key === "delta")).toBeUndefined();
   });
   it("scales journey from baseline to target", () => {
     const s = journeyScale({ current: 1100, baseline: 1000, target: 1200 });
