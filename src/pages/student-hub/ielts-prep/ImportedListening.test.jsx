@@ -130,8 +130,8 @@ test("writing uses the selected chart and identifies absent prompts and samples"
   assert.ok(html.includes('src="/api/ielts-content/media/signed-chart"'));
   assert.ok(html.includes('class="writing-chart"'));
   assert.ok(html.includes('Academic 20 Test 2 Writing Task 1 chart'));
-  assert.ok(html.includes('written task prompt has not been imported'));
-  assert.ok(html.includes('sample writing answer has not been imported'));
+  assert.ok(html.includes("written prompt isn&#x27;t available yet"));
+  assert.ok(html.includes("sample answer isn&#x27;t available for this task yet"));
   assert.ok(!html.includes('/ielts-assets/writing-21-1.jpg'));
   assert.ok(!html.includes('Sample Writing Answer</summary>'));
 });
@@ -140,7 +140,8 @@ test("writing uses the selected chart and identifies absent prompts and samples"
 test("standalone speaking topics retain cues and notes without Cambridge identity claims", () => {
   const library = { release: 'a'.repeat(64), part: 2, catalog: [{ id: 'topic:cue', source: 'topics', title: 'A painting', season: '' }], topic: { id: 'topic:cue', title: 'A painting', questions: [{ prompt: '<Describe a painting>', cuePoints: ['where you saw it'], ideas: ['Think about colours'], vocabulary: [{ phrase: 'vivid', meaning: 'bright' }], sampleAnswer: 'I saw it in a gallery.' }] } };
   const html = renderToStaticMarkup(<ImportedSpeakingPrompt library={library} onSelect={() => {}} />);
-  assert.ok(html.includes('not mapped to Cambridge'));
+  assert.ok(html.includes('not tied to a specific book or test'));
+  assert.ok(!html.includes('Cambridge'));
   assert.ok(html.includes('where you saw it'));
   assert.ok(html.includes('I saw it in a gallery.'));
   assert.ok(html.includes('&lt;Describe a painting&gt;'));
