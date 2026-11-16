@@ -39,6 +39,11 @@ describe("skillProgress", () => {
     expect(skillProgress(entries({ "workspace:academic:21:1:listening": JSON.stringify(blank) }), {}, r, "listening").state).toBe("not-started");
     expect(skillProgress(entries({ "workspace:academic:21:1:listening": answers(40) }), {}, r, "listening").state).toBe("done");
   });
+  test("a submitted marker finishes a partly answered test but not an emptied one", () => {
+    const done = setMarker({}, r, "reading", "done");
+    expect(skillProgress(entries({ "workspace:academic:21:1:reading": answers(12) }), done, r, "reading").state).toBe("done");
+    expect(skillProgress([], done, r, "reading").state).toBe("not-started");
+  });
   test("writing counts drafted tasks", () => {
     const e = entries({ "workspace:academic:21:1:writing:library:z:essay:1": JSON.stringify("Hello"), "workspace:academic:21:1:writing:library:z:essay:2": JSON.stringify(" ") });
     expect(skillProgress(e, {}, r, "writing")).toMatchObject({ state: "in-progress", answered: 1, total: 2 });

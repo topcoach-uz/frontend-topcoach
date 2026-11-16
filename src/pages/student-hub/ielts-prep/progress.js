@@ -69,9 +69,9 @@ export function skillProgress(entries, markers, r, skill) {
       if (re.test(key) && !SUBKEY.test(key))
         answered = Math.max(answered, answeredCount(parse(raw)));
     const state =
-      answered >= QUESTION_TOTAL || mark === "done"
+      answered >= QUESTION_TOTAL || (mark === "done" && answered > 0)
         ? "done"
-        : answered > 0 || mark === "started"
+        : answered > 0
           ? "in-progress"
           : "not-started";
     return { state, answered, total: QUESTION_TOTAL, unit: "answered" };
