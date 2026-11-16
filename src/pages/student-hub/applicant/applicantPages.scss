@@ -2226,7 +2226,8 @@
   p { margin: 0; font-size: 14px; color: #655c55; }
 }
 .applicant-next-step__eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #8b0000; font-variant-numeric: tabular-nums; }
-.applicant-next-step__cta {
+// Doubled class beats the workspace-wide link colour (`.applicant-shell .applicant-content a`).
+.applicant-next-step__cta.applicant-next-step__cta {
   flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px;
   border-radius: 10px; background: #8b0000; color: #fff; font-size: 14px; font-weight: 500; text-decoration: none;
   transition: background-color 120ms ease-out, transform 100ms ease-out;
