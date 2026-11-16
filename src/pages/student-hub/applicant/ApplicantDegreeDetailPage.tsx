@@ -12,6 +12,7 @@ import { QueryState, displayDate } from './ApplicantPage';
 import { ApplicantMobileTrail } from './ApplicantTopBarContext';
 import { ClampedText } from './ClampedText';
 import { DetailHero, SaveToListButton } from './DetailHero';
+import { useQuickAddToCollegeList } from './useQuickAddToCollegeList';
 import { awardedQualification, buildDegreeGlance } from './degreeFactsModel';
 import { ApplicationStepper, DeadlinesTable, EntryRequirementsList, ScoresBlock, useStructuredContent } from './StructuredSections';
 import { CurriculumBlock, type CurriculumResult } from './curriculumContent';
@@ -87,6 +88,7 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
 }) {
   const navigate = useNavigate();
   const applications = useGetCollegeApplicationsQuery({ page: 1, limit: 100 });
+  const quickAdd = useQuickAddToCollegeList();
   const [qualification, setQualification] = useState(() => qualificationOptions(degree)[0].value);
   const publishedQualification = selectedQualification(degree, qualification);
   const saveHref = saveHrefOverride ?? '/student-hub/applications/new?university=' + encodeURIComponent(degree.universityId)
@@ -120,7 +122,7 @@ export function DegreeContent({ universityName, location, logoUrl, degree, saveH
         <span>{universityHref ? <Link to={universityHref}>{shortName}</Link> : shortName}</span>
         {location && <span>{location}</span>}
       </>}
-      action={<SaveToListButton saved={!!existing} disabled={applications.isLoading} onAdd={() => navigate(saveHref)} onOpen={() => existing && navigate('/student-hub/applications/' + existing.id)} />}
+      action={<SaveToListButton saved={!!existing} disabled={applications.isLoading} pending={quickAdd.pendingId === degree.universityId} onAdd={() => quickAdd.add(degree.universityId, degree.name, { undergraduateDegreeId: studyArea ? undefined : degree.id, fallbackHref: saveHref })} onOpen={() => existing && navigate('/student-hub/applications/' + existing.id)} />}
     />
     <UniversitySectionNav items={navItems} />
     <UniversityGlance tiles={tiles} />
