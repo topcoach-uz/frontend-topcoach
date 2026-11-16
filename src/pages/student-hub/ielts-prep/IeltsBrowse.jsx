@@ -124,7 +124,7 @@ export default function IeltsBrowse({ pagePath, Link, profile, last }) {
         </aside>
         <main className="ib-main">
           <div className="ib-breadcrumb">
-            <Link className="ib-hub-link" to={myLearningPath}><ArrowLeft size={16} /> My learning</Link>
+            <Link className="ib-hub-link" to={myLearningPath}><ArrowLeft size={16} /> Back to My learning</Link>
             <ChevronRight size={13} />
             <Link to="/">IELTS prep</Link>
             {!overview && (

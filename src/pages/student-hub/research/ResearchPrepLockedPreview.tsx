@@ -102,7 +102,7 @@ export default function ResearchPrepLockedPreview() {
               color: '#1a1a1a',
             }}
           >
-            ← Back to main menu
+            ← Back to My learning
           </button>
         </div>
       </div>

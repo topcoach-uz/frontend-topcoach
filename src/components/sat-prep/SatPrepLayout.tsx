@@ -64,7 +64,7 @@ const SatPrepLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </div>
           <button className="sat-shell__back-btn" onClick={() => navigate(myLearningPath)}>
             <ArrowLeft size={13} />
-            My learning
+            Back to My learning
           </button>
         </div>
         <nav className="sat-shell__tabs">

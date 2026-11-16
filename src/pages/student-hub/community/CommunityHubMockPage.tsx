@@ -295,7 +295,7 @@ export default function CommunityHubMockPage() {
         };
       case 'researchProgram':
         // Research Prep brings its own top bar (breadcrumb + Overview/Module
-        // switch + Back to main menu). Suppress the generic hub header here.
+        // switch + Back to My learning). Suppress the generic hub header here.
         return null;
       case 'mentors':
         // CommunityMentorsView renders its own editorial header (eyebrow +
@@ -349,7 +349,7 @@ export default function CommunityHubMockPage() {
 
   // Research Prep takes over the page once it opens — no community sidebar,
   // no max-width clamp. The page itself supplies a top bar with breadcrumb,
-  // an Overview/Module switch, and a "Back to main menu" button.
+  // an Overview/Module switch, and a "Back to My learning" button.
   const isResearchFullBleed =
     activeSection === 'researchProgram' && isCommunityEnrolled && researchPrepLive;
   // Admissions Program also goes full-bleed for the editorial layout —
@@ -486,7 +486,7 @@ export default function CommunityHubMockPage() {
                     onClick={() => navigate(myLearningPath)}
                   >
                     <ArrowLeft size={13} />
-                    {t('studentHub.hub.backToMainMenu', 'Back to main menu')}
+                    {t('studentHub.hub.backToMainMenu', 'Back to My learning')}
                   </button>
                 </div>
                 <div className={styles.admissionsHero}>

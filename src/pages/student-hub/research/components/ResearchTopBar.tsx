@@ -93,7 +93,7 @@ const ResearchTopBar: React.FC<ResearchTopBarProps> = ({
             </div>
             <button type="button" className="rp-back-btn" onClick={onBackToMain}>
               <ArrowLeft size={13} />
-              <span>{view === 'module' ? 'Back to Overview' : 'Back to main menu'}</span>
+              <span>{view === 'module' ? 'Back to Overview' : 'Back to My learning'}</span>
             </button>
           </div>
         </div>
