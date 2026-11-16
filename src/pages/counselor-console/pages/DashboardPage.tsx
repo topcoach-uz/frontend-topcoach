@@ -639,7 +639,9 @@ export default function CounselorConsoleDashboardPage() {
           value={pct(data.avgProgress)}
           meta={
             progressDelta !== null
-              ? `${progressDelta > 0 ? '+' : ''}${progressDelta} pts in 90 days`
+              ? progressDelta === 0
+                ? 'No change in 90 days'
+                : `${progressDelta > 0 ? '+' : ''}${progressDelta} pts in 90 days`
               : `Profiles ${pct(data.avgProfileCompletion)} complete`
           }
         />
