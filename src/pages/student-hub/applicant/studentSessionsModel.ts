@@ -8,7 +8,7 @@ export interface StudentSessionRow {
   note?: string | null;
   cancelStatus?: unknown;
   calendarInfo?: { meetingLink?: string | null } | null;
-  mentor?: { id?: string; profile?: { name?: string | null } | null } | null;
+  mentor?: { id?: string; profile?: { name?: string | null; avatar?: string | null } | null } | null;
   reviews?: Array<{
     rating?: number;
     summary?: string;
@@ -79,6 +79,29 @@ export function pickSummaryFields(session: StudentSessionRow) {
   return { topicsCovered: topicsCovered || null, homework: homework || null };
 }
 
-export function mentorName(session: StudentSessionRow) {
+/**
+ * The mentor's display name. Never falls back to another participant; if the
+ * "mentor" on the row is the viewer themself (bad/test data) we don't show
+ * the student their own name as the mentor.
+ */
+export function mentorName(session: StudentSessionRow, viewerId?: string | null) {
+  if (viewerId && session.mentor?.id === viewerId) return "your mentor";
   return session.mentor?.profile?.name?.trim() || "your mentor";
+}
+
+export function mentorAvatar(session: StudentSessionRow, viewerId?: string | null) {
+  if (viewerId && session.mentor?.id === viewerId) return null;
+  return session.mentor?.profile?.avatar?.trim() || null;
+}
+
+export function initials(name: string) {
+  const parts = name.split(/\s+/).filter(Boolean);
+  if (!parts.length) return "M";
+  return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
+}
+
+/** Row title: the mentor's name, or "Mentor session" when unknown. */
+export function mentorTitle(session: StudentSessionRow, viewerId?: string | null) {
+  const name = mentorName(session, viewerId);
+  return name === "your mentor" ? "Mentor session" : name;
 }
