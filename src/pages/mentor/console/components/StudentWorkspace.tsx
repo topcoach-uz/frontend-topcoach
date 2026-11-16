@@ -5,7 +5,7 @@ import { useGetMentorEssayReviewsQuery } from "src/app/services/student-hub/essa
 import { calendarDateValue } from '../calendarDate';
 import ApplicationRequirements from "src/pages/student-hub/applicant/ApplicationRequirements";
 import { useUpdateMentorApplicationRequirementsMutation } from 'src/app/services/student-hub/applicationTrackingApi';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   Button,
   DatePicker,
@@ -71,7 +71,10 @@ import { useReviewCounts } from './reviews/reviewCounts';
 import { useMentorConsole } from '../MentorConsoleContext';
 import { McPill, type McPillVariant } from './McPill';
 import { McStat } from './McStat';
-import { formatDate, formatDateTime } from '../utils';
+import { avatarStyleForId, formatDate, formatDateTime, initialsFromName } from '../utils';
+import { programNames, roleNames } from 'src/pages/student-hub/my-programs/programModel';
+import type { ProgramKey } from 'src/app/services/studentProgramsApi';
+import type { MentorRosterProgram } from 'src/app/services/fullSupportApi';
 import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
 import { hostName } from 'src/app/services/api/const';
 import './StudentWorkspace.scss';
@@ -86,7 +89,20 @@ export type WorkspaceStudent = {
   allocated: number;
   scheduledHours?: number;
   sessionsCount: number;
+  /** What this mentor is assigned for (Full Support roster students only). */
+  programs?: MentorRosterProgram[];
 };
+
+/** "Admissions · Research" — the eyebrow under which the student's name sits. */
+function assignmentLabel(student: WorkspaceStudent, isFullSupport: boolean): string {
+  if (!isFullSupport) return '1:1 mentoring';
+  const parts = (student.programs ?? []).map((p) => {
+    const program = programNames[p.program as ProgramKey] ?? p.program;
+    const roles = p.roles.map((r) => roleNames[r] ?? r).filter((r) => r !== program);
+    return roles.length ? `${program} · ${roles.join(', ')}` : program;
+  });
+  return parts.length ? parts.join(' / ') : 'Full Support';
+}
 
 const RG_MC: Record<ResearchSubmission['status'], McPillVariant> = {
   submitted: 'info',
@@ -200,10 +216,11 @@ function StudentMessageTab({ mentorId, studentId }: { mentorId: string; studentI
 export default function StudentWorkspace({
   student,
   isFullSupport = true,
-  showStudentName = true,
+  identityDetails,
 }: {
   student: WorkspaceStudent;
-  showStudentName?: boolean;
+  /** Extra line under the student's name (e.g. their goal and majors). */
+  identityDetails?: ReactNode;
   /** False for a 1:1 platform mentee — hides Full-Support-only sections. */
   isFullSupport?: boolean;
 }) {
@@ -873,7 +890,25 @@ export default function StudentWorkspace({
   return (
     <>
       <div className="mc-ws-focus">
-        <div><span className="mc-ws-eyebrow">STUDENT WORKSPACE · {isFullSupport ? 'FULL SUPPORT' : '1:1 MENTORING'}</span><h1>{showStudentName ? student.name : 'Mentoring overview'}</h1><p>Plan the next step, review work, and keep your student moving forward.</p><Button onClick={() => setActiveTab('message')} icon={<MessageSquare size={14}/>}>Message student</Button></div>
+        <div className="mc-ws-hero">
+          <div className="mc-ws-who">
+            <div className="mc-avatar mc-ws-who-avatar" style={avatarStyleForId(student.id)} aria-hidden>
+              {initialsFromName(student.name)}
+            </div>
+            <div className="mc-ws-who-text">
+              <span className="mc-ws-eyebrow">{assignmentLabel(student, isFullSupport).toUpperCase()}</span>
+              <h1>{student.name}</h1>
+            </div>
+          </div>
+          <p className="mc-ws-who-meta">
+            {student.sessionsCount} session{student.sessionsCount === 1 ? '' : 's'} total
+            {isFullSupport ? ` · ${student.used}h completed · ${student.scheduledHours ?? 0}h scheduled` : ''}
+          </p>
+          {identityDetails}
+          <Button onClick={() => setActiveTab('message')} icon={<MessageSquare size={14}/>}>
+            Message {student.name.split(/\s+/)[0] || 'student'}
+          </Button>
+        </div>
         <div className="mc-ws-next"><span className="mc-ws-eyebrow">NEXT SESSION · TASHKENT</span>{bookingsError ? <p>Session information could not be loaded.</p> : loadingBookings ? <Spin/> : upcomingSessions[0] ? <><h2>{formatDateTime(upcomingSessions[0].dateTime)}</h2><p>{upcomingSessions[0].description || 'Mentoring session'} · {upcomingSessions[0].durationLabel}</p><Button onClick={() => setActiveTab('sessions')}>View sessions</Button></> : <><h2>No upcoming session</h2><p>Check session history or arrange the next meeting.</p><Button onClick={() => setActiveTab('sessions')}>View sessions</Button></>}</div>
       </div>
       <div className="mc-stat-grid mc-ws-stats">

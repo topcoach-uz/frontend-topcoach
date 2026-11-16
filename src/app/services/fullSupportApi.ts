@@ -28,6 +28,19 @@ export type MentorRosterStudent = {
   allocated: number;
   scheduledHours?: number;
   sessionsCount: number;
+  /** Assigned through the older Full Support flow (no program / role). */
+  hasLegacyFullSupport?: boolean;
+  /** Programs this mentor is assigned to for the student, with their roles. */
+  programs?: MentorRosterProgram[];
+};
+
+export type MentorRosterProgram = {
+  enrollmentId: string;
+  program: string;
+  roles: string[];
+  usedMinutes?: number | null;
+  allocatedMinutes?: number | null;
+  remainingMinutes?: number | null;
 };
 
 export type StudentGoalDto = {

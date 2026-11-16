@@ -8,7 +8,10 @@ import { useReviewCounts } from '../components/reviews/reviewCounts';
 import {
   useGetMentorRosterQuery,
   useGetMentorTasksQuery,
+  type MentorRosterProgram,
 } from 'src/app/services/fullSupportApi';
+import { programNames, roleNames } from 'src/pages/student-hub/my-programs/programModel';
+import type { ProgramKey } from 'src/app/services/studentProgramsApi';
 import { McPill } from '../components/McPill';
 import { useMentorBookings, useMentorMentees } from '../sessionSources';
 import { avatarStyleForId, formatDateTime, initialsFromName } from '../utils';
@@ -25,7 +28,13 @@ type ConsoleStudent = {
   scheduledHours?: number;
   sessionsCount: number;
   isFullSupport: boolean;
+  /** What the mentor is assigned for: program + roles (empty for 1:1 mentees). */
+  programs: MentorRosterProgram[];
+  hasLegacyFullSupport: boolean;
 };
+
+const programLabel = (program: string) => programNames[program as ProgramKey] ?? program;
+const roleLabel = (role: string) => roleNames[role] ?? role;
 
 export default function MentorConsoleStudentsPage() {
   const navigate = useNavigate();
@@ -49,6 +58,8 @@ export default function MentorConsoleStudentsPage() {
       allocated: r.allocated,
       sessionsCount: r.sessionsCount,
       isFullSupport: true,
+      programs: r.programs ?? [],
+      hasLegacyFullSupport: Boolean(r.hasLegacyFullSupport) || !r.programs?.length,
     }));
     const fsIds = new Set(fs.map((r) => r.id));
     const oneOnOne: ConsoleStudent[] = mentees
@@ -61,6 +72,8 @@ export default function MentorConsoleStudentsPage() {
         allocated: 0,
         sessionsCount: m.sessionsCount,
         isFullSupport: false,
+        programs: [],
+        hasLegacyFullSupport: false,
       }));
     return [...fs, ...oneOnOne];
   }, [data?.data, mentees]);
@@ -125,15 +138,33 @@ export default function MentorConsoleStudentsPage() {
       ),
     },
     {
-      title: 'Type',
+      title: 'Assigned for',
       key: 'type',
-      width: 130,
-      render: (_, row) =>
-        row.isFullSupport ? (
-          <McPill variant="accent">Full Support</McPill>
-        ) : (
-          <McPill variant="info">1:1 mentee</McPill>
-        ),
+      width: 240,
+      render: (_, row) => {
+        if (!row.isFullSupport) return <McPill variant="info">1:1 mentee</McPill>;
+        return (
+          <div className="mc-assignment">
+            {row.programs.map((p) => {
+              const program = programLabel(p.program);
+              // Skip a role that only repeats the program ("Research · Research").
+              const roles = p.roles.map(roleLabel).filter((r) => r !== program);
+              return (
+                <div key={p.enrollmentId} className="mc-assignment-item">
+                  <McPill variant="accent">{program}</McPill>
+                  {roles.length > 0 && <span className="mc-assignment-roles">{roles.join(' · ')}</span>}
+                </div>
+              );
+            })}
+            {row.hasLegacyFullSupport && (
+              <div className="mc-assignment-item">
+                <McPill variant="accent">Full Support</McPill>
+                <span className="mc-assignment-roles">All areas</span>
+              </div>
+            )}
+          </div>
+        );
+      },
     },
     {
       title: 'Next session',

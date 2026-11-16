@@ -663,8 +663,13 @@
 }
 .applicant-form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  // minmax(0, …): a long option label (e.g. a university name) must not widen
+  // its column and push the field out of the modal.
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0 20px;
+  > * {
+    min-width: 0;
+  }
 }
 .applicant-page .applicant-editor textarea.applicant-writing.ant-input {
   width: 100%;
