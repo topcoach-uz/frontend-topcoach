@@ -544,3 +544,12 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+// Analyzing screen: stage label, elapsed counter and reassurance
+.mm3-analyzing__stage { margin: 4px 0 0; font-size: 15px; font-weight: 500; color: #302b28; transition: opacity 200ms ease-out; }
+.mm3-analyzing__elapsed { margin: 4px 0 0; font-size: 13px; color: #655c55; font-variant-numeric: tabular-nums; }
+.mm3-analyzing__reassure { margin: 8px 0 0; font-size: 14px; color: #655c55; }
+@media (prefers-reduced-motion: reduce) {
+  .mm3-analyzing__stage { transition: none; }
+  .mm2__state--analyzing .mm2__spinner { animation-duration: 3s; }
+}
