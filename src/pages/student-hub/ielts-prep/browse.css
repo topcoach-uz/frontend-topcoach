@@ -142,12 +142,6 @@
   margin: 0;
   font-size: 0.875rem;
 }
-.ielts-browse .ib-eyebrow {
-  font-size: 0.75rem;
-  letter-spacing: 0.3px;
-  font-weight: 500;
-  color: #8b0000;
-}
 .ielts-browse .ib-button {
   display: inline-flex;
   align-items: center;
@@ -536,9 +530,6 @@
   font-size: 0.875rem;
 }
 .ielts-browse .ib-nav-label,
-.ielts-browse .ib-eyebrow {
-  letter-spacing: 0.08em;
-}
 
 .ielts-browse
   :is(
