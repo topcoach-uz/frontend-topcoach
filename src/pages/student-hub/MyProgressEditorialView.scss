@@ -207,6 +207,28 @@
     color: #6b7280;
     font-weight: 700;
   }
+  &__resume {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    border: 1px solid #e7e2dc;
+    border-radius: 12px;
+    background: #fbf9f6;
+  }
+  &__resume-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #302b28;
+  }
+  &__track-left {
+    font-size: 13px;
+    color: #655c55;
+    margin: 0 0 6px;
+  }
   &__track-bar {
     height: 4px;
     background: #ece9df;
