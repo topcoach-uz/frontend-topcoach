@@ -58,6 +58,21 @@ function Rich({ node, answer }) {
     </>
   );
 }
+// A cell holding several atoms is a list of separate lines (bullet points in the
+// source); render each on its own line so phrases do not run together.
+function CellContent({ cell, answer }) {
+  if (!Array.isArray(cell) || cell.length < 2)
+    return <Rich node={cell} answer={answer} />;
+  return (
+    <>
+      {cell.map((line, i) => (
+        <div key={i} className="cell-line">
+          <Rich node={line} answer={answer} />
+        </div>
+      ))}
+    </>
+  );
+}
 function Table({ rows, answer, header = true }) {
   return (
     <table className="exam-table">
@@ -72,7 +87,7 @@ function Table({ rows, answer, header = true }) {
                   rowSpan={cell?.rowspan || undefined}
                   colSpan={cell?.colspan || undefined}
                 >
-                  <Rich node={cell} answer={answer} />
+                  <CellContent cell={cell} answer={answer} />
                 </Cell>
               );
             })}
@@ -107,7 +122,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
           </option>
         ))}
       </select>
-      {revealed && <small>{keys[n - 1] || "Key not available"}</small>}
+      {revealed && <small>{keys[n - 1] || "No answer on file"}</small>}
     </span>
   );
   const answer = (n, slot) => {
@@ -129,7 +144,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
               update(n, next.join(" & "));
             }}
           />
-          {revealed && <small>{keys[n - 1] || "Key not available"}</small>}
+          {revealed && <small>{keys[n - 1] || "No answer on file"}</small>}
         </span>
       );
     }
@@ -178,7 +193,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
       )}
       {group.imageMissing && (
         <p className="hint" role="status">
-          Diagram is not available in the imported data.
+          Diagram is not available.
         </p>
       )}
       {group.type === "option-true-false" || group.type === "option-yes-no" ? (
@@ -212,7 +227,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
                   </label>
                 ))}
                 {revealed && (
-                  <small>{keys[n - 1] || "Key not available"}</small>
+                  <small>{keys[n - 1] || "No answer on file"}</small>
                 )}
               </fieldset>
             );
@@ -249,7 +264,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
                   );
                 })}
                 {revealed && (
-                  <small>{keys[n - 1] || "Key not available"}</small>
+                  <small>{keys[n - 1] || "No answer on file"}</small>
                 )}
               </fieldset>
             );
@@ -290,7 +305,7 @@ function Group({ group, answers, update, setAnswers, input, revealed, keys }) {
             <small>
               {Array.from(
                 { length: group.end - group.start + 1 },
-                (_, i) => keys[group.start + i - 1] || "Key not available",
+                (_, i) => keys[group.start + i - 1] || "No answer on file",
               ).join(", ")}
             </small>
           )}

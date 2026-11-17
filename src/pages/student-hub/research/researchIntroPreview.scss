@@ -1,0 +1,240 @@
+@use '/src/styles/liquid-glass' as lg;
+// Research Prep preview (no program access yet).
+$ink: #221d1a;
+$muted: #6b625b;
+$brand: #8b0000;
+$brand-deep: #5e0000;
+$line: rgba(48, 43, 40, 0.07);
+$ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+
+@mixin glass {
+  @include lg.lg-regular;
+}
+
+.rp {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: $ink;
+}
+
+.rp-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 28px 32px;
+  border-radius: 26px;
+  @include lg.lg-blush;
+
+  h1 {
+    margin: 6px 0 8px;
+    color: $ink;
+    font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+  p {
+    margin: 0;
+    max-width: 56ch;
+    color: $muted;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+}
+.rp-hero__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  align-self: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  @include lg.lg-lens-light;
+  color: $brand;
+}
+.rp-hero__text {
+  flex: 1;
+  min-width: 0;
+}
+.rp-eyebrow {
+  margin: 0;
+  color: $brand !important;
+  font-size: 11px !important;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.rp-hero__cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+
+  small {
+    color: $muted;
+    font-size: 12px;
+  }
+}
+.rp-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 22px;
+  border-radius: 999px;
+  @include lg.lg-tint;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: transform 200ms $ease-out;
+
+  &:hover {
+    color: #fff;
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+  }
+  &:active {
+    transform: scale(0.97);
+  }
+  &.is-disabled {
+    opacity: 0.7;
+    cursor: default;
+  }
+}
+
+.rp-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+.rp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  border-radius: 24px;
+  @include glass;
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  h3 {
+    margin: 6px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  p {
+    margin: 0;
+    color: $muted;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+}
+.rp-tag {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.rp-tag--free {
+  background: rgba(22, 163, 74, 0.1);
+  color: #15803d;
+}
+.rp-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  span {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(139, 0, 0, 0.08);
+    color: $brand;
+    font-size: 12px;
+    font-weight: 600;
+  }
+}
+.rp-note {
+  padding-top: 12px;
+  border-top: 1px solid $line;
+  font-size: 13px !important;
+}
+
+.rp-weeks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 4px;
+    color: $muted;
+    font-size: 14px;
+
+    svg {
+      flex: none;
+      color: rgba(48, 43, 40, 0.35);
+    }
+    &.is-open {
+      color: $ink;
+
+      svg {
+        color: #15803d;
+      }
+    }
+  }
+  li + li {
+    border-top: 1px solid $line;
+  }
+}
+.rp-weeks__num {
+  flex: none;
+  width: 24px;
+  color: rgba(48, 43, 40, 0.4);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.rp-weeks__title {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 1000px) {
+  .rp-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  .rp-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px;
+  }
+  .rp-hero__cta {
+    align-items: flex-start;
+  }
+}

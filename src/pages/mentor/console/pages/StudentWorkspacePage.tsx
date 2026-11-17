@@ -8,8 +8,7 @@ import {
 } from 'src/app/services/fullSupportApi';
 import StudentWorkspace, { type WorkspaceStudent } from '../components/StudentWorkspace';
 import { useMentorMentees } from '../sessionSources';
-import { McPill } from '../components/McPill';
-import { avatarStyleForId, initialsFromName } from '../utils';
+import { initialsFromName } from '../utils';
 import '../components/StudentWorkspace.scss';
 
 export default function MentorStudentWorkspacePage() {
@@ -85,27 +84,11 @@ export default function MentorStudentWorkspacePage() {
         <ArrowLeft size={15} /> All students
       </button>
 
-      <div className="mc-ws-identity mc-ws-identity--hero">
-        <div
-          className="mc-avatar mc-ws-identity-avatar"
-          style={avatarStyleForId(student.id)}
-        >
-          {initialsFromName(student.name)}
-        </div>
-        <div style={{ minWidth: 0, flex: 1 }}>
-          <div className="mc-ws-identity-name">
-            {student.name}
-            {!isFullSupport && (
-              <McPill variant="info" style={{ marginLeft: 10, verticalAlign: 'middle' }}>
-                1:1 mentee
-              </McPill>
-            )}
-          </div>
-          <div className="mc-ws-identity-meta">
-            {student.sessionsCount} session{student.sessionsCount === 1 ? '' : 's'} total
-            {isFullSupport ? ` · ${student.used}h completed · ${student.scheduledHours ?? 0}h scheduled` : ''}
-          </div>
-          {goalSegments.length > 0 && (
+      <StudentWorkspace
+        student={student}
+        isFullSupport={isFullSupport}
+        identityDetails={
+          goalSegments.length > 0 && (
             <div className="mc-ws-identity-goal">
               {goalSegments.map((seg, i) => (
                 <span key={seg.label}>
@@ -114,11 +97,9 @@ export default function MentorStudentWorkspacePage() {
                 </span>
               ))}
             </div>
-          )}
-        </div>
-      </div>
-
-      <StudentWorkspace student={student} isFullSupport={isFullSupport} showStudentName={false} />
+          )
+        }
+      />
     </div>
   );
 }

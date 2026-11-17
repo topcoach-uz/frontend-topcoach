@@ -2,14 +2,18 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Button,
+  Drawer,
+  Dropdown,
   Form,
   Input,
   Modal,
   Popconfirm,
   Select,
+  Tooltip,
   message,
 } from "antd";
-import { History, Lightbulb, MessageSquareText, Plus, Save, Trash2 } from "lucide-react";
+import type { TextAreaRef } from "antd/es/input/TextArea";
+import { MoreHorizontal, History, Lightbulb, MessageSquareText, Plus, Save, Trash2 } from "lucide-react";
 import {
   Link,
   useLocation,
@@ -22,7 +26,6 @@ import {
   useGetStudentEssayQuery,
   useGetStudentEssaysQuery,
   useGetEssayVersionsQuery,
-  useGetEnhancedFeedbackQuery,
   useCreateEssayVersionMutation,
   useDeleteStudentEssayMutation,
   useUpdateStudentEssayMutation,
@@ -48,6 +51,14 @@ import {
   useWithdrawEssayReviewMutation,
 } from "src/app/services/student-hub/essayReviewApi";
 import { getMentorFeedbackText } from "./essayFeedbackModel";
+import { EssayPromptBox } from "./EssayPromptBox";
+import { EssayAnglesPanel } from "./EssayAnglesPanel";
+import { EssayAiReview, type StoredReview } from "./EssayAiReview";
+import { findQuoteRange } from "./essayReview";
+import { PinnedAngleStrip } from "./PinnedAngleStrip";
+import { clearPinnedAngle, loadPinnedAngle, pinnedAngleFrom, savePinnedAngle, type PinnedAngle } from "./essayAngles";
+import type { EssayIdeaAngle, EssayIdeasResponse } from "src/app/services/student-hub/essayManagementApi";
+import { countWords, ideasForEssay, essayWordLimit, formatSavedTime, limitLevel, limitMessage, saveState } from "./essayWriting";
 
 const essayTypes: Array<{ value: StudentEssay["essayType"]; label: string }> = [
   { value: "personal_statement", label: "Personal statement" },
@@ -65,6 +76,28 @@ const masterEssayTypes: typeof essayTypes = [
   { value: "scholarship", label: "Scholarship essay" },
   { value: "other", label: "Other writing" },
 ];
+
+function useIsMobile() {
+  const query = "(max-width: 767px)";
+  const [mobile, setMobile] = useState(() => typeof window !== "undefined" && window.matchMedia(query).matches);
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    const onChange = () => setMobile(media.matches);
+    onChange();
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
+  return mobile;
+}
+
+const ESSAY_STAGE_LABELS: Record<string, string> = {
+  draft: "Draft",
+  review: "In review",
+  revision: "Revising",
+  final: "Final",
+  submitted: "Submitted",
+  archived: "Archived",
+};
 
 export default function ApplicantEssaysPage() {
   const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
@@ -168,47 +201,80 @@ export default function ApplicantEssaysPage() {
             </Button>
           </div>
         ) : (
-          <div className="applicant-panel applicant-card-grid">
-            {query.data.data.map((essay) => (
-              <div className="applicant-writing-card-wrap" key={essay.id}>
-                <Link
-                  className="applicant-writing-card"
-                  to={`/student-hub/essays/${essay.id}`}
-                >
-                  <span className="applicant-kicker">
-                    {writingTypes.find((type) => type.value === essay.essayType)
-                      ?.label ?? "Essay"}
-                  </span>
-                  <h2>{essay.title}</h2>
-                  <p>{essay.prompt || "No prompt added"}</p>
-                  <small>
-                    {essay.wordCount ?? 0} words · Updated{" "}
-                    {displayDate(essay.updatedAt)}
-                  </small>
-                  {getMentorFeedbackText(essay.mentorFeedback) && (
-                    <span className="applicant-feedback-badge">
-                      <MessageSquareText size={14} /> Mentor feedback available
-                    </span>
-                  )}
-                </Link>
-                <Popconfirm
-                  title="Delete this draft?"
-                  description="This removes the draft from your writing list."
-                  okText="Delete"
-                  okButtonProps={{ danger: true }}
-                  onConfirm={() => removeEssay(essay)}
-                >
-                  <Button
-                    className="applicant-writing-card__delete"
-                    danger
-                    type="text"
-                    aria-label={`Delete ${essay.title}`}
-                    icon={<Trash2 size={16} />}
-                    loading={deletingId === essay.id}
-                  />
-                </Popconfirm>
-              </div>
-            ))}
+          <div className="applicant-panel applicant-card-grid applicant-essay-grid">
+            {query.data.data.map((essay) => {
+              const typeLabel = writingTypes.find((type) => type.value === essay.essayType)?.label ?? "Essay";
+              const limit = essayWordLimit(essay.essayType);
+              const words = essay.wordCount ?? 0;
+              const level = limitLevel(words, limit);
+              const progress = limit ? Math.min(100, Math.round((words / limit) * 100)) : null;
+              const application = (applications.data?.data ?? []).find((app) => app.id === essay.collegeApplicationId);
+              const stage = ESSAY_STAGE_LABELS[essay.status] ?? "Draft";
+              return (
+                <div className="applicant-writing-card-wrap" key={essay.id}>
+                  <Link className="applicant-writing-card" to={`/student-hub/essays/${essay.id}`}>
+                    <div className="applicant-writing-card__top">
+                      {/* Skip the type label when the title already says it ("Personal statement" twice). */}
+                      {typeLabel.trim().toLowerCase() !== (essay.title || "").trim().toLowerCase() ? (
+                        <span className="applicant-writing-card__type">{typeLabel}</span>
+                      ) : (
+                        <span className="applicant-writing-card__type">Essay</span>
+                      )}
+                      <span className={`applicant-writing-card__stage is-${essay.status}`}>{stage}</span>
+                    </div>
+                    <h2>{essay.title}</h2>
+                    {essay.prompt?.trim() ? (
+                      <p className="applicant-writing-card__prompt">{essay.prompt.trim()}</p>
+                    ) : (
+                      <p className="applicant-writing-card__prompt is-empty">No prompt added — open the draft to add one.</p>
+                    )}
+                    {application && (
+                      <span className="applicant-writing-card__for">
+                        For <RelatedApplicationLabel application={application} />
+                      </span>
+                    )}
+                    {getMentorFeedbackText(essay.mentorFeedback) && (
+                      <span className="applicant-feedback-badge">
+                        <MessageSquareText size={14} /> Mentor feedback available
+                      </span>
+                    )}
+                    <div className="applicant-writing-card__foot">
+                      {progress !== null && (
+                        <span className={`applicant-writing-card__bar is-${level}`} aria-hidden>
+                          <span style={{ width: `${Math.max(progress, words ? 3 : 0)}%` }} />
+                        </span>
+                      )}
+                      <small className={`applicant-writing-card__meta is-${level}`}>
+                        {limit ? `${words} / ${limit} words` : `${words} words`} · Edited {displayDate(essay.updatedAt)}
+                      </small>
+                    </div>
+                  </Link>
+                  <Popconfirm
+                    title="Delete this draft?"
+                    description="This removes the draft from your writing list."
+                    okText="Delete"
+                    okButtonProps={{ danger: true }}
+                    onConfirm={() => removeEssay(essay)}
+                  >
+                    <Button
+                      className="applicant-writing-card__delete"
+                      danger
+                      type="text"
+                      aria-label={`Delete ${essay.title}`}
+                      icon={<Trash2 size={16} />}
+                      loading={deletingId === essay.id}
+                    />
+                  </Popconfirm>
+                </div>
+              );
+            })}
+            <button type="button" className="applicant-writing-card applicant-writing-card--new" onClick={open}>
+              <span className="applicant-writing-card__plus" aria-hidden>
+                <Plus size={20} />
+              </span>
+              <strong>New draft</strong>
+              <small>Personal statement, supplement or scholarship essay</small>
+            </button>
           </div>
         )}
       </QueryState>
@@ -297,6 +363,11 @@ export default function ApplicantEssaysPage() {
 
 export function ApplicantEssayEditorPage() {
   const { essayId = "" } = useParams();
+  // Last AI angles result per essay, kept for the session so closing the panel/drawer does not lose it.
+  const [anglesByEssay, setAnglesByEssay] = useState<Record<string, EssayIdeasResponse>>({});
+  const [reviewByEssay, setReviewByEssay] = useState<Record<string, StoredReview>>({});
+  const draftRef = useRef<TextAreaRef>(null);
+  const [pinnedByEssay, setPinnedByEssay] = useState<Record<string, PinnedAngle | null>>({});
   const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
   const query = useGetStudentEssayQuery(essayId, { skip: !essayId });
   const versionsQuery = useGetEssayVersionsQuery(essayId, { skip: !essayId });
@@ -313,18 +384,23 @@ export function ApplicantEssayEditorPage() {
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<StudentEssay["status"]>("draft");
   const [dirty, setDirty] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<Date>();
+  const [saveFailed, setSaveFailed] = useState(false);
   const snapshotRef = useRef("");
   const savingRef = useRef(false);
   const [params, setParams] = useSearchParams();
   const [reviewTab, setReviewTab] = useState<"preview" | "feedback" | "versions">("preview");
   const [sidePanel, setSidePanel] = useState<"ideas" | "review" | null>(null);
+  // Keeps the last panel mounted while it slides out.
+  const [panelExited, setPanelExited] = useState(true);
+  const lastPanelRef = useRef<"ideas" | "review" | null>(null);
+  if (sidePanel) lastPanelRef.current = sidePanel;
+  if (sidePanel && panelExited) setPanelExited(false);
+  const shownPanel = sidePanel ?? (panelExited ? null : lastPanelRef.current);
   useEffect(() => { if (params.get('helper') === 'ai') setSidePanel('review'); }, [params.get('helper')]);
-  const [aiFeedbackRequested, setAiFeedbackRequested] = useState(false);
+  const isMobile = useIsMobile();
+  const [previewVersion, setPreviewVersion] = useState<{ label: string; content: string; date?: string } | null>(null);
   const essay = query.data?.data;
-  const aiFeedbackQuery = useGetEnhancedFeedbackQuery(essayId, {
-    skip: !essayId || !aiFeedbackRequested,
-  });
-  const aiFeedback = aiFeedbackQuery.data?.data;
   const profileId = useTypedSelector((state) => state.auth.profile?.id);
   const localDraftKey = essayId
     ? `topcoach:essay-draft:${profileId || "current"}:${essayId}`
@@ -363,13 +439,39 @@ export function ApplicantEssayEditorPage() {
     setStatus(essay.status);
     setDirty(false);
   }, [essay?.id, localDraftKey]);
-  const words = useMemo(
-    () => (content.trim() ? content.trim().split(/\s+/).length : 0),
-    [content],
-  );
+  const words = useMemo(() => countWords(content), [content]);
+  const wordLimit = essay ? essayWordLimit(essay.essayType) : undefined;
+  const level = limitLevel(words, wordLimit);
+  const status_ = saveState({ saving: updateState.isLoading, failed: saveFailed, dirty, lastSavedAt });
   const openReview = reviewRequests.find((request) => ["pending", "in_review"].includes(request.status));
   const openReviews = reviewRequests.filter((request) => ["pending", "in_review"].includes(request.status));
   const availableMentors = eligibleMentors.filter((mentor) => !openReviews.some((request) => request.mentorUserId === mentor.id));
+  const submitBlockedReason = eligibilityLoading
+    ? "Checking mentor availability…"
+    : eligibilityError
+      ? "We couldn’t check mentor availability. Try again in a moment."
+      : eligibleMentors.length === 0
+        ? "Mentor review opens after you’re assigned a mentor or complete a 1:1 meeting."
+        : availableMentors.length === 0
+          ? `Your draft is already with ${openReviews[0]?.mentorName || "your mentor"} for review.`
+          : !content.trim()
+            ? "Write something first, then send it to your mentor."
+            : "";
+  const submitLabel = availableMentors.length === 1 ? `Submit to ${availableMentors[0].name}` : "Submit to mentor";
+  const submitToMentorButton = (
+    <Tooltip title={submitBlockedReason || undefined}>
+      <span className="applicant-writing-desk__submit">
+        <Button
+          type="primary"
+          disabled={Boolean(submitBlockedReason)}
+          onClick={() => {
+            setSelectedMentor(availableMentors[0]?.id);
+            setReviewModalOpen(true);
+          }}
+        >{submitLabel}</Button>
+      </span>
+    </Tooltip>
+  );
   const reviewedRequests = reviewRequests.filter((request) => request.status === "feedback_ready");
   const requestMentorReview = async () => {
     if (!essay || !selectedMentor || !content.trim() || updateState.isLoading || savingRef.current) return;
@@ -416,7 +518,7 @@ export function ApplicantEssayEditorPage() {
       /* Server save remains available when local storage is blocked. */
     }
   }, [localDraftKey, dirty, content, title, status]);
-  const save = async () => {
+  const save = async (manual = false) => {
     if (!essay || !dirty || savingRef.current) return;
     const submitted = JSON.stringify({ content, title, status });
     savingRef.current = true;
@@ -430,15 +532,12 @@ export function ApplicantEssayEditorPage() {
           /* A successful server save is still successful. */
         }
       }
-      message.success(
-        snapshotRef.current === submitted
-          ? "Draft saved."
-          : "Latest changes are still unsaved.",
-      );
+      setLastSavedAt(new Date());
+      setSaveFailed(false);
+      if (manual) message.success("Draft saved.");
     } catch {
-      message.error(
-        "Could not save your draft. Your text remains in the editor.",
-      );
+      setSaveFailed(true);
+      if (manual) message.error("Could not save your draft. Your text remains in the editor.");
     } finally {
       savingRef.current = false;
     }
@@ -448,6 +547,12 @@ export function ApplicantEssayEditorPage() {
     const timer = window.setTimeout(() => { void save(); }, 2500);
     return () => window.clearTimeout(timer);
   }, [essay?.id, content, title, status, dirty, updateState.isLoading]);
+  const restoreContent = (label: string, restored: string) => {
+    setContent(restored);
+    setDirty(true);
+    setPreviewVersion(null);
+    message.success(`${label} restored to the editor. Your newer versions are kept.`);
+  };
   const saveVersion = async () => {
     if (!essay || !content.trim()) {
       message.error("Write your statement before saving a version.");
@@ -469,6 +574,140 @@ export function ApplicantEssayEditorPage() {
   useEffect(() => {
     if (params.get("feedback") === "mentor" && latestFeedback) setSidePanel("review");
   }, [params.get("feedback"), latestFeedback]);
+  const pinned = essay ? (essay.id in pinnedByEssay ? pinnedByEssay[essay.id] : loadPinnedAngle(essay.id) ?? null) : null;
+  const togglePin = (angle: EssayIdeaAngle) => {
+    if (!essay) return;
+    if (pinned?.id === angle.id) {
+      clearPinnedAngle(essay.id);
+      setPinnedByEssay((prev) => ({ ...prev, [essay.id]: null }));
+      return;
+    }
+    const next = pinnedAngleFrom(angle);
+    savePinnedAngle(essay.id, next);
+    setPinnedByEssay((prev) => ({ ...prev, [essay.id]: next }));
+    if (isMobile) setSidePanel(null);
+  };
+  const removePin = () => {
+    if (!essay) return;
+    clearPinnedAngle(essay.id);
+    setPinnedByEssay((prev) => ({ ...prev, [essay.id]: null }));
+  };
+  const findInDraft = (paragraph: number, quote: string): boolean => {
+    const range = findQuoteRange(content, paragraph, quote);
+    const el = draftRef.current?.resizableTextArea?.textArea;
+    if (!range || !el) return false;
+    if (isMobile) setSidePanel(null);
+    window.setTimeout(() => {
+      el.focus({ preventScroll: true });
+      el.setSelectionRange(range.start, range.end);
+      // Measure the quote's vertical position with a hidden mirror of the textarea.
+      const cs = getComputedStyle(el);
+      const mirror = document.createElement("div");
+      mirror.style.cssText = `position:absolute;visibility:hidden;white-space:pre-wrap;overflow-wrap:break-word;width:${el.clientWidth}px;font:${cs.font};letter-spacing:${cs.letterSpacing};padding:${cs.padding};box-sizing:border-box;`;
+      mirror.textContent = el.value.slice(0, range.start);
+      const marker = document.createElement("span");
+      marker.textContent = "\u200b";
+      mirror.appendChild(marker);
+      document.body.appendChild(mirror);
+      const offsetTop = marker.offsetTop;
+      document.body.removeChild(mirror);
+      const top = el.getBoundingClientRect().top + window.scrollY + offsetTop - window.innerHeight / 3;
+      window.scrollTo({ top: Math.max(0, top), behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    }, isMobile ? 280 : 0);
+    return true;
+  };
+  const sidePanelBody = shownPanel && essay ? (<>
+              {shownPanel === "ideas" ? <>
+                {essay.prompt?.trim() && <blockquote className="applicant-writing-desk__prompt-quote"><strong>Your prompt</strong>{essay.prompt.trim()}</blockquote>}
+                <EssayAnglesPanel
+                  essayId={essay.id}
+                  result={anglesByEssay[essay.id]}
+                  onResult={(id, r) => setAnglesByEssay((prev) => ({ ...prev, [id]: r }))}
+                  pinnedId={pinned?.id}
+                  onTogglePin={togglePin}
+                />
+                <details className="essay-angles__quick">
+                  <summary>Quick questions</summary>
+                  <ol className="applicant-writing-desk__ideas">
+                    {ideasForEssay(essay.essayType, essay.prompt).map((idea) => <li key={idea}>{idea}</li>)}
+                  </ol>
+                </details>
+                <small>These are writing prompts from TopCoach, not official admission requirements.</small>
+              </> : <>
+                <EssayAiReview
+                  essayId={essay.id}
+                  content={content}
+                  saved={!dirty && !updateState.isLoading}
+                  result={reviewByEssay[essay.id]}
+                  onResult={(id, r) => setReviewByEssay((prev) => ({ ...prev, [id]: r }))}
+                  onFind={findInDraft}
+                />
+                <label className="applicant-writing-desk__stage-label" htmlFor="applicant-essay-stage">Stage</label>
+                <Select
+                  id="applicant-essay-stage"
+                  value={status}
+                  onChange={(value) => { setStatus(value); setDirty(true); }}
+                  options={[
+                    { value: "draft", label: "Draft" },
+                    { value: "review", label: "Ready for review", disabled: !content.trim() },
+                    { value: "revision", label: "Revising", disabled: !content.trim() },
+                    { value: "final", label: "Final", disabled: !content.trim() },
+                    ...(status === "submitted" ? [{ value: "submitted", label: "Submitted", disabled: true }] : []),
+                  ]}
+                />
+                <p>Changing the stage organizes your writing. It does not submit an application.</p>
+                <Button onClick={saveVersion} loading={createVersionState.isLoading} disabled={!content.trim()}>Save a version</Button>
+                {eligibilityError ? <Alert type="warning" message="Could not check mentor review availability" action={<Button size="small" onClick={() => void refetchEligibleMentors()}>Retry</Button>} />
+                  : !eligibilityLoading && eligibleMentors.length === 0 && <p>Keep writing and saving versions. Mentor review becomes available after you are assigned a mentor or complete a 1:1 meeting.</p>}
+                {openReviews.map((request) => <div key={request.id} role="status" className="applicant-panel" style={{ marginTop: 16, padding: 16 }}>
+                  <strong>{request.status === "in_review" ? "Being reviewed by" : "Awaiting"} {request.mentorName || "mentor"}{request.status === "pending" ? "’s review" : ""}</strong>
+                  <p>Version {request.snapshotVersion} was sent on {displayDate(request.createdAt)}. You can keep editing your draft.</p>
+                  {request.status === "pending" && <Button loading={withdrawReviewState.isLoading} onClick={async () => {
+                    try { await withdrawReview(request.id).unwrap(); message.success("Review request withdrawn."); }
+                    catch { message.error("Could not withdraw the request."); }
+                  }}>Withdraw request</Button>}
+                </div>)}
+                {reviewedRequests.map((request) => {
+                  const reviewed = (versionsQuery.data?.data ?? []).find((v) => v.version === request.snapshotVersion);
+                  return <article key={request.id} className="applicant-feedback-card">
+                    <header>
+                      <strong>{request.mentorName || "Your mentor"}</strong>
+                      <small>on Version {request.snapshotVersion} · {displayDate(request.feedbackAt || request.createdAt)}</small>
+                    </header>
+                    <p>{request.feedback}</p>
+                    <Button size="small" onClick={() => setPreviewVersion({
+                      label: `Version ${request.snapshotVersion}`,
+                      content: reviewed?.content ?? request.snapshotContent,
+                      date: displayDate(reviewed?.createdAt ?? request.createdAt),
+                    })}>View that version</Button>
+                  </article>;
+                })}
+                <h3>Saved versions</h3>
+                <QueryState loading={versionsQuery.isLoading} error={versionsQuery.isError} retry={versionsQuery.refetch}>
+                  {(versionsQuery.data?.data ?? []).length ? (
+                    <ol className="applicant-writing-desk__versions">
+                      {[...(versionsQuery.data?.data ?? [])].sort((a, b) => b.version - a.version).map((version) => (
+                        <li key={version.id}>
+                          <strong>Version {version.version}</strong>
+                          <small>{displayDate(version.createdAt)} · {countWords(version.content)} words</small>
+                          <div className="applicant-writing-desk__version-actions">
+                            <Button size="small" onClick={() => setPreviewVersion({ label: `Version ${version.version}`, content: version.content, date: displayDate(version.createdAt) })}>Preview</Button>
+                            <Popconfirm
+                              title={`Replace the editor text with Version ${version.version}?`}
+                              description="Your current text is replaced; save a version first if you want to keep it."
+                              okText="Restore"
+                              onConfirm={() => restoreContent(`Version ${version.version}`, version.content)}
+                            ><Button size="small">Restore</Button></Popconfirm>
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  ) : <p>No versions saved yet.</p>}
+                </QueryState>
+                {feedback && reviewedRequests.length === 0 && <><h3>Mentor feedback</h3><p style={{ whiteSpace: "pre-wrap" }}>{feedback}</p></>}
+              </>}
+  </>) : null;
+  const sidePanelTitle = sidePanel === "ideas" ? "Story angles" : "Review your draft";
   return (
     <ApplicantPage
       title={isMasters && params.get("view") === "review" ? "Statement review" : undefined}
@@ -479,7 +718,7 @@ export function ApplicantEssayEditorPage() {
               type="primary"
               icon={<Save size={15} />}
               loading={updateState.isLoading}
-              onClick={save}
+              onClick={() => { void save(true); }}
             >
               Save draft
             </Button>
@@ -534,10 +773,7 @@ export function ApplicantEssayEditorPage() {
                 const next = new URLSearchParams(params); next.delete("view"); setParams(next);
               }}>Open draft editor</Button>
               <Button onClick={saveVersion} loading={createVersionState.isLoading}>Save new version</Button>
-              {availableMentors.length > 0 && <Button disabled={!content.trim()} onClick={() => {
-                setSelectedMentor(availableMentors[0]?.id);
-                setReviewModalOpen(true);
-              }}>{availableMentors.length === 1 ? `Submit to ${availableMentors[0].name}` : "Submit to mentor"}</Button>}
+              {submitToMentorButton}
             </div>
             {openReview && <p role="status">Version {openReview.snapshotVersion} is awaiting {openReview.mentorName || "mentor"}’s feedback.</p>}
           </div>
@@ -545,38 +781,54 @@ export function ApplicantEssayEditorPage() {
           <div className="applicant-writing-desk">
             <div className="applicant-writing-desk__bar">
               <span>{essay.essayType === "personal_statement" ? "PERSONAL STATEMENT" : "ESSAY DRAFT"}</span>
-              <div className="applicant-actions">
+              <div className="applicant-actions applicant-writing-desk__actions">
+                {isMobile ? (
+                  <Dropdown
+                    trigger={["click"]}
+                    menu={{
+                      items: [
+                        { key: "ideas", label: "Ideas", icon: <Lightbulb size={15} /> },
+                        { key: "review", label: "Review & versions", icon: <History size={15} /> },
+                        ...((dirty || updateState.isLoading) ? [{ key: "save", label: "Save draft", icon: <Save size={15} /> }] : []),
+                      ],
+                      onClick: ({ key }) => {
+                        if (key === "save") void save(true);
+                        else setSidePanel(key as "ideas" | "review");
+                      },
+                    }}
+                  >
+                    <Button icon={<MoreHorizontal size={17} />} aria-label="More writing tools">More</Button>
+                  </Dropdown>
+                ) : (<>
                 {(dirty || updateState.isLoading) && (
                   <Button
                     icon={<Save size={15} />}
                     loading={updateState.isLoading}
-                    onClick={save}
+                    onClick={() => { void save(true); }}
                   >Save draft</Button>
                 )}
                 <Button
-                  icon={<Lightbulb size={17} />}
-                  type={sidePanel === "ideas" ? "primary" : "default"}
+                  className="applicant-desk-toggle"
+                  icon={<Lightbulb size={16} />}
+                  aria-pressed={sidePanel === "ideas"}
                   onClick={() => setSidePanel(sidePanel === "ideas" ? null : "ideas")}
                 >Ideas</Button>
                 <Button
-                  type={sidePanel === "review" ? "primary" : "default"}
+                  className="applicant-desk-toggle"
+                  icon={<History size={16} />}
+                  aria-pressed={sidePanel === "review"}
                   onClick={() => setSidePanel(sidePanel === "review" ? null : "review")}
                 >Review & versions</Button>
-                {availableMentors.length > 0 && (
-                  <Button
-                    type="primary"
-                    disabled={!content.trim()}
-                    onClick={() => {
-                      setSelectedMentor(availableMentors[0]?.id);
-                      setReviewModalOpen(true);
-                    }}
-                  >{availableMentors.length === 1 ? `Submit to ${availableMentors[0].name}` : "Submit to mentor"}</Button>
-                )}
+                </>)}
+                {submitToMentorButton}
               </div>
             </div>
-            <div className={`applicant-editor-layout${sidePanel ? " has-side-panel" : ""}`}>
+            {submitBlockedReason && <p className="applicant-writing-desk__hint" id="essay-submit-hint">{submitBlockedReason}</p>}
+            <div className={`applicant-editor-layout has-side-column${sidePanel && !isMobile ? " is-side-open" : ""}`}>
             <div className="applicant-panel applicant-editor">
-              <label className="applicant-editor__title-label" htmlFor="applicant-essay-title">DRAFT TITLE</label>
+              {essay.prompt?.trim() && <EssayPromptBox prompt={essay.prompt.trim()} />}
+              {pinned && <PinnedAngleStrip angle={pinned} onChange={() => setSidePanel("ideas")} onRemove={removePin} />}
+              <label className="applicant-editor__title-label" htmlFor="applicant-essay-title">Draft title</label>
               <Input
                 id="applicant-essay-title"
                 className="applicant-title-input"
@@ -587,105 +839,83 @@ export function ApplicantEssayEditorPage() {
                 }}
                 aria-label="Draft title"
               />
-              {essay.prompt?.trim() && <p className="applicant-editor__prompt"><strong>Essay question</strong>{essay.prompt}</p>}
               <Input.TextArea
+                ref={draftRef}
                 className="applicant-writing"
-                rows={16}
+                autoSize={{ minRows: 16 }}
                 value={content}
                 onChange={(event) => {
                   setContent(event.target.value);
                   setDirty(true);
                 }}
-                onBlur={save}
+                onBlur={() => { void save(); }}
                 placeholder="Begin your draft…"
                 aria-label="Draft text"
               />
-              <div className="applicant-editor__footer">
-                <span>{words} words</span>
-                <span>{dirty ? "Changes saved automatically after a pause" : "Private draft"}</span>
+              <div className={`applicant-editor__status is-${level}`}>
+                <div className="applicant-editor__status-row">
+                  <span className="applicant-editor__status-words">
+                    {wordLimit ? `${words} / ${wordLimit} words` : `${words} words`}
+                    {limitMessage(words, wordLimit) && ` · ${limitMessage(words, wordLimit)}`}
+                  </span>
+                  <span className="applicant-editor__status-save">
+                    <span role="status" aria-live="polite">
+                      {status_ === "saving" && "Saving…"}
+                      {status_ === "unsaved" && "Unsaved changes"}
+                      {status_ === "saved" && lastSavedAt && `Saved ${formatSavedTime(lastSavedAt)}`}
+                      {status_ === "idle" && "Private draft"}
+                    </span>
+                    <span role="alert">
+                      {status_ === "error" && <>Couldn’t save · <button type="button" className="applicant-editor__retry" onClick={() => { void save(true); }}>Retry</button></>}
+                    </span>
+                  </span>
+                </div>
+                {wordLimit && <div className="applicant-editor__bar" aria-hidden><span style={{ width: `${Math.min(100, (words / wordLimit) * 100)}%` }} /></div>}
               </div>
             </div>
-            {sidePanel && <aside className="applicant-panel applicant-writing-desk__side">
+            {shownPanel && !isMobile && <aside
+              className="applicant-panel applicant-writing-desk__side"
+              data-open={sidePanel ? "true" : "false"}
+              onAnimationEnd={(event) => { if (event.target === event.currentTarget && !sidePanel) setPanelExited(true); }}
+            >
               <div className="applicant-page__heading">
-                <h2>{sidePanel === "ideas" ? "Ideas to get started" : "Review your draft"}</h2>
+                <h2>{shownPanel === "ideas" ? "Story angles" : "Review your draft"}</h2>
                 <Button type="text" onClick={() => setSidePanel(null)} aria-label="Close side panel">Close</Button>
               </div>
-              {sidePanel === "ideas" ? <>
-                <p>Use a question if it helps. Your essay does not have to follow a template.</p>
-                <ol className="applicant-writing-desk__ideas">
-                  {(essay.essayType === "personal_statement"
-                    ? ["What is one specific moment you keep thinking about?", "What did you choose to do?", "What did you learn or see differently afterward?"]
-                    : ["What is this question really asking?", "Which specific example answers it best?", "What should the reader understand about you by the end?"]
-                  ).map((idea) => <li key={idea}>{idea}</li>)}
-                </ol>
-                <small>These are writing prompts from TopCoach, not official admission requirements.</small>
-              </> : <>
-                <h3>Writing helper</h3>
-                <p>Get suggestions for your saved draft. This is automated guidance, not mentor feedback.</p>
-                <Button
-                  onClick={() => {
-                    if (aiFeedbackRequested) void aiFeedbackQuery.refetch();
-                    else setAiFeedbackRequested(true);
-                  }}
-                  loading={aiFeedbackQuery.isFetching}
-                  disabled={!content.trim() || dirty}
-                >
-                  {aiFeedbackRequested ? 'Refresh suggestions' : 'Review saved draft'}
-                </Button>
-                {dirty && <p>Save your latest changes before requesting suggestions.</p>}
-                {aiFeedbackQuery.isError && <Alert type="warning" message="Could not review this draft. Please try again." />}
-                {aiFeedback && <div className="applicant-panel" style={{ marginTop: 16, padding: 16 }}>
-                  {aiFeedback.analysisVersion === 'checklist' && <Alert type="info" message="AI is unavailable. This is a general writing checklist, not an analysis of your draft." />}
-                  {aiFeedback.strengths?.length ? <><strong>What works</strong><ul>{aiFeedback.strengths.map((item) => <li key={item}>{item}</li>)}</ul></> : null}
-                  {aiFeedback.weaknesses?.length ? <><strong>What to improve</strong><ul>{aiFeedback.weaknesses.map((item) => <li key={item}>{item}</li>)}</ul></> : null}
-                  {aiFeedback.suggestions?.length ? <><strong>Suggestions</strong><ul>{aiFeedback.suggestions.map((item, index) => <li key={index}>{item.text}</li>)}</ul></> : null}
-                </div>}
-                <label className="applicant-writing-desk__stage-label" htmlFor="applicant-essay-stage">Stage</label>
-                <Select
-                  id="applicant-essay-stage"
-                  value={status}
-                  onChange={(value) => { setStatus(value); setDirty(true); }}
-                  options={[
-                    { value: "draft", label: "Draft" },
-                    { value: "review", label: "Ready for review", disabled: !content.trim() },
-                    { value: "revision", label: "Revising", disabled: !content.trim() },
-                    { value: "final", label: "Final", disabled: !content.trim() },
-                    ...(status === "submitted" ? [{ value: "submitted", label: "Submitted", disabled: true }] : []),
-                  ]}
-                />
-                <p>Changing the stage organizes your writing. It does not submit an application.</p>
-                <Button onClick={saveVersion} loading={createVersionState.isLoading} disabled={!content.trim()}>Save a version</Button>
-                {eligibilityError ? <Alert type="warning" message="Could not check mentor review availability" action={<Button size="small" onClick={() => void refetchEligibleMentors()}>Retry</Button>} />
-                  : !eligibilityLoading && eligibleMentors.length === 0 && <p>Keep writing and saving versions. Mentor review becomes available after you are assigned a mentor or complete a 1:1 meeting.</p>}
-                {openReviews.map((request) => <div key={request.id} role="status" className="applicant-panel" style={{ marginTop: 16, padding: 16 }}>
-                  <strong>{request.status === "in_review" ? "Being reviewed by" : "Awaiting"} {request.mentorName || "mentor"}{request.status === "pending" ? "’s review" : ""}</strong>
-                  <p>Version {request.snapshotVersion} was sent on {displayDate(request.createdAt)}. You can keep editing your draft.</p>
-                  {request.status === "pending" && <Button loading={withdrawReviewState.isLoading} onClick={async () => {
-                    try { await withdrawReview(request.id).unwrap(); message.success("Review request withdrawn."); }
-                    catch { message.error("Could not withdraw the request."); }
-                  }}>Withdraw request</Button>}
-                </div>)}
-                {reviewedRequests.map((request) => <div key={request.id} className="applicant-panel" style={{ marginTop: 16, padding: 16 }}>
-                  <strong>Feedback from {request.mentorName || "mentor"} · Version {request.snapshotVersion}</strong>
-                  <p style={{ whiteSpace: "pre-wrap" }}>{request.feedback}</p>
-                </div>)}
-                <h3>Saved versions</h3>
-                <QueryState loading={versionsQuery.isLoading} error={versionsQuery.isError} retry={versionsQuery.refetch}>
-                  {(versionsQuery.data?.data ?? []).length ? (
-                    <ol className="applicant-writing-desk__versions">
-                      {[...(versionsQuery.data?.data ?? [])].sort((a, b) => b.version - a.version).map((version) => (
-                        <li key={version.id}><strong>Version {version.version}</strong><small>{displayDate(version.createdAt)}</small></li>
-                      ))}
-                    </ol>
-                  ) : <p>No versions saved yet.</p>}
-                </QueryState>
-                {feedback && reviewedRequests.length === 0 && <><h3>Mentor feedback</h3><p style={{ whiteSpace: "pre-wrap" }}>{feedback}</p></>}
-              </>}
+              {sidePanelBody}
             </aside>}
             </div>
           </div>
         )}
       </QueryState>
+      <Drawer
+        open={isMobile && Boolean(sidePanel)}
+        onClose={() => setSidePanel(null)}
+        placement="bottom"
+        height="75vh"
+        title={sidePanelTitle}
+        rootClassName="applicant-essay-drawer"
+        styles={{ wrapper: { borderRadius: "16px 16px 0 0", overflow: "hidden" }, body: { padding: "16px 18px 28px", background: "#fbf9f6" } }}
+        destroyOnClose
+      >
+        <div className="applicant-writing-desk__side applicant-writing-desk__side--drawer">{sidePanelBody}</div>
+      </Drawer>
+      <Modal
+        title={previewVersion ? `${previewVersion.label}${previewVersion.date ? ` · ${previewVersion.date}` : ""}` : ""}
+        open={Boolean(previewVersion)}
+        onCancel={() => setPreviewVersion(null)}
+        footer={previewVersion ? [
+          <Button key="close" onClick={() => setPreviewVersion(null)}>Close</Button>,
+          <Popconfirm key="restore" title="Replace the editor text with this version?" okText="Restore" onConfirm={() => restoreContent(previewVersion.label, previewVersion.content)}>
+            <Button type="primary">Restore this version</Button>
+          </Popconfirm>,
+        ] : null}
+      >
+        {previewVersion && <>
+          <p className="applicant-version-preview__meta">{countWords(previewVersion.content)} words · read-only</p>
+          <div className="applicant-version-preview">{previewVersion.content || "This version is empty."}</div>
+        </>}
+      </Modal>
       <Modal
         title="Submit this draft for mentor review"
         open={reviewModalOpen}

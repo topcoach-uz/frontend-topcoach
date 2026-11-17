@@ -6,15 +6,19 @@
   font-display: swap;
 }
 .ielts-workspace {
-  font-family: "TopCoach IELTS Inter", Arial, sans-serif;
-  color: #101211;
+  font-family:
+    "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "TopCoach IELTS Inter",
+    Arial, sans-serif;
+  color: #302b28;
   background: #fff;
   font-synthesis: none;
   --bg: #fff;
-  --fg: #111;
-  --muted: #666;
-  --line: #e3e3e3;
-  --soft: #f5f5f5;
+  --fg: #302b28;
+  --muted: #655c55;
+  --line: #e7e2dc;
+  --soft: #f5f2ee;
+  --accent: #8b0000;
+  --accent-strong: #6e0000;
   --green: #2b4d18;
   --red: #af2d3b;
   --shadow: 0 1px 3px #0002;
@@ -48,7 +52,7 @@
   cursor: pointer;
   background: var(--bg);
   border: 1px solid var(--line);
-  border-radius: 5px;
+  border-radius: 10px;
   padding: 8px 12px;
   transition: background 0.15s;
 }
@@ -169,10 +173,10 @@
 }
 .ielts-workspace .solid,
 .ielts-workspace .pill {
-  background: #171717;
+  background: var(--accent);
   color: #fff;
   border: 0;
-  border-radius: 5px;
+  border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -182,7 +186,7 @@
 }
 .ielts-workspace .solid:hover,
 .ielts-workspace .pill:hover {
-  background: #333;
+  background: var(--accent-strong);
   text-decoration: none;
 }
 .ielts-workspace .pill {
@@ -605,8 +609,11 @@
   max-width: 140px;
   width: 75%;
 }
+.ielts-workspace .exam-table .cell-line + .cell-line {
+  margin-top: 6px;
+}
 .ielts-workspace .exam-table .answer-inline {
-  margin: 0;
+  margin: 0 3px;
   white-space: normal;
 }
 .ielts-workspace .inset {
@@ -1055,10 +1062,10 @@
 }
 .ielts-workspace .empty {
   text-align: center;
-  border: 1px dashed #ccc;
-  border-radius: 8px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
   padding: 32px 20px;
-  color: #555;
+  color: var(--muted);
   margin: 16px 0;
   font-size: 14px;
 }
@@ -2199,4 +2206,170 @@
  .ielts-workspace .header-actions > .icon { display: inline-flex; width: 30px; height: 30px; }
  .ielts-workspace .header-actions .avatar { width: 30px; height: 30px; }
  .ielts-workspace .clock { order: 3; width: 100%; justify-content: center; }
+}
+
+/* Start-practice panel, results hero and score notes */
+.ielts-workspace .dialog.start-panel {
+  max-width: 440px;
+}
+.ielts-workspace .start-panel .start-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 18px;
+}
+.ielts-workspace .link-button {
+  background: none;
+  border: 0;
+  padding: 6px 2px;
+  color: var(--fg);
+  font-size: 14px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.ielts-workspace .score-hero {
+  margin: 0 0 24px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--soft);
+}
+.ielts-workspace .scores .score-hero h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+.ielts-workspace .score-hero ul {
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  font-size: 14px;
+}
+.ielts-workspace .score-hero li small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.ielts-workspace .score-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.ielts-workspace .score-hero-actions button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.ielts-workspace .score-grid article {
+  height: auto;
+  min-height: 188px;
+}
+.ielts-workspace .score-grid .score-note {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+.ielts-workspace .bottom-nav .solid {
+  color: #fff;
+}
+
+/* --- TopCoach look: warm tokens, maroon accent --- */
+.ielts-workspace .pane,
+.ielts-workspace .scrim .dialog {
+  color: var(--fg);
+}
+.ielts-workspace .scrim .dialog,
+.ielts-workspace .menu {
+  border-radius: 12px;
+}
+.ielts-workspace.dark {
+  --accent: #c25a6c;
+  --accent-strong: #a8485a;
+}
+.ielts-workspace :focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+/* Practice pages without an answer pane use the full width. */
+.ielts-workspace .practice.no-answer-pane {
+  grid-template-columns: minmax(0, 1fr);
+}
+.ielts-workspace .practice-skeleton {
+  display: grid;
+  gap: 12px;
+  padding: 16px 0;
+}
+.ielts-workspace .sk-line,
+.ielts-workspace .sk-block {
+  background: linear-gradient(90deg, var(--soft) 25%, var(--line) 37%, var(--soft) 63%);
+  background-size: 400% 100%;
+  animation: ielts-skeleton 1.4s ease infinite;
+  border-radius: 8px;
+  height: 16px;
+}
+.ielts-workspace .sk-title {
+  height: 28px;
+  width: 45%;
+}
+.ielts-workspace .sk-short {
+  width: 60%;
+}
+.ielts-workspace .sk-block {
+  height: 120px;
+  border-radius: 12px;
+}
+@keyframes ielts-skeleton {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ielts-workspace .sk-line,
+  .ielts-workspace .sk-block {
+    animation: none;
+  }
+}
+.ielts-workspace .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.ielts-workspace .speaking-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0 4px;
+}
+.ielts-workspace .speaking-stepper span {
+  display: inline-flex;
+  gap: 8px;
+}
+.ielts-workspace .speaking-single {
+  list-style: none;
+  padding-left: 0;
+  font-size: 18px;
+}
+.ielts-workspace .sample-locked {
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+.ielts-workspace .sample-locked p {
+  margin: 0 0 8px;
+}
+.ielts-workspace .sample-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.ielts-workspace .writing-note {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
 }

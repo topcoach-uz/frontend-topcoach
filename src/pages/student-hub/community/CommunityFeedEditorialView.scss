@@ -1,3 +1,4 @@
+@use '/src/styles/liquid-glass' as lg;
 /* ─────────────────────────────────────────────────────────────
    Community Feed (editorial). Cream surfaces, hairline borders,
    serif headlines, brand-red accents. Class prefix: `cf`. Mirrors
@@ -1645,7 +1646,8 @@ body.cf-feed-active {
   }
   &__search-icon {
     position: absolute;
-    left: 11px;
+    z-index: 1;
+    left: 15px;
     color: $cf-muted-2;
     pointer-events: none;
   }
@@ -1653,12 +1655,11 @@ body.cf-feed-active {
     min-width: 0;
     min-height: 44px;
     flex: 1;
-    border: 1px solid $cf-hairline;
-    background: $cf-paper;
+    @include lg.lg-thin;
     color: $cf-ink;
-    border-radius: 10px;
-    padding: 8px 30px 8px 32px;
-    font-size: 0.86rem;
+    border-radius: 16px;
+    padding: 8px 34px 8px 40px;
+    font-size: 14px;
     outline: none;
     font-family: inherit;
     transition: border-color 0.12s ease, background 0.12s ease;
@@ -2168,12 +2169,50 @@ body.cf-feed-active {
   }
 }
 .cf__read-only-note {
-  margin: 0 0 16px;
-  padding: 12px 16px;
-  border: 1px solid #e9d5d5;
-  border-radius: 12px;
-  background: #fff8f8;
-  color: #6b3c3c;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 10px 10px 10px 12px;
+  border-radius: 16px;
+  @include lg.lg-regular;
+
+  p {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    color: #4a423d;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+}
+.cf__read-only-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(139, 0, 0, 0.08);
+  color: #8b0000;
+}
+.cf__read-only-note .cf__read-only-link,
+.cf__read-only-note .cf__read-only-link:visited {
+  color: #fff;
+}
+.cf__read-only-link {
+  flex: none;
+  padding: 7px 14px;
+  border-radius: 999px;
+  @include lg.lg-tint;
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform 160ms cubic-bezier(0.32, 0.72, 0, 1);
+
+  &:hover {
+    color: #fff;
+    transform: translateY(-1px);
+  }
 }
 
 .cf--read-only {

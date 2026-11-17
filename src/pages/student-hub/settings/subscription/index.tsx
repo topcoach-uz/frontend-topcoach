@@ -306,8 +306,6 @@ export default function SubscriptionTab() {
         />
       )}
 
-      {!mockMode && <PolarCommunityPass />}
-
       {!mockMode && !isLoading && !errorAny && (
         <ClickCommunityCheckout
           plans={plans}
@@ -315,6 +313,9 @@ export default function SubscriptionTab() {
           onRefresh={refreshCheckout}
         />
       )}
+
+      {/* Alternative (international) payment sits below the primary plans. */}
+      {!mockMode && <PolarCommunityPass />}
 
       {/* Hero. The page is opinionated about what's first:
           - Active sub  → the live plan with manage actions

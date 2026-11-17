@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from 'antd';
 import {
@@ -12,8 +12,12 @@ import {
   GraduationCap,
   MailPlus,
   BarChart3,
-  Megaphone,
   ArrowUpRight,
+  Check,
+  Circle,
+  ClipboardPlus,
+  UserCog,
+  Building2,
 } from 'lucide-react';
 import { useCounselorConsole } from '../CounselorConsoleContext';
 import {
@@ -22,6 +26,7 @@ import {
   useGetOrgStudentsQuery,
   type OrgDashboardNeedsAttention,
 } from 'src/app/services/counselorConsoleApi';
+import { useGetStaffQuery } from 'src/app/services/orgAdminApi';
 import { CcStat } from '../components/CcStat';
 import { CcEmpty, NoOrgPlaceholder } from '../components/CcEmpty';
 import { CcPageHead } from '../components/CcPageHead';
@@ -80,10 +85,11 @@ const NAMED_LIST_MAX = 8;
 const DIRECT_LABEL_MIN_SHARE = 12;
 
 export default function CounselorConsoleDashboardPage() {
-  const { org, orgId } = useCounselorConsole();
+  const { org, orgId, branchId, role } = useCounselorConsole();
+  const attnRef = useRef<HTMLElement>(null);
   const navigate = useNavigate();
   const { data, isLoading, isFetching, isError } = useGetOrgDashboardQuery(
-    orgId as string,
+    { orgId: orgId as string, branchId },
     { skip: !orgId },
   );
 
@@ -91,7 +97,7 @@ export default function CounselorConsoleDashboardPage() {
   // snapshot is plenty for an at-a-glance count on the dashboard).
   const { data: analytics, isLoading: analyticsLoading } =
     useGetOrgAnalyticsQuery(
-      { orgId: orgId as string, range: '90d' },
+      { orgId: orgId as string, branchId, range: '90d' },
       { skip: !orgId },
     );
 
@@ -118,6 +124,7 @@ export default function CounselorConsoleDashboardPage() {
   } = useGetOrgStudentsQuery(
     {
       orgId: orgId as string,
+      branchId,
       page: 1,
       limit: NAMED_LIST_MAX,
       // Server-side sort, so the furthest-along student leads the list.
@@ -130,6 +137,33 @@ export default function CounselorConsoleDashboardPage() {
     () => data?.needsAttention ?? [],
     [data?.needsAttention],
   );
+
+  /* Empty-org setup checklist. Only the owner can see the Staff page, so the
+     staff lookup is skipped for everyone else and for orgs that have students. */
+  const isOwner = role === 'owner';
+  const { data: staffData } = useGetStaffQuery(
+    { orgId: orgId as string },
+    { skip: !orgId || !isOwner || totalStudents > 0 },
+  );
+  const hasCounselor = (staffData?.items ?? []).some(
+    (m) => m.role === 'counselor' && m.status !== 'archived',
+  );
+
+  /* Change in average progress across the analytics window (first vs last
+     history point). Null when there are fewer than two readings. */
+  const progressDelta = useMemo(() => {
+    const h = analytics?.history ?? [];
+    if (h.length < 2) return null;
+    const d = Math.round(h[h.length - 1].avgProgress - h[0].avgProgress);
+    return Number.isFinite(d) ? d : null;
+  }, [analytics?.history]);
+
+  const jumpToAttention = () => {
+    const el = attnRef.current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el.focus({ preventScroll: true });
+  };
 
   /** userId → flag, so a named row can show WHY a student is flagged. */
   const attentionByUser = useMemo(() => {
@@ -358,37 +392,95 @@ export default function CounselorConsoleDashboardPage() {
 
   /* The flagged students, named. This array was already being fetched and was
      rendered nowhere except as a bare count in the KPI tile above. */
-  const flaggedBlock =
+  const attentionCard =
     needsAttention.length > 0 ? (
-      <div className="cc-dash-prog-flags">
-        <div className="cc-dash-prog-flags-head">
-          Needs attention ({needsAttention.length})
+      <section
+        id="cc-dash-attn"
+        ref={attnRef}
+        tabIndex={-1}
+        className="cc-dash-card cc-dash-attn-card"
+        aria-label="Students needing attention"
+      >
+        <div className="cc-dash-card-head">
+          <div>
+            <h2 className="cc-dash-card-title">
+              Needs attention ({needsAttention.length})
+            </h2>
+            <p className="cc-dash-card-sub">
+              Students flagged for follow-up. Open a profile or assign a task.
+            </p>
+          </div>
         </div>
-        {needsAttention.map((s) => (
-          <button
-            key={s.userId}
-            type="button"
-            className="cc-dash-attn-row"
-            onClick={() => navigate(`/counselor-console/students/${s.userId}`)}
-          >
-            <CcAvatar
-              name={s.name}
-              src={s.avatarUrl}
-              size={32}
-              className="cc-dash-attn-avatar"
-            />
-            <span className="cc-dash-attn-main">
-              <span className="cc-dash-attn-name">{s.name}</span>
-              <span className="cc-dash-attn-reason">
-                <span className="cc-dash-attn-dot" aria-hidden="true" />
-                {s.reason}
-              </span>
-            </span>
-            <ChevronRight size={16} className="cc-dash-attn-arrow" />
-          </button>
-        ))}
-      </div>
+        <div className="cc-dash-attn-list">
+          {needsAttention.map((s) => (
+            <div key={s.userId} className="cc-dash-attn-row">
+              <button
+                type="button"
+                className="cc-dash-attn-open"
+                onClick={() =>
+                  navigate(`/counselor-console/students/${s.userId}`)
+                }
+              >
+                <CcAvatar
+                  name={s.name}
+                  src={s.avatarUrl}
+                  size={32}
+                  className="cc-dash-attn-avatar"
+                />
+                <span className="cc-dash-attn-main">
+                  <span className="cc-dash-attn-name">{s.name}</span>
+                  <span className="cc-dash-attn-reason">
+                    <span className="cc-dash-attn-dot" aria-hidden="true" />
+                    {s.reason}
+                  </span>
+                </span>
+              </button>
+              <button
+                type="button"
+                className="cc-dash-attn-action"
+                onClick={() =>
+                  navigate(`/counselor-console/students/${s.userId}?tab=tasks`)
+                }
+              >
+                <ClipboardPlus size={13} aria-hidden="true" />
+                Assign task
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
     ) : null;
+
+  const setupSteps = [
+    {
+      key: 'invite',
+      label: 'Invite students',
+      hint: 'Send email invitations so students can join.',
+      done: totalStudents > 0,
+      icon: <MailPlus size={15} />,
+      to: '/counselor-console/students?tab=invitations',
+    },
+    ...(isOwner
+      ? [
+          {
+            key: 'counselor',
+            label: 'Add a counselor',
+            hint: 'Give a colleague access to this organization.',
+            done: hasCounselor,
+            icon: <UserCog size={15} />,
+            to: '/counselor-console/staff',
+          },
+        ]
+      : []),
+    {
+      key: 'profile',
+      label: 'Complete school profile',
+      hint: 'Add your school logo and details.',
+      done: Boolean(org?.logoUrl),
+      icon: <Building2 size={15} />,
+      to: '/counselor-console/settings',
+    },
+  ];
 
   /* One 100% stacked bar, four ordered bands. Segment width and the printed
      number are the same share, and the key repeats every value so the bands are
@@ -519,7 +611,7 @@ export default function CounselorConsoleDashboardPage() {
       {header}
 
       {/* ── KPI row ── */}
-      <div className="cc-stat-grid">
+      <div className="cc-stat-grid cc-dash-kpis">
         <CcStat
           tone="info"
           icon={<Users size={15} />}
@@ -534,14 +626,24 @@ export default function CounselorConsoleDashboardPage() {
           icon={<UserCheck size={15} />}
           label="Active students"
           value={data.activeStudents.toLocaleString()}
-          meta={`of ${data.totalStudents.toLocaleString()} total`}
+          meta={
+            data.totalStudents > 0
+              ? `${pct((data.activeStudents / data.totalStudents) * 100)} of students`
+              : 'no students yet'
+          }
         />
         <CcStat
           tone="good"
           icon={<TrendingUp size={15} />}
           label="Avg program progress"
           value={pct(data.avgProgress)}
-          meta={`Profiles ${pct(data.avgProfileCompletion)} complete on average`}
+          meta={
+            progressDelta !== null
+              ? progressDelta === 0
+                ? 'No change in 90 days'
+                : `${progressDelta > 0 ? '+' : ''}${progressDelta} pts in 90 days`
+              : `Profiles ${pct(data.avgProfileCompletion)} complete`
+          }
         />
         <CcStat
           tone="info"
@@ -560,13 +662,54 @@ export default function CounselorConsoleDashboardPage() {
               ? 'students flagged below'
               : 'all students on track'
           }
+          cta="Review"
+          onClick={data.needsAttention.length > 0 ? jumpToAttention : undefined}
         />
       </div>
+
+      {totalStudents === 0 ? (
+        <section className="cc-dash-card cc-dash-setup" aria-label="Setup checklist">
+          <div className="cc-dash-card-head cc-dash-card-head--tight">
+            <div>
+              <h2 className="cc-dash-card-title">Get your school set up</h2>
+              <p className="cc-dash-card-sub">
+                A few steps to start tracking your students.
+              </p>
+            </div>
+          </div>
+          <ol className="cc-dash-setup-list">
+            {setupSteps.map((st) => (
+              <li key={st.key}>
+                <button
+                  type="button"
+                  className={`cc-dash-setup-step${st.done ? ' is-done' : ''}`}
+                  onClick={() => navigate(st.to)}
+                >
+                  <span className="cc-dash-setup-mark" aria-hidden="true">
+                    {st.done ? <Check size={14} /> : <Circle size={14} />}
+                  </span>
+                  <span className="cc-dash-quick-main">
+                    <span className="cc-dash-quick-label">
+                      {st.label}
+                      <span className="cc-dash-setup-state">
+                        {st.done ? ' · Done' : ''}
+                      </span>
+                    </span>
+                    <span className="cc-dash-quick-hint">{st.hint}</span>
+                  </span>
+                  <ChevronRight size={15} className="cc-dash-quick-arrow" />
+                </button>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
 
       {/* ── Two-column working area: main (chart + programs) + right rail ── */}
       <div className="cc-dash-grid">
         {/* Main column */}
         <div className="cc-dash-col cc-dash-col--main">
+          {attentionCard}
           <section className="cc-dash-card">
             <div className="cc-dash-card-head">
               <div>
@@ -633,7 +776,6 @@ export default function CounselorConsoleDashboardPage() {
             ) : (
               <div className="cc-dash-prog">
                 {useNamedList ? namedBlock : bandBlock}
-                {useNamedList ? null : flaggedBlock}
               </div>
             )}
           </section>
@@ -669,6 +811,17 @@ export default function CounselorConsoleDashboardPage() {
                 icon={<Users size={20} />}
                 title="No students yet"
                 text="Invite students and their profile completeness will appear here."
+                action={
+                  <button
+                    type="button"
+                    className="cc-dash-invite-cta"
+                    onClick={() =>
+                      navigate('/counselor-console/students?tab=invitations')
+                    }
+                  >
+                    <MailPlus size={14} aria-hidden="true" /> Invite students
+                  </button>
+                }
               />
             ) : (
               <div className="cc-dash-pc">
@@ -790,12 +943,6 @@ export default function CounselorConsoleDashboardPage() {
                   hint: 'Engagement & progress',
                   icon: <BarChart3 size={16} />,
                   to: '/counselor-console/analytics',
-                },
-                {
-                  label: 'Announce',
-                  hint: 'Message the org',
-                  icon: <Megaphone size={16} />,
-                  to: '/counselor-console/announcements',
                 },
               ].map((a) => (
                 <button

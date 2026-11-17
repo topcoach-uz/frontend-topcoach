@@ -2763,31 +2763,6 @@
   flex-wrap: wrap;
   margin-bottom: 22px;
 }
-.admissionsCrumb {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.86rem;
-  color: #6b7280;
-}
-.admissionsCrumbBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: #fbe9ec;
-  color: #7B1F2F;
-  font-weight: 600;
-  font-size: 0.78rem;
-}
-.admissionsCrumbSep {
-  color: #cbcbb6;
-}
-.admissionsCrumbCurrent {
-  color: #1f2937;
-  font-weight: 500;
-}
 .admissionsBackBtn {
   display: inline-flex;
   align-items: center;
@@ -2967,9 +2942,10 @@
     bottom: -1px !important;
     height: 2px !important;
     border: none !important;
-    /* Override AntD's default 0.3s cubic to a snappier 0.22s. */
-    transition: transform 0.22s cubic-bezier(.4, 0, .2, 1),
-                width 0.22s cubic-bezier(.4, 0, .2, 1) !important;
+    /* iOS-like glide: quick start, long soft settle. */
+    transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+                width 0.38s cubic-bezier(0.32, 0.72, 0, 1) !important;
+    will-change: transform, width;
     /* The thumb's actual color rendered via background-color below. */
     background-color: #7B1F2F !important;
   }
@@ -2982,7 +2958,7 @@
     font-size: 0.8rem !important;
     color: #6b7280 !important;
     position: relative;
-    transition: color 0.18s ease !important;
+    transition: color 0.28s cubic-bezier(0.32, 0.72, 0, 1) !important;
     min-width: 0 !important;
     white-space: nowrap !important;
 
@@ -2998,7 +2974,9 @@
   :global(.ant-segmented-item-selected) {
     background: transparent !important;
     color: #1f2937 !important;
-    font-weight: 700 !important;
+    /* Same weight as the other tabs: a bolder label would widen and shift
+       its neighbours on every switch. Colour carries the selection. */
+    font-weight: 600 !important;
     box-shadow: none !important;
   }
 }
@@ -3322,10 +3300,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-}
-
-:global(.applicant-shell):has(.messengerHubWrap) {
-  padding-bottom: 16px;
 }
 
 .messengerHubWrap {

@@ -143,3 +143,46 @@ main {
     border-color: transparent !important;
   }
 }
+
+/* ---------- Form controls: one height, one rhythm ----------
+   Theme sets Input / DatePicker to 40px; Select stays at AntD's 32px. Inside
+   forms (incl. every modal form) that mismatch is visible, so match it. */
+.ant-form .ant-select-single:not(.ant-select-sm):not(.ant-select-lg):not(.ant-select-customize-input) {
+  height: 40px;
+  font-size: 16px;
+
+  .ant-select-selector {
+    border-radius: 12px;
+    padding-inline: 14px;
+  }
+  .ant-select-selection-item,
+  .ant-select-selection-placeholder {
+    line-height: 38px;
+  }
+  .ant-select-selection-search {
+    inset-inline: 14px;
+  }
+}
+.ant-form .ant-select-multiple:not(.ant-select-sm):not(.ant-select-lg) .ant-select-selector {
+  min-height: 40px;
+  border-radius: 12px;
+}
+.ant-form .ant-picker:not(.ant-picker-small):not(.ant-picker-large) {
+  height: 40px;
+}
+/* Long option labels truncate inside the field instead of overflowing it. */
+.ant-form .ant-select-selection-item {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Quiet, neutral close button for light modals. */
+.ant-modal .ant-modal-close {
+  color: rgba(48, 43, 40, 0.55);
+  border-radius: 999px;
+  &:hover {
+    color: rgba(48, 43, 40, 0.9);
+    background: rgba(48, 43, 40, 0.06);
+  }
+}

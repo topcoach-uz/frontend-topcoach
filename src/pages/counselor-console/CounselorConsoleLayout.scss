@@ -108,6 +108,20 @@
   white-space: nowrap;
 }
 
+.counselor-console-branchswitch {
+  margin-top: 8px;
+}
+
+.counselor-console-branchswitch-btn {
+  padding: 6px 10px;
+}
+
+.counselor-console-branchswitch-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
 .counselor-console-orgswitch-caret {
   color: var(--cc-text-muted);
   flex-shrink: 0;
@@ -273,6 +287,9 @@
   .counselor-console-orgswitch-btn {
     justify-content: center;
     padding: 8px;
+  }
+  .counselor-console-branchswitch-btn {
+    padding: 6px;
   }
   .counselor-console-nav-item {
     justify-content: center;
@@ -948,6 +965,10 @@
     font-weight: 700;
     color: var(--cc-text);
     letter-spacing: -0.02em;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .counselor-console-mobile-bar-btn {

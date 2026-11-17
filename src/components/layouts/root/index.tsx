@@ -26,6 +26,8 @@ export default function RootLayout() {
     pathname.startsWith('/admin') ||
     pathname === '/mentor' ||
     pathname.startsWith('/mentor/') ||
+    pathname === '/counselor-console' ||
+    pathname.startsWith('/counselor-console/') ||
     pathname.startsWith('/student-hub/sat-prep/runner') ||
     pathname.startsWith('/student-hub/ielts-prep') ||
     isApplicantWorkspacePath(pathname);

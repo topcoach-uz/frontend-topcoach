@@ -14,6 +14,7 @@ export function validTargetScore(value: string) {
     n % 10 === 0
   );
 }
+const QUICK_TARGETS = [1300, 1400, 1500];
 export default function SatTargetScore({ score }: { score: number | null }) {
   const { data, isLoading, isError, refetch } = useGetSatStudyGoalQuery();
   const [save, { isLoading: saving }] = useSetSatStudyGoalMutation();
@@ -41,11 +42,45 @@ export default function SatTargetScore({ score }: { score: number | null }) {
               ? "Target score"
               : "Set your target score"}
         </span>
+        {!target && !isLoading && !isError && (
+          <div className="sat-target-quick" role="group" aria-label="Quick-pick target score">
+            <div className="sat-target-chips">
+              {QUICK_TARGETS.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className="sat-target-chip"
+                  disabled={saving}
+                  onClick={() => void submit(t)}
+                >
+                  {t}
+                </button>
+              ))}
+              <button
+                type="button"
+                className="sat-target-chip sat-target-chip--custom"
+                disabled={saving}
+                onClick={() => {
+                  setValue("");
+                  setError("");
+                  setOpen(true);
+                }}
+              >
+                Custom
+              </button>
+            </div>
+            {error && !open && (
+              <p className="sat-target-error" role="status">
+                {error}
+              </p>
+            )}
+          </div>
+        )}
         {isError ? (
           <button className="sat-target-link" onClick={() => refetch()}>
             Retry loading target
           </button>
-        ) : (
+        ) : !target ? null : (
           <button
             className="sat-target-link"
             disabled={isLoading}

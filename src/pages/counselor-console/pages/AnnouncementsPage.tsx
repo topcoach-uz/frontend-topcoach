@@ -21,11 +21,11 @@ interface ComposeValues {
 }
 
 export default function CounselorConsoleAnnouncementsPage() {
-  const { orgId, org } = useCounselorConsole();
+  const { orgId, org, branchId, branch } = useCounselorConsole();
   const [form] = Form.useForm<ComposeValues>();
 
   const { data, isLoading, isFetching, isError, refetch } =
-    useGetAnnouncementsQuery(orgId as string, { skip: !orgId });
+    useGetAnnouncementsQuery({ orgId: orgId as string, branchId }, { skip: !orgId });
   const [createAnnouncement, { isLoading: sending }] =
     useCreateAnnouncementMutation();
 
@@ -66,6 +66,7 @@ export default function CounselorConsoleAnnouncementsPage() {
     try {
       const result = await createAnnouncement({
         orgId,
+        branchId,
         title: values.title.trim(),
         message: values.message.trim(),
       }).unwrap();

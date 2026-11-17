@@ -1,0 +1,338 @@
+// Membership & billing: Community plan cards (ChatGPT-style pricing, Apple restraint).
+@use '/src/styles/liquid-glass' as lg;
+
+$ink: #221d1a;
+$muted: #6b625b;
+$faint: #a39890;
+$brand: #8b0000;
+$line: rgba(48, 43, 40, 0.07);
+$ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+.plans {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  color: $ink;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  padding: 8px 0 4px;
+
+  h2 {
+    margin: 0;
+    font-size: clamp(1.6rem, 2.6vw, 2.25rem);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: $ink;
+  }
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 5px 12px;
+  border-radius: 999px;
+  @include lg.lg-thin;
+  color: $brand;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.lead {
+  margin: 0;
+  max-width: 56ch;
+  color: $muted;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+// ---------- Cards ----------
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  max-width: none;
+  width: 100%;
+  margin: 0 auto;
+}
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 28px 28px 26px;
+  border-radius: 28px;
+  @include lg.lg-regular;
+  transition:
+    transform 320ms $ease,
+    box-shadow 320ms $ease;
+
+  &:hover {
+    transform: translateY(-3px);
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: $ink;
+  }
+}
+.featured {
+  @include lg.lg-thick;
+  border: 1.5px solid rgba(139, 0, 0, 0.55);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 22px 30px -24px rgba(255, 255, 255, 0.6),
+    0 0 0 4px rgba(139, 0, 0, 0.06),
+    0 30px 60px -34px rgba(139, 0, 0, 0.35);
+}
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  @include lg.lg-tint;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badgeQuiet {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(139, 0, 0, 0.07);
+  color: $brand;
+  font-size: 12px;
+  font-weight: 600;
+}
+.period {
+  margin: 0;
+  color: $muted;
+  font-size: 14px;
+}
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 18px 0 2px;
+}
+.amount {
+  font-size: clamp(2.2rem, 3.4vw, 2.9rem);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: $ink;
+}
+.currency {
+  color: $muted;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.sub {
+  margin: 0 0 22px;
+  min-height: 21px;
+  color: $muted;
+  font-size: 14px;
+}
+.usd {
+  color: $faint;
+}
+.cta:global(.ant-btn) {
+  margin-top: auto;
+  height: 50px;
+  border-radius: 999px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+// More specific than the workspace's red primary-button rule.
+.grid .card .ctaQuiet:global(.ant-btn.ant-btn-primary:not(:disabled)) {
+  @include lg.lg-thin;
+  color: $brand;
+
+  &:hover {
+    color: $brand;
+    filter: none;
+    background: rgba(255, 255, 255, 0.85);
+  }
+}
+
+// ---------- Included features ----------
+.features {
+  max-width: none;
+  width: 100%;
+  margin: 4px auto 0;
+  padding: 26px 28px;
+  border-radius: 28px;
+  @include lg.lg-regular;
+
+  h3 {
+    margin: 0 0 18px;
+    font-size: 16px;
+    font-weight: 600;
+    color: $ink;
+  }
+  ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px 28px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  li > span:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: $ink;
+  }
+  small {
+    font-size: 13px;
+    line-height: 1.45;
+    color: $muted;
+  }
+}
+.check {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: rgba(139, 0, 0, 0.08);
+  color: $brand;
+}
+
+.assurances {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: $muted;
+    font-size: 13px;
+  }
+  svg {
+    color: $brand;
+  }
+}
+
+// ---------- Paid: membership status ----------
+.status {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  max-width: none;
+  padding: 28px;
+  border-radius: 28px;
+  @include lg.lg-thick;
+}
+.statusIcon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  @include lg.lg-blush;
+  color: $brand;
+}
+.statusBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.statusHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: $ink;
+  }
+}
+.activePill {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.1);
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 600;
+}
+.statusLabel {
+  margin: 10px 0 0;
+  color: $muted;
+  font-size: 13px;
+}
+.statusDate {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: $ink;
+}
+.note {
+  margin: 6px 0 0;
+  color: $muted;
+  font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  .grid,
+  .features ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .card,
+  .features,
+  .status {
+    padding: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}

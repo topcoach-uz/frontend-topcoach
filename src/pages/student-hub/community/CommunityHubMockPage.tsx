@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useMyLearningPath } from 'src/pages/student-hub/applicant/useMyLearningPath';
 import { Button, Card, Modal } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
@@ -6,13 +7,14 @@ import {
   GraduationCap,
   Play,
   ArrowLeft,
-  BookOpen,
 } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Breadcrumb } from '../applicant/ApplicantPage';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import MyProgressEditorialView from '../MyProgressEditorialView';
 import styles from './communityHubMock.module.scss';
+import { useFitToViewport } from 'src/hooks/useFitToViewport';
 import { ENABLE_COMMUNITY_FEED } from './communityFeedFlags';
 import CommunityFeedEditorialView from './CommunityFeedEditorialView';
 import FullSupportStudentPage from '../full-support/FullSupportStudentPage';
@@ -89,6 +91,9 @@ function ResearchPrepSection() {
 }
 
 export default function CommunityHubMockPage() {
+  // The messenger fills exactly the space left in the window (no page scroll).
+  const fitMessenger = useFitToViewport<HTMLDivElement>(320);
+  const myLearningPath = useMyLearningPath();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -192,8 +197,9 @@ export default function CommunityHubMockPage() {
     if (panel === 'admissions') navigate('/student-hub?section=admissions-program', { replace: true });
     else if (panel === 'sat') navigate('/student-hub?section=sat-course', { replace: true });
     else if (panel === 'ai') navigate('/student-hub?section=ai-major-match', { replace: true });
-    else navigate(defaultHubSectionPath, { replace: true });
-  }, [location.search, navigate, defaultHubSectionPath]);
+    else if (params.get('tab') === 'admissions') navigate('/student-hub?section=admissions-program', { replace: true });
+    else navigate(myLearningPath, { replace: true });
+  }, [location.search, navigate, myLearningPath]);
 
   /** Workshops → public events (no hub section) */
   useEffect(() => {
@@ -292,7 +298,7 @@ export default function CommunityHubMockPage() {
         };
       case 'researchProgram':
         // Research Prep brings its own top bar (breadcrumb + Overview/Module
-        // switch + Back to main menu). Suppress the generic hub header here.
+        // switch + Back to My learning). Suppress the generic hub header here.
         return null;
       case 'mentors':
         // CommunityMentorsView renders its own editorial header (eyebrow +
@@ -346,7 +352,7 @@ export default function CommunityHubMockPage() {
 
   // Research Prep takes over the page once it opens — no community sidebar,
   // no max-width clamp. The page itself supplies a top bar with breadcrumb,
-  // an Overview/Module switch, and a "Back to main menu" button.
+  // an Overview/Module switch, and a "Back to My learning" button.
   const isResearchFullBleed =
     activeSection === 'researchProgram' && isCommunityEnrolled && researchPrepLive;
   // Admissions Program also goes full-bleed for the editorial layout —
@@ -468,22 +474,18 @@ export default function CommunityHubMockPage() {
             {isAdmissionsFullBleed && (
               <header className={styles.admissionsShellHeader}>
                 <div className={styles.admissionsShellInner}>
-                  <div className={styles.admissionsCrumb}>
-                    <span className={styles.admissionsCrumbBadge}>
-                      <BookOpen size={13} /> {t('studentHub.hub.admissionsPageTitle', 'Admissions Program')}
-                    </span>
-                    <span className={styles.admissionsCrumbSep}>›</span>
-                    <span className={styles.admissionsCrumbCurrent}>
-                      {t('studentHub.hub.lessonsCatalog', 'Lessons catalog')}
-                    </span>
-                  </div>
+                  <Breadcrumb>
+                    <Link to={myLearningPath}>{t('studentHub.hub.myLearning', 'My learning')}</Link>
+                    <span>/</span>
+                    {t('studentHub.hub.admissionsPageTitle', 'Admissions Program')}
+                  </Breadcrumb>
                   <button
                     type="button"
                     className={styles.admissionsBackBtn}
-                    onClick={() => navigate(defaultHubSectionPath)}
+                    onClick={() => navigate(myLearningPath)}
                   >
                     <ArrowLeft size={13} />
-                    {t('studentHub.hub.backToMainMenu', 'Back to main menu')}
+                    {t('studentHub.hub.backToMainMenu', 'Back to My learning')}
                   </button>
                 </div>
                 <div className={styles.admissionsHero}>
@@ -711,7 +713,7 @@ export default function CommunityHubMockPage() {
               behind the unlock modal — same shape as SAT Prep). */}
 
           {activeSection === 'messages' && isCommunityEnrolled && (
-            <div className={styles.messengerHubWrap}>
+            <div ref={fitMessenger} className={styles.messengerHubWrap}>
               <MessengerExperience
                 embedded
                 conversationId={messagesConversationId}

@@ -10,7 +10,7 @@ import {
   Target,
   Send,
   CheckCircle2,
-  Gift,
+  Lock,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -139,6 +139,45 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     );
   }, [profile?.profile?.name, (profile?.profile as any)?.username]);
 
+  const baselineName = sanitizeName(profile?.profile?.name);
+  const baselineUsername = normalizeUsernameInput(
+    (profile?.profile as any)?.username ||
+      baselineName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 32) ||
+      '',
+  );
+  const profileDirty =
+    displayName.trim() !== baselineName || username.trim() !== baselineUsername;
+  const [savingProfile, setSavingProfile] = useState(false);
+  const saveProfile = async () => {
+    setSavingProfile(true);
+    try {
+      const token = localStorage.getItem(ACCESS_TOKEN);
+      await axios.put(
+        `${baseUrl}/users`,
+        {
+          profile: {
+            name: displayName.trim(),
+            username: normalizeUsernameInput(username.trim()),
+          },
+        },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          timeout: 30000,
+        },
+      );
+      await invalidateGetMe();
+      message.success(t('studentHub.settingsMock.saved', 'Profile saved'));
+    } catch (error: any) {
+      message.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          t('common.error', 'Failed to save profile'),
+      );
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   const beforeUpload = async (file: File) => {
     if (!PROFILE_PHOTO_ALLOWED_TYPES.has(file.type)) {
       message.error(t('studentHub.settingsMock.photoTypeError', 'Only JPG or PNG files are allowed.'));
@@ -173,10 +212,22 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     return false;
   };
 
+  // Membership & billing is a standalone page: only billing, no settings chrome.
+  if (activeTab === 'subscription') {
+    return (
+      // No page heading: the plan section opens the page.
+      <ApplicantPage>
+        <div className={`${styles.page} ${embeddedInHub ? styles.pageEmbedded : ''}`}>
+          <SubscriptionTab />
+        </div>
+      </ApplicantPage>
+    );
+  }
+
   return (
     <ApplicantPage
       title={t('studentHub.settingsMock.title', 'Settings')}
-      subtitle={t('studentHub.settingsMock.subtitle', 'Manage your profile, subscription, and preferences.')}
+      subtitle={t('studentHub.settingsMock.accountSubtitle', 'Manage your account and preferences.')}
     >
     <div className={`${styles.page} ${embeddedInHub ? styles.pageEmbedded : ''}`}>
 
@@ -189,114 +240,133 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           for a move that is long finished. */}
 
       {activeTab === 'profile' && (
-      <>
-      <Card className={styles.card} title={<><User size={18} style={{ marginRight: 8 }} />{t('studentHub.settingsMock.account', 'Account')}</>}>
-        <div className={styles.profileRow}>
-          <div className={styles.avatarBlock}>
+      <div className={styles.accountLayout}>
+        {/* Identity: compact, stays in view. */}
+        <aside className={styles.identity} aria-label={t('studentHub.settingsMock.account', 'Account')}>
+          <div className={styles.avatarWrap}>
             <Avatar
               size={96}
               src={avatarSrc}
-              icon={<User size={32} />}
-              className={styles.avatar}
+              icon={<User size={36} />}
+              className={styles.identityAvatar}
               onError={() => {
                 setProfileImageBroken(true);
                 return true;
               }}
             />
-            <Upload showUploadList={false} beforeUpload={beforeUpload} accept="image/*">
-              <Button icon={<Camera size={16} />} size="small" type="default">
-                {t('studentHub.settingsMock.uploadPhoto', 'Upload photo')}
-              </Button>
+            <Upload showUploadList={false} beforeUpload={beforeUpload} accept="image/jpeg,image/png">
+              <button
+                type="button"
+                className={styles.avatarButton}
+                aria-label={t('studentHub.settingsMock.uploadPhoto', 'Upload photo')}
+              >
+                <Camera size={15} strokeWidth={2} aria-hidden />
+              </button>
             </Upload>
-            <Text type="secondary" className={styles.hint}>
-              {t('studentHub.settingsMock.photoHint', `JPG or PNG, up to ${PROFILE_PHOTO_MAX_MB} MB`)}
-            </Text>
           </div>
-          <div className={styles.fields}>
-            <label className={styles.label}>{t('studentHub.settingsMock.fullName', 'Full name')}</label>
-            <Input size="large" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-            <label className={styles.label}>{t('studentHub.settingsMock.username', 'Username')}</label>
-            <Input
-              size="large"
-              value={username}
-              onChange={(e) => setUsername(normalizeUsernameInput(e.target.value))}
-              placeholder="starboy"
-              addonBefore="@"
-            />
-            <label className={styles.label}>{t('studentHub.settingsMock.email', 'Email')}</label>
-            <Input size="large" value={email} disabled />
-            <Button
-              type="primary"
-              onClick={async () => {
-                try {
-                  const token = localStorage.getItem(ACCESS_TOKEN);
-                  await axios.put(
-                    `${baseUrl}/users`,
-                    {
-                      profile: {
-                        name: displayName.trim(),
-                        username: normalizeUsernameInput(username.trim()),
-                      },
-                    },
-                    {
-                      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-                      timeout: 30000,
-                    },
-                  );
-                  await invalidateGetMe();
-                  message.success(t('studentHub.settingsMock.saved', 'Profile saved'));
-                } catch (error: any) {
-                  message.error(
-                    error?.response?.data?.message ||
-                      error?.message ||
-                      t('common.error', 'Failed to save profile'),
-                  );
-                }
-              }}
-            >
-              {t('studentHub.settingsMock.saveProfile', 'Save profile')}
-            </Button>
-          </div>
-        </div>
-      </Card>
+          <h2 className={styles.identityName}>{displayName || t('applicant.yourWorkspace', 'Your account')}</h2>
+          {username && <p className={styles.handle}>@{username}</p>}
+          <p className={styles.identityEmail}>{email}</p>
+          <Upload showUploadList={false} beforeUpload={beforeUpload} accept="image/jpeg,image/png">
+            <button type="button" className={styles.photoLink}>
+              {t('studentHub.settingsMock.changePhoto', 'Change photo')}
+            </button>
+          </Upload>
+          <p className={styles.identityHint}>
+            {t('studentHub.settingsMock.photoHint', `JPG or PNG, up to ${PROFILE_PHOTO_MAX_MB} MB`)}
+          </p>
+        </aside>
 
-      <Card
-        className={styles.card}
-        title={<><Send size={18} style={{ marginRight: 8 }} />{t('studentHub.settingsMock.telegram', 'Telegram')}</>}
-      >
-        {tg?.status === 'connected' ? (
-          <div className={styles.profileRow}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <CheckCircle2 size={20} color="#52c41a" />
-              <div>
-                <Text strong>{t('studentHub.settingsMock.telegramConnected', 'Connected')}</Text>
-                {tg.phoneNumber && (
-                  <div>
-                    <Text type="secondary">{tg.phoneNumber}</Text>
-                  </div>
-                )}
+        <div className={styles.accountMain}>
+          {/* Profile details */}
+          <section className={styles.card2} aria-labelledby="settings-profile-title">
+            <header className={styles.cardHead}>
+              <h3 id="settings-profile-title">{t('studentHub.settingsMock.profileGroup', 'Profile')}</h3>
+              <p>{t('studentHub.settingsMock.profileHint', 'How you appear to mentors and other students.')}</p>
+            </header>
+            <div className={styles.fieldGrid}>
+              <label className={styles.field}>
+                <span>{t('studentHub.settingsMock.fullName', 'Full name')}</span>
+                <Input
+                  className={styles.fieldInput}
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                />
+              </label>
+              <label className={styles.field}>
+                <span>{t('studentHub.settingsMock.username', 'Username')}</span>
+                <Input
+                  className={styles.fieldInput}
+                  prefix={<span className={styles.at}>@</span>}
+                  value={username}
+                  onChange={(e) => setUsername(normalizeUsernameInput(e.target.value))}
+                  placeholder="starboy"
+                />
+              </label>
+              <div className={`${styles.field} ${styles.fieldWide}`}>
+                <span>{t('studentHub.settingsMock.email', 'Email')}</span>
+                <div className={styles.readonly}>
+                  {email}
+                  <Lock size={13} strokeWidth={2} aria-label={t('studentHub.settingsMock.emailLocked', 'Cannot be changed here')} />
+                </div>
               </div>
             </div>
-            <Button onClick={() => setTgModalOpen(true)}>
-              {t('studentHub.settingsMock.telegramRelink', 'Re-link / Disconnect')}
-            </Button>
-          </div>
-        ) : (
-          <div className={styles.profileRow}>
-            <Text type="secondary">
-              {t(
-                'studentHub.settingsMock.telegramNotConnected',
-                'Not connected — get session reminders on Telegram',
+            <footer className={styles.cardFoot}>
+              <span className={styles.footerHint}>
+                {profileDirty
+                  ? t('studentHub.settingsMock.unsaved', 'You have unsaved changes')
+                  : t('studentHub.settingsMock.upToDate', 'Your profile is up to date')}
+              </span>
+              <Button
+                type="primary"
+                className={styles.saveButton}
+                disabled={!profileDirty}
+                loading={savingProfile}
+                onClick={() => void saveProfile()}
+              >
+                {t('studentHub.settingsMock.saveChanges', 'Save changes')}
+              </Button>
+            </footer>
+          </section>
+
+          {/* Connected apps */}
+          <section className={styles.card2} aria-labelledby="settings-connected-title">
+            <header className={styles.cardHead}>
+              <h3 id="settings-connected-title">{t('studentHub.settingsMock.connected', 'Connected apps')}</h3>
+              <p>{t('studentHub.settingsMock.connectedHint', 'Get reminders where you already are.')}</p>
+            </header>
+            <div className={styles.appRow}>
+              <span className={styles.appIcon} aria-hidden>
+                <Send size={17} strokeWidth={1.9} />
+              </span>
+              <span className={styles.appText}>
+                <strong>{t('studentHub.settingsMock.telegram', 'Telegram')}</strong>
+                <small>
+                  {tg?.status === 'connected'
+                    ? tg.phoneNumber || t('studentHub.settingsMock.telegramConnected', 'Connected')
+                    : t('studentHub.settingsMock.telegramNotConnectedShort', 'Session reminders on Telegram')}
+                </small>
+              </span>
+              {tg?.status === 'connected' && (
+                <span className={styles.connectedPill}>
+                  <CheckCircle2 size={13} strokeWidth={2.2} aria-hidden />
+                  {t('studentHub.settingsMock.telegramConnected', 'Connected')}
+                </span>
               )}
-            </Text>
-            <Button type="primary" onClick={() => setTgModalOpen(true)}>
-              {t('studentHub.settingsMock.telegramConnect', 'Connect Telegram')}
-            </Button>
-          </div>
-        )}
-      </Card>
-      <TelegramConnectionModal visible={tgModalOpen} onClose={() => setTgModalOpen(false)} />
-      </>
+              <Button
+                className={tg?.status === 'connected' ? styles.quietButton : styles.saveButton}
+                type={tg?.status === 'connected' ? 'default' : 'primary'}
+                onClick={() => setTgModalOpen(true)}
+              >
+                {tg?.status === 'connected'
+                  ? t('studentHub.settingsMock.telegramManage', 'Manage')
+                  : t('studentHub.settingsMock.telegramConnectShort', 'Connect')}
+              </Button>
+            </div>
+          </section>
+        </div>
+        <TelegramConnectionModal visible={tgModalOpen} onClose={() => setTgModalOpen(false)} />
+      </div>
       )}
 
       {/* The legacy "Subscription" card shown above used to live here; it
@@ -357,7 +427,6 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
       {/* Subscription & billing — Phase 1B scaffold. All data is
           mocked from `subscription/_mocks/subscription.fixtures.ts`;
           flip states with `?state=active|trialing|past_due|canceled|none`. */}
-      {activeTab === 'subscription' && <SubscriptionTab />}
 
       {activeTab === 'referrals' && <ReferralsTab />}
 
@@ -366,50 +435,72 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           notifications backend; we surface the section now so the
           editorial nav is complete. */}
       {activeTab === 'notifications' && (
-        <Card className={styles.card} title={<><Bell size={18} style={{ marginRight: 8 }} />{t('studentHub.settingsMock.notifications', 'Notifications')}</>}>
-          <Paragraph type="secondary">
-            {t(
-              'studentHub.settingsMock.notificationsDesc',
-              'Choose how you want to be reached for each event. Email is on by default.',
-            )}
-          </Paragraph>
-          <div className={styles.notifGroup}>
-            <div className={styles.notifGroupTitle}>
-              <Target size={14} /> Mentor sessions
-            </div>
-            <ul className={styles.notifList}>
-              <li>Session reminders (24h before) · <span className={styles.notifMeta}>Email · Push · SMS</span></li>
-              <li>New tasks &amp; feedback · <span className={styles.notifMeta}>Email · Push</span></li>
-              <li>Mentor messages · <span className={styles.notifMeta}>Push</span></li>
-            </ul>
-          </div>
-          <div className={styles.notifGroup}>
-            <div className={styles.notifGroupTitle}>
-              <UsersIcon size={14} /> Community
-            </div>
-            <ul className={styles.notifList}>
-              <li>Study buddy requests · <span className={styles.notifMeta}>Email · Push</span></li>
-              <li>Replies to your posts · <span className={styles.notifMeta}>Push</span></li>
-              <li>Mentions · <span className={styles.notifMeta}>Email · Push</span></li>
-            </ul>
-          </div>
-          <div className={styles.notifGroup}>
-            <div className={styles.notifGroupTitle}>
-              <CreditCard size={14} /> Billing
-            </div>
-            <ul className={styles.notifList}>
-              <li>Payment receipts · <span className={styles.notifMeta}>Email</span></li>
-              <li>Renewal reminders · <span className={styles.notifMeta}>Email</span></li>
-              <li>Card expiry warnings · <span className={styles.notifMeta}>Email · SMS</span></li>
-            </ul>
-          </div>
-          <Paragraph type="secondary" style={{ marginTop: 14, marginBottom: 0, fontSize: 12 }}>
+        <div className={styles.stack}>
+          <p className={styles.notice}>
+            <Bell size={15} strokeWidth={2} aria-hidden />
             {t(
               'studentHub.settingsMock.notificationsComingSoon',
               'Per-channel toggles roll out with the upcoming notifications service.',
             )}
-          </Paragraph>
-        </Card>
+          </p>
+          {[
+            {
+              key: 'sessions',
+              Icon: Target,
+              title: t('studentHub.settingsMock.notifSessions', 'Mentor sessions'),
+              items: [
+                ['Session reminders (24h before)', ['Email', 'Push', 'SMS']],
+                ['New tasks & feedback', ['Email', 'Push']],
+                ['Mentor messages', ['Push']],
+              ],
+            },
+            {
+              key: 'community',
+              Icon: UsersIcon,
+              title: t('studentHub.settingsMock.notifCommunity', 'Community'),
+              items: [
+                ['Study buddy requests', ['Email', 'Push']],
+                ['Replies to your posts', ['Push']],
+                ['Mentions', ['Email', 'Push']],
+              ],
+            },
+            {
+              key: 'billing',
+              Icon: CreditCard,
+              title: t('studentHub.settingsMock.notifBilling', 'Billing'),
+              items: [
+                ['Payment receipts', ['Email']],
+                ['Renewal reminders', ['Email']],
+                ['Card expiry warnings', ['Email', 'SMS']],
+              ],
+            },
+          ].map((group) => (
+            <section key={group.key} className={styles.card2} aria-labelledby={`notif-${group.key}`}>
+              <header className={styles.cardHead}>
+                <h3 id={`notif-${group.key}`}>
+                  <span className={styles.headIcon} aria-hidden>
+                    <group.Icon size={15} strokeWidth={2} />
+                  </span>
+                  {group.title}
+                </h3>
+              </header>
+              <ul className={styles.notifRows}>
+                {(group.items as [string, string[]][]).map(([label, channels]) => (
+                  <li key={label} className={styles.notifRow}>
+                    <span className={styles.rowLabelWide}>{label}</span>
+                    <span className={styles.channels}>
+                      {channels.map((channel) => (
+                        <span key={channel} className={styles.channel}>
+                          {channel}
+                        </span>
+                      ))}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
       )}
     </div>
     </ApplicantPage>

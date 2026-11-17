@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 
 /** Initials fallback for a display name (1–2 letters, uppercase). */
-function initialsFor(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
+function initialsFor(name: string | null | undefined): string {
+  const parts = (name ?? '').trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return '?';
   if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
   return (parts[0]![0]! + parts[parts.length - 1]![0]!).toUpperCase();
@@ -19,7 +19,8 @@ export function CcAvatar({
   size = 36,
   className,
 }: {
-  name: string;
+  /** May be missing (e.g. a user whose profile was removed) — renders "?". */
+  name: string | null | undefined;
   src?: string | null;
   size?: number;
   className?: string;

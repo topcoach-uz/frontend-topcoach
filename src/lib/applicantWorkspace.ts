@@ -1,7 +1,8 @@
+/** Research prep's locked preview renders inside the workspace; SAT and IELTS keep their own chrome. */
 export function isApplicantWorkspacePath(pathname: string) {
   return (
     /^\/student-hub(?:\/|$)/.test(pathname) &&
-    !/^\/student-hub\/(?:sat-prep|research-prep|ielts-prep)(?:\/|$)/.test(pathname)
+    !/^\/student-hub\/(?:sat-prep|ielts-prep)(?:\/|$)/.test(pathname)
   );
 }
 

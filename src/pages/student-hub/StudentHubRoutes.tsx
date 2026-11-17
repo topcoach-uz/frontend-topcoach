@@ -5,7 +5,7 @@ import StudentHubLayout from '../../components/student-hub/StudentHubLayout';
 import StudentHubErrorBoundary from '../../components/student-hub/StudentHubErrorBoundary';
 import CommunityHubMockPage from './community/CommunityHubMockPage';
 import { useTypedSelector } from 'src/app/store';
-import { canUseSatPrep } from 'src/lib/satPrepAccess';
+import { useCanUseSatPrep } from 'src/lib/satPrepAccess';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import { isOverviewLocation, legacyWorkspaceRedirect } from 'src/lib/applicantWorkspace';
 import CoursePreview from '../learning/CoursePreview';
@@ -88,9 +88,8 @@ const SatGate: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   // SAT Prep is unlocked by: (a) admin/tester via canUseSatPrep, OR
   // (b) Community enrollment. Non-community users see the blurred-
   // preview + sat-course lock modal until they enroll.
-  const allowed =
-    canUseSatPrep(profile?.managementRole as string | undefined, profile?.email) ||
-    isCommunityEnrolled;
+  const canUse = useCanUseSatPrep(profile?.managementRole as string | undefined, profile?.email);
+  const allowed = canUse || isCommunityEnrolled;
   if (allowed) return children;
   return <CoursePreview course="sat" />;
 };

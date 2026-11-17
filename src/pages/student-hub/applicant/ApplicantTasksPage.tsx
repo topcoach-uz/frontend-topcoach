@@ -34,6 +34,7 @@ import {
   displayDate,
 } from "./ApplicantPage";
 import MentorAssignedTasks from "./MentorAssignedTasks";
+import YourMentors from "./YourMentors";
 import "./taskWorkspace.scss";
 
 type TaskForm = Omit<CreateApplicationTaskRequest, "dueDate"> & {
@@ -57,7 +58,7 @@ export default function ApplicantTasksPage() {
   const [form] = Form.useForm<TaskForm>();
   const source = params.get("source") ?? (params.get("mentorTask") ? "assigned" : "all");
   const showPersonal = source !== "assigned";
-  const status = params.get("status") ?? "open";
+  const status = params.get("status") ?? "all";
   const application = params.get("application") ?? "all";
   const sort = params.get("sort") ?? "due";
   const tasks = tasksQuery.data?.data ?? [];
@@ -78,6 +79,10 @@ export default function ApplicantTasksPage() {
             application === "all" || item.collegeApplicationId === application,
         )
         .sort((a, b) => {
+          // Finished (completed / cancelled) tasks sink below open ones.
+          const finished = (item: typeof a) => (["completed", "cancelled"].includes(item.status) ? 1 : 0);
+          const byState = finished(a) - finished(b);
+          if (byState) return byState;
           if (sort === "recent") return b.createdAt.localeCompare(a.createdAt);
           if (sort === "priority") {
             const rank = { urgent: 0, high: 1, medium: 2, low: 3 };
@@ -113,7 +118,7 @@ export default function ApplicantTasksPage() {
   }, [action, taskId, editingQuery.currentData?.data, editingQuery.isFetching]);
   const setFilter = (key: string, value: string) => {
     const next = new URLSearchParams(params);
-    if ((value === "all" && key !== "status") || (key === "status" && value === "open") || (key === "sort" && value === "due")) {
+    if (value === "all" || (key === "sort" && value === "due")) {
       next.delete(key);
     } else {
       next.set(key, value);
@@ -217,6 +222,7 @@ export default function ApplicantTasksPage() {
             </button>
           ))}
         </div>
+        {source !== 'personal' && <YourMentors />}
         {source !== 'personal' && <MentorAssignedTasks selectedTaskId={params.get("mentorTask")} />}
         {showPersonal && (
           <section className="task-card" aria-label="Personal tasks">
@@ -232,10 +238,10 @@ export default function ApplicantTasksPage() {
                 value={status}
                 onChange={(value) => setFilter("status", value)}
                 options={[
+                  { value: "all", label: "All statuses" },
                   { value: "open", label: "Open" },
                   { value: "completed", label: "Completed" },
                   { value: "cancelled", label: "Cancelled" },
-                  { value: "all", label: "All statuses" },
                 ]}
               />
               <Select

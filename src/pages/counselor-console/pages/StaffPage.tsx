@@ -14,14 +14,15 @@
 
    Owner-only. Counselors can manage students and invitations but not the people
    who can manage them — the gate below is the same one the backend enforces. */
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Button, Modal, Table, message } from 'antd';
+import { Button, Modal, Select, Table, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
   Building2,
   Lock,
   MailPlus,
+  MapPin,
   ShieldCheck,
   Trash2,
   UserCog,
@@ -38,6 +39,7 @@ import { useGetMeQuery } from 'src/app/services/users';
 import {
   useGetStaffQuery,
   useRemoveStaffMutation,
+  useSetStaffBranchesMutation,
   type OrgStaffMember,
 } from 'src/app/services/orgAdminApi';
 import {
@@ -57,8 +59,12 @@ type TabKey = 'staff' | 'invitations' | 'removed';
 
 const ID_BASE = 'cc-staff';
 
+/** Display name for a staff row; the API returns null when a profile is missing. */
+const staffName = (s: OrgStaffMember): string =>
+  s.name?.trim() || s.email || 'Unnamed member';
+
 export default function CounselorConsoleStaffPage() {
-  const { orgId, org, role } = useCounselorConsole();
+  const { orgId, org, role, branchId, branches } = useCounselorConsole();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
@@ -68,10 +74,22 @@ export default function CounselorConsoleStaffPage() {
   const currentUserId = (currentUser as { id?: string } | undefined)?.id;
 
   const { data, isLoading, isFetching, isError, refetch } = useGetStaffQuery(
-    orgId as string,
+    { orgId: orgId as string, branchId },
     { skip: !orgId || role !== 'owner' },
   );
   const [removeStaff, { isLoading: removing }] = useRemoveStaffMutation();
+  const [setStaffBranches, { isLoading: savingBranches }] =
+    useSetStaffBranchesMutation();
+  const [assigning, setAssigning] = useState<OrgStaffMember | null>(null);
+  const [assignIds, setAssignIds] = useState<string[]>([]);
+  const activeBranches = useMemo(
+    () => branches.filter((b) => b.status === 'active'),
+    [branches],
+  );
+  const branchNameById = useMemo(
+    () => new Map(branches.map((b) => [b.id, b.name])),
+    [branches],
+  );
 
   const items = useMemo(() => data?.items ?? [], [data]);
 
@@ -152,12 +170,12 @@ export default function CounselorConsoleStaffPage() {
 
   const handleRemove = (s: OrgStaffMember) => {
     Modal.confirm({
-      title: `Remove ${s.name}?`,
+      title: `Remove ${staffName(s)}?`,
       content: (
         <span>
-          {s.name} will lose access to <b>{org?.name ?? 'this organization'}</b>{' '}
-          immediately. Their students and data stay with the organization. You
-          can re-invite them later.
+          {staffName(s)} will lose access to <b>{org?.name ?? 'this organization'}</b>{' '}
+          immediately. Their students and data stay with the organization. This
+          cannot be undone; you would need to re-invite them.
         </span>
       ),
       okText: 'Remove access',
@@ -166,13 +184,35 @@ export default function CounselorConsoleStaffPage() {
       async onOk() {
         try {
           await removeStaff({ orgId, userId: s.userId }).unwrap();
-          message.success(`${s.name} removed`);
+          message.success(`${staffName(s)} removed`);
           refetch();
         } catch {
           message.error('Could not remove this staff member. Please try again.');
         }
       },
     });
+  };
+
+  const openAssign = (s: OrgStaffMember) => {
+    setAssigning(s);
+    setAssignIds(s.branchIds ?? []);
+  };
+
+  const handleAssignSave = async () => {
+    if (!assigning) return;
+    try {
+      await setStaffBranches({
+        orgId,
+        userId: assigning.userId,
+        branchIds: assignIds,
+      }).unwrap();
+      message.success(`Branches updated for ${staffName(assigning)}`);
+      setAssigning(null);
+    } catch (err: any) {
+      message.error(
+        err?.data?.message || 'Could not update branches. Please try again.',
+      );
+    }
   };
 
   /** Shared columns; the Removed tab drops the action column. */
@@ -182,10 +222,12 @@ export default function CounselorConsoleStaffPage() {
       key: 'name',
       render: (_, s) => (
         <div className="cc-staff-member">
-          <CcAvatar name={s.name} src={s.avatarUrl} className="cc-staff-avatar" />
+          <CcAvatar name={staffName(s)} src={s.avatarUrl} className="cc-staff-avatar" />
           <div className="cc-staff-member-meta">
-            <div className="cc-staff-member-name">{s.name}</div>
-            <div className="cc-staff-member-email">{s.email}</div>
+            <div className="cc-staff-member-name">{staffName(s)}</div>
+            {s.name?.trim() && s.email && (
+              <div className="cc-staff-member-email">{s.email}</div>
+            )}
           </div>
         </div>
       ),
@@ -200,6 +242,33 @@ export default function CounselorConsoleStaffPage() {
         </CcPill>
       ),
     },
+    ...(branches.length >= 1
+      ? [
+          {
+            title: 'Branches',
+            key: 'branches',
+            render: (_: unknown, s: OrgStaffMember) => {
+              if (s.role === 'owner') {
+                return <span className="cc-staff-muted">All branches</span>;
+              }
+              const names = (s.branchIds ?? [])
+                .map((id) => branchNameById.get(id))
+                .filter((n): n is string => !!n);
+              return names.length ? (
+                <div className="cc-staff-branches">
+                  {names.map((n) => (
+                    <CcPill key={n} variant="neutral">
+                      {n}
+                    </CcPill>
+                  ))}
+                </div>
+              ) : (
+                <span className="cc-staff-muted">None assigned</span>
+              );
+            },
+          },
+        ]
+      : []),
     {
       title: 'Status',
       key: 'status',
@@ -232,7 +301,7 @@ export default function CounselorConsoleStaffPage() {
     {
       title: '',
       key: 'actions',
-      width: 130,
+      width: branches.length >= 1 ? 250 : 130,
       align: 'right',
       render: (_, s) => {
         // An owner is never removable here, and nobody can remove themselves —
@@ -246,6 +315,16 @@ export default function CounselorConsoleStaffPage() {
             ? 'You cannot remove yourself'
             : undefined;
         return (
+          <div className="cc-staff-actions">
+            {branches.length >= 1 && s.role === 'counselor' && (
+              <Button
+                size="small"
+                className="cc-staff-assign"
+                onClick={() => openAssign(s)}
+              >
+                <MapPin size={13} /> Assign branches
+              </Button>
+            )}
           <Button
             className="cc-staff-remove"
             size="small"
@@ -256,6 +335,7 @@ export default function CounselorConsoleStaffPage() {
           >
             <Trash2 size={13} /> Remove
           </Button>
+          </div>
         );
       },
     },
@@ -320,6 +400,29 @@ export default function CounselorConsoleStaffPage() {
           </div>
         </PeoplePanel>
       )}
+
+      <Modal
+        open={!!assigning}
+        title={assigning ? `Assign branches · ${staffName(assigning)}` : 'Assign branches'}
+        okText="Save"
+        confirmLoading={savingBranches}
+        onOk={handleAssignSave}
+        onCancel={() => setAssigning(null)}
+        destroyOnClose
+      >
+        <p style={{ marginTop: 0 }}>
+          A counselor sees only the students of the branches assigned to them.
+          With none assigned they see no students.
+        </p>
+        <Select
+          mode="multiple"
+          style={{ width: '100%' }}
+          placeholder="Select branches"
+          value={assignIds}
+          onChange={setAssignIds}
+          options={activeBranches.map((b) => ({ value: b.id, label: b.name }))}
+        />
+      </Modal>
 
       {activeTab === 'invitations' && (
         <PeoplePanel tabKey="invitations" idBase={ID_BASE}>

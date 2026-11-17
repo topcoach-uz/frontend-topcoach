@@ -8,13 +8,17 @@ import {
   type ReactNode,
 } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useGetOrgBranchesQuery } from 'src/app/services/counselorConsoleApi';
 import type {
+  BranchSelection,
+  OrgBranch,
   OrgMembership,
   OrgMembershipRole,
   Organization,
 } from 'src/app/services/counselorConsoleApi';
 
 const CC_ORG_STORAGE_KEY = 'cc.orgId';
+const ccBranchStorageKey = (orgId: string) => `cc.branchId.${orgId}`;
 
 export interface CounselorConsoleValue {
   /** Every organization the signed-in user is a member of. */
@@ -27,6 +31,15 @@ export interface CounselorConsoleValue {
   role: OrgMembershipRole | null;
   /** The active organization record, or null. */
   org: Organization | null;
+  /** Branches of the active org visible to the caller (active + archived). */
+  branches: OrgBranch[];
+  /** `'all'` or the selected branch id. Always valid for the current org. */
+  branchId: BranchSelection;
+  setBranchId: (branchId: BranchSelection) => void;
+  /** The selected branch, or null when viewing "All branches". */
+  branch: OrgBranch | null;
+  /** True when the switcher/columns should show (more than one branch). */
+  hasBranches: boolean;
 }
 
 const CounselorConsoleCtx = createContext<CounselorConsoleValue | null>(null);
@@ -35,6 +48,15 @@ function readStoredOrgId(): string | null {
   if (typeof window === 'undefined') return null;
   try {
     return window.localStorage.getItem(CC_ORG_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function readStoredBranchId(orgId: string | null): string | null {
+  if (!orgId || typeof window === 'undefined') return null;
+  try {
+    return window.localStorage.getItem(ccBranchStorageKey(orgId));
   } catch {
     return null;
   }
@@ -81,16 +103,71 @@ export function CounselorConsoleProvider({
     }
   }, [orgs, orgId, searchParams]);
 
+  // ── Branches ──────────────────────────────────────────────────────────────
+  const { data: branchData } = useGetOrgBranchesQuery(orgId as string, {
+    skip: !orgId,
+  });
+  const branches = useMemo(() => branchData ?? [], [branchData]);
+  // The selection is tracked together with the org it belongs to so switching
+  // org never leaks the previous org's branch id.
+  const [branchState, setBranchState] = useState<{
+    orgId: string | null;
+    branchId: BranchSelection;
+  }>({ orgId: null, branchId: 'all' });
+  const branchDeepLinkApplied = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!orgId || !branchData) return;
+    const validIds = branchData
+      .filter((b) => b.status === 'active')
+      .map((b) => b.id);
+    const requested = searchParams.get('branch');
+    let next: BranchSelection = 'all';
+    if (
+      requested &&
+      requested !== branchDeepLinkApplied.current &&
+      validIds.includes(requested)
+    ) {
+      branchDeepLinkApplied.current = requested;
+      next = requested;
+    } else if (branchState.orgId === orgId && (branchState.branchId === 'all' || validIds.includes(branchState.branchId))) {
+      return; // current selection is still valid
+    } else {
+      const stored = readStoredBranchId(orgId);
+      next = stored && validIds.includes(stored) ? stored : 'all';
+    }
+    setBranchState({ orgId, branchId: next });
+  }, [orgId, branchData, searchParams, branchState]);
+
+  const setBranchId = (next: BranchSelection) => {
+    if (!orgId) return;
+    setBranchState({ orgId, branchId: next });
+    try {
+      window.localStorage.setItem(ccBranchStorageKey(orgId), next);
+    } catch {
+      /* ignore persistence failures */
+    }
+  };
+
   const value = useMemo<CounselorConsoleValue>(() => {
     const membership = orgs.find((m) => m.organization.id === orgId) ?? null;
+    // Until the effect above has validated the selection for this org, behave
+    // as "All branches" so no query is sent with a stale / foreign branch id.
+    const branchId: BranchSelection =
+      branchState.orgId === orgId ? branchState.branchId : 'all';
     return {
       orgs,
       orgId,
       setOrgId,
       role: membership?.role ?? null,
       org: membership?.organization ?? null,
+      branches,
+      branchId,
+      setBranchId,
+      branch: branchId === 'all' ? null : (branches.find((b) => b.id === branchId) ?? null),
+      hasBranches: branches.filter((b) => b.status === 'active').length > 1,
     };
-  }, [orgs, orgId]);
+  }, [orgs, orgId, branches, branchState]);
 
   return (
     <CounselorConsoleCtx.Provider value={value}>

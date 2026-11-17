@@ -69,3 +69,22 @@
     gap: 8px;
   }
 }
+
+// Student dashboard: full-width bar with the logo pinned to the left edge,
+// aligned with the floating navigation rail below it.
+.header.applicantHeader:not(.mentorHeader) .container {
+  max-width: none;
+  padding-left: 24px;
+  padding-right: 24px;
+  justify-content: flex-start;
+  gap: 40px;
+
+  > :last-child {
+    margin-left: auto;
+  }
+
+  @media (max-width: 760px) {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

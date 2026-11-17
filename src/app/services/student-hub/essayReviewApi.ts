@@ -24,6 +24,9 @@ export type EssayReviewRequest = {
   feedback?: string | null;
   createdAt: string;
   feedbackAt?: string | null;
+  /** Mentor inbox only: the application this essay is for. */
+  universityName?: string | null;
+  major?: string | null;
 };
 
 export const essayReviewApi = RtkApi.injectEndpoints({

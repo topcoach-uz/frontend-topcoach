@@ -131,20 +131,29 @@ export default function LessonPlanModal({
     );
   }, [open, studentId, draftKey, form]);
 
+  // Only the latest check may update the screen (answers can arrive out of order).
+  const checkSeq = useRef(0);
   const loadPreview = async (next: LessonPlanInput) => {
+    const seq = ++checkSeq.current;
     setError('');
     try {
       const result = await previewPlan(next).unwrap();
+      if (seq !== checkSeq.current) return;
       setInput(next);
       setPreview(result.data);
     } catch (failure) {
+      if (seq !== checkSeq.current) return;
       setPreview(null);
       setError(lessonPlanError(failure));
     }
   };
-  const showDates = async () => {
-    const v = await form.validateFields().catch(() => null);
-    if (!v) return;
+  /** Check dates and conflicts quietly — no field errors until the mentor saves. */
+  const checkDates = async () => {
+    const v = await form.validateFields({ validateOnly: true }).catch(() => null);
+    if (!v) {
+      setPreview(null);
+      return;
+    }
     await loadPreview({
       requestId: requestId.current,
       studentUserId: v.studentUserId,
@@ -191,6 +200,16 @@ export default function LessonPlanModal({
     }
   };
   const selected = preview?.sessions.filter((row) => !row.excluded).length ?? 0;
+  // Re-check automatically shortly after the mentor stops editing.
+  const watched = Form.useWatch([], form);
+  useEffect(() => {
+    if (!open || pending) return;
+    const timer = window.setTimeout(() => void checkDates(), 450);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, pending, JSON.stringify(watched ?? {})]);
+  const conflicts = preview?.conflicts.length ?? 0;
+  const upToDate = !!input && !!preview && !previewing;
   // Lessons can only be planned for students this mentor is the Full Support
   // mentor of. Say so up front instead of letting the save fail with a 403.
   const chosenStudent = Form.useWatch('studentUserId', form);
@@ -208,21 +227,22 @@ export default function LessonPlanModal({
         <Button key="cancel" disabled={saving} onClick={onClose}>
           Close
         </Button>,
-        <Button
-          key="preview"
-          loading={previewing}
-          disabled={saving || pending || notEligible}
-          onClick={() => void showDates()}
-        >
-          Preview dates
-        </Button>,
+        <span key="status" className="lesson-plan-modal__check" aria-live="polite">
+          {notEligible
+            ? ''
+            : previewing
+              ? 'Checking dates…'
+              : !preview
+                ? 'Fill in the student and topic to check dates.'
+                : conflicts > 0
+                  ? `${conflicts} conflict${conflicts === 1 ? '' : 's'} — change the time or skip those dates`
+                  : 'No conflicts'}
+        </span>,
         <Button
           key="save"
           type="primary"
           loading={saving}
-          disabled={
-            notEligible || !preview || !selected || preview.conflicts.length > 0 || previewing
-          }
+          disabled={notEligible || !upToDate || !selected || conflicts > 0}
           onClick={() => void save()}
         >
           {pending
@@ -264,9 +284,10 @@ export default function LessonPlanModal({
       <Form
         form={form}
         layout="vertical"
-        disabled={saving || previewing || pending}
+        disabled={saving || pending}
         onValuesChange={() => {
-          setPreview(null);
+          // Keep the old dates on screen while the new check runs, but don't
+          // allow saving them.
           setInput(null);
         }}
       >
@@ -417,8 +438,8 @@ export default function LessonPlanModal({
               </Col>
             </Row>
             <p style={{ color: '#736b60', fontSize: 12 }}>
-              Up to 52 lessons within one year. Uncheck individual dates in the
-              preview to skip holidays or exams.
+              Up to 52 lessons within one year. Dates are checked for conflicts
+              automatically — uncheck a date below to skip holidays or exams.
             </p>
           </>
         )}

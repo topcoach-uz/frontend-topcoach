@@ -388,12 +388,12 @@ function CcSplitBand({
 }
 
 export default function CounselorConsoleAnalyticsPage() {
-  const { org, orgId } = useCounselorConsole();
+  const { org, orgId, branchId, branch } = useCounselorConsole();
   const [range, setRange] = useState<OrgAnalyticsRange>('90d');
   const [activeTab, setActiveTab] = useState<TabKey>('trend');
 
   const { data, isLoading, isFetching, isError } = useGetOrgAnalyticsQuery(
-    { orgId: orgId as string, range },
+    { orgId: orgId as string, branchId, range },
     { skip: !orgId },
   );
 
@@ -407,9 +407,10 @@ export default function CounselorConsoleAnalyticsPage() {
      the last 12 months of joins. The selected window is therefore applied to
      its output HERE (see `joinsInWindow`), never pretended at: the totals are
      "right now" by nature and are labelled that way. */
-  const { data: dashboard } = useGetOrgDashboardQuery(orgId as string, {
-    skip: !orgId,
-  });
+  const { data: dashboard } = useGetOrgDashboardQuery(
+    { orgId: orgId as string, branchId },
+    { skip: !orgId },
+  );
 
   const rangeMonths =
     RANGES.find((r) => r.value === range)?.months ?? RANGES[1].months;
@@ -1401,7 +1402,11 @@ export default function CounselorConsoleAnalyticsPage() {
             <div className="cc-analytics-grid cc-analytics-grid--stacked">
               <ChartCard
                 title="Growth & activity"
-                sub="Hover to read all three measures at one date"
+                sub={
+                  branch
+                    ? 'Org-wide history · hover to read all three measures at one date'
+                    : 'Hover to read all three measures at one date'
+                }
                 hasData
                 className="cc-analytics-card--wide"
               >

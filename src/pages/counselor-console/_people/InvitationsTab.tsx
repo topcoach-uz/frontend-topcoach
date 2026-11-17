@@ -43,6 +43,8 @@ import { INVITATION_STATUS_PILL } from './roleLabels';
 import { InviteByEmailModal } from './InviteByEmailModal';
 import { CsvImportModal } from './CsvImportModal';
 import { UserSearchSelect } from './UserSearchSelect';
+import { useCounselorConsole } from '../CounselorConsoleContext';
+import { activeBranches, defaultInviteBranchId } from './branchHelpers';
 
 const PAGE_SIZE = 20;
 
@@ -77,6 +79,9 @@ export function InvitationsTab({
 
   const [status, setStatus] = useState<StatusFilter>('actionable');
   const [page, setPage] = useState(1);
+  const { branches, branchId, hasBranches } = useCounselorConsole();
+  const [addBranchId, setAddBranchId] = useState<string | undefined>();
+  useEffect(() => setPage(1), [branchId]);
 
   const [inviteOpen, setInviteOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -93,6 +98,7 @@ export function InvitationsTab({
     useGetInvitationsQuery(
       {
         orgId,
+        branchId,
         role,
         status: status === 'actionable' ? undefined : status,
         page,
@@ -130,6 +136,7 @@ export function InvitationsTab({
   const openAddExisting = () => {
     setSelectedUserId(undefined);
     setSelectedUserName(undefined);
+    setAddBranchId(defaultInviteBranchId(branches, branchId));
     setAddOpen(true);
   };
 
@@ -140,6 +147,7 @@ export function InvitationsTab({
         orgId,
         userId: selectedUserId,
         role: isStudent ? 'student' : 'counselor',
+        branchId: hasBranches ? addBranchId : undefined,
       }).unwrap();
       message.success(
         `${selectedUserName ?? 'User'} added to ${orgName ?? 'your organization'}`,
@@ -194,8 +202,8 @@ export function InvitationsTab({
       content: (
         <span>
           The invitation to <b>{inv.email}</b> will be removed from this list
-          for good. Any link already sent stops working. You can always invite
-          them again.
+          for good and this cannot be undone. Any link already sent stops
+          working. You can invite them again later.
         </span>
       ),
       okText: 'Delete',
@@ -257,6 +265,17 @@ export function InvitationsTab({
         </div>
       ),
     },
+    ...(hasBranches && branchId === 'all'
+      ? [
+          {
+            title: 'Branch',
+            key: 'branch',
+            width: 140,
+            render: (_: unknown, inv: OrgInvitation) =>
+              inv.branchName ?? <span className="cc-invite-muted">-</span>,
+          },
+        ]
+      : []),
     {
       title: 'Status',
       key: 'status',
@@ -517,6 +536,22 @@ export function InvitationsTab({
           Results show a shortened name and a partly hidden email — search by
           full email to find one specific person.
         </p>
+        {hasBranches ? (
+          <div style={{ marginBottom: 12 }}>
+            <div className="cc-invite-add-help" style={{ marginBottom: 4 }}>
+              Branch
+            </div>
+            <Select
+              style={{ width: '100%' }}
+              value={addBranchId}
+              onChange={setAddBranchId}
+              options={activeBranches(branches).map((b) => ({
+                value: b.id,
+                label: b.name,
+              }))}
+            />
+          </div>
+        ) : null}
         <UserSearchSelect
           orgId={orgId}
           value={selectedUserId}

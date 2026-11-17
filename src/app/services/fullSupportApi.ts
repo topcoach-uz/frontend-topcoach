@@ -28,6 +28,19 @@ export type MentorRosterStudent = {
   allocated: number;
   scheduledHours?: number;
   sessionsCount: number;
+  /** Assigned through the older Full Support flow (no program / role). */
+  hasLegacyFullSupport?: boolean;
+  /** Programs this mentor is assigned to for the student, with their roles. */
+  programs?: MentorRosterProgram[];
+};
+
+export type MentorRosterProgram = {
+  enrollmentId: string;
+  program: string;
+  roles: string[];
+  usedMinutes?: number | null;
+  allocatedMinutes?: number | null;
+  remainingMinutes?: number | null;
 };
 
 export type StudentGoalDto = {
@@ -74,13 +87,47 @@ export type TaskDto = {
   status: 'assigned' | 'submitted' | 'revision_requested' | 'approved';
   submittedAt?: string;
   reviewedAt?: string;
-  reviewHistory: Array<{ decision: 'approved' | 'revision_requested'; feedback: string; at: string; submissionText?: string; submissionFileUrls?: { fileName: string; url: string }[]; feedbackFileUrls?: { fileName: string; url: string }[]; submittedAt?: string }>;
+  reviewHistory: Array<{ decision: 'approved' | 'revision_requested'; feedback: string; at: string; submissionText?: string; submissionFileUrls?: { fileName: string; url: string }[]; feedbackFileUrls?: { fileName: string; url: string }[]; revisionFileUrls?: string[]; submittedAt?: string }>;
   deadline: string;
   hasFeedback: boolean;
   feedback?: string;
   submissionText?: string;
   submissionFileUrls?: { fileName: string; url: string }[];
   feedbackFileUrls?: { fileName: string; url: string }[];
+  /** Submitted file URLs the reviewer asked to redo (empty = whole submission). */
+  revisionFileUrls?: string[];
+  extensionRequests?: TaskExtensionRequest[];
+  /** Student may still change this submission (submitted, unreviewed, deadline not passed). */
+  canEditSubmission?: boolean;
+};
+
+/** A mentor assigned to the current student (student-facing, no contact details). */
+export type StudentMentor = {
+  id: string;
+  name: string;
+  photoUrl: string | null;
+  title: string | null;
+  university: string | null;
+  major: string | null;
+  summary: string | null;
+  languages: string[];
+  assignments: { program: string; roles: string[]; legacy?: boolean }[];
+  nextLesson: { id: string; dateTime: string; duration: string; description: string; meetingLink: string | null } | null;
+  lastLessonAt: string | null;
+  lessonsHeld: number;
+  openTasks: number;
+};
+
+export type TaskExtensionRequest = {
+  id: string;
+  previousDeadline: string;
+  requestedDeadline: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'declined';
+  requestedAt: string;
+  decidedAt?: string;
+  grantedDeadline?: string;
+  response?: string;
 };
 
 export type MilestoneDto = {
@@ -356,14 +403,28 @@ export const fullSupportApi = RtkApi.injectEndpoints({
     }),
     updateMentorTaskFeedback: builder.mutation<
       { data: unknown; success: boolean },
-      { id: string; feedback: string; decision?: 'approved' | 'revision_requested'; feedbackFileUrls?: { fileName: string; url: string }[] }
+      { id: string; feedback: string; decision?: 'approved' | 'revision_requested'; feedbackFileUrls?: { fileName: string; url: string }[]; revisionFileUrls?: string[] }
     >({
-      query: ({ id, feedback, decision, feedbackFileUrls }) => ({
+      query: ({ id, feedback, decision, feedbackFileUrls, revisionFileUrls }) => ({
         url: `/full-support/mentor/tasks/${id}`,
         method: 'PATCH',
-        body: { feedback, decision, feedbackFileUrls },
+        body: { feedback, decision, feedbackFileUrls, revisionFileUrls },
       }),
       invalidatesTags: ['FullSupportMentorTasks', 'FullSupportMenteeTasks', 'FullSupportMentorSessions', 'FullSupportAdmin'],
+    }),
+    decideTaskExtension: builder.mutation<
+      { data: unknown; success: boolean },
+      { id: string; decision: 'approved' | 'declined'; response?: string; deadline?: string }
+    >({
+      query: ({ id, ...body }) => ({ url: `/full-support/mentor/tasks/${id}/extension`, method: 'PATCH', body }),
+      invalidatesTags: ['FullSupportMentorTasks', 'FullSupportMenteeTasks', 'FullSupportAdmin'],
+    }),
+    requestTaskExtension: builder.mutation<
+      { data: unknown; success: boolean },
+      { id: string; requestedDeadline: string; reason: string }
+    >({
+      query: ({ id, ...body }) => ({ url: `/full-support/mentee/tasks/${id}/extension`, method: 'POST', body }),
+      invalidatesTags: ['FullSupportMenteeTasks', 'FullSupportMentorTasks', 'FullSupportAdmin'],
     }),
     linkMentorTaskToLesson: builder.mutation<{ data: TaskDto; success: boolean }, { id: string; lessonId: string | null }>({
       query: ({ id, lessonId }) => ({ url: `/full-support/mentor/tasks/${id}/lesson`, method: 'PATCH', body: { lessonId } }),
@@ -375,6 +436,14 @@ export const fullSupportApi = RtkApi.injectEndpoints({
         method: 'DELETE',
       }),
       invalidatesTags: ['FullSupportMentorTasks', 'FullSupportMenteeTasks', 'FullSupportMentorSessions', 'FullSupportAdmin'],
+    }),
+    getMenteeMentors: builder.query<{ data: StudentMentor[] }, void>({
+      query: () => ({ url: '/full-support/mentee/mentors', method: 'GET' }),
+      transformResponse: (res: unknown) => {
+        const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
+        return { data: Array.isArray(raw) ? raw : [] };
+      },
+      providesTags: ['FullSupportMenteeTasks', 'FullSupportMentorSessions'],
     }),
     getMenteeTasks: builder.query<{ data: TaskDto[] }, void>({
       query: () => ({ url: '/full-support/mentee/tasks', method: 'GET' }),
@@ -788,11 +857,14 @@ export const {
   useGetMentorTasksQuery,
   useCreateMentorTaskMutation,
   useUpdateMentorTaskFeedbackMutation,
+  useDecideTaskExtensionMutation,
+  useRequestTaskExtensionMutation,
   useLinkMentorTaskToLessonMutation,
   useDeleteMentorTaskMutation,
   useGetMenteeTasksQuery,
   useUploadTaskSubmissionFileMutation,
   useSubmitMenteeTaskMutation,
+  useGetMenteeMentorsQuery,
   useUploadMentorFeedbackFileMutation,
   useGetMenteeSessionsQuery,
   useGetMentorMilestonesQuery,

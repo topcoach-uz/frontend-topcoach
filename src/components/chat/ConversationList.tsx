@@ -1,5 +1,6 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { List, Avatar, Empty, Spin, Typography, Input, Segmented } from 'antd';
+import { List, Avatar, Empty, Spin, Typography, Input } from 'antd';
+import { useSegmentLens } from 'src/hooks/useSegmentLens';
 import { User, Search } from 'lucide-react';
 import { useGetConversationsQuery, chatApi } from 'src/app/services/chat/chatApi';
 import {
@@ -115,6 +116,15 @@ const ConversationList: React.FC<ConversationListProps> = ({
     return conversation.mentor;
   };
 
+  // One glass thumb that springs between filters (iOS segmented control).
+  const segmentLens = useSegmentLens<HTMLDivElement>('[aria-selected="true"]', [segment]);
+  const segments = [
+    { label: 'All', value: 'all' },
+    { label: 'Mentors', value: 'mentors' },
+    { label: 'Peers', value: 'peers' },
+    { label: 'Team', value: 'team' },
+  ] as const;
+
   const roleFiltered = useMemo(() => {
     if (segment === 'all') return conversations;
     if (segment === 'team') return conversations.filter((c) => c.conversationType === 'ADMIN_MENTOR');
@@ -175,38 +185,37 @@ const ConversationList: React.FC<ConversationListProps> = ({
     );
   }
 
-  if (roleFiltered.length === 0 && conversations.length > 0) {
-    return (
-      <div className={variant === 'messenger' ? styles.messengerListWrap : styles.emptyContainer}>
-        {variant === 'messenger' && (
-          <div className={styles.messengerSearch}>
-            <Segmented
-              block
-              value={segment}
-              onChange={(v) => setSegment(v as 'all' | 'mentors' | 'peers' | 'team')}
-              options={[
-                { label: 'All', value: 'all' },
-                { label: 'Mentors', value: 'mentors' },
-                { label: 'Peers', value: 'peers' },
-                { label: 'Team', value: 'team' },
-              ]}
-              style={{ marginBottom: 10 }}
-            />
-            <Input
-              allowClear
-              size="large"
-              placeholder="Search…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              prefix={<Search size={16} className={styles.messengerSearchIcon} aria-hidden />}
-              className={styles.messengerSearchInput}
-            />
-          </div>
-        )}
-        <Empty description="No conversations in this category" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+  // The filter + search header is rendered once and stays mounted, so
+  // switching All → Mentors slides the indicator instead of rebuilding the
+  // control when a category happens to be empty.
+  const header = variant === 'messenger' && conversations.length > 0 && (
+    <div className={styles.messengerSearch}>
+      <div ref={segmentLens.ref} className={styles.segments} role="tablist" aria-label="Filter conversations">
+        <span className={styles.segmentsThumb} style={segmentLens.lensStyle} aria-hidden />
+        {segments.map((item) => (
+          <button
+            key={item.value}
+            type="button"
+            role="tab"
+            aria-selected={segment === item.value}
+            className={styles.segment}
+            onClick={() => setSegment(item.value)}
+          >
+            {item.label}
+          </button>
+        ))}
       </div>
-    );
-  }
+      <Input
+        allowClear
+        size="large"
+        placeholder="Search…"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        prefix={<Search size={16} className={styles.messengerSearchIcon} aria-hidden />}
+        className={styles.messengerSearchInput}
+      />
+    </div>
+  );
 
   if (conversations.length === 0) {
     return (
@@ -219,35 +228,13 @@ const ConversationList: React.FC<ConversationListProps> = ({
     );
   }
 
-  if (filteredConversations.length === 0) {
+  const emptyText =
+    roleFiltered.length === 0 ? 'No conversations in this category' : filteredConversations.length === 0 ? 'No matches' : null;
+
+  if (emptyText && variant !== 'messenger') {
     return (
-      <div className={variant === 'messenger' ? styles.messengerEmpty : styles.emptyContainer}>
-        {variant === 'messenger' && (
-          <div className={styles.messengerSearch}>
-            <Segmented
-              block
-              value={segment}
-              onChange={(v) => setSegment(v as 'all' | 'mentors' | 'peers' | 'team')}
-              options={[
-                { label: 'All', value: 'all' },
-                { label: 'Mentors', value: 'mentors' },
-                { label: 'Peers', value: 'peers' },
-                { label: 'Team', value: 'team' },
-              ]}
-              style={{ marginBottom: 10 }}
-            />
-            <Input
-              allowClear
-              size="large"
-              placeholder="Search…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              prefix={<Search size={16} className={styles.messengerSearchIcon} aria-hidden />}
-              className={styles.messengerSearchInput}
-            />
-          </div>
-        )}
-        <Empty description="No matches" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      <div className={styles.emptyContainer}>
+        <Empty description={emptyText} image={Empty.PRESENTED_IMAGE_SIMPLE} />
       </div>
     );
   }
@@ -327,30 +314,16 @@ const ConversationList: React.FC<ConversationListProps> = ({
   if (variant === 'messenger') {
     return (
       <div className={styles.messengerListWrap}>
-        <div className={styles.messengerSearch}>
-          <Segmented
-            block
-            value={segment}
-            onChange={(v) => setSegment(v as 'all' | 'mentors' | 'peers' | 'team')}
-            options={[
-              { label: 'All', value: 'all' },
-              { label: 'Mentors', value: 'mentors' },
-              { label: 'Peers', value: 'peers' },
-                { label: 'Team', value: 'team' },
-            ]}
-            style={{ marginBottom: 10 }}
-          />
-          <Input
-            allowClear
-            size="large"
-            placeholder="Search…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            prefix={<Search size={16} className={styles.messengerSearchIcon} aria-hidden />}
-            className={styles.messengerSearchInput}
-          />
-        </div>
-        {list}
+        {header}
+        {emptyText ? (
+          <div className={styles.messengerEmptyBody}>
+            <Empty description={emptyText} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          </div>
+        ) : (
+          <div key={segment} className={styles.messengerListBody}>
+            {list}
+          </div>
+        )}
       </div>
     );
   }

@@ -5,6 +5,7 @@ import React, {
   useContext,
   createContext,
 } from "react";
+import { useMyLearningPath } from "../applicant/useMyLearningPath";
 import { Logo } from "../../../components/logos";
 import {
   ArrowLeft,
@@ -56,6 +57,27 @@ import {
   dictionary,
   answerKeys,
 } from "./content.js";
+import {
+  loadEntries,
+  normalizeRecent,
+  pushRecent,
+  setMarker,
+  skillProgress,
+  QUESTION_TOTAL,
+  markerKey,
+} from "./progress.js";
+import {
+  overallBand,
+  writingBand,
+  latestWritingBand,
+  formatBand,
+  speakingStatus,
+  recordResult,
+  resultDelta,
+  nextTest,
+} from "./scores.js";
+import { booksFor, testCount } from "./model.js";
+import { nextAvailableTest, isSkillAvailable } from "./catalog.js";
 import "./style.css";
 import IeltsBrowse from "./IeltsBrowse";
 import {
@@ -64,6 +86,7 @@ import {
 } from "./general-reading.jsx";
 import { ImportedSpeakingPrompt, speakingQuestionText, speakingStorageKey } from "./ImportedSpeaking.jsx";
 import { ImportedWritingPrompt } from "./ImportedWriting.jsx";
+import { EXAM_TIMING, expiryAction, timingFor } from "./timer.js";
 import { ImportedListeningQuestions } from "./ImportedListening.jsx";
 import { listeningPart, listeningKeys, completeListeningKeys, listeningPartForQuestion, practiceRelease } from "./listening-library.js";
 import { extraPassages, ExtraReadingQuestions } from "./reading-extra.jsx";
@@ -251,7 +274,7 @@ function SavedRecording({ recording }) {
 }
 function PracticeFeedback({ assessment, onRestore }) {
   return (
-    <section aria-label="Saved practice feedback">
+    <section aria-label="Saved feedback">
       <p>
         Automated practice guidance. This is not an official IELTS result.
         Speaking guidance covers transcript vocabulary, grammar and relevance;
@@ -317,7 +340,7 @@ function PracticeFeedback({ assessment, onRestore }) {
         </details>
       ))}
       {assessment.busy && (
-        <p role="status">Saving and assessing your practice…</p>
+        <p role="status">Saving and assessing your answers…</p>
       )}
     </section>
   );
@@ -337,7 +360,11 @@ function useStored(key, fallback) {
   const { storagePrefix, onStorageError } = useContext(WorkspaceContext);
   key = storagePrefix + key;
   const [value, setValue] = useState(() => read(key, fallback));
-  useEffect(() => setValue(read(key, fallback)), [key]);
+  const [loadedKey, setLoadedKey] = useState(key);
+  useEffect(() => {
+    setValue(read(key, fallback));
+    setLoadedKey(key);
+  }, [key]);
   const save = (v) => {
     setValue((old) => {
       const next = typeof v === "function" ? v(old) : v;
@@ -349,7 +376,9 @@ function useStored(key, fallback) {
       return next;
     });
   };
-  return [value, save];
+  // Until the effect above catches up with a new key, read it directly so a
+  // caller never sees the previous key's value.
+  return [loadedKey === key ? value : read(key, fallback), save];
 }
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
 function dateLabel(value) {
@@ -385,7 +414,8 @@ export default function IeltsWorkspace(props) {
   );
 }
 function App() {
-  const { path, navigate, href, profile, storagePrefix, onStorageError, listeningLibrary, readingLibrary, writingLibrary, speakingLibrary } =
+  const myLearningPath = useMyLearningPath();
+  const { path, navigate, href, profile, storagePrefix, onStorageError, catalog, listeningLibrary, readingLibrary, writingLibrary, speakingLibrary } =
     useContext(WorkspaceContext);
   const [dark, setDark] = useStored("workspace:dark", false),
     [modal, setModal] = useState(null),
@@ -396,6 +426,39 @@ function App() {
   const browsing = ["/", "/ielts/practice/home", "/ielts/practice/general-training"].includes(pagePath);
   const readBrowse = useRead();
   const dialogRef = useRef(null);
+  const trackedSkill = r && r.skill !== "score" ? r.skill : null;
+  const isMock = new URLSearchParams(path.split("?")[1] || "").get("mode") === "mock";
+  const clockKey = trackedSkill
+    ? `workspace:clock:${r.type}:${r.book}:${r.test}:${trackedSkill}${trackedSkill === "writing" && !isMock ? `:${r.part}` : ""}`
+    : "workspace:clock:none";
+  const [clock, setClock] = useStored(clockKey, null);
+  const [timerChoice, setTimerChoice] = useStored(
+    clockKey.replace(":clock:", ":timer-choice:"),
+    null,
+  );
+  const timer = {
+    clock,
+    choice: timerChoice,
+    start: (minutes, mode = "section") => {
+      setClock({ deadline: Date.now() + minutes * 60000, mode });
+      setTimerChoice("started");
+    },
+    skip: () => setTimerChoice("off"),
+    setClock,
+    setChoice: setTimerChoice,
+  };
+  const writeKey = (key, value) => {
+    try {
+      localStorage.setItem(storagePrefix + key, JSON.stringify(value));
+    } catch {
+      onStorageError?.();
+    }
+  };
+  const mark = (rr, skill, state) => {
+    const markers = readBrowse("workspace:progress", {});
+    const next = setMarker(markers, rr, skill, state);
+    if (next !== markers) writeKey("workspace:progress", next);
+  };
   useEffect(() => {
     if (!modal || !dialogRef.current) return;
     const node = dialogRef.current,
@@ -425,6 +488,21 @@ function App() {
       previous?.focus?.();
     };
   }, [modal]);
+  // Remember the last overview/library page so the header Back arrow returns
+  // to where the student opened a test from, not always to My learning.
+  useEffect(() => {
+    if (browsing) {
+      try { sessionStorage.setItem("ielts:back-to", path); } catch {}
+    }
+  }, [browsing, path]);
+  function goBack() {
+    if (pagePath === "/") return go(myLearningPath);
+    if (browsing) return go("/");
+    let saved = null;
+    try { saved = sessionStorage.getItem("ielts:back-to"); } catch {}
+    if (saved) return go(saved);
+    return go(r?.type === "general-training" ? "/ielts/practice/general-training" : "/ielts/practice/home");
+  }
   function go(p) {
     navigate(p);
     setMenu(false);
@@ -432,21 +510,34 @@ function App() {
     window.scrollTo(0, 0);
   }
   useEffect(() => {
-    if (profile && r && r.skill !== "score")
-      try {
-        localStorage.setItem(
-          storagePrefix + "workspace:last",
-          JSON.stringify({
-            path,
-            title: `${cap(r.type)} ${r.book} Test ${r.test} ${cap(r.skill)} ${r.part}`,
-          }),
-        );
-      } catch {
-        onStorageError?.();
-      }
+    if (profile && r && r.skill !== "score") {
+      const entry = {
+        path,
+        title: `${cap(r.type)} ${r.book} Test ${r.test} ${cap(r.skill)} ${r.part}`,
+      };
+      // `workspace:last` stays a single value for older readers; the recent
+      // list is what the Overview "Unfinished" shelf uses.
+      const recent = normalizeRecent(
+        readBrowse("workspace:recent", null),
+        readBrowse("workspace:last", null),
+      );
+      writeKey("workspace:last", entry);
+      writeKey(
+        "workspace:recent",
+        pushRecent(recent, {
+          ...entry,
+          type: r.type,
+          book: r.book,
+          test: r.test,
+          skill: r.skill,
+          part: r.part,
+          at: new Date().toISOString(),
+        }),
+      );
+    }
     document.title = r
-      ? `${cap(r.skill)} – IELTS Practice | TopCoach`
-      : "IELTS Practice | TopCoach";
+      ? `${cap(r.skill)} · IELTS prep | TopCoach`
+      : "IELTS prep | TopCoach";
   }, [path, profile]);
   useEffect(() => {
     if (!toast) return;
@@ -463,7 +554,21 @@ function App() {
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, []);
-  const ctx = { go, setToast, setModal };
+  const ctx = { go, setToast, setModal, mark, timer };
+  const progress =
+    browsing && profile
+      ? {
+          entries: loadEntries(
+            typeof localStorage === "undefined" ? null : localStorage,
+            storagePrefix,
+          ),
+          markers: readBrowse("workspace:progress", {}),
+          recent: normalizeRecent(
+            readBrowse("workspace:recent", null),
+            readBrowse("workspace:last", null),
+          ),
+        }
+      : null;
   const Link = ({ to, children, ...props }) => (
     <a
       href={href(to)}
@@ -486,21 +591,21 @@ function App() {
   );
   return (
     <div className={`ielts-workspace${browsing ? " ielts-browse" : dark ? " dark" : ""}`}>
-      {browsing ? <IeltsBrowse pagePath={pagePath} Link={Link} profile={profile} last={readBrowse("workspace:last", null)} /> : <>
+      {browsing ? <IeltsBrowse pagePath={pagePath} Link={Link} profile={profile} last={readBrowse("workspace:last", null)} progress={progress} catalog={catalog} /> : <>
       <header>
         <div className="brand">
-          <Link to="/student-hub" aria-label="Back to TopCoach">
+          <Link to="/student-hub" aria-label="Back to topCoach">
             <Logo width={100} height={36} color={dark ? "white" : "black"} />
           </Link>
-          <Link to="/ielts/practice/home">IELTS Practice</Link>
+          <Link to="/">IELTS prep</Link>
         </div>
         {r && r.skill !== "score" && r.skill !== "speaking" && (
-          <Clock r={r} setModal={setModal} go={go} />
+          <Clock r={r} timer={timer} setModal={setModal} go={go} mark={mark} />
         )}
         {pagePath !== "/login" && (
           <div className="header-actions">
             <IconButton
-              label={`Current theme: ${dark ? "Dark" : "Light"} Mode, click to switch`}
+              label={dark ? "Switch to light mode" : "Switch to dark mode"}
               onClick={() => setDark(!dark)}
             >
               {dark ? <Moon /> : <Sun />}
@@ -512,8 +617,8 @@ function App() {
               <BookOpen />
             </IconButton>
             <IconButton
-              label="Back to main menu"
-              onClick={() => go("/student-hub")}
+              label={pagePath === "/" ? "Back to My learning" : "Back"}
+              onClick={goBack}
             >
               <ArrowLeft />
             </IconButton>
@@ -531,10 +636,10 @@ function App() {
                     <b>{profile.name}</b>
                     <small>{profile.email}</small>
                     <button onClick={() => go("/settings/account")}>
-                      Account Settings
+                      Account settings
                     </button>
-                    <button onClick={() => go("/student-hub")}>
-                      Back to main menu
+                    <button onClick={() => go(myLearningPath)}>
+                      Back to My learning
                     </button>
                   </div>
                 )}
@@ -607,62 +712,136 @@ function App() {
     </div>
   );
 }
-function Clock({ r, setModal, go }) {
+const pad = (n) => String(n).padStart(2, "0");
+function StartPanel({ r, timer }) {
+  const info = timingFor(r.skill, r.part, false);
+  return (
+    <div className="scrim">
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="start-practice-title"
+        className="dialog start-panel"
+      >
+        <h2 id="start-practice-title">Start {info.label.toLowerCase()} test</h2>
+        <p>
+          <b>{info.minutes} minutes.</b> {info.note}
+        </p>
+        <p className="muted">
+          Your answers are saved as you go. The timer starts when you press
+          Start.
+        </p>
+        <div className="start-actions">
+          <button
+            className="solid"
+            autoFocus
+            onClick={() => timer.start(info.minutes)}
+          >
+            Start practice
+          </button>
+          <button className="link-button" onClick={timer.skip}>
+            Practice without timer
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+function Clock({ r, timer, setModal, go, mark }) {
+  const { storagePrefix } = useContext(WorkspaceContext);
   const mock = new URLSearchParams(location.search).get("mode") === "mock";
-  const key = `workspace:clock:${r.type}:${r.book}:${r.test}:${r.skill}`;
-  const [clock, setClock] = useStored(key, null),
-    [open, setOpen] = useState(false),
+  const { clock, setClock, setChoice } = timer;
+  const [open, setOpen] = useState(false),
     [now, setNow] = useState(Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
+  // Remember the deadline we watched while it was still in the future, so a
+  // deadline that expired before we opened this test is not announced.
+  const seenLive = useRef(null);
+  if (clock?.deadline && clock.deadline > now) seenLive.current = clock.deadline;
   const remaining = clock?.deadline
     ? Math.max(0, Math.ceil((clock.deadline - now) / 1000))
     : clock?.remaining || 0;
+  const submit = () => {
+    const progress = ["listening", "reading"].includes(r.skill)
+      ? skillProgress(
+          loadEntries(localStorage, storagePrefix),
+          {},
+          r,
+          r.skill,
+        )
+      : null;
+    const unanswered = progress ? QUESTION_TOTAL - progress.answered : 0;
+    const finish = () => {
+      mark(r, r.skill, "done");
+      setClock(null);
+      setChoice(null);
+      go(testPath(r, "score"));
+    };
+    setModal({
+      title: "Submit Test?",
+      body: unanswered
+        ? `You have ${unanswered} unanswered. Submit anyway?`
+        : "Finish this test and review your answers?",
+      actionLabel: unanswered ? "Submit anyway" : "Submit Test",
+      action: finish,
+    });
+  };
   useEffect(() => {
-    if (clock?.deadline && remaining === 0) {
+    const action = expiryAction(clock, seenLive.current, Date.now());
+    if (action === "discard") {
+      // Finished in an earlier attempt: start fresh instead of a stale alert.
+      setClock(null);
+      setChoice(null);
+    } else if (action === "announce") {
       setClock(null);
       setModal({
         title: "Time is up",
-        body: "Your answers have been saved. You can review your scores or keep practising.",
+        body: "Your time is up and your answers are saved. Submit to see your score, or close this to keep practising.",
+        actionLabel: "Submit and see score",
+        action: () => {
+          mark(r, r.skill, "done");
+          setChoice(null);
+          go(testPath(r, "score"));
+        },
       });
     }
-  }, [remaining]);
+  }, [remaining, clock?.deadline]);
   const start = (minutes, mode = "part") => {
     setClock({
       deadline: Date.now() + minutes * 60000,
       mode,
     });
+    setChoice("started");
     setOpen(false);
     if (mode === "full") go(testPath(r, r.skill, r.part) + "?mode=mock");
   };
+  const mmss = `${pad(Math.floor(remaining / 60))} : ${pad(remaining % 60)}`;
   return (
     <div className="clock">
-      <button onClick={() => setOpen(!open)} aria-label="Switch timer mode">
+      <button
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-label={
+          clock
+            ? `Timer: ${Math.floor(remaining / 60)} minutes ${remaining % 60} seconds left${clock.deadline ? "" : " (paused)"}. Open timer options`
+            : "Timer is off. Open timer options"
+        }
+      >
         {clock ? (
           <>
             <Timer size={15} />
-            {String(Math.floor(remaining / 60)).padStart(2, "0")} :{" "}
-            {String(remaining % 60).padStart(2, "0")}
+            {mmss}
           </>
         ) : (
-          "Mock Test"
+          "Timer off"
         )}
         <ChevronDown size={12} />
       </button>
-      {mock && (
-        <IconButton
-          label="Submit Test"
-          onClick={() =>
-            setModal({
-              title: "Submit Test?",
-              body: "Finish this test and review your answers?",
-              actionLabel: "Submit Test",
-              action: () => go(testPath(r, "score")),
-            })
-          }
-        >
+      {(mock || ["listening", "reading"].includes(r.skill)) && (
+        <IconButton label="Submit test" onClick={submit}>
           <Send size={17} />
         </IconButton>
       )}
@@ -671,7 +850,7 @@ function Clock({ r, setModal, go }) {
           <button
             onClick={() => start(r.skill === "listening" ? 30 : 60, "full")}
           >
-            Full Section Timer (Mock Test)
+            Time the whole section
           </button>
           <button
             onClick={() =>
@@ -684,7 +863,7 @@ function Clock({ r, setModal, go }) {
               )
             }
           >
-            Single Part Timer
+            Time this part
           </button>
           {clock && (
             <>
@@ -703,6 +882,7 @@ function Clock({ r, setModal, go }) {
               <button
                 onClick={() => {
                   setClock(null);
+                  setChoice("off");
                   setOpen(false);
                 }}
               >
@@ -731,13 +911,16 @@ function Vocabulary({ setToast }) {
           }}
         >
           <input
-            placeholder="IELTS Dictionary"
-            aria-label="IELTS Dictionary"
+            placeholder="Search a word"
+            aria-label="Search a word"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
           <button className="solid">Search</button>
         </form>
+        {!word && (
+          <p className="muted">Type a word to see its meaning and examples.</p>
+        )}
         {word && (
           <>
             <div className="tab-title">Definition &amp; Examples</div>
@@ -747,7 +930,7 @@ function Vocabulary({ setToast }) {
                 <div className="word-title">
                   <h1>{word}</h1>
                   <IconButton
-                    label={stars.includes(word) ? "Unstar word" : "Star word"}
+                    label={stars.includes(word) ? "Remove from saved" : "Save word"}
                     onClick={() =>
                       setStars(
                         stars.includes(word)
@@ -821,17 +1004,17 @@ function speak(text, onend) {
 function InfoPage({ path, Link }) {
   return (
     <main className="settings">
-      <h1>{path === "/about" ? "About IELTS Practice" : "Page not found"}</h1>
+      <h1>{path === "/about" ? "About IELTS prep" : "Page not found"}</h1>
       <p>
         {path === "/about"
           ? "Practise Academic and General Training IELTS with reading, listening, writing, speaking, vocabulary and answer review."
-          : "This practice page could not be found."}
+          : "This test page could not be found."}
       </p>
       <p>
         Practice content uses representative samples. Submitted writing and
         speaking receive automated guidance on your own response.
       </p>
-      <Link to="/ielts/practice/home">Browse practice tests</Link>
+      <Link to="/ielts/practice/home">Browse tests</Link>
     </main>
   );
 }
@@ -866,7 +1049,21 @@ function ListeningAudio({ src }) {
     </>
   );
 }
-function Practice({ r, go, setModal, setToast }) {
+function PracticeSkeleton({ skill }) {
+  return (
+    <div className="practice-skeleton" role="status" aria-live="polite" aria-busy="true">
+      <span className="sr-only">Loading {skill} test…</span>
+      <div className="sk-line sk-title" />
+      <div className="sk-line" />
+      <div className="sk-line" />
+      <div className="sk-line sk-short" />
+      <div className="sk-block" />
+      <div className="sk-line" />
+      <div className="sk-line sk-short" />
+    </div>
+  );
+}
+function Practice({ r, go, setModal, setToast, mark, timer }) {
   const { storagePrefix, onStorageError, listeningLibrary, readingLibrary, writingLibrary, speakingLibrary } = useContext(WorkspaceContext);
   const library = r.skill === "speaking" ? speakingLibrary : r.skill === "writing" ? writingLibrary : r.skill === "reading" ? readingLibrary : listeningLibrary;
   const listening = listeningPart(listeningLibrary?.data, r.part);
@@ -876,6 +1073,15 @@ function Practice({ r, go, setModal, setToast }) {
   const currentKeys = ["listening", "reading"].includes(r.skill) ? listeningKeys(library?.data) : answerKeys(r);
   const practiceKey = r.skill === "speaking" && speakingLibrary?.data ? speakingStorageKey(speakingLibrary.data) : ["listening", "reading", "writing"].includes(r.skill) ? `${storageKey(r)}:library:${practiceRelease(library?.data)}` : storageKey(r);
   const mock = new URLSearchParams(location.search).get("mode") === "mock";
+  // The writing sample answer stays hidden until this task has been submitted.
+  const hasSubmittedDraft = () => {
+    const stored = read(`${storagePrefix}${practiceKey}:versions:${r.part}`, []);
+    return Array.isArray(stored) && stored.length > 0;
+  };
+  const [speakingQuestion, setSpeakingQuestion] = useState(0);
+  useEffect(() => { setSpeakingQuestion(0); }, [speakingLibrary?.data?.topic?.id, r.part]);
+  const [sampleUnlocked, setSampleUnlocked] = useState(hasSubmittedDraft);
+  useEffect(() => { setSampleUnlocked(hasSubmittedDraft()); }, [practiceKey, r.part]);
   const [answers, setAnswers] = useStored(practiceKey, {}),
     [revealed, setRevealed] = useState(false),
     [notesOn, setNotesOn] = useState(false),
@@ -976,7 +1182,7 @@ function Practice({ r, go, setModal, setToast }) {
             : ""
         }
       />
-      {revealed && <small>{currentKeys?.[n - 1] || "Key not available"}</small>}
+      {revealed && <small>{currentKeys?.[n - 1] || "No answer on file"}</small>}
     </span>
   );
   const tools = (
@@ -1077,19 +1283,22 @@ function Practice({ r, go, setModal, setToast }) {
     setNotes((n) => ({ ...n, [noteEditor.key]: noteDraft }));
     setNoteEditor(null);
   }
+  const showStart =
+    !!EXAM_TIMING[r.skill] && imported && !mock && !timer.clock && !timer.choice;
   return (
     <>
+      {showStart && <StartPanel r={r} timer={timer} />}
       <main
-        className={`practice skill-${r.skill} ${mock ? "mock-practice" : ""} ${mock && r.skill === "listening" ? "mock-listening" : ""}`}
+        className={`practice skill-${r.skill} ${!imported ? "no-answer-pane" : ""} ${mock ? "mock-practice" : ""} ${mock && r.skill === "listening" ? "mock-listening" : ""}`}
       >
         <section className="pane left">
           {r.skill !== "writing" && r.skill !== "speaking" && tools}
           {!imported ? (
-            ["listening", "reading", "writing", "speaking"].includes(r.skill) ? <div className="empty" role="status"><p>{library?.loading ? `Loading ${r.skill} practice…` : `${cap(r.skill)} content has not been imported for this test or part.`}</p>{library?.error && <button onClick={() => library.retry()}>Retry loading</button>}</div> : <Missing r={r} />
+            ["listening", "reading", "writing", "speaking"].includes(r.skill) ? library?.loading ? <PracticeSkeleton skill={r.skill} /> : <div className="empty" role="status"><p>{"This part isn't available yet."}</p>{library?.error && <button onClick={() => library.retry()}>Try again</button>}</div> : <Missing r={r} />
           ) : r.skill === "reading" ? (
             <>
               <h2>
-                PASSAGE {r.part}{" "}
+                Passage {r.part}{" "}
                 {r.type === "general-training" && (
                   <small>
                     (Section {r.part <= 2 ? 1 : r.part <= 4 ? 2 : 3})
@@ -1103,7 +1312,7 @@ function Practice({ r, go, setModal, setToast }) {
               {reading.article.subtitles.map((text, i) => <p className="subtitle" key={i}>{text}</p>)}
               <div onClick={onWord} onContextMenu={contextMenu}>
                 {reading.article.blocks.map((block, i) => block.type === "heading" ? <h3 className="section-letter" key={i}>{block.text}</h3> : block.type === "image" ? (
-                  block.image ? <img key={i} src={block.image} alt="Passage illustration" style={{ maxWidth: "100%", height: "auto" }} /> : <p className="hint" key={i}>Passage illustration is not available in the imported data.</p>
+                  block.image ? <img key={i} src={block.image} alt="Passage illustration" style={{ maxWidth: "100%", height: "auto" }} /> : <p className="hint" key={i}>Passage illustration is not available.</p>
                 ) : <p key={i}>{paragraph(block.text, i)}</p>)}
               </div>
               {reading.article.footer.map((text, i) => <p className="muted" key={i}>{text}</p>)}
@@ -1111,7 +1320,7 @@ function Practice({ r, go, setModal, setToast }) {
             </>
           ) : r.skill === "listening" ? (
             <>
-              <h2>PART {r.part}</h2>
+              <h2>Part {r.part}</h2>
               {listening.audio ? <ListeningAudio key={listening.audio} src={listening.audio} /> : <p className="hint">Audio is not available for this part.</p>}
               <details>
                 <summary>Audioscript</summary>
@@ -1120,12 +1329,12 @@ function Practice({ r, go, setModal, setToast }) {
               </details>
             </>
           ) : r.skill === "writing" ? (
-            <ImportedWritingPrompt task={writing} part={r.part} book={r.book} test={r.test} />
+            <ImportedWritingPrompt task={writing} part={r.part} book={r.book} test={r.test} sampleUnlocked={sampleUnlocked} />
           ) : (
-            <ImportedSpeakingPrompt library={speakingLibrary.data} onSelect={id => go(testPath(r, "speaking", r.part) + `?topic=${encodeURIComponent(id)}${mock ? "&mode=mock" : ""}`)} />
+            <ImportedSpeakingPrompt library={speakingLibrary.data} question={speakingQuestion} onQuestionChange={setSpeakingQuestion} onSelect={id => go(testPath(r, "speaking", r.part) + `?topic=${encodeURIComponent(id)}${mock ? "&mode=mock" : ""}`)} />
           )}
         </section>
-        <section className="pane right">
+        {imported && <section className="pane right">
           <div className="clear">
             <IconButton
               label={
@@ -1148,33 +1357,34 @@ function Practice({ r, go, setModal, setToast }) {
             {clearOpen && (
               <div className="menu clear-menu" role="menu">
                 <button role="menuitem" onClick={() => clear("part")}>
-                  Clear This Part
+                  Clear this part
                 </button>
                 <button role="menuitem" onClick={() => clear("all")}>
-                  Clear All Parts
+                  Clear all parts
                 </button>
               </div>
             )}
           </div>
-          {!imported ? (
-            <div className="empty">No answer data available</div>
-          ) : r.skill === "reading" ? (
+          {r.skill === "reading" ? (
             <ImportedListeningQuestions part={reading} input={input} answers={answers} update={update} setAnswers={setAnswers} revealed={revealed} keys={currentKeys || []} />
           ) : r.skill === "listening" ? (
             <ImportedListeningQuestions part={listening} input={input} answers={answers} update={update} setAnswers={setAnswers} revealed={revealed} keys={currentKeys || []} />
           ) : r.skill === "writing" ? (
-            <WritingEditor key={`${r.part}-${resetVersion}`} r={r} setToast={setToast} task={writing} release={practiceRelease(writingLibrary?.data)} draftKey={practiceKey} />
+            <WritingEditor key={`${r.part}-${resetVersion}`} onSubmitted={() => setSampleUnlocked(true)} r={r} setToast={setToast} task={writing} release={practiceRelease(writingLibrary?.data)} draftKey={practiceKey} />
           ) : (
             <SpeakingEditor
               key={`${speakingLibrary?.data?.topic.id}-${r.part}-${resetVersion}`}
+              question={speakingQuestion}
+              setQuestion={setSpeakingQuestion}
               library={speakingLibrary?.data}
               draftKey={practiceKey}
               r={r}
               setToast={setToast}
-              onComplete={() => setSpeakingCompleted(true)}
+              onStart={() => mark(r, "speaking", "started")}
+              onComplete={() => { setSpeakingCompleted(true); mark(r, "speaking", "done"); }}
             />
           )}
-        </section>
+        </section>}
       </main>
       {mock && ["listening", "reading"].includes(r.skill) ? (
         <nav className="bottom-nav question-strip">
@@ -1229,7 +1439,7 @@ function Practice({ r, go, setModal, setToast }) {
                         ["listening", "reading"].includes(r.skill)
                           ? setModal({
                               kind: "answers",
-                              title: "Answer Keys",
+                              title: "Answer key",
                               r,
                               answers,
                             })
@@ -1364,7 +1574,7 @@ function AnswerDrawer({ r, answers, go, close }) {
   const questionNumbers = listeningPart((r.skill === "reading" ? readingLibrary : listeningLibrary)?.data, r.part)?.questionNumbers || [];
   return (
     <>
-      <h2>Answer Keys</h2>
+      <h2>Answer key</h2>
       <p className="muted">Review completed answers</p>
       <button
         className="solid drawer-scores"
@@ -1373,7 +1583,7 @@ function AnswerDrawer({ r, answers, go, close }) {
           go(testPath(r, "score"));
         }}
       >
-        Band Scores <ArrowRight size={16} />
+        Scores <ArrowRight size={16} />
       </button>
       <label className="toggle">
         <input
@@ -1389,8 +1599,8 @@ function AnswerDrawer({ r, answers, go, close }) {
           <thead>
             <tr>
               <th>Question</th>
-              <th>My Answer</th>
-              <th>Correct Answer</th>
+              <th>Your answer</th>
+              <th>Correct answer</th>
             </tr>
           </thead>
           <tbody>
@@ -1408,14 +1618,14 @@ function AnswerDrawer({ r, answers, go, close }) {
                   }
                 >
                   <td>{n}</td>
-                  <td>{answers[n] || "-"}</td>
+                  <td>{answers[n] || "No answer"}</td>
                   <td>
                     <span
                       className={
                         !hasAnswer(answers[n]) && !show ? "blurred" : ""
                       }
                     >
-                      {key ? key.replaceAll("|", " | ") : "Key not available"}
+                      {key ? key.replaceAll("|", " | ") : "No answer on file"}
                     </span>
                   </td>
                 </tr>
@@ -1424,7 +1634,7 @@ function AnswerDrawer({ r, answers, go, close }) {
           </tbody>
         </table>
       ) : (
-        <p>Answer keys not imported for this test.</p>
+        <p>No answers on file for this test.</p>
       )}
       <button className="drawer-close" onClick={close}>
         Close
@@ -1436,9 +1646,9 @@ function Missing({ r }) {
   return (
     <div className="missing">
       <h2>
-        {r.skill === "writing" ? "TASK" : "PART"} {r.part}
+        {r.skill === "writing" ? "Task" : "Part"} {r.part}
       </h2>
-      <p className="muted">No answer data available</p>
+      <p className="muted">No answers on file for this test.</p>
     </div>
   );
 }
@@ -1450,7 +1660,7 @@ function WordCard({ word }) {
       <div className="word-title">
         <h2>{word}</h2>
         <IconButton
-          label="Star word"
+          label="Save word"
           onClick={() =>
             setStars(
               stars.includes(word)
@@ -1704,7 +1914,7 @@ function RestaurantQuestions({ input }) {
     </>
   );
 }
-function WritingEditor({ r, setToast, task, release, draftKey }) {
+function WritingEditor({ r, setToast, task, release, draftKey, onSubmitted }) {
   const canAssess = !!(task?.prompt && task?.assessmentAvailable);
   const assessment = usePracticeAssessment(r, release, canAssess);
   const [essay, setEssay] = useStored(`${draftKey}:essay:${r.part}`, ""),
@@ -1717,13 +1927,16 @@ function WritingEditor({ r, setToast, task, release, draftKey }) {
       null,
     );
   const count = wordCount(essay);
+  const submittedCount = assessment.submissions.length;
+  useEffect(() => { if (submittedCount) onSubmitted?.(); }, [submittedCount]);
   async function submit() {
-    if (!canAssess) { setToast("Feedback is unavailable until the full task prompt is imported."); return; }
+    if (!canAssess) { setToast("Feedback isn't available for this task yet."); return; }
     if (!count) {
-      setToast("Please input your response.");
+      setToast("Write your response before submitting.");
       return;
     }
     setVersions((v) => [{ text: essay, time: new Date().toISOString() }, ...v]);
+    onSubmitted?.();
     const success = await assessment.run({ text: essay, prompt: task.assessmentPrompt || task.prompt });
     if (success) setToast('Your practice feedback is ready.');
   }
@@ -1732,11 +1945,11 @@ function WritingEditor({ r, setToast, task, release, draftKey }) {
       {essay && savedAt && (
         <div className="autosaved">Autosaved @ {dateLabel(savedAt)}.</div>
       )}
-      <p>{canAssess ? "Your response is saved to your account when submitted. Text is sent to OpenAI for automated feedback." : task?.prompt && r.part === 1 ? "Drafts are saved in this browser. Automated feedback for chart tasks is not available yet." : "Drafts are saved in this browser. Automated feedback is unavailable until the full task prompt is imported."}</p>
+      <p className="writing-note">{canAssess ? "Your response is saved to your account when submitted. Text is sent to OpenAI for automated feedback." : task?.prompt && r.part === 1 ? "Drafts are saved in this browser. Automated feedback for chart tasks is not available yet." : "Drafts are saved in this browser. Automated feedback isn't available for this task yet."}</p>
       <textarea
         className="essay"
-        placeholder="Please input"
-        aria-label="Please input"
+        placeholder="Write your answer here"
+        aria-label="Your answer"
         value={essay}
         onChange={(e) => {
           setEssay(e.target.value);
@@ -1744,13 +1957,13 @@ function WritingEditor({ r, setToast, task, release, draftKey }) {
         }}
       />
       <div className="editor-footer">
-        <span>Words: {count}</span>
+        <span>{count} {count === 1 ? "word" : "words"} (aim for {r.part === 1 ? 150 : 250})</span>
         <button className="pill green" disabled={!canAssess || assessment.busy || !count} onClick={submit}>
-          Submit for Feedback
+          Submit for feedback
         </button>
       </div>
       <details open>
-        <summary>Writing Feedback</summary>
+        <summary>Feedback</summary>
         <PracticeFeedback assessment={assessment} onRestore={value => { setEssay(value); setSavedAt(new Date().toISOString()); }} />
       </details>
       {versions.length > 0 &&
@@ -1772,10 +1985,9 @@ function WritingEditor({ r, setToast, task, release, draftKey }) {
     </>
   );
 }
-function SpeakingEditor({ r, setToast, onComplete, library, draftKey }) {
+function SpeakingEditor({ r, setToast, onStart, onComplete, library, draftKey, question, setQuestion }) {
   const assessment = usePracticeAssessment(r, library.release, true, draftKey);
   const d = { questions: library.topic.questions.map(speakingQuestionText) },
-    [question, setQuestion] = useState(0),
     [played, setPlayed] = useState(false),
     [playing, setPlaying] = useState(false),
     [recording, setRecording] = useState(false),
@@ -1786,6 +1998,9 @@ function SpeakingEditor({ r, setToast, onComplete, library, draftKey }) {
     [live, setLive] = useState(false),
     [clips, setClips] = useState([]),
     [done, setDone] = useState(false);
+  useEffect(() => {
+    if (clips.length) onStart?.();
+  }, [clips.length]);
   const recorder = useRef(null),
     stream = useRef(null),
     urls = useRef([]),
@@ -1843,8 +2058,7 @@ function SpeakingEditor({ r, setToast, onComplete, library, draftKey }) {
     return (
       <>
         <div className="speaking-complete">
-          <p>This is the end of part {r.part}.</p>
-          <p>All questions are completed.</p>
+          <p>Part {r.part} complete.</p>
         </div>
         <p className="retention-note">
           Submitted recordings are private and available for seven days. Your
@@ -1855,7 +2069,7 @@ function SpeakingEditor({ r, setToast, onComplete, library, draftKey }) {
     );
   return (
     <>
-      <p>Finish practice to save recordings privately and send audio to OpenAI for transcription and automated feedback. Unsubmitted recordings are lost when you leave this part.</p>
+      <p>Finish the test to save recordings privately and send audio to OpenAI for transcription and automated feedback. Unsubmitted recordings are lost when you leave this part.</p>
       <PracticeFeedback assessment={assessment} />
       <div className="live">
         <button
@@ -1940,7 +2154,7 @@ function SpeakingEditor({ r, setToast, onComplete, library, draftKey }) {
             }}
           >
             {question === d.questions.length - 1
-              ? "Finish practice"
+              ? "Finish test"
               : "Next question"}
           </button>
         </div>
@@ -1948,52 +2162,192 @@ function SpeakingEditor({ r, setToast, onComplete, library, draftKey }) {
     </>
   );
 }
+function useWritingTaskBands(r) {
+  const { writingLibrary, assessmentApi } = useContext(WorkspaceContext);
+  const release = writingLibrary?.data ? practiceRelease(writingLibrary.data) : "";
+  const enabled = !!(release && assessmentApi);
+  const task1 = usePracticeAssessment({ ...r, skill: "writing", part: 1 }, release, enabled);
+  const task2 = usePracticeAssessment({ ...r, skill: "writing", part: 2 }, release, enabled);
+  const describe = (assessment, part) => {
+    const band = latestWritingBand(assessment.submissions);
+    const rows = assessment.submissions;
+    const task = listeningPart(writingLibrary?.data, part);
+    let note = "Not assessed yet";
+    if (!enabled) note = writingLibrary?.loading ? "Loading…" : "Not assessed yet";
+    else if (task && task.assessmentAvailable === false)
+      note = "Automated feedback is not available for this task yet";
+    else if (rows.some((x) => x.state === "processing")) note = "Assessment in progress";
+    else if (rows.some((x) => x.state === "failed")) note = "Assessment did not finish";
+    else if (rows.length) note = "Submitted, no band estimate returned";
+    return { band, note };
+  };
+  const tasks = [describe(task1, 1), describe(task2, 2)];
+  return { tasks, band: writingBand(tasks[0].band, tasks[1].band) };
+}
+const signed = (n) => `${n > 0 ? "+" : ""}${n}`;
+function deltaText(stored) {
+  const d = resultDelta(stored);
+  if (!d) return "First recorded attempt";
+  if (d.correct === 0) return "Same score as your last attempt";
+  const band = d.band ? ` (band ${signed(d.band.toFixed(1))})` : "";
+  return `${d.correct > 0 ? "Up" : "Down"} ${Math.abs(d.correct)} correct vs your last attempt${band}`;
+}
 function Scores({ r, Link }) {
   const read = useRead();
-  const { listeningLibrary, readingLibrary } = useContext(WorkspaceContext);
+  const { listeningLibrary, readingLibrary, storagePrefix, onStorageError, catalog: catalogData } =
+    useContext(WorkspaceContext);
   const a = read(`${storageKey({ ...r, skill: "listening" })}:library:${practiceRelease(listeningLibrary?.data)}`, {}),
     b = read(`${storageKey({ ...r, skill: "reading" })}:library:${practiceRelease(readingLibrary?.data)}`, {}),
     lk = completeListeningKeys(listeningLibrary?.data),
     rk = completeListeningKeys(readingLibrary?.data, 3),
-    valid = !!(lk || rk),
-    l = lk ? band(grade(a, lk)) : 0,
-    rd = rk ? band(grade(b, rk)) : 0;
-  const [show, setShow] = useState({ listening: false, reading: false });
+    valid = !!(lk || rk);
   const stats = {
     Listening: answerStats(a, lk || []),
     Reading: answerStats(b, rk || []),
   };
+  const answeredOf = (s) => s.correct + s.incorrect;
+  const bandOf = (label, keys, data) =>
+    keys && answeredOf(stats[label]) > 0 ? band(grade(data, keys)) : null;
+  const l = bandOf("Listening", lk, a),
+    rd = bandOf("Reading", rk, b);
+  const writing = useWritingTaskBands(r);
+  const speakingState = read("workspace:progress", {})[markerKey(r, "speaking")]?.state;
+  const overall = overallBand({ listening: l, reading: rd, writing: writing.band, speaking: null });
+  const [show, setShow] = useState({ listening: false, reading: false });
+  const [mistakesOnly, setMistakesOnly] = useState(false);
+  const [history, setHistory] = useState({});
+  const resultKey = (skill) => `workspace:result:${r.type}:${r.book}:${r.test}:${skill}`;
+  const signature = [l, rd, stats.Listening.correct, stats.Reading.correct, answeredOf(stats.Listening), answeredOf(stats.Reading)].join("|");
+  useEffect(() => {
+    const next = {};
+    for (const [skill, label, keys, value] of [["listening", "Listening", lk, l], ["reading", "Reading", rk, rd]]) {
+      if (!keys || value === null) continue;
+      const result = {
+        correct: stats[label].correct,
+        answered: answeredOf(stats[label]),
+        total: keys.length,
+        band: value,
+        at: new Date().toISOString(),
+      };
+      const stored = recordResult(read(resultKey(skill), null), result);
+      next[skill] = stored;
+      try {
+        localStorage.setItem(storagePrefix + resultKey(skill), JSON.stringify(stored));
+      } catch {
+        onStorageError?.();
+      }
+    }
+    setHistory(next);
+  }, [signature, r.type, r.book, r.test]);
+  // Only skills the student actually attempted count towards "Review mistakes".
+  const attempted = (s) => s.correct + s.incorrect > 0;
+  const mistakesFor = (s, key) => (attempted(s) ? s.incorrect + s.unanswered * Number(!!key) : 0);
+  const mistakes = mistakesFor(stats.Listening, lk) + mistakesFor(stats.Reading, rk);
+  const firstSection = lk ? "listening" : "reading";
+  const reviewMistakes = () => {
+    setMistakesOnly(true);
+    setShow({ listening: true, reading: true });
+    setTimeout(() => document.getElementById(`review-${firstSection}`)?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  };
+  const catalog = catalogData;
+  const trackable = r.type === "general-training" ? ["reading"] : undefined;
+  const next = catalog
+    ? nextAvailableTest(r, booksFor(r.type), testCount, catalog, trackable)
+    : nextTest(r, booksFor(r.type), testCount);
+  const nextSkill =
+    r.type === "general-training"
+      ? "reading"
+      : (next &&
+          catalog &&
+          ["listening", "reading", "writing", "speaking"].find((sk) =>
+            isSkillAvailable(next.type, next.book, next.test, sk, catalog),
+          )) ||
+        "listening";
+  const nextLabel = next
+    ? `Next test: ${next.book === "og" ? "Official Guide" : next.book === "eg" ? "Exam Essentials" : `Book ${next.book}`} Test ${next.test}`
+    : null;
+  const libraryPath = r.type === "academic" ? "/ielts/practice/home" : "/ielts/practice/general-training";
+  const cards = [
+    ["Listening", l, lk],
+    ["Reading", rd, rk],
+  ];
+  const heroLines = cards
+    .filter(([label, , keys]) => keys && answeredOf(stats[label]) > 0)
+    .map(([label, value, keys]) => ({ label, value, keys, stored: history[label.toLowerCase()] }));
   return (
     <main className="scores">
       <h2>
         {r.type === "academic" ? "Academic" : "General Training"} {r.book} Test{" "}
         {r.test}
       </h2>
+      <section className="score-hero" aria-labelledby="score-hero-title">
+        <h3 id="score-hero-title">Your results</h3>
+        {heroLines.length ? (
+          <ul>
+            {heroLines.map(({ label, value, keys, stored }) => (
+              <li key={label}>
+                <strong>{label}</strong>: band {formatBand(value)} · {stats[label].correct}/{keys.length} correct · {answeredOf(stats[label])}/{keys.length} answered
+                <small>{deltaText(stored)}</small>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>Answer Listening or Reading questions to see your band here.</p>
+        )}
+        <div className="score-hero-actions">
+          <button className="solid" onClick={reviewMistakes} disabled={!valid || !mistakes}>
+            {valid && !mistakes ? "No mistakes to review" : `Review mistakes${mistakes ? ` (${mistakes})` : ""}`}
+          </button>
+          {next ? (
+            <Link className="pill" to={testPath(next, nextSkill)}>
+              {nextLabel} <ArrowRight size={16} />
+            </Link>
+          ) : (
+            <Link className="pill" to={libraryPath}>
+              Back to tests <ArrowRight size={16} />
+            </Link>
+          )}
+        </div>
+      </section>
       <div className="score-grid">
         {[
           ["Listening", l],
-          ["Overall", 0],
+          ["Overall", overall.value],
           ["Reading", rd],
-          ["Writing", 0],
-          ["Speaking", 0],
+          ["Writing", writing.band],
+          ["Speaking", null],
         ].map(([label, value]) => (
           <article className={label === "Overall" ? "overall" : ""} key={label}>
             <h3>{label}</h3>
-            <strong>{(label === "Listening" && !lk || label === "Reading" && !rk) ? "—" : value.toFixed(1)}</strong>
-            {(label === "Listening" || label === "Reading") && (
+            <strong>{formatBand(value)}</strong>
+            {(label === "Listening" || label === "Reading") && value === null && (
+              <p className="score-note">{(label === "Listening" ? lk : rk) ? "Not started" : "Answer keys unavailable"}</p>
+            )}
+            {(label === "Listening" || label === "Reading") && (label === "Listening" ? lk : rk) && (
               <small>
-                ✓ {stats[label].correct}
-                <br />⊗ {stats[label].incorrect}
-                <br />⊖ {stats[label].unanswered}
+                <span title="Correct" aria-label={`${stats[label].correct} correct`}>✓ {stats[label].correct} correct</span>
+                <br /><span title="Wrong" aria-label={`${stats[label].incorrect} wrong`}>⊗ {stats[label].incorrect} wrong</span>
+                <br /><span title="Skipped" aria-label={`${stats[label].unanswered} skipped`}>⊖ {stats[label].unanswered} skipped</span>
               </small>
+            )}
+            {label === "Overall" && overall.value === null && (
+              <p className="score-note">
+                Complete all 4 skills for an overall band. Still needed:{" "}
+                {overall.missing.map((s) => cap(s)).join(", ")}.
+              </p>
+            )}
+            {label === "Writing" && writing.band === null && (
+              <p className="score-note">Needs a feedback band for both tasks</p>
+            )}
+            {label === "Speaking" && (
+              <p className="score-note">{speakingStatus(speakingState)} · no band is estimated</p>
             )}
           </article>
         ))}
       </div>
       {!valid && (
         <p className="hint">
-          Answer keys for this test have not been imported. No score can be
-          calculated.
+          We don't have answers for this test yet, so we can't score it.
         </p>
       )}
       {valid &&
@@ -2002,15 +2356,15 @@ function Scores({ r, Link }) {
             keys = skill === "listening" ? lk : rk;
           if (!keys)
             return (
-              <section key={skill}>
+              <section key={skill} id={`review-${skill}`}>
                 <Link className="pill" to={testPath(r, skill)}>
                   {cap(skill)} <ArrowRight size={16} />
                 </Link>
-                <p>{skill === "listening" ? "A band score requires all 40 answer keys. Review available keys within each part." : "No answer data available"}</p>
+                <p>{skill === "listening" ? "A band score requires all 40 answers. Review the available answers within each part." : "No answers on file for this test."}</p>
               </section>
             );
           return (
-            <section key={skill}>
+            <section key={skill} id={`review-${skill}`}>
               <Link className="pill" to={testPath(r, skill)}>
                 {cap(skill)} <ArrowRight size={16} />
               </Link>
@@ -2025,16 +2379,25 @@ function Scores({ r, Link }) {
                 />
                 Show answers for unanswered
               </label>
+              <label className="toggle">
+                <input
+                  role="switch"
+                  type="checkbox"
+                  checked={mistakesOnly}
+                  onChange={(e) => setMistakesOnly(e.target.checked)}
+                />
+                Show only mistakes
+              </label>
               <table className="review-table">
                 <thead>
                   <tr>
                     <th>Question</th>
-                    <th>My Answer</th>
-                    <th>Correct Answer</th>
+                    <th>Your answer</th>
+                    <th>Correct answer</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {keys.map((key, i) => (
+                  {keys.map((key, i) => ({ key, i })).filter(({ key, i }) => !mistakesOnly || !isCorrect(data[i + 1], key)).map(({ key, i }) => (
                     <tr
                       key={i}
                       className={
@@ -2046,7 +2409,7 @@ function Scores({ r, Link }) {
                       }
                     >
                       <td>{i + 1}</td>
-                      <td>{data[i + 1] || "-"}</td>
+                      <td>{data[i + 1] || "No answer"}</td>
                       <td>
                         <span
                           className={
@@ -2055,7 +2418,7 @@ function Scores({ r, Link }) {
                               : ""
                           }
                         >
-                          {key ? key.replaceAll("|", " | ") : "Key not available"}
+                          {key ? key.replaceAll("|", " | ") : "No answer on file"}
                         </span>
                       </td>
                     </tr>
@@ -2065,23 +2428,34 @@ function Scores({ r, Link }) {
             </section>
           );
         })}
-      {["writing", "speaking"].map((skill) => (
-        <section key={skill}>
-          <Link className="pill" to={testPath(r, skill)}>
-            {cap(skill)} <ArrowRight size={16} />
-          </Link>
-          {Array.from(
-            { length: skill === "writing" ? 2 : 3 },
-            (_, i) => i + 1,
-          ).map((part) => (
+      <section>
+        <Link className="pill" to={testPath(r, "writing")}>
+          Writing <ArrowRight size={16} />
+        </Link>
+        {[1, 2].map((part) => {
+          const task = writing.tasks[part - 1];
+          return (
             <h3 key={part}>
-              <Link to={testPath(r, skill, part)}>
-                {cap(skill)} Task {part} Band Score: 0.0
+              <Link to={testPath(r, "writing", part)}>
+                Writing task {part}:{" "}
+                {task.band !== null ? `Estimated band ${formatBand(task.band)}` : task.note}
               </Link>
             </h3>
-          ))}
-        </section>
-      ))}
+          );
+        })}
+        <p className="muted">Estimated bands come from automated feedback on your submitted tasks. Task 2 counts double in the writing band.</p>
+      </section>
+      <section>
+        <Link className="pill" to={testPath(r, "speaking")}>
+          Speaking <ArrowRight size={16} />
+        </Link>
+        {[1, 2, 3].map((part) => (
+          <h3 key={part}>
+            <Link to={testPath(r, "speaking", part)}>Speaking part {part}</Link>
+          </h3>
+        ))}
+        <p className="muted">Status: {speakingStatus(speakingState)}. Open each part to read your feedback; no speaking band is estimated.</p>
+      </section>
       <nav className="bottom-nav">
         <Link
           to={testPath(
@@ -2091,12 +2465,15 @@ function Scores({ r, Link }) {
         >
           {r.type === "general-training" ? "Reading" : "Speaking"}
         </Link>
-        <button
-          className="solid"
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        >
-          Back to Top
-        </button>
+        {next ? (
+          <Link className="solid" to={testPath(next, nextSkill)}>
+            {nextLabel}
+          </Link>
+        ) : (
+          <Link className="solid" to={libraryPath}>
+            Back to tests
+          </Link>
+        )}
         <Link
           to={testPath(
             r,

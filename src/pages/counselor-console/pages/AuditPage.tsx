@@ -100,14 +100,14 @@ function MetadataCell({ entry }: { entry: OrgAuditEntry }) {
 }
 
 export default function CounselorConsoleAuditPage() {
-  const { orgId, org, role } = useCounselorConsole();
+  const { orgId, org, role, branchId } = useCounselorConsole();
   const [page, setPage] = useState(1);
 
   const isOwner = role === 'owner';
 
   const queryArgs = useMemo(
-    () => ({ orgId: orgId ?? '', page, limit: PAGE_SIZE }),
-    [orgId, page],
+    () => ({ orgId: orgId ?? '', branchId, page, limit: PAGE_SIZE }),
+    [orgId, branchId, page],
   );
 
   const { data, isLoading, isFetching, isError, refetch } = useGetAuditQuery(

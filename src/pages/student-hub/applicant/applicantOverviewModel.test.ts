@@ -155,10 +155,10 @@ describe('applicant overview states', () => {
 
 it('always uses the applicant shell while keeping specialist prep pages independent', async () => {
   const { isApplicantWorkspacePath } = await import('src/lib/applicantWorkspace');
-  for (const path of ['/student-hub', '/student-hub/overview', '/student-hub/applications', '/student-hub/documents']) {
+  for (const path of ['/student-hub', '/student-hub/overview', '/student-hub/applications', '/student-hub/documents', '/student-hub/research-prep']) {
     expect(isApplicantWorkspacePath(path)).toBe(true);
   }
-  for (const path of ['/student-hub/sat-prep/runner', '/student-hub/research-prep', '/student-hub/ielts-prep', '/counselor-console', '/student-hub-other']) {
+  for (const path of ['/student-hub/sat-prep/runner', '/student-hub/ielts-prep', '/counselor-console', '/student-hub-other']) {
     expect(isApplicantWorkspacePath(path)).toBe(false);
   }
 });

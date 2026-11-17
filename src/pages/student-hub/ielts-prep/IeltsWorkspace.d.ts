@@ -7,6 +7,8 @@ export interface IeltsWorkspaceProps {
   profile: { name: string; email: string };
   storagePrefix: string;
   onStorageError?: () => void;
+  /** GET ielts-content/catalog; undefined while loading/unavailable (shows everything). */
+  catalog?: { types: Record<string, Record<string, Record<string, string[]>>> };
   speakingLibrary?: { data?: any; loading: boolean; error: boolean; retry: () => unknown };
   writingLibrary?: { data?: any; loading: boolean; error: boolean; retry: () => unknown };
   readingLibrary?: { data?: any; loading: boolean; error: boolean; retry: () => unknown };

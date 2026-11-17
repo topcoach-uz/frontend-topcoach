@@ -142,7 +142,7 @@ function rosterRow(s: OrgStudent): Record<string, string | number> {
 }
 
 export default function CounselorConsoleReportsPage() {
-  const { orgId, org } = useCounselorConsole();
+  const { orgId, org, branchId } = useCounselorConsole();
   const dispatch = useAppDispatch();
 
   // Which report is currently exporting client-side (null when idle).
@@ -165,7 +165,7 @@ export default function CounselorConsoleReportsPage() {
     setPreviews({});
     setFullData({});
     setPreviewKey(null);
-  }, [orgId]);
+  }, [orgId, branchId]);
 
   const header = (
     <CcPageHead
@@ -207,6 +207,7 @@ export default function CounselorConsoleReportsPage() {
       const res = await dispatch(
         counselorConsoleApi.endpoints.getOrgStudents.initiate({
           orgId: orgId as string,
+          branchId,
           page,
           limit: ROSTER_MAX_LIMIT,
         }),
@@ -236,6 +237,7 @@ export default function CounselorConsoleReportsPage() {
     const analytics = await dispatch(
       counselorConsoleApi.endpoints.getOrgAnalytics.initiate({
         orgId: orgId as string,
+        branchId,
         range: '365d',
       }),
     ).unwrap();
@@ -255,6 +257,7 @@ export default function CounselorConsoleReportsPage() {
     const analytics = await dispatch(
       counselorConsoleApi.endpoints.getOrgAnalytics.initiate({
         orgId: orgId as string,
+        branchId,
         range: '365d',
       }),
     ).unwrap();
@@ -291,6 +294,7 @@ export default function CounselorConsoleReportsPage() {
     const res = await dispatch(
       counselorConsoleApi.endpoints.getOrgStudents.initiate({
         orgId: orgId as string,
+        branchId,
         page: 1,
         limit: PREVIEW_ROWS,
       }),

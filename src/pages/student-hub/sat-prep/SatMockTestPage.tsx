@@ -42,7 +42,15 @@ import {
 import SatHtml from 'src/components/sat-prep/SatHtml';
 import { RunnerModal, ConfirmDialog } from 'src/components/sat-prep/RunnerModal';
 import type { SatChoice, SatQuestion } from 'src/app/services/sat-prep/types';
-import { recordSession } from 'src/app/services/sat-prep/local-progress';
+import {
+  recordSession,
+  useGetSatProgressQuery,
+  type SessionRecord,
+} from 'src/app/services/sat-prep/local-progress';
+import { useGetSatStudyGoalQuery } from 'src/app/services/sat-prep/study-goal';
+import { scoreBreakdown, resultInsights } from './sat-overview-model';
+import { SatScoringState } from './SatScoringState';
+import { answeredCount, clearRun, loadRun, runKey, saveRun } from './satRunState';
 import {
   useAddVocabularyMutation,
   useGetMarkedQuestionIdsQuery,
@@ -93,7 +101,7 @@ const SatMockTestPage: React.FC = () => {
   const navigate = useNavigate();
   const [questions, setQuestions] = useState<SatQuestion[]>([]);
   const [meta, setMeta] = useState<TestMeta>({});
-  const [phase, setPhase] = useState<'briefing' | 'taking' | 'submitted'>('briefing');
+  const [phase, setPhase] = useState<'briefing' | 'taking' | 'scoring' | 'submitted'>('briefing');
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [marked, setMarked] = useState<Record<string, boolean>>({});
@@ -119,6 +127,14 @@ const SatMockTestPage: React.FC = () => {
   const [exitOpen, setExitOpen] = useState(false);
   const [submitOpen, setSubmitOpen] = useState(false);
   const [leftPct, setLeftPct] = useState(50);
+  const [savedSession, setSavedSession] = useState<SessionRecord | null>(null);
+  const [saveFailed, setSaveFailed] = useState(false);
+  const { data: progress } = useGetSatProgressQuery();
+  const { data: goal } = useGetSatStudyGoalQuery();
+  const runKeyRef = useRef<string | null>(null);
+  const endsAtRef = useRef<number | null>(null);
+  const pendingRef = useRef<{ perQ: Record<string, boolean>; durationSec: number } | null>(null);
+  const reviewListRef = useRef<HTMLDivElement | null>(null);
   const startedAtRef = useRef<number | null>(null);
   const draggingRef = useRef(false);
   const tickedDownRef = useRef(false);
@@ -133,6 +149,23 @@ const SatMockTestPage: React.FC = () => {
       setQuestions(parsed);
       const m: TestMeta = rawMeta ? JSON.parse(rawMeta) : {};
       setMeta(m);
+      const key = runKey(parsed, m);
+      runKeyRef.current = key;
+      const saved = loadRun(key);
+      if (saved && saved.phase === 'taking') {
+        // Resume after a reload: restore answers and continue the clock
+        // from the absolute end timestamp, never from a fresh duration.
+        setAnswers(saved.answers);
+        setMarked(saved.marked);
+        setIdx(Math.min(saved.idx, parsed.length - 1));
+        startedAtRef.current = saved.startedAt ?? Date.now();
+        endsAtRef.current = saved.endsAt;
+        if (saved.endsAt != null) {
+          setSecondsLeft(Math.max(0, Math.ceil((saved.endsAt - Date.now()) / 1000)));
+        }
+        setPhase('taking');
+        return;
+      }
       if (m.durationMin) setSecondsLeft(m.durationMin * 60);
       // Skip briefing for practice/pack — only mock tests get the splash
       setPhase(m.mode === 'mock' ? 'briefing' : 'taking');
@@ -145,8 +178,76 @@ const SatMockTestPage: React.FC = () => {
   useEffect(() => {
     if (phase === 'taking' && startedAtRef.current == null) {
       startedAtRef.current = Date.now();
+      if (endsAtRef.current == null && secondsLeft != null) {
+        endsAtRef.current = Date.now() + secondsLeft * 1000;
+      }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
+
+  // Persist the run so a reload resumes where the student left off.
+  useEffect(() => {
+    if (phase !== 'taking' || !runKeyRef.current) return;
+    saveRun(runKeyRef.current, {
+      answers,
+      marked,
+      idx,
+      phase: 'taking',
+      endsAt: endsAtRef.current,
+      startedAt: startedAtRef.current,
+      savedAt: Date.now(),
+    });
+  }, [phase, answers, marked, idx]);
+
+  // Warn before closing / reloading the tab mid-test.
+  useEffect(() => {
+    if (phase !== 'taking') return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [phase]);
+
+  const attemptSave = async () => {
+    const pending = pendingRef.current;
+    if (!pending) return;
+    setSaveFailed(false);
+    const [record] = await Promise.all([
+      recordSession({
+        questions,
+        perQuestionCorrect: pending.perQ,
+        mode: meta.mode ?? 'practice',
+        section: meta.section ?? questions[0]?.section ?? 'math',
+        title: meta.title ?? 'SAT Practice',
+        durationSec: pending.durationSec,
+        mockId: meta.mockId,
+      }),
+      new Promise((r) => setTimeout(r, 1300)),
+    ]);
+    if (!record) {
+      setSaveFailed(true);
+      return;
+    }
+    setSavedSession(record);
+    if (runKeyRef.current) clearRun(runKeyRef.current);
+    sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(META_KEY);
+    pendingRef.current = null;
+    setPhase('submitted');
+  };
+
+  const beginSubmit = () => {
+    const perQ: Record<string, boolean> = {};
+    for (const q of questions) {
+      perQ[q.id] = isCorrect(q, answers[q.id] ?? { letter: null, spr: '' });
+    }
+    const startedAt = startedAtRef.current ?? Date.now();
+    pendingRef.current = { perQ, durationSec: Math.round((Date.now() - startedAt) / 1000) };
+    setPhase('scoring');
+    void attemptSave();
+  };
 
   // Seed local `marked` state from server-side flags. Keyed by row id (q.id)
   // since the runner's `marked` map is row-id-keyed, but we look up which
@@ -197,11 +298,19 @@ const SatMockTestPage: React.FC = () => {
     if (phase !== 'taking' || secondsLeft == null) return;
     if (secondsLeft <= 0 && !tickedDownRef.current) {
       tickedDownRef.current = true;
-      finalizeAndSubmit();
+      beginSubmit();
       Modal.info({ title: 'Time is up', content: 'Your answers have been auto-submitted.' });
       return;
     }
-    const t = setTimeout(() => setSecondsLeft((s) => (s == null ? null : s - 1)), 1000);
+    const t = setTimeout(
+      () =>
+        setSecondsLeft((s) => {
+          if (s == null) return null;
+          const end = endsAtRef.current;
+          return end != null ? Math.max(0, Math.ceil((end - Date.now()) / 1000)) : s - 1;
+        }),
+      1000,
+    );
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, secondsLeft]);
@@ -301,7 +410,6 @@ const SatMockTestPage: React.FC = () => {
             <span className="sat-runner__briefing-dot" /> MISSION BRIEFING
           </div>
           <h1 className="sat-runner__briefing-title">{meta.title ?? 'Mock Test'}</h1>
-          <div className="sat-runner__briefing-sub">System check complete. Ready for launch.</div>
 
           <div className="sat-runner__briefing-stats">
             <div className="sat-runner__briefing-stat">
@@ -351,8 +459,35 @@ const SatMockTestPage: React.FC = () => {
     );
   }
 
+  // ─── SCORING (save in flight, or failed) ───
+  if (phase === 'scoring') {
+    return (
+      <div className="sat-runner sat-runner--scoring">
+        <SatScoringState failed={saveFailed} onRetry={() => void attemptSave()} />
+      </div>
+    );
+  }
+
   // ─── SUBMITTED (review) ───
   if (phase === 'submitted' && score) {
+    const insights = resultInsights({
+      saved: savedSession,
+      sessions: [
+        ...(progress?.recentSessions ?? []),
+        ...(progress?.mockSessions ?? []),
+        ...(progress?.packSessions ?? []),
+      ],
+      combined: scoreBreakdown(progress?.mockSessions ?? []).total,
+      target: goal?.targetScore ?? null,
+    });
+    const wrongCount = score.total - score.correct;
+    const reviewMistakes = () => {
+      const first = questions.findIndex(
+        (q) => !isCorrect(q, answers[q.id] ?? { letter: null, spr: '' }),
+      );
+      if (first >= 0) setReviewIdx(first);
+      reviewListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
     const isMath = meta.section === 'math';
     return (
       <div className="sat-runner sat-runner--review">
@@ -366,15 +501,29 @@ const SatMockTestPage: React.FC = () => {
               </div>
               <h1 className="sat-review__title">{meta.title ?? 'Practice session'}</h1>
               <p className="sat-review__subtitle">
-                {isMath ? 'Math' : 'Reading & Writing'} · {meta.mode === 'mock' ? 'Bluebook-style mock' : meta.mode === 'pack' ? 'Test pack' : 'Practice'}
+                {isMath ? 'Math' : 'Reading & Writing'}
               </p>
               <div className="sat-review__actions">
-                <button
-                  className="sat-btn sat-btn--primary"
-                  onClick={() => navigate('/student-hub/sat-prep')}
-                >
-                  <Check size={14} /> Done
-                </button>
+                {wrongCount > 0 ? (
+                  <button className="sat-btn sat-btn--primary" onClick={reviewMistakes}>
+                    Review {wrongCount} {wrongCount === 1 ? 'mistake' : 'mistakes'}
+                  </button>
+                ) : (
+                  <button
+                    className="sat-btn sat-btn--primary"
+                    onClick={() => navigate('/student-hub/sat-prep')}
+                  >
+                    <Check size={14} /> Back to overview
+                  </button>
+                )}
+                {wrongCount > 0 && (
+                  <button
+                    className="sat-btn sat-btn--ghost"
+                    onClick={() => navigate('/student-hub/sat-prep')}
+                  >
+                    Back to overview
+                  </button>
+                )}
                 <button
                   className="sat-btn sat-btn--ghost"
                   onClick={() => {
@@ -387,7 +536,11 @@ const SatMockTestPage: React.FC = () => {
                     setReviewIdx(0);
                     if (meta.durationMin) setSecondsLeft(meta.durationMin * 60);
                     startedAtRef.current = null;
+                    endsAtRef.current = null;
                     tickedDownRef.current = false;
+                    setSavedSession(null);
+                    setSaveFailed(false);
+                    if (runKeyRef.current) clearRun(runKeyRef.current);
                     setPhase(meta.mode === 'mock' ? 'briefing' : 'taking');
                   }}
                 >
@@ -413,6 +566,16 @@ const SatMockTestPage: React.FC = () => {
                   <div className="sat-review__score-frac">{score.correct} of {score.total}</div>
                 </div>
               </div>
+              {insights.length > 0 && (
+                <ul className="sat-review__insights">
+                  {insights.map((i) => (
+                    <li key={i.key} className={`sat-review__insight sat-review__insight--${i.tone}`}>
+                      <strong>{i.value}</strong>
+                      <span>{i.label}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <div className="sat-review__score-tags">
                 <div className="sat-review__score-tag sat-review__score-tag--ok">
                   <CheckCircle2 size={12} /> {score.correct} correct
@@ -426,7 +589,7 @@ const SatMockTestPage: React.FC = () => {
 
           <div className="sat-review__divider" />
 
-          <div className="sat-review__list-header">
+          <div className="sat-review__list-header" ref={reviewListRef}>
             <h2 className="sat-review__list-title">Question review</h2>
             <span className="sat-review__list-meta">
               Question {reviewIdx + 1} of {total}
@@ -509,29 +672,7 @@ const SatMockTestPage: React.FC = () => {
     if (ans.letter === letter) update({ letter: null });
   };
 
-  const finalizeAndSubmit = () => {
-    // Build per-question correctness map and persist
-    const perQ: Record<string, boolean> = {};
-    for (const q of questions) {
-      perQ[q.id] = isCorrect(q, answers[q.id] ?? { letter: null, spr: '' });
-    }
-    const startedAt = startedAtRef.current ?? Date.now();
-    const durationSec = Math.round((Date.now() - startedAt) / 1000);
-    try {
-      recordSession({
-        questions,
-        perQuestionCorrect: perQ,
-        mode: meta.mode ?? 'practice',
-        section: meta.section ?? questions[0]?.section ?? 'math',
-        title: meta.title ?? 'SAT Practice',
-        durationSec,
-        mockId: meta.mockId,
-      });
-    } catch { /* localStorage write failures shouldn't block the UI */ }
-    setPhase('submitted');
-    sessionStorage.removeItem(STORAGE_KEY);
-    sessionStorage.removeItem(META_KEY);
-  };
+  const finalizeAndSubmit = beginSubmit;
 
   const handleConfirmSubmit = () => {
     setSubmitOpen(false);
@@ -540,8 +681,15 @@ const SatMockTestPage: React.FC = () => {
 
   const handleConfirmExit = () => {
     setExitOpen(false);
+    if (runKeyRef.current) clearRun(runKeyRef.current);
     sessionStorage.removeItem(STORAGE_KEY);
     sessionStorage.removeItem(META_KEY);
+    navigate('/student-hub/sat-prep');
+  };
+
+  // Leave but keep everything: the Overview offers "Resume your test".
+  const handleLeaveAndResume = () => {
+    setExitOpen(false);
     navigate('/student-hub/sat-prep');
   };
 
@@ -872,6 +1020,9 @@ const SatMockTestPage: React.FC = () => {
             <button className="rm-btn rm-btn--ghost" onClick={() => setExitOpen(false)}>
               Keep going
             </button>
+            <button className="rm-btn rm-btn--ghost" onClick={handleLeaveAndResume}>
+              Leave &amp; resume later
+            </button>
             <button
               className="rm-btn rm-btn--danger"
               onClick={handleConfirmExit}
@@ -891,22 +1042,9 @@ const SatMockTestPage: React.FC = () => {
         <div className="sat-runner__exit-options">
           <p className="sat-runner__exit-lead">
             You've answered{' '}
-            <strong>{Object.values(answers).filter((a) => a.letter || a.spr).length}</strong>{' '}
+            <strong>{answeredCount({ answers })}</strong>{' '}
             of <strong>{total}</strong> questions so far.
           </p>
-          <ul className="sat-runner__exit-list">
-            <li>
-              <strong>Finish &amp; submit</strong> — score this attempt and add it to your study
-              history. Unanswered questions count as incorrect.
-            </li>
-            <li>
-              <strong>Exit without saving</strong> — leave now and discard this attempt. Nothing is
-              recorded.
-            </li>
-            <li>
-              <strong>Keep going</strong> — close this dialog and return to the test.
-            </li>
-          </ul>
         </div>
       </RunnerModal>
 

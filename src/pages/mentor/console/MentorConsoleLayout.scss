@@ -1043,3 +1043,21 @@ img.mentor-console-user-avatar--image {
     cursor: pointer;
   }
 }
+
+/* Students table — what the mentor is assigned for (program + roles). */
+.mc-assignment {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mc-assignment-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.mc-assignment-roles {
+  font-size: 12px;
+  line-height: 1.35;
+  color: #6b625b;
+}

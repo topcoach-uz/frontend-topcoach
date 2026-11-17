@@ -116,3 +116,57 @@
   font-size: 1.1rem;
   color: var(--cc-text);
 }
+
+/* Branches card (Settings) */
+.cc-branches-card {
+  margin-top: 20px;
+}
+
+.cc-branches-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cc-branches-help {
+  margin: 8px 0 14px;
+  font-size: 0.82rem;
+  color: var(--cc-text-muted);
+}
+
+.cc-branches-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cc-branches-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--cc-hairline);
+}
+
+.cc-branches-name {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--cc-text);
+}
+
+.cc-branches-meta {
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: var(--cc-text-muted);
+}
+
+.cc-branches-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}

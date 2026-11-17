@@ -18,6 +18,7 @@
    acts on the subject belongs on the baseline with the copy. Default is
    baseline; Analytics is the one 'top'. */
 import type { ReactNode } from 'react';
+import { useCounselorConsole } from '../CounselorConsoleContext';
 
 export interface CcPageHeadProps {
   /** Section name, e.g. "Insights". Rendered in the accent colour. */
@@ -44,6 +45,7 @@ export function CcPageHead({
   actions,
   actionsAlign = 'baseline',
 }: CcPageHeadProps) {
+  const { branch } = useCounselorConsole();
   return (
     <div className="cc-page-head--ruled">
       <div
@@ -55,6 +57,7 @@ export function CcPageHead({
           <div className="cc-page-eyebrow">
             <span className="cc-page-eyebrow-accent">{eyebrow}</span>
             {orgName ? <span>· {orgName}</span> : null}
+            {orgName && branch ? <span>· {branch.name}</span> : null}
           </div>
           <h1 className="cc-page-title">{title}</h1>
           {lead ? <p className="cc-page-lead">{lead}</p> : null}

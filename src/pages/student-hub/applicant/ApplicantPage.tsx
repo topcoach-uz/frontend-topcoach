@@ -8,6 +8,7 @@ import { getTranslation } from "src/lib/i18n/translationUtils";
 import { displayApplicantDate } from "./applicantDate";
 import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import "./applicantPages.scss";
+import { Breadcrumb } from "./Breadcrumb";
 
 export function ApplicantPage({
   title,
@@ -125,18 +126,7 @@ export function CollegeListTabs({ current, masters = false }: { current: College
   );
 }
 
-export function Breadcrumb({ children }: { children: ReactNode }) {
-  return (
-    <>
-      <nav className="applicant-breadcrumb" aria-label="Breadcrumb">
-        <Link to="/student-hub/overview">My journey</Link>
-        <span>/</span>
-        {children}
-      </nav>
-      <ApplicantMobileTrail>{children}</ApplicantMobileTrail>
-    </>
-  );
-}
+export { Breadcrumb };
 export const displayDate = displayApplicantDate;
 export const applicationStatusLabels: Record<string, string> = {
   researching: "Saved for later",
