@@ -18,8 +18,12 @@ describe('public mentor card', () => {
     expect(html).not.toContain('$25');
     expect(html).not.toContain('/ session');
   });
-  it('can show rates for Master mentors independently of audience', () => {
-    const html = renderToStaticMarkup(<MentorCard {...props} mentorshipType="master" showPrice email="ahmadullayevarabboy@gmail.com" />);
-    expect(html).toContain('$25');
+  it.each(['junior', 'senior', 'expert', 'probono', 'uzcombinator'])('hides %s rates even when saved price visibility is enabled', level => {
+    const html = renderToStaticMarkup(<MentorCard {...props} level={level} mentorshipType="master" showPrice email="ahmadullayevarabboy@gmail.com" />);
+    expect(html).toContain('Master');
+    expect(html).not.toContain('$');
+    expect(html).not.toContain('/ session');
+    expect(html).not.toContain('Free / Pro-bono');
+    expect(html).not.toContain('Contact for pricing');
   });
 });
