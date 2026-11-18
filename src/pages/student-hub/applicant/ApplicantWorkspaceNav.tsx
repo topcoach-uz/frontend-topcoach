@@ -365,7 +365,8 @@ function PanelGroups({ groups, onNavigate }: { groups: NavGroup[]; onNavigate?: 
     <>
       {groups.map((group) => (
         <div key={group.key} className="applicant-section-panel-group">
-          <p className="applicant-section-panel-group__label">{group.label}</p>
+          {/* A lone group repeats the panel heading ("Application" / "APPLICATION"), so only label groups when there are several. */}
+          {groups.length > 1 && <p className="applicant-section-panel-group__label">{group.label}</p>}
           {group.links.map((link) => (
             <PanelLink key={link.key} link={link} onNavigate={onNavigate} />
           ))}
