@@ -261,59 +261,6 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   }
 }
 
-.applicant-section-panel-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 18px;
-  @include lg.lg-inset;
-  color: inherit;
-  transition:
-    transform 240ms $ease-out,
-    box-shadow 240ms $ease-out;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 12px 24px -14px rgba(48, 43, 40, 0.35);
-  }
-}
-.applicant-section-panel-profile__avatar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
-  border-radius: 50%;
-  background: $nav-brand;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  box-shadow: 0 4px 10px -4px rgba(139, 0, 0, 0.5);
-}
-.applicant-section-panel-profile__text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-
-  strong {
-    color: $nav-ink;
-    font-size: 14px;
-    font-weight: 600;
-    line-height: normal;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  span {
-    color: $nav-muted;
-    font-size: 12px;
-    line-height: 16px;
-  }
-}
-
 .applicant-section-panel-group {
   display: flex;
   flex-direction: column;
@@ -535,8 +482,7 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   .applicant-rail__item svg,
   .applicant-panel-slot,
   .applicant-panel-toggle,
-  .applicant-section-panel-link,
-  .applicant-section-panel-profile {
+  .applicant-section-panel-link {
     transition: none;
   }
   .applicant-section-panel {
@@ -563,8 +509,7 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
     -webkit-backdrop-filter: none;
   }
   .applicant-section-panel,
-  .applicant-panel-toggle,
-  .applicant-section-panel-profile {
+  .applicant-panel-toggle {
     background: #fff;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
