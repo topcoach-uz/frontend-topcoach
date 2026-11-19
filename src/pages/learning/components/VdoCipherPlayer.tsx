@@ -16,8 +16,64 @@ interface VdoCipherPlayerProps {
   completeLockReason?: string;
 }
 
+const VDO_API_SRC = 'https://player.vdocipher.com/v2/api.js';
+
+/** Minimum seconds between two progress writes — `timeupdate` fires ~4x/second
+ *  and every call reaches the lesson-progress endpoint. */
+const PROGRESS_REPORT_INTERVAL_MS = 10000;
+
+declare global {
+  interface Window {
+    VdoPlayer?: {
+      getInstance: (iframe: HTMLIFrameElement) => {
+        video: HTMLVideoElement;
+        api: unknown;
+      };
+    };
+  }
+}
+
+/** The player events (play/timeupdate/ended) are only delivered through
+ *  VdoCipher's own api.js — the iframe speaks a handshake protocol, not plain
+ *  postMessage, so listening to `window.message` by hand receives nothing past
+ *  `@vdo/readyToHandshake`. Loaded once per document and shared. */
+let vdoApiPromise: Promise<void> | null = null;
+
+const loadVdoCipherApi = (): Promise<void> => {
+  if (window.VdoPlayer) {
+    return Promise.resolve();
+  }
+  if (vdoApiPromise) {
+    return vdoApiPromise;
+  }
+
+  vdoApiPromise = new Promise<void>((resolve, reject) => {
+    const fail = () => {
+      vdoApiPromise = null;
+      reject(new Error('Failed to load the VdoCipher player API'));
+    };
+
+    const existing = document.querySelector<HTMLScriptElement>(
+      `script[src="${VDO_API_SRC}"]`,
+    );
+    if (existing) {
+      existing.addEventListener('load', () => resolve());
+      existing.addEventListener('error', fail);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = VDO_API_SRC;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = fail;
+    document.head.appendChild(script);
+  });
+
+  return vdoApiPromise;
+};
+
 const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
-  videoId,
   otp,
   playbackInfo,
   title,
@@ -30,220 +86,140 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
   const playerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isReady, setIsReady] = useState(false);
-  const [isSafari, setIsSafari] = useState(false);
-  const messageHandlerRef = useRef<((event: MessageEvent) => void) | null>(null);
+
+  // The parent passes inline arrow functions, so their identity changes on
+  // every render. Holding them in refs keeps them out of the effect deps —
+  // otherwise the iframe is destroyed and rebuilt on each parent render and
+  // the video restarts from zero.
+  const onProgressUpdateRef = useRef(onProgressUpdate);
+  const onCompleteRef = useRef(onComplete);
+  const canCompleteRef = useRef(canComplete);
+  const isCompletedRef = useRef(isCompleted);
+  onProgressUpdateRef.current = onProgressUpdate;
+  onCompleteRef.current = onComplete;
+  canCompleteRef.current = canComplete;
+  isCompletedRef.current = isCompleted;
 
   useEffect(() => {
-    const initializePlayer = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+    const container = playerRef.current;
+    if (!container) {
+      return;
+    }
 
-        console.log('Initializing VdoCipher iframe player with:', {
-          videoId,
-          otp: otp ? 'present' : 'missing',
-          playbackInfo: playbackInfo ? 'present' : 'missing',
-          playerRef: !!playerRef.current
-        });
+    if (!otp || !playbackInfo) {
+      setError('Video access token is missing. Please reload the page.');
+      setIsLoading(false);
+      return;
+    }
 
-        // Validate inputs
-        if (!playerRef.current) {
-          throw new Error('Player container not found');
+    let cancelled = false;
+    let detachListeners: (() => void) | null = null;
+
+    // The overlay sits on top of the iframe, so never let it outlive a stalled
+    // script load and swallow clicks on the play button.
+    const spinnerFallback = setTimeout(() => setIsLoading(false), 5000);
+
+    setError(null);
+    setIsLoading(true);
+
+    container.innerHTML = '';
+
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://player.vdocipher.com/v2/?otp=${encodeURIComponent(
+      otp,
+    )}&playbackInfo=${encodeURIComponent(playbackInfo)}`;
+    iframe.style.border = '0';
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.background = '#000';
+    iframe.style.display = 'block';
+    iframe.style.position = 'absolute';
+    iframe.style.top = '0';
+    iframe.style.left = '0';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.allow = 'encrypted-media';
+    iframe.allowFullscreen = true;
+    container.appendChild(iframe);
+
+    loadVdoCipherApi()
+      .then(() => {
+        if (cancelled || !window.VdoPlayer) {
+          return;
         }
-        
-        if (!otp) {
-          throw new Error('OTP is missing');
+
+        const player = window.VdoPlayer.getInstance(iframe);
+        const video = player?.video;
+        if (!video) {
+          throw new Error('VdoCipher player instance is unavailable');
         }
-        
-                       if (!playbackInfo) {
-                 throw new Error('Playback info is missing');
-               }
 
-               // Clear the container
-        playerRef.current.innerHTML = '';
+        let lastReportedAt = 0;
 
-        // Create iframe with VdoCipher player
-        const iframe = document.createElement('iframe');
-        const iframeSrc = `https://player.vdocipher.com/v2/?otp=${encodeURIComponent(otp)}&playbackInfo=${encodeURIComponent(playbackInfo)}`;
-        
-        console.log('Creating VdoCipher iframe with URL:', iframeSrc);
-        
-               iframe.src = iframeSrc;
-               iframe.style.border = '0';
-               iframe.style.width = '100%';
-               iframe.style.height = '100%';
-               iframe.style.background = '#000';
-               iframe.style.display = 'block';
-               iframe.style.position = 'absolute';
-               iframe.style.top = '0';
-               iframe.style.left = '0';
-               iframe.style.right = '0';
-               iframe.style.bottom = '0';
-               iframe.allow = 'encrypted-media';
-               iframe.allowFullscreen = true;
-
-        // Add load event listener to iframe
-        iframe.onload = () => {
-          console.log('VdoCipher iframe loaded successfully');
-          // Set a timeout to detect domain errors
-          setTimeout(() => {
-            if (isLoading && !isReady) {
-              // If still loading after 5 seconds, likely a domain restriction issue
-              const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-              if (isLocalhost) {
-                console.warn('VdoCipher may be blocking localhost - check domain whitelist in dashboard');
-              }
-            }
-          }, 5000);
+        const handleReady = () => setIsLoading(false);
+        // Reaching the end auto-completes, but only where the button would
+        // have allowed it: the parent's onComplete warns about the unfinished
+        // quiz, and that warning must not fire on its own at every playthrough.
+        const handleEnded = () => {
+          if (canCompleteRef.current && !isCompletedRef.current) {
+            onCompleteRef.current();
+          }
         };
-
-        iframe.onerror = (error) => {
-          console.error('VdoCipher iframe failed to load:', error);
-          setError('Failed to load video player');
+        const handleTimeUpdate = () => {
+          const { currentTime, duration } = video;
+          if (!duration || !Number.isFinite(duration)) {
+            return;
+          }
+          const now = Date.now();
+          if (now - lastReportedAt < PROGRESS_REPORT_INTERVAL_MS) {
+            return;
+          }
+          lastReportedAt = now;
+          onProgressUpdateRef.current((currentTime / duration) * 100);
+        };
+        const handleError = () => {
+          setError(
+            'Video playback error. Please reload the page, or contact support if the problem continues.',
+          );
           setIsLoading(false);
         };
 
-        // Add iframe to container
-        playerRef.current.appendChild(iframe);
+        video.addEventListener('loadedmetadata', handleReady);
+        video.addEventListener('canplay', handleReady);
+        video.addEventListener('play', handleReady);
+        video.addEventListener('ended', handleEnded);
+        video.addEventListener('timeupdate', handleTimeUpdate);
+        video.addEventListener('error', handleError);
 
-        // Track handshake completion and authentication timeout
-        let handshakeCompleted = false;
-        let authenticationTimeout: NodeJS.Timeout | null = null;
-
-        // Set up authentication timeout (after handshake, if no play event within 10 seconds, likely auth failure)
-        const checkAuthentication = () => {
-          if (handshakeCompleted && !isPlaying && isLoading) {
-            console.warn('Authentication may have failed - handshake completed but video not playing');
-            const currentDomain = window.location.hostname;
-            setError(`Video authentication failed. The domain "${currentDomain}" may need to be whitelisted in your VdoCipher dashboard. Please contact support.`);
-            setIsLoading(false);
-          }
+        detachListeners = () => {
+          video.removeEventListener('loadedmetadata', handleReady);
+          video.removeEventListener('canplay', handleReady);
+          video.removeEventListener('play', handleReady);
+          video.removeEventListener('ended', handleEnded);
+          video.removeEventListener('timeupdate', handleTimeUpdate);
+          video.removeEventListener('error', handleError);
         };
 
-        // Set up message listener for iframe communication
-        const handleMessage = (event: MessageEvent) => {
-          if (event.origin !== 'https://player.vdocipher.com') {
-            return;
-          }
-
-          const data = event.data;
-          
-          // Prevent infinite re-renders by checking if we've already handled this message
-          if (data.type === '@vdo/readyToHandshake' && isReady) {
-            return;
-          }
-
-          console.log('VdoCipher iframe message:', data);
-
-          // Handle different message types
-          if (data.type === 'ready' || data.type === '@vdo/readyToHandshake') {
-            if (!isReady) {
-              console.log('VdoCipher iframe ready - setting loading to false');
-              setIsReady(true);
-              setIsLoading(false);
-              handshakeCompleted = true;
-              // Set timeout to check if authentication succeeds (10 seconds after handshake)
-              authenticationTimeout = setTimeout(() => {
-                checkAuthentication();
-              }, 10000);
-            }
-          } else if (data.type === 'play') {
-            console.log('Video started playing');
-            setIsPlaying(true);
-            setIsLoading(false);
-            // Clear authentication timeout since video is playing
-            if (authenticationTimeout) {
-              clearTimeout(authenticationTimeout);
-              authenticationTimeout = null;
-            }
-          } else if (data.type === 'pause') {
-            setIsPlaying(false);
-          } else if (data.type === 'ended') {
-            setIsPlaying(false);
-            onComplete();
-          } else if (data.type === 'timeupdate') {
-            if (data.currentTime && data.duration) {
-              const progress = (data.currentTime / data.duration) * 100;
-              onProgressUpdate(progress);
-            }
-          } else if (data.type === 'error') {
-            console.error('VdoCipher iframe error:', data.error);
-            // Clear authentication timeout on error
-            if (authenticationTimeout) {
-              clearTimeout(authenticationTimeout);
-              authenticationTimeout = null;
-            }
-            // Check for domain restriction errors
-            // VdoCipher error codes: 2014 = Domain not allowed, 6007 = Domain restriction
-            if (data.error && (
-              data.error.includes('Domain not allowed') || 
-              data.error.includes('2014') || 
-              data.error.includes('6007') ||
-              (typeof data.error === 'object' && (data.error.code === 2014 || data.error.code === 6007))
-            )) {
-              const currentDomain = window.location.hostname;
-              const isLocalhost = currentDomain === 'localhost' || currentDomain === '127.0.0.1';
-              if (isLocalhost) {
-                setError(`Domain not allowed: The domain "${currentDomain}" needs to be whitelisted in your VdoCipher dashboard. Please contact support or add this domain to your VdoCipher account settings.`);
-              } else {
-                setError(`Domain not allowed: The domain "${currentDomain}" needs to be whitelisted in your VdoCipher dashboard. Please contact support.`);
-              }
-            } else if (data.error && data.error.includes('403')) {
-              // 403 Forbidden usually means domain restriction
-              const currentDomain = window.location.hostname;
-              setError(`Access denied: The domain "${currentDomain}" may not be whitelisted. Please contact support.`);
-            } else {
-              setError('Video playback error. Please try again or contact support if the issue persists.');
-            }
-            setIsLoading(false);
-          } else if (data.type === 'loadedmetadata') {
-            console.log('Video metadata loaded');
-            setIsLoading(false);
-          } else if (data.type === 'canplay') {
-            console.log('Video can start playing');
-            setIsLoading(false);
-          }
-        };
-
-        // Store the handler reference to prevent multiple listeners
-        messageHandlerRef.current = handleMessage;
-        window.addEventListener('message', handleMessage);
-
-        // Fallback timeout to prevent infinite loading
-        const fallbackTimeout = setTimeout(() => {
-          console.log('Fallback timeout reached - setting loading to false');
-          setIsLoading(false);
-        }, 3000);
-
-        // Cleanup function
-        return () => {
-          if (messageHandlerRef.current) {
-            window.removeEventListener('message', messageHandlerRef.current);
-          }
-          clearTimeout(fallbackTimeout);
-          if (authenticationTimeout) {
-            clearTimeout(authenticationTimeout);
-          }
-        };
-
-      } catch (error) {
-        console.error('Failed to initialize VdoCipher iframe player:', error);
-        setError('Failed to initialize video player');
+        // The iframe renders its own poster and controls once it authenticates,
+        // so stop showing our spinner even if no media event has fired yet.
         setIsLoading(false);
-      }
+      })
+      .catch(() => {
+        if (cancelled) {
+          return;
+        }
+        // The iframe itself is already mounted and can still play — only our
+        // progress tracking is lost, so do not replace it with an error screen.
+        setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+      clearTimeout(spinnerFallback);
+      detachListeners?.();
+      container.innerHTML = '';
     };
-
-    initializePlayer();
-  }, [otp, playbackInfo, onProgressUpdate, onComplete]);
-
-  // Detect Safari browser
-  useEffect(() => {
-    const userAgent = navigator.userAgent;
-    const isSafariBrowser = /Safari/.test(userAgent) && !/Chrome/.test(userAgent);
-    setIsSafari(isSafariBrowser);
-  }, []);
+  }, [otp, playbackInfo]);
 
   // Security: Disable right-click and keyboard shortcuts
   useEffect(() => {
@@ -254,12 +230,12 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       // Prevent common screen recording shortcuts
       if (
-        (e.ctrlKey || e.metaKey) && 
+        (e.ctrlKey || e.metaKey) &&
         (e.key === 's' || e.key === 'c' || e.key === 'v' || e.key === 'p')
       ) {
         e.preventDefault();
       }
-      
+
       // Prevent F12, Ctrl+Shift+I, Ctrl+U (developer tools)
       if (
         e.key === 'F12' ||
@@ -290,35 +266,7 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
             <div className="error-icon">⚠️</div>
             <h3>Video Error</h3>
             <p>{error}</p>
-            {(error.includes('Domain not allowed') || error.includes('403') || error.includes('2014') || error.includes('6007')) && (
-              <div className="domain-error-help" style={{ 
-                marginTop: '16px', 
-                padding: '12px', 
-                backgroundColor: '#fff3cd', 
-                border: '1px solid #ffc107',
-                borderRadius: '4px',
-                fontSize: '12px',
-                textAlign: 'left'
-              }}>
-                <strong style={{ color: '#856404' }}>⚠️ Domain Whitelisting Required:</strong>
-                <p style={{ margin: '8px 0', color: '#856404' }}>
-                  The domain <code style={{ backgroundColor: '#f8f9fa', padding: '2px 4px', borderRadius: '2px' }}>{window.location.hostname}</code> needs to be whitelisted in the VdoCipher dashboard.
-                </p>
-                <ol style={{ margin: '8px 0', paddingLeft: '20px', color: '#856404' }}>
-                  <li>Log in to <strong>VdoCipher Dashboard</strong> (https://dashboard.vdocipher.com)</li>
-                  <li>Navigate to <strong>Config</strong> section</li>
-                  <li>Go to <strong>Domain Restrictions</strong> or <strong>Allowed Domains</strong></li>
-                  <li>Add <code style={{ backgroundColor: '#f8f9fa', padding: '2px 4px', borderRadius: '2px' }}>{window.location.hostname}</code> to the whitelist</li>
-                  <li>Save the changes and wait a few minutes for propagation</li>
-                  <li>Refresh this page</li>
-                </ol>
-                <p style={{ margin: '8px 0 0 0', fontSize: '11px', color: '#856404', fontStyle: 'italic' }}>
-                  <strong>Important:</strong> This must be done by an administrator with access to the VdoCipher account. 
-                  Contact your administrator or support if you need assistance.
-                </p>
-              </div>
-            )}
-            <button 
+            <button
               className="retry-button"
               onClick={() => window.location.reload()}
             >
@@ -332,23 +280,20 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
 
   return (
     <div className="vdocipher-player-container">
-  
-
       {/* The Safari incompatibility hint now lives in the lesson header
           as a compact badge; keeping the box here would duplicate it. */}
-      
-<div 
-  ref={playerRef} 
-  className="vdocipher-player"
-  style={{ 
-    width: '100%', 
-    position: 'relative',
-    paddingTop: '56.25%', // 16:9 aspect ratio
-    backgroundColor: '#000',
- 
-    overflow: 'hidden'
-  }}
-/>
+
+      <div
+        ref={playerRef}
+        className="vdocipher-player"
+        style={{
+          width: '100%',
+          position: 'relative',
+          paddingTop: '56.25%', // 16:9 aspect ratio
+          backgroundColor: '#000',
+          overflow: 'hidden',
+        }}
+      />
 
       {isLoading && (
         <div className="loading-overlay">
@@ -376,7 +321,11 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
             className="complete-button"
             onClick={onComplete}
             disabled={!canComplete}
-            title={!canComplete ? (completeLockReason ?? 'Complete the practice questions first.') : undefined}
+            title={
+              !canComplete
+                ? (completeLockReason ?? 'Complete the practice questions first.')
+                : undefined
+            }
           >
             <CheckCircle2 size={16} />
             Mark as Complete
@@ -392,4 +341,4 @@ const VdoCipherPlayer: React.FC<VdoCipherPlayerProps> = ({
   );
 };
 
-export default VdoCipherPlayer; 
+export default VdoCipherPlayer;
