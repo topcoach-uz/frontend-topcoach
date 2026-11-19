@@ -1,17 +1,17 @@
 /**
- * Research Prep — single-week deep-dive view.
+ * Research Prep — single-week deep-dive.
  *
- * Three-column layout:
- *   ┌──────────────────┬──────────────────┬──────────────────┐
- *   │  Learning        │  Knowledge       │  Assignment      │
- *   │  Materials       │  Check (quiz)    │  Submission      │
- *   └──────────────────┴──────────────────┴──────────────────┘
+ * One full-width column of steps, in unlock order:
+ *   1  Lessons          — player beside the lesson list and resources
+ *   2  Knowledge check  — answer options in two columns on wide screens
+ *   3  Assignment       — brief and requirements beside the submission
+ *   Up next — the following week, locked or ready.
  *
- * Plus a "UP NEXT — Complete Week N to unlock" banner at the bottom.
+ * The week title and status live in the page header (ResearchTopBar).
  */
 
 import React from 'react';
-import { FileText, FlaskConical, Sparkles, ArrowRight } from 'lucide-react';
+import { ArrowRight, Lock } from 'lucide-react';
 import type {
   ResearchSubmission,
   ResearchWeek,
@@ -32,7 +32,6 @@ interface ResearchModuleViewProps {
   onOpenWeek?: (weekNumber: number) => void;
 }
 
-
 const ResearchModuleView: React.FC<ResearchModuleViewProps> = ({
   week,
   lock,
@@ -42,60 +41,21 @@ const ResearchModuleView: React.FC<ResearchModuleViewProps> = ({
   onBookMentorReview,
   onOpenWeek,
 }) => {
-  const totalResources = week.videoLessons.reduce((a, v) => a + v.attachments.length, 0);
-  const isComplete = lock.assignment.submissionStatus !== 'none' && lock.assignment.submissionStatus !== 'returned_for_revision';
-  const status =
-    lock.weekLocked
-      ? 'Locked'
-      : lock.assignment.submissionStatus === 'graded'
-        ? 'Complete'
-        : lock.assignment.submissionStatus === 'submitted'
-          ? 'Submitted'
-          : lock.assignment.submissionStatus === 'returned_for_revision'
-            ? 'Revision'
-            : 'In Progress';
-
-  const statusCls =
-    status === 'Complete'
-      ? 'rp-module-status--complete'
-      : status === 'Locked'
-        ? 'rp-module-status--locked'
-        : '';
+  const isComplete =
+    lock.assignment.submissionStatus !== 'none' &&
+    lock.assignment.submissionStatus !== 'returned_for_revision';
 
   return (
     <div className="rp-module">
-      <div className="rp-module-head">
-        <div className="rp-module-title-row">
-          <h1 className="rp-module-title">
-            Week {week.weekNumber}: {week.title}
-          </h1>
-          <span className={`rp-module-status ${statusCls}`}>{status}</span>
-        </div>
-        <div className="rp-module-meta">
-          <span className="meta-item">
-            <FileText size={13} /> {totalResources} Resource{totalResources === 1 ? '' : 's'}
-          </span>
-          <span className="meta-item">
-            <Sparkles size={13} /> {week.quiz.questions.length} Quiz
-          </span>
-          <span className="meta-item">
-            <FlaskConical size={13} /> 1 Assignment
-          </span>
-        </div>
-      </div>
-
-      <div className="rp-module-grid">
+      {/* One column: each step spans the full width, in unlock order. */}
+      <div className="rp-module__steps">
         <MaterialsColumn
           weekId={week.id}
           weekLocked={lock.weekLocked}
           lessons={week.videoLessons}
           videoStates={lock.videos}
         />
-        <KnowledgeCheckColumn
-          weekId={week.id}
-          quiz={week.quiz}
-          lock={lock.quiz}
-        />
+        <KnowledgeCheckColumn weekId={week.id} quiz={week.quiz} lock={lock.quiz} />
         <AssignmentColumn
           weekId={week.id}
           weekNumber={week.weekNumber}
@@ -107,41 +67,33 @@ const ResearchModuleView: React.FC<ResearchModuleViewProps> = ({
         />
       </div>
 
-      {/* UP NEXT — only if there's a next week and current isn't fully complete */}
-      {nextWeek && !isComplete && (
-        <div className="rp-upnext">
-          <div className="label">↑ Up Next — Complete Week {week.weekNumber} to Unlock</div>
-          <div className="body">
-            <div className="title">
-              Week {nextWeek.weekNumber} — {nextWeek.title}
-            </div>
-            <div className="sub">
-              Complete the Week {week.weekNumber} quiz and submit your assignment to unlock this
-              module.
-            </div>
+      {nextWeek && (
+        <div className={`rp-upnext${isComplete ? ' is-ready' : ''}`}>
+          <div className="rp-upnext__body">
+            <span className="rp-upnext__label">Up next</span>
+            <strong>
+              Week {nextWeek.weekNumber} · {nextWeek.title}
+            </strong>
+            <small>
+              {isComplete
+                ? `Week ${week.weekNumber} is done. Week ${nextWeek.weekNumber} is ready when you are.`
+                : `Pass the Week ${week.weekNumber} knowledge check and submit the assignment to unlock it.`}
+            </small>
           </div>
-          <span className="end-cta">Locked</span>
-        </div>
-      )}
-      {nextWeek && isComplete && (
-        <div className="rp-upnext">
-          <div className="label">↑ Up Next — Ready</div>
-          <div className="body">
-            <div className="title">
-              Week {nextWeek.weekNumber} — {nextWeek.title}
-            </div>
-            <div className="sub">
-              Week {week.weekNumber} complete. Open Week {nextWeek.weekNumber} to continue.
-            </div>
-          </div>
-          <button
-            type="button"
-            className="end-cta end-cta--go"
-            onClick={() => onOpenWeek?.(nextWeek.weekNumber)}
-          >
-            Go to Week {nextWeek.weekNumber}
-            <ArrowRight size={15} aria-hidden />
-          </button>
+          {isComplete ? (
+            <button
+              type="button"
+              className="rp-btn rp-btn--primary"
+              onClick={() => onOpenWeek?.(nextWeek.weekNumber)}
+            >
+              Go to Week {nextWeek.weekNumber}
+              <ArrowRight size={16} aria-hidden />
+            </button>
+          ) : (
+            <span className="rp-pill rp-pill--locked">
+              <Lock size={11} aria-hidden /> Locked
+            </span>
+          )}
         </div>
       )}
     </div>

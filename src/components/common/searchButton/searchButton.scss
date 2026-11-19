@@ -1,0 +1,44 @@
+// Red round search button that sits inside the right end of a search field.
+.tc-search-btn {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--tc-search-btn-size, 32px);
+  height: var(--tc-search-btn-size, 32px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #8b0000;
+  color: #fff;
+  line-height: 0;
+  cursor: pointer;
+  box-shadow: 0 2px 6px -2px rgba(139, 0, 0, 0.45);
+  transition:
+    background-color 160ms ease-out,
+    transform 120ms ease-out;
+
+  svg {
+    color: #fff;
+  }
+  &:hover {
+    background: #6e0000;
+  }
+  &:active {
+    transform: scale(0.94);
+  }
+  &:focus-visible {
+    outline: 2px solid #8b0000;
+    outline-offset: 2px;
+  }
+}
+
+// Ant Design fields: let the circle sit snug against the right edge.
+.ant-input-affix-wrapper:has(> .ant-input-suffix .tc-search-btn) {
+  padding-right: 4px;
+
+  > .ant-input-suffix {
+    gap: 6px;
+    margin-inline-start: 6px;
+  }
+}

@@ -9,6 +9,7 @@ import { displayApplicantDate } from "./applicantDate";
 import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import "./applicantPages.scss";
 import { Breadcrumb } from "./Breadcrumb";
+import { useSegmentLens } from "src/hooks/useSegmentLens";
 
 export function ApplicantPage({
   title,
@@ -115,8 +116,17 @@ export function CollegeListTabs({ current, masters = false }: { current: College
     { key: "scholarships", label: "Scholarships", to: "/student-hub/applications?tab=scholarships" },
     { key: "archived", label: "Archived", to: "/student-hub/applications?view=archived" },
   ];
+  const lens = useSegmentLens<HTMLElement>('[aria-current="page"]', [current, masters]);
   return (
-    <nav className="applicant-view-tabs" aria-label="College List views">
+    <nav
+      ref={lens.ref}
+      className="applicant-view-tabs"
+      // Until the sliding thumb is measured, the active link paints its own
+      // highlight, so the current view is never left unmarked.
+      data-lens={lens.lensStyle.width != null ? "on" : undefined}
+      aria-label="College List views"
+    >
+      <span className="applicant-view-tabs__lens" style={lens.lensStyle} aria-hidden />
       {views.map((view) => (
         <Link key={view.key} to={view.to} className={view.key === current ? "is-active" : undefined} aria-current={view.key === current ? "page" : undefined}>
           {view.label}

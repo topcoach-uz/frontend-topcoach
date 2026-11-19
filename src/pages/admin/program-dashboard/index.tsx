@@ -17,7 +17,8 @@ import {
   Statistic,
   Progress,
 } from 'antd';
-import { Search as SearchIcon, CheckCircle2, User, Mail, Phone } from 'lucide-react';
+import { CheckCircle2, User, Mail, Phone } from 'lucide-react';
+import SearchButton from 'src/components/common/searchButton';
 import {
   LineChart,
   Line,
@@ -36,7 +37,6 @@ import { useGetMeQuery } from 'src/app/services/users';
 import type { ColumnsType } from 'antd/es/table';
 import './index.scss';
 
-const { Search } = Input;
 
 interface DashboardData {
   id: string | null;
@@ -773,14 +773,14 @@ const ProgramDashboard: React.FC = () => {
               <>
                 <Card className="dashboard-filters" style={{ marginTop: 16 }}>
                   <Space direction="vertical" style={{ width: '100%' }} size="large">
-                    <Search
+                    <Input
                       placeholder="Search by user name or email"
                       allowClear
-                      enterButton={<SearchIcon size={16} />}
+                      suffix={<SearchButton size={30} onClick={() => void fetchData()} />}
                       size="large"
                       value={searchText}
                       onChange={(e) => setSearchText(e.target.value)}
-                      onSearch={fetchData}
+                      onPressEnter={() => void fetchData()}
                       style={{ maxWidth: 400 }}
                     />
                   </Space>

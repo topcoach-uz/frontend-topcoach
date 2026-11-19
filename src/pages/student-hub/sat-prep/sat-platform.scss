@@ -1592,3 +1592,25 @@
   font-style: normal;
   color: #6e6a66;
 }
+
+/* Collection search: red round search button inside the field's right end. */
+.sat-catalog__search {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+
+  input {
+    margin: 0 !important;
+    padding-right: 34px !important;
+  }
+  .tc-search-btn {
+    position: absolute;
+    right: 4px;
+  }
+}
+@media (max-width: 900px) {
+  .sat-catalog__search {
+    width: 100%;
+  }
+}

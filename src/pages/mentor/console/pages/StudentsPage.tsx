@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Alert, Button, Card, Input, Spin, Table, Tabs, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { Search } from 'lucide-react';
+
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ReviewsPage from './ReviewsPage';
 import { useReviewCounts } from '../components/reviews/reviewCounts';
@@ -16,6 +16,7 @@ import { McPill } from '../components/McPill';
 import { useMentorBookings, useMentorMentees } from '../sessionSources';
 import { avatarStyleForId, formatDateTime, initialsFromName } from '../utils';
 
+import SearchButton from 'src/components/common/searchButton';
 const { Text } = Typography;
 
 /** Row model unifying Full Support roster students and 1:1 platform mentees. */
@@ -266,7 +267,7 @@ export default function MentorConsoleStudentsPage() {
           <Input
             size="large"
             allowClear
-            prefix={<Search size={16} style={{ opacity: 0.45 }} />}
+            suffix={<SearchButton size={30} />}
             placeholder="Search by name"
             value={q}
             onChange={(e) => setQ(e.target.value)}

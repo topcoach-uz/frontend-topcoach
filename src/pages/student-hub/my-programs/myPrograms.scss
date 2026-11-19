@@ -3,3 +3,101 @@
  @media(max-width:760px){.mp-two,.mp-program-grid{grid-template-columns:1fr}.mp-panel,.mp-program-card{padding:18px}.mp-tabs{gap:18px}.mp-access{gap:18px}.mp-heading{margin-bottom:20px}.mp-row{align-items:start}.mp-switcher label{width:100%}.mp-switcher select{width:100%}}
  @media(pointer:coarse){button{min-height:44px}}
 }
+
+/* Empty state: a centred glass panel instead of a bare bordered box. */
+.my-programs .mp-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 560px;
+  margin: 8px auto 0;
+  padding: 48px 32px 40px;
+  border-radius: 28px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.52);
+  backdrop-filter: blur(28px) saturate(185%);
+  -webkit-backdrop-filter: blur(28px) saturate(185%);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 22px 30px -24px rgba(255, 255, 255, 0.55),
+    0 18px 40px -30px rgba(48, 43, 40, 0.32),
+    0 1px 3px rgba(48, 43, 40, 0.04);
+
+  h2 {
+    margin: 0 0 8px;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  p {
+    max-width: 40ch;
+    margin: 0;
+    color: var(--mp-muted);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    background: #fff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  @media (max-width: 760px) {
+    padding: 36px 22px 28px;
+    border-radius: 22px;
+  }
+}
+.my-programs .mp-empty-state__icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 18px;
+  border-radius: 16px;
+  background: #f7e6e4;
+  color: #8b0000;
+}
+.my-programs .mp-empty-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 26px;
+
+  .mp-primary,
+  .mp-secondary {
+    min-height: 44px;
+    padding: 0 20px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .mp-primary {
+    background: #8b0000;
+    color: #fff;
+
+    &:hover {
+      background: #6e0000;
+      color: #fff;
+    }
+  }
+  .mp-secondary {
+    border-color: #e7e2dc;
+    color: #8b0000;
+
+    &:hover {
+      border-color: rgba(139, 0, 0, 0.3);
+      color: #6e0000;
+    }
+  }
+  @media (max-width: 480px) {
+    flex-direction: column;
+    width: 100%;
+
+    .mp-primary,
+    .mp-secondary {
+      justify-content: center;
+    }
+  }
+}

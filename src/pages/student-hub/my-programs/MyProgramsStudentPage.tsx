@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { applicantLinks } from 'src/lib/applicantWorkspace';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { CalendarDays, ArrowUpRight, Users, Clock } from 'lucide-react';
+import { CalendarDays, ArrowUpRight, ArrowRight, Users, Clock, Layers } from 'lucide-react';
 import { useGetMyMentoringProgramsQuery, type StudentProgram, type ProgramTask } from 'src/app/services/studentProgramsApi';
 import type {SessionLogDto} from 'src/app/services/fullSupportApi';
 import { programNames, roleNames, currentPrograms, latestPrograms, programUrl, safeWebUrl, taskStatus } from './programModel';
@@ -32,7 +32,15 @@ export default function MyProgramsStudentPage(){
  <header className="mp-heading"><div><h1>{program?programNames[program.program]:'My Programs'}</h1><p>{program?'Your mentors, lessons, and next steps.':'Your next lessons and tasks across your programs.'}</p></div>{q.isFetching&&<small role="status">Updating…</small>}</header>
  {program&&current.length>1&&<div className="mp-switcher"><Link to={programUrl()}>← All programs</Link><label>Program <select aria-label="Switch program" value={program.program} onChange={e=>{setParams({program:e.target.value});setLesson(null);}}>{all.map(p=><option value={p.program} key={p.id}>{programNames[p.program]}</option>)}</select></label></div>}
  {!program&&requested&&<p role="status">You don’t have an enrollment for that program. Your available programs are below.</p>}
- {!program&&<><div className="mp-program-grid">{all.map(p=>{const next=nextLesson(p.sessions);return <Link className="mp-program-card" to={programUrl(p.program)} key={p.id}><div className="mp-row"><h2>{programNames[p.program]}</h2><ArrowUpRight size={18}/></div><span className="mp-badge">{stateLabels[p.state]}</span><p>{p.mentors.length} mentors assigned · {p.tasks.filter(t=>t.status==='assigned'||t.status==='revision_requested').length} tasks to do</p><p>{next?'Next: '+time(next.dateTime):'No upcoming lesson'}</p><small>{p.accessEndsAt?'Access until '+time(p.accessEndsAt):'Access: no end date set'}</small></Link>})}</div>{!all.length&&<div className="mp-panel"><h2>No programs enrolled yet</h2><p>Your mentoring programs will appear here after enrollment.</p><Link to="/student-hub?section=others&target=full-support">Explore Full Support →</Link></div>}
+ {!program&&<><div className="mp-program-grid">{all.map(p=>{const next=nextLesson(p.sessions);return <Link className="mp-program-card" to={programUrl(p.program)} key={p.id}><div className="mp-row"><h2>{programNames[p.program]}</h2><ArrowUpRight size={18}/></div><span className="mp-badge">{stateLabels[p.state]}</span><p>{p.mentors.length} mentors assigned · {p.tasks.filter(t=>t.status==='assigned'||t.status==='revision_requested').length} tasks to do</p><p>{next?'Next: '+time(next.dateTime):'No upcoming lesson'}</p><small>{p.accessEndsAt?'Access until '+time(p.accessEndsAt):'Access: no end date set'}</small></Link>})}</div>{!all.length&&<section className="mp-empty-state" aria-labelledby="mp-empty-title">
+  <span className="mp-empty-state__icon" aria-hidden><Layers size={22}/></span>
+  <h2 id="mp-empty-title">No programs yet</h2>
+  <p>When you join a mentoring program, your mentors, lessons and tasks come together here.</p>
+  <div className="mp-empty-state__actions">
+   <Link className="mp-primary" to="/student-hub?section=others&target=full-support">Explore Full Support <ArrowRight size={16}/></Link>
+   <Link className="mp-secondary" to="/programs">Browse programs</Link>
+  </div>
+ </section>}
  {current.length>1&&<div className="mp-two mp-section"><section><h2>Next lessons</h2>{current.map(p=>({p,next:nextLesson(p.sessions)})).filter(x=>x.next).sort((a,b)=>Date.parse(a.next!.dateTime)-Date.parse(b.next!.dateTime)).slice(0,3).map(({p,next})=><div className="mp-row" key={next!.id}><div><span className="mp-badge">{programNames[p.program]}</span><h3>{next!.description||'Mentoring session'}</h3><p>{time(next!.dateTime)}</p><Link to={programUrl(p.program)+'&tab=lessons'}>View lesson →</Link></div></div>)}{!current.some(p=>nextLesson(p.sessions))&&<p className="mp-empty">No upcoming program lessons.</p>}</section><section><h2>Tasks needing attention</h2>{current.flatMap(p=>p.tasks.filter(t=>t.status==='assigned'||t.status==='revision_requested').map(t=>({p,t}))).sort((a,b)=>a.t.deadline.localeCompare(b.t.deadline)).slice(0,3).map(({p,t})=><div key={t.id}>{tasks([t],programNames[p.program])}</div>)}{!current.some(p=>p.tasks.some(t=>t.status==='assigned'||t.status==='revision_requested'))&&<p className="mp-empty">You’re caught up on program tasks.</p>}</section></div>}</>}
  {program&&<>
  <div className="mp-access"><span className="mp-badge">{stateLabels[program.state]}</span><div><small>Enrolled</small>{date(program.startsAt)}</div>{program.teachingEndsAt&&<div><small>Teaching ends</small>{time(program.teachingEndsAt)}</div>}<div><small>Access until</small>{program.accessEndsAt?time(program.accessEndsAt):'No end date set'}</div></div>
@@ -50,6 +58,6 @@ export default function MyProgramsStudentPage(){
  </div></>}
  {shared&&<section className="mp-section mp-shared"><h2>Other mentoring work</h2><p className="mp-muted">These existing records haven’t been linked to a program. They stay together here.</p>{sessionRows(data.unscopedSessions)}{tasks(data.unscopedTasks)}<Link to="/student-hub/tasks?source=assigned">Open all mentor tasks →</Link></section>}
  {lesson&&<section className="mp-lesson-detail" aria-label="Lesson details"><div className="mp-row"><h2>{lesson.description||'Mentoring session'}</h2><button className="mp-secondary" onClick={()=>setLesson(null)}>Close</button></div><p>{time(lesson.dateTime)} · Tashkent (UTC+5)</p><p>{lesson.mentorName} · {lessonLabel(lesson)}</p><p>Attendance: {lesson.attendance==='unknown'?'Not recorded':lesson.attendance}</p>{lesson.sharedNotes&&<><h3>Shared notes</h3><p className="mp-preserve">{lesson.sharedNotes}</p></>}{safeWebUrl(lesson.meetingLink)&&<a className="mp-primary" href={safeWebUrl(lesson.meetingLink)} target="_blank" rel="noopener noreferrer">Open meeting ↗</a>}</section>}
- <p className="mp-footer">All times in Tashkent (UTC+5)</p>
+ {all.length>0&&<p className="mp-footer">All times in Tashkent (UTC+5)</p>}
  </section>;
 }

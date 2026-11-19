@@ -24,7 +24,6 @@ import {
   ChevronLeft,
   BookOpen,
   Building2,
-  Search as SearchIcon,
   Brain,
   Flag,
   Mail,
@@ -40,6 +39,7 @@ import './admin-console-integrated-management.scss';
 import { getAdminConsoleAntdTheme } from './adminConsoleThemeConfig';
 import { initialsFromName } from './utils';
 
+import SearchButton from 'src/components/common/searchButton';
 const { Header, Content } = Layout;
 const { Text } = Typography;
 
@@ -352,7 +352,7 @@ export default function AdminConsoleLayout() {
               <Input
                 allowClear
                 size="large"
-                prefix={<SearchIcon size={16} className="admin-console-global-search-icon" />}
+                suffix={<SearchButton size={30} />}
                 placeholder="Search users by name, email, username…"
                 value={globalSearch}
                 onChange={(e) => setGlobalSearch(e.target.value)}

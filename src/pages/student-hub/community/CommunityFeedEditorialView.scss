@@ -1658,7 +1658,7 @@ body.cf-feed-active {
     @include lg.lg-thin;
     color: $cf-ink;
     border-radius: 16px;
-    padding: 8px 34px 8px 40px;
+    padding: 8px 78px 8px 16px;
     font-size: 14px;
     outline: none;
     font-family: inherit;
@@ -1671,9 +1671,14 @@ body.cf-feed-active {
     /* Strip the native clear-X — we render our own with the right icon. */
     &::-webkit-search-cancel-button { -webkit-appearance: none; }
   }
+  &__search-btn {
+    position: absolute;
+    z-index: 1;
+    right: 5px;
+  }
   &__search-clear {
     position: absolute;
-    right: 8px;
+    right: 46px;
     appearance: none;
     background: transparent;
     border: 0;

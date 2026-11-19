@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Input, Skeleton } from 'antd';
-import { Search, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useTypedSelector } from 'src/app/store';
 import MainTitleDescription from 'src/components/mainTitleDesc';
 import { getLatestCreatedImg } from 'src/utils';
@@ -12,6 +12,7 @@ import { MentorExperienceLevel, MentorsResponseDto } from 'src/app/api/Api';
 import { useGetGiveawaySessionsQuery } from 'src/app/services/sessions';
 import { useGetMentorsQuery } from 'src/app/services/mentors';
 
+import SearchButton from 'src/components/common/searchButton';
 const RATING_OPTIONS = [
   { value: 'all', threshold: 0 },
   { value: '4', threshold: 4 },
@@ -231,7 +232,7 @@ export default function MentorsPage() {
             <div className={styles.filterField}>
               <Input
                 allowClear
-                prefix={<Search size={15} style={{ opacity: 0.45 }} />}
+                suffix={<SearchButton size={24} />}
                 placeholder={t('mentors.filters.searchPlaceholder', 'Search by name')}
                 value={nameQuery}
                 onChange={(e) => setNameQuery(e.target.value)}

@@ -40,7 +40,6 @@ import PlacementRoadmapPage from '../../placement-test/roadmap';
 import CommunityLockedPage, { type CommunityLockVariant } from './CommunityLockedPage';
 import StudyBuddyHubSection from './StudyBuddyHubSection';
 import StudyBuddyConsentGate from './StudyBuddyConsentGate';
-import { useStudyBuddyConsentStatusQuery } from 'src/app/services/student-hub/studyBuddyApi';
 import MessengerExperience from '../../../components/chat/MessengerExperience';
 import {
   ADMISSIONS_YOUTUBE_PREVIEW_SPECS,
@@ -138,13 +137,6 @@ export default function CommunityHubMockPage() {
   });
   const [othersTarget, setOthersTarget] = useState<string | null>(() => new URLSearchParams(location.search).get('target'));
   const [accountTarget, setAccountTarget] = useState<string | null>(() => new URLSearchParams(location.search).get('target'));
-  // Study Buddy is free; the editorial header shows once the user has accepted
-  // the community guidelines (the consent gate renders the standalone intro
-  // until then). Only fetched while on the buddies section.
-  const { data: buddyConsent } = useStudyBuddyConsentStatusQuery(undefined, {
-    skip: activeSection !== 'buddies',
-  });
-  const buddyConsented = !!buddyConsent?.consented;
   const [admissionsVideoModal, setAdmissionsVideoModal] = useState<AdmissionsYoutubePreviewSpec | null>(null);
   // Ad-hoc CommunityLockedPage variant — set when a CTA needs to surface
   // the unlock modal on-demand (e.g. "Go to admissions lessons" while not
@@ -418,26 +410,7 @@ export default function CommunityHubMockPage() {
                 </p>
               </header>
             )}
-            {activeSection === 'buddies' && buddyConsented && (
-              <header className={styles.editorialHeader}>
-                <div className={styles.editorialEyebrow}>
-                  {t('studentHub.hub.studyBuddiesEyebrow', 'Study buddies')}
-                  <span className={styles.editorialEyebrowSep}>·</span>
-                  <span className={styles.editorialEyebrowAccent}>
-                    {t('studentHub.hub.matchByGoal', 'match by goal')}
-                  </span>
-                </div>
-                <h1 className={styles.editorialTitle}>
-                  {t('studentHub.hub.findSomeoneTitle', 'Find someone on the same path.')}
-                </h1>
-                <p className={styles.editorialDesc}>
-                  {t(
-                    'studentHub.hub.findSomeoneDesc',
-                    'Connect with peers who share your goals, prep schedules, and target schools. Match scores are based on overlap in exam prep, destination goals, intended majors, and focus areas.',
-                  )}
-                </p>
-              </header>
-            )}
+            {/* Study buddies: StudyBuddyHubSection renders its own page header. */}
 
             {/* Generic page header — skipped for sections that have their
                 own editorial header above. My Rewards (both the editorial

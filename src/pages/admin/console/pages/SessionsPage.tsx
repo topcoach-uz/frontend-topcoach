@@ -16,7 +16,7 @@ import {
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { CalendarClock, FileText, Search } from 'lucide-react';
+import { CalendarClock, FileText } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
   Bar,
@@ -37,6 +37,7 @@ import {
 } from 'src/app/services/adminConsoleApi';
 import { AcPill, type AcPillVariant } from '../components/AcPill';
 
+import SearchButton from 'src/components/common/searchButton';
 const { Paragraph } = Typography;
 
 type UpcomingRow = AdminSessionsOverview['upcoming'][number];
@@ -372,7 +373,7 @@ export default function AdminConsoleSessionsPage() {
             allowClear
             size="large"
             placeholder="Search mentor, student, type"
-            prefix={<Search size={18} style={{ opacity: 0.45 }} />}
+            suffix={<SearchButton size={30} />}
             value={upcomingSearch}
             onChange={(e) => setUpcomingSearch(e.target.value)}
             className="ac-directory-search"
@@ -413,7 +414,7 @@ export default function AdminConsoleSessionsPage() {
             allowClear
             size="large"
             placeholder="Search mentor, student, topics"
-            prefix={<Search size={18} style={{ opacity: 0.45 }} />}
+            suffix={<SearchButton size={30} />}
             value={reportSearch}
             onChange={(e) => setReportSearch(e.target.value)}
             className="ac-directory-search"

@@ -1,4 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { useFillViewport } from "src/hooks/useFillViewport";
+import { CalendarCheck, FileText, GraduationCap, Users } from "lucide-react";
+import "./fullSupportGate.scss";
+
+const INCLUDES = [
+  { Icon: Users, title: "A dedicated mentor team", desc: "Applications, essays, research and activities mentors." },
+  { Icon: CalendarCheck, title: "1:1 lessons on a schedule", desc: "Regular sessions with notes you can revisit." },
+  { Icon: FileText, title: "Tasks with feedback", desc: "Assignments and revisions tracked in one place." },
+  { Icon: GraduationCap, title: "Community and SAT Prep", desc: "Included learning alongside your mentorship." },
+];
 import {
   useCreateFullSupportCheckoutMutation,
   useGetFullSupportPaymentQuery,
@@ -51,17 +61,14 @@ export function FullSupportPaymentGate({
     }
   };
   const ready = offer?.status === "authorized" && !state?.enrolled;
+  const cardRef = useFillViewport<HTMLElement>([state, isLoading, isError, error]);
   return (
     <div className="fseditorial fseditorial--gated applicant-full-support-page">
       <section
-        className="fseditorial__access-lock applicant-panel"
+        ref={cardRef}
+        className="fseditorial__access-lock fsgate applicant-panel"
         aria-labelledby="full-support-lock-title"
       >
-        <div className="fseditorial__access-preview" aria-hidden>
-          <span />
-          <span />
-          <span />
-        </div>
         <div className="fseditorial__access-content">
           <p className="fseditorial__eyebrow">Full Support · Mentorship</p>
           <h2
@@ -203,6 +210,24 @@ export function FullSupportPaymentGate({
             </p>
           )}
         </div>
+        {/* What the program includes, so the page explains itself instead
+            of leaning on a blurred mock of content the student cannot see. */}
+        <aside className="fsgate__includes" aria-label="What Full Support includes">
+          <p className="fsgate__includes-title">What’s included</p>
+          <ul>
+            {INCLUDES.map(({ Icon, title, desc }) => (
+              <li key={title}>
+                <span className="fsgate__includes-icon" aria-hidden>
+                  <Icon size={17} strokeWidth={1.9} />
+                </span>
+                <span>
+                  <strong>{title}</strong>
+                  <small>{desc}</small>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </aside>
       </section>
     </div>
   );

@@ -1,0 +1,200 @@
+// Full Support payment gate: a two-column glass panel (pitch | what's
+// included) replacing the centred text over a blurred mock preview.
+@use '/src/styles/liquid-glass' as lg;
+
+$ink: #221d1a;
+$muted: #6b625b;
+$brand: #8b0000;
+$line: rgba(48, 43, 40, 0.07);
+
+.applicant-full-support-page .fseditorial__access-lock.fsgate {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 1fr);
+  place-items: stretch;
+  gap: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 28px;
+  @include lg.lg-thick;
+  @include lg.lg-enter;
+
+  .fseditorial__access-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: none;
+    padding: 48px 48px 44px;
+    text-align: left;
+  }
+  .fseditorial__eyebrow {
+    margin: 0 0 14px;
+    color: $brand;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .fseditorial__access-title {
+    max-width: 18ch;
+    margin: 0 0 14px;
+    font-family: inherit;
+    font-size: clamp(1.7rem, 2.6vw, 2.25rem);
+    font-weight: 600;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    color: $ink;
+  }
+  .fseditorial__access-copy {
+    max-width: 46ch;
+    margin: 0;
+    color: $muted;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .fseditorial__access-note {
+    margin: 16px 0 0;
+    color: $muted;
+    font-size: 13px;
+    font-style: normal;
+
+    strong {
+      color: $ink;
+      font-weight: 600;
+    }
+  }
+  .fseditorial__access-actions {
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 28px;
+  }
+  .fseditorial__btn {
+    min-height: 44px;
+    padding: 0 22px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform 160ms lg.$lg-ease;
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+  .fseditorial__btn--primary {
+    @include lg.lg-tint;
+  }
+  .fseditorial__btn--ghost {
+    @include lg.lg-thin;
+    color: $brand;
+
+    &:hover {
+      color: #6e0000;
+    }
+  }
+}
+
+// Two-column layout: the card grows to fill the window (sized in
+// FullSupportPaymentGate's useFillViewport). The extra `.fseditorial` outranks
+// full-support.scss's `min-height: 420px`, which loads later.
+@media (min-width: 901px) {
+  .applicant-full-support-page.fseditorial .fseditorial__access-lock.fsgate {
+    width: 100%;
+    min-height: 0;
+  }
+}
+// Desktop: end level with the side panel, which keeps a 12px gap at the bottom.
+@media (min-width: 1200px) {
+  .applicant-content:has(.fsgate) {
+    padding-bottom: 12px;
+  }
+}
+
+// Right column: what the program includes.
+.fsgate__includes {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 40px 40px 36px;
+  border-left: 1px solid $line;
+  @include lg.lg-blush;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 0;
+  box-shadow: none;
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+
+    > span:last-child {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+  }
+  strong {
+    color: $ink;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  small {
+    color: $muted;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+}
+.fsgate__includes-title {
+  margin: 0 0 20px;
+  color: $muted;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.fsgate__includes-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.8);
+  color: $brand;
+  box-shadow: inset 0 1px 1px #fff, 0 4px 10px -6px rgba(139, 0, 0, 0.35);
+}
+
+@media (max-width: 900px) {
+  .applicant-full-support-page .fseditorial__access-lock.fsgate {
+    grid-template-columns: minmax(0, 1fr);
+    border-radius: 22px;
+
+    .fseditorial__access-content {
+      padding: 32px 24px 28px;
+    }
+  }
+  .fsgate__includes {
+    padding: 28px 24px;
+    border-left: 0;
+    border-top: 1px solid $line;
+  }
+}
+@media (max-width: 480px) {
+  .applicant-full-support-page .fseditorial__access-lock.fsgate .fseditorial__access-actions {
+    flex-direction: column;
+
+    .fseditorial__btn {
+      justify-content: center;
+    }
+  }
+}

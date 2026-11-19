@@ -16,6 +16,7 @@ import { baseUrl } from '../../../app/services/api/const';
 import { StudentDocument } from '../../../app/services/student-hub/types';
 import './DocumentsPage.scss';
 
+import SearchButton from 'src/components/common/searchButton';
 const { Dragger } = Upload;
 const { Option } = Select;
 
@@ -296,7 +297,7 @@ const DocumentsPage: React.FC<DocumentsPageProps> = ({ hideStats = false, docume
             placeholder={t('studentHub.documents.searchDocuments')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            prefix={<UnifiedIcon name="search" size="sm" color="secondary" />}
+            suffix={<SearchButton size={24} />}
             allowClear
           />
           {!isReadOnly && (

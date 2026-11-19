@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Button, Card, Checkbox, Spin, Typography, message } from 'antd';
-import { ShieldCheck } from 'lucide-react';
+import { Button, Checkbox, Spin, message } from 'antd';
+import { BookOpen, Eye, HeartHandshake, ShieldCheck, type LucideIcon } from 'lucide-react';
+import { useFillViewport } from 'src/hooks/useFillViewport';
 import { useTranslation } from 'react-i18next';
 import {
   useStudyBuddyConsentStatusQuery,
@@ -8,23 +9,25 @@ import {
 } from 'src/app/services/student-hub/studyBuddyApi';
 import styles from './communityHubMock.module.scss';
 
-const { Title, Paragraph } = Typography;
 
 /**
  * Note: the third guideline's body is translated inline in the component
  * (it needed a copy fix — see render below) while the rest stay as plain
  * strings, matching this file's existing (untranslated) convention.
  */
-const GUIDELINES: Array<{ title: string; body?: string }> = [
+const GUIDELINES: Array<{ title: string; body?: string; Icon: LucideIcon }> = [
   {
+    Icon: HeartHandshake,
     title: 'Be kind and respectful',
     body: 'Treat every peer with respect. No harassment, hate, or spam — ever.',
   },
   {
+    Icon: BookOpen,
     title: 'Keep it study-focused',
     body: 'Connect over shared goals, tests, and timelines. Help each other grow.',
   },
   {
+    Icon: Eye,
     title: 'Your profile becomes visible',
   },
 ];
@@ -39,6 +42,8 @@ export default function StudyBuddyConsentGate({ children, browseOnly = false }: 
   const { data, isLoading } = useStudyBuddyConsentStatusQuery(undefined, { skip: browseOnly });
   const [acceptConsent, { isLoading: accepting }] = useStudyBuddyAcceptConsentMutation();
   const [agreed, setAgreed] = useState(false);
+  // Fill the window like the other workspace gates (no gap, no scrollbar).
+  const cardRef = useFillViewport<HTMLElement>([isLoading, data?.consented]);
 
   // Browsing must not opt this student into discovery or peer contact.
   if (browseOnly) return <>{children}</>;
@@ -66,38 +71,19 @@ export default function StudyBuddyConsentGate({ children, browseOnly = false }: 
   };
 
   return (
-    <div className={styles.buddyConsentWrap}>
-      <Card bordered={false} className={styles.buddyConsentCard}>
-        <div className={styles.buddyConsentBadge}>
-          <ShieldCheck size={14} />
-          <span>Study buddies · Community guidelines</span>
-        </div>
-
-        <Title level={3} style={{ marginTop: 12, marginBottom: 6 }}>
+    <section ref={cardRef} className={styles.buddyConsent} aria-labelledby="buddy-consent-title">
+      <div className={styles.buddyConsentMain}>
+        <span className={styles.buddyConsentBadge}>
+          <ShieldCheck size={14} aria-hidden />
+          Study buddies · Community guidelines
+        </span>
+        <h1 id="buddy-consent-title" className={styles.buddyConsentTitle}>
           Find someone on the same path
-        </Title>
-        <Paragraph type="secondary" style={{ marginBottom: 20 }}>
-          Browsing Study Buddy is available to everyone. Connecting requires Community access. Before you join, agree to keep this a
-          safe, respectful space — then we'll connect you with peers who share
-          your goals.
-        </Paragraph>
-
-        <div className={styles.buddyConsentList}>
-          {GUIDELINES.map((g) => (
-            <div key={g.title} className={styles.buddyConsentItem}>
-              <div>
-                <div className={styles.buddyConsentItemTitle}>{g.title}</div>
-                <div className={styles.buddyConsentItemBody}>
-                  {g.body ??
-                    t(
-                      'studentHub.buddyConsent.guidelineVisibilityBody',
-                      'Once you join, peers can discover you and send buddy requests based on your shared goals.',
-                    )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        </h1>
+        <p className={styles.buddyConsentLead}>
+          Browsing Study Buddy is open to everyone; connecting needs Community access. Agree to keep this a safe,
+          respectful space and we’ll match you with peers who share your goals.
+        </p>
 
         <Checkbox
           checked={agreed}
@@ -107,23 +93,46 @@ export default function StudyBuddyConsentGate({ children, browseOnly = false }: 
           I agree to be respectful and follow the TopCoach community guidelines.
         </Checkbox>
 
-        <Button
-          type="primary"
-          size="large"
-          block
-          disabled={!agreed}
-          loading={accepting}
-          onClick={handleAgree}
-          className={styles.buddyConsentButton}
-        >
-          Agree &amp; continue
-        </Button>
+        <div className={styles.buddyConsentActions}>
+          <Button
+            type="primary"
+            size="large"
+            disabled={!agreed}
+            loading={accepting}
+            onClick={handleAgree}
+            className={styles.buddyConsentButton}
+          >
+            Agree &amp; continue
+          </Button>
+        </div>
 
-        <Paragraph type="secondary" className={styles.buddyConsentFootNote}>
-          By continuing, your profile becomes visible to peers so they can send
-          you study buddy requests.
-        </Paragraph>
-      </Card>
-    </div>
+        <p className={styles.buddyConsentFootNote}>
+          By continuing, your profile becomes visible to peers so they can send you study buddy requests.
+        </p>
+      </div>
+
+      <aside className={styles.buddyConsentRules} aria-label="Community guidelines">
+        <p className={styles.buddyConsentRulesTitle}>The guidelines</p>
+        <ul>
+          {GUIDELINES.map(({ title, body, Icon }) => (
+            <li key={title}>
+              <span className={styles.buddyConsentRuleIcon} aria-hidden>
+                <Icon size={17} />
+              </span>
+              <span>
+                <strong>{title}</strong>
+                <small>
+                  {body ??
+                    t(
+                      'studentHub.buddyConsent.guidelineVisibilityBody',
+                      'Once you join, peers can discover you and send buddy requests based on your shared goals.',
+                    )}
+                </small>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    </section>
   );
 }

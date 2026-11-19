@@ -18,7 +18,7 @@ import {
   message,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { Gift, Search } from 'lucide-react';
+import { Gift } from 'lucide-react';
 
 import {
   useAdjustAdminReferralBalanceMutation,
@@ -37,6 +37,7 @@ import {
 import { AcPill, type AcPillVariant } from '../components/AcPill';
 import { cleanUserName } from '../utils';
 
+import SearchButton from 'src/components/common/searchButton';
 const { Paragraph, Text } = Typography;
 
 type TabKey = 'codes' | 'usage' | 'wallets';
@@ -627,7 +628,7 @@ export default function ReferralsPage() {
             {tab !== 'wallets' && (
               <Input
                 allowClear
-                prefix={<Search size={15} />}
+                suffix={<SearchButton size={24} />}
                 placeholder="Search code, name or email"
                 style={{ width: 280 }}
                 value={search}

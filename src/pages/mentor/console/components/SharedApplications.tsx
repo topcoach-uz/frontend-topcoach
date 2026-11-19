@@ -13,7 +13,7 @@ import {
   message,
 } from "antd";
 import dayjs from "dayjs";
-import { FileText, Plus, Search } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
 import {
   useGetSharedMentorApplicationsQuery,
   useCreateSharedMentorApplicationMutation,
@@ -27,6 +27,7 @@ import ApplicationRequirements from "src/pages/student-hub/applicant/Application
 import { useUpdateMentorApplicationRequirementsMutation } from "src/app/services/student-hub/applicationTrackingApi";
 import { formatDate } from "../utils";
 import "./SharedApplications.scss";
+import SearchButton from 'src/components/common/searchButton';
 const statuses = [
   ["researching", "Saved for later"],
   ["applying", "Preparing"],
@@ -178,7 +179,7 @@ export default function SharedApplications({
       </div>
       <div className="mc-shared-apps-toolbar">
         <Input
-          prefix={<Search size={15} />}
+          suffix={<SearchButton size={24} />}
           placeholder="Search university, program or intake…"
           aria-label="Search shared applications"
           value={search}

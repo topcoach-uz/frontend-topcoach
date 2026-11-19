@@ -1,3 +1,4 @@
+@use '/src/styles/liquid-glass' as lg;
 .hubPageOuter {
   max-width: 1320px;
   margin: 0 auto;
@@ -3021,8 +3022,11 @@
               width 0.22s cubic-bezier(.4, 0, .2, 1) !important;
 }
 
-/* Card override — editorial framing. */
+/* Card override — editorial framing. Flex column so the inner area can
+ * fill the card and pin the actions to the bottom. */
 .studyBuddyInstaCard {
+  display: flex !important;
+  flex-direction: column;
   background: #fff !important;
   border-radius: 14px !important;
   border: 1px solid #e5e3da !important;
@@ -3041,6 +3045,7 @@
 }
 
 .studyBuddyInstaInner {
+  flex: 1 1 auto;
   padding: 22px 20px 20px !important;
   display: flex;
   flex-direction: column;
@@ -3050,23 +3055,26 @@
   gap: 12px;
 }
 
-/* Avatar centered at top, smaller + softer ring than the original. */
+/* Avatar: initials on blush in brand red when there is no photo. */
 .studyBuddyInstaAvatar {
-  width: 56px !important;
-  height: 56px !important;
-  border: 2px solid #fff !important;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
+  width: 52px !important;
+  height: 52px !important;
+  line-height: 52px !important;
+  border: 0 !important;
+  box-shadow: none !important;
   align-self: flex-start;
-  background: #faf8f3 !important;
-  color: #6b7280 !important;
+  background: #f7e6e4 !important;
+  color: #8b0000 !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
 }
 
-/* Serif name + handle row, left-aligned. */
+/* Name in the platform font (the serif looked like a different product). */
 .studyBuddyInstaName {
   margin: 0 !important;
-  font-family: 'Iowan Old Style', 'Charter', 'Georgia', serif !important;
-  font-size: 1.08rem !important;
-  font-weight: 500 !important;
+  font-family: inherit !important;
+  font-size: 1.05rem !important;
+  font-weight: 600 !important;
   letter-spacing: -0.012em !important;
   color: #1f2937 !important;
   line-height: 1.2 !important;
@@ -3122,7 +3130,7 @@
 
 /* Footer "shared interests" pill — softened to fit the cream theme. */
 .studyBuddyInstaFooterPill {
-  margin: auto 0 0 !important;
+  margin: 4px 0 0 !important;
   padding: 8px 12px !important;
   background: #faf8f3 !important;
   color: #6b7280 !important;
@@ -3137,9 +3145,11 @@
   line-height: 1.45 !important;
 }
 
-/* Action area — pill primary button, brand red. */
+/* Action area — pill primary button, brand red, pinned to the card bottom
+ * so buttons line up across a row whatever the text length. */
 .studyBuddyInstaActions {
-  margin-top: 14px !important;
+  margin-top: auto !important;
+  padding-top: 14px;
 
   :global(.ant-btn) {
     border-radius: 999px !important;
@@ -3148,12 +3158,12 @@
     font-size: 0.86rem !important;
   }
   :global(.ant-btn-primary) {
-    background: #7B1F2F !important;
-    border-color: #7B1F2F !important;
+    background: #8b0000 !important;
+    border-color: #8b0000 !important;
 
     &:hover {
-      background: #5d1622 !important;
-      border-color: #5d1622 !important;
+      background: #6e0000 !important;
+      border-color: #6e0000 !important;
     }
   }
 }
@@ -3174,83 +3184,181 @@
   :global(.ant-pagination-item:hover a) { color: #7B1F2F !important; }
 }
 
-/* ── Study Buddy consent gate ─────────────────────────────────────── */
-.buddyConsentWrap {
-  display: flex;
-  justify-content: center;
-  padding: 8px 0 32px;
+/* ── Study Buddy consent gate ─────────────────────────────────────────
+ * Same two-column glass card as the Full Support gate: the pitch and the
+ * agreement on the left, the guidelines on a blush panel on the right.
+ * Height is filled to the window by useFillViewport. */
+.buddyConsent {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 1fr);
+  width: 100%;
+  overflow: hidden;
+  border-radius: 28px;
+  @include lg.lg-thick;
+  @include lg.lg-enter;
+
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+    border-radius: 24px;
+  }
 }
 
-.buddyConsentCard {
-  width: 100%;
-  max-width: 560px;
-  border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-  border: 1px solid #f0e6e6;
+.buddyConsentMain {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 48px;
+
+  @media (max-width: 900px) {
+    padding: 32px 28px;
+  }
+  @media (max-width: 480px) {
+    padding: 24px 20px;
+  }
 }
 
 .buddyConsentBadge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(139, 0, 0, 0.08);
+  margin-bottom: 14px;
   color: #8b0000;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.buddyConsentList {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-bottom: 20px;
-}
-
-.buddyConsentItem {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-
-.buddyConsentItemTitle {
+.buddyConsentTitle {
+  max-width: 18ch;
+  margin: 0 0 14px;
+  color: #221d1a;
+  font-family: inherit;
+  font-size: clamp(1.7rem, 2.6vw, 2.25rem);
   font-weight: 600;
-  font-size: 14px;
-  color: #1f1f1f;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
 }
 
-.buddyConsentItemBody {
-  font-size: 13px;
-  color: rgba(0, 0, 0, 0.55);
-  line-height: 1.45;
+.buddyConsentLead {
+  max-width: 48ch;
+  margin: 0 0 28px;
+  color: #6b625b;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .buddyConsentCheckbox {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 16px;
-  font-size: 13px;
+  margin: 0 0 20px;
+  color: #302b28;
+  font-size: 14px;
+
+  :global(.ant-checkbox-checked .ant-checkbox-inner) {
+    background: #8b0000;
+    border-color: #8b0000;
+  }
 }
 
-.buddyConsentButton {
+.buddyConsentActions {
+  display: flex;
+}
+
+.buddyConsentButton:global(.ant-btn) {
+  height: 48px;
+  padding: 0 28px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.buddyConsentButton:global(.ant-btn-primary:not(:disabled)) {
   background: #8b0000;
   border-color: #8b0000;
 
-  &:hover,
-  &:focus {
-    background: #7b1f2f !important;
-    border-color: #7b1f2f !important;
+  &:hover {
+    background: #6e0000 !important;
+    border-color: #6e0000 !important;
   }
 }
 
 .buddyConsentFootNote {
-  margin-top: 12px;
-  margin-bottom: 0;
+  max-width: 48ch;
+  margin: 14px 0 0;
+  color: #8a8079;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.buddyConsentRules {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 40px 40px 36px;
+  border-left: 1px solid rgba(48, 43, 40, 0.07);
+  @include lg.lg-blush;
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 0;
+  box-shadow: none;
+
+  @media (max-width: 900px) {
+    padding: 28px;
+    border-top: 1px solid rgba(48, 43, 40, 0.07);
+    border-left: 0;
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+
+    > span:last-child {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+  }
+  strong {
+    color: #221d1a;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  small {
+    color: #6b625b;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+}
+
+.buddyConsentRulesTitle {
+  margin: 0 0 20px;
+  color: #6b625b;
   font-size: 12px;
-  text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.buddyConsentRuleIcon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #8b0000;
+  box-shadow: inset 0 1px 1px #fff, 0 4px 10px -6px rgba(139, 0, 0, 0.35);
 }
 
 .studyBuddyTabLabel {

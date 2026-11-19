@@ -22,7 +22,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTypedSelector } from 'src/app/store';
 import { useGetMeQuery } from 'src/app/services/users';
-import { ArrowLeft, Download, Search } from 'lucide-react';
+import { ArrowLeft, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import type { CaafForumApplicationDto } from 'src/app/services/caafForumApi';
 import { useGetCaafForumAdminApplicationsQuery } from 'src/app/services/caafForumApi';
@@ -30,6 +30,7 @@ import type { CaafRegistrationStatus } from 'src/pages/events/central-asian-admi
 import type { CaafDraft } from 'src/pages/events/central-asian-admissions-forum/types';
 import styles from './CentralAsianAdmissionsForumAdmin.module.scss';
 
+import SearchButton from 'src/components/common/searchButton';
 function formatCategory(d: CaafDraft, t: TFunction): string {
   if (!d.categoryId) return '—';
   if (d.categoryId === 'other') return d.categoryOther.trim() || t('caafForum.review.otherPrefix');
@@ -294,7 +295,7 @@ export default function CentralAsianAdmissionsForumAdminPage() {
           <Input
             allowClear
             placeholder={t('caafForum.admin.searchPh')}
-            prefix={<Search size={16} />}
+            suffix={<SearchButton size={24} />}
             style={{ maxWidth: 320 }}
             value={search}
             onChange={(e) => setSearch(e.target.value)}

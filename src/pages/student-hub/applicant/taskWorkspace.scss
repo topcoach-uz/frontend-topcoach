@@ -15,44 +15,6 @@ $brand: #8b0000;
 }
 
 // ── segmented switcher (matches the College List views) ──────────────────
-.task-segmented {
-  display: inline-flex;
-  align-self: flex-start;
-  gap: 2px;
-  padding: 3px;
-  border-radius: 12px;
-  background: $track;
-
-  button {
-    min-height: 34px;
-    padding: 0 16px;
-    border: 0;
-    border-radius: 9px;
-    background: transparent;
-    color: #5f5a54;
-    font: inherit;
-    font-size: 14px;
-    font-weight: 500;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
-
-    &:hover { color: $ink; }
-
-    &:focus-visible {
-      outline: 2px solid $brand;
-      outline-offset: 1px;
-    }
-
-    &.is-active {
-      background: #fff;
-      color: $ink;
-      font-weight: 600;
-      box-shadow: 0 1px 2px rgba(47, 43, 40, 0.12), 0 1px 1px rgba(47, 43, 40, 0.04);
-    }
-  }
-}
-
 // ── card ─────────────────────────────────────────────────────────────────
 .task-card,
 .task-card.mentor-assigned-tasks {
@@ -409,7 +371,6 @@ $brand: #8b0000;
 @media (max-width: 640px) {
   .task-card,
   .task-card.mentor-assigned-tasks { padding: 18px 16px; }
-  .task-segmented { align-self: stretch; button { flex: 1; padding: 0 10px; } }
   .task-toolbar .ant-select { flex: 1 1 140px; }
   .task-row {
     grid-template-columns: auto minmax(0, 1fr) auto;

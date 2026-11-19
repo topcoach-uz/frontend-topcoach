@@ -22,7 +22,7 @@ import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'src/app/store';
 import { useGetMeQuery } from 'src/app/services/users';
-import { ArrowLeft, ChevronDown, Download, FileDown, Search } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Download, FileDown } from 'lucide-react';
 import {
   THEMATIC_CLUSTER_OPTIONS,
   type YouthLeadersDraft,
@@ -42,6 +42,7 @@ import {
 } from 'src/utils/youthLeadersApplicationPdf';
 import styles from './YouthLeadersApplicationsAdmin.module.scss';
 
+import SearchButton from 'src/components/common/searchButton';
 const { RangePicker } = DatePicker;
 
 function clusterLabel(id: string): string {
@@ -317,7 +318,7 @@ export default function YouthLeadersApplicationsAdminPage() {
             <Input
               allowClear
               placeholder="Search name, email, phone, nationality…"
-              prefix={<Search size={16} style={{ opacity: 0.5 }} />}
+              suffix={<SearchButton size={24} />}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               style={{ minWidth: 260, maxWidth: 400 }}

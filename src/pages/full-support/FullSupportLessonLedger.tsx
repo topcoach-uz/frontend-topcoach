@@ -3,6 +3,7 @@ import { Alert, Button, Card, Form, Input, InputNumber, Modal, Select, Space, St
 import dayjs from 'src/lib/dayjs';
 import { useCorrectAdminLessonMutation, useGetAdminLessonsQuery, type SessionLogDto } from 'src/app/services/fullSupportApi';
 
+import SearchButton from 'src/components/common/searchButton';
 type Correction = {
   reason: string;
   outcome: 'scheduled' | 'held' | 'cancelled' | 'student_no_show' | 'mentor_no_show';
@@ -75,7 +76,7 @@ export default function FullSupportLessonLedger() {
     </Space>
     {isError && <Alert type="error" message="Could not load lessons" action={<Button onClick={() => void refetch()}>Retry</Button>} style={{ marginBottom: 16 }} />}
     <Space wrap style={{ display: 'flex', marginBottom: 16 }}>
-      <Input.Search aria-label="Search lessons" placeholder="Student, mentor, or topic" value={search} onChange={(event) => setSearch(event.target.value)} style={{ width: 260 }} />
+      <Input aria-label="Search lessons" placeholder="Student, mentor, or topic" value={search} onChange={(event) => setSearch(event.target.value)} suffix={<SearchButton size={24} />} allowClear style={{ width: 260 }} />
       <Select aria-label="Filter lessons" value={filter} onChange={setFilter} style={{ minWidth: 180 }} options={[
         { value: 'all', label: 'All lessons' }, { value: 'upcoming', label: 'Upcoming' }, { value: 'awaiting', label: 'Awaiting record' },
         { value: 'held', label: 'Held' }, { value: 'no_show', label: 'No-shows' }, { value: 'cancelled', label: 'Cancelled' },

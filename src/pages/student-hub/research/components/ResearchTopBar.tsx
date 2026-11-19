@@ -1,27 +1,24 @@
 /**
- * Research Prep top bar — mirrors the SAT Test Prep shell so both
- * programs share the same visual hierarchy.
+ * Research Program header.
  *
- *   Row 1 — brand badge + breadcrumb (left), program-progress chip
- *           and Back-to-main button (right).
- *   Row 2 — underline tab nav (Overview / Module), centered in a
- *           1200px container exactly like SAT's tabs.
- *
- * No avatar — the global website header already shows the user's
- * identity, so we keep this bar focused on navigation + progress.
+ *   Row 1 — breadcrumb trail + quiet back link.
+ *   Row 2 — page title (program or open week) + program progress meter.
+ *   Row 3 — glass segmented control: Overview · Week 1…8, with the sliding
+ *           thumb used across the student workspace.
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Check, LayoutDashboard, Lock } from 'lucide-react';
+import { ArrowLeft, Check, Lock } from 'lucide-react';
 import { Breadcrumb } from '../../applicant/ApplicantPage';
 import { useMyLearningPath } from '../../applicant/useMyLearningPath';
+import { useSegmentLens } from 'src/hooks/useSegmentLens';
 import type { ResearchWeek, WeekLockState } from 'src/app/services/research-prep/types';
+import { WEEK_STATUS_LABEL, isWeekDone, weekStatus } from '../researchStatus';
 
 interface ResearchTopBarProps {
   view: 'overview' | 'module';
   selectedWeekNumber?: number;
-  selectedWeekTitle?: string;
   weeksCompleted: number;
   totalWeeks: number;
   overallPercent: number;
@@ -35,7 +32,6 @@ interface ResearchTopBarProps {
 const ResearchTopBar: React.FC<ResearchTopBarProps> = ({
   view,
   selectedWeekNumber,
-  selectedWeekTitle,
   weeksCompleted,
   totalWeeks,
   overallPercent,
@@ -46,90 +42,131 @@ const ResearchTopBar: React.FC<ResearchTopBarProps> = ({
   onBackToMain,
 }) => {
   const myLearningPath = useMyLearningPath();
-  const weekShort = selectedWeekTitle?.split(/[—:·]/)[0].trim();
-  const stripRef = useRef<HTMLDivElement>(null);
-  // Keep the open week visible when the strip is wider than the screen.
+  const lens = useSegmentLens<HTMLDivElement>('[aria-current="page"]', [view, selectedWeekNumber]);
+  const [trackEl, setTrackEl] = useState<HTMLDivElement | null>(null);
+
+  const isModule = view === 'module' && selectedWeekNumber != null;
+  const week = isModule ? weeks.find((w) => w.weekNumber === selectedWeekNumber) : undefined;
+  const status = week ? weekStatus(lockState.find((l) => l.weekNumber === week.weekNumber)) : undefined;
+
+  // Keep the open tab visible when the strip is wider than the screen.
   useEffect(() => {
-    const active = stripRef.current?.querySelector<HTMLElement>('.rp-tab--active.rp-week-tab');
+    const active = trackEl?.querySelector<HTMLElement>('[aria-current="page"]');
     active?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
-  }, [view, selectedWeekNumber]);
+  }, [trackEl, view, selectedWeekNumber]);
+
+  const lensRef = lens.ref;
+  const setTrackRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      lensRef(el);
+      setTrackEl(el);
+    },
+    [lensRef],
+  );
+
+  const lessons = week?.videoLessons.length ?? 0;
+  const questions = week?.quiz.questions.length ?? 0;
 
   return (
-    <header className="rp-topbar" role="banner">
-      {/* Row 1 — brand + crumb on the left, progress + back on the right. */}
-      <div className="rp-topbar-row rp-topbar-row--head">
-        <div className="rp-topbar-row-inner">
-          <div className="rp-topbar-left">
-            <Breadcrumb>
-              <Link to={myLearningPath}>My learning</Link>
+    <header className="rp-header">
+      <div className="rp-header__crumbs">
+        <Breadcrumb>
+          <Link to={myLearningPath}>My learning</Link>
+          <span>/</span>
+          {isModule ? (
+            <>
+              <button type="button" className="rp-crumb-link" onClick={() => onSwitchView('overview')}>
+                Research Program
+              </button>
               <span>/</span>
-              {view === 'overview' ? (
-                'Research Program'
-              ) : (
-                <>
-                  <span>Research Program</span>
-                  <span>/</span>
-                  {`Week ${selectedWeekNumber}${weekShort ? ` · ${weekShort}` : ''}`}
-                </>
-              )}
-            </Breadcrumb>
+              {`Week ${selectedWeekNumber}`}
+            </>
+          ) : (
+            'Research Program'
+          )}
+        </Breadcrumb>
+        <button type="button" className="rp-back" onClick={onBackToMain}>
+          <ArrowLeft size={15} aria-hidden />
+          {isModule ? 'All weeks' : 'My learning'}
+        </button>
+      </div>
+
+      <div className="rp-header__main">
+        <div className="rp-header__titles">
+          <span className="rp-kicker">
+            {isModule ? `Week ${selectedWeekNumber} of ${totalWeeks}` : `${totalWeeks}-week program`}
+          </span>
+          <div className="rp-header__title-row">
+            <h1>{isModule ? week?.title : 'Research Program'}</h1>
+            {status && <span className={`rp-pill rp-pill--${status}`}>{WEEK_STATUS_LABEL[status]}</span>}
           </div>
-          <div className="rp-topbar-right">
-            <div className="rp-progress-chip" aria-label="Program progress">
-              <span className="chip-text">
-                <span className="chip-label">Program Progress</span>
-                <span className="chip-value">
-                  {weeksCompleted}<span className="chip-sep">/</span>{totalWeeks}
-                  <span className="chip-unit"> Weeks</span>
-                </span>
-              </span>
-              <span className="bar" aria-hidden>
-                <span className="fill" style={{ width: `${overallPercent}%` }} />
-              </span>
-              <span className="pct">{overallPercent}%</span>
-            </div>
-            <button type="button" className="rp-back-btn" onClick={onBackToMain}>
-              <ArrowLeft size={13} />
-              <span>{view === 'module' ? 'Back to Overview' : 'Back to My learning'}</span>
-            </button>
+          <p>
+            {isModule
+              ? `${lessons} lesson${lessons === 1 ? '' : 's'} · ${questions}-question knowledge check · 1 assignment`
+              : 'From your first research question to a finished portfolio, one week at a time.'}
+          </p>
+        </div>
+
+        <div className="rp-meter">
+          <div className="rp-meter__top">
+            <span>Program progress</span>
+            <strong>{overallPercent}%</strong>
           </div>
+          <div
+            className="rp-meter__bar"
+            role="progressbar"
+            aria-label="Program progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={overallPercent}
+          >
+            <span style={{ width: `${overallPercent}%` }} />
+          </div>
+          <span className="rp-meter__meta">
+            {weeksCompleted} of {totalWeeks} weeks complete
+          </span>
         </div>
       </div>
 
-      {/* Row 2 — Overview / Module as SAT-style underline tabs. */}
-      <nav className="rp-topbar-row rp-topbar-row--tabs" aria-label="Research view">
-        <div className="rp-topbar-row-inner rp-topbar-row-inner--tabs">
+      <nav className="rp-nav" aria-label="Research program sections">
+        <div
+          ref={setTrackRef}
+          className="rp-nav__track"
+          data-lens={lens.lensStyle.width != null ? 'on' : undefined}
+        >
+          <span className="rp-nav__lens" style={lens.lensStyle} aria-hidden />
           <button
             type="button"
-            className={`rp-tab ${view === 'overview' ? 'rp-tab--active' : ''}`}
+            className="rp-nav__item"
+            aria-current={view === 'overview' ? 'page' : undefined}
             onClick={() => onSwitchView('overview')}
           >
-            <LayoutDashboard size={15} />
-            <span>Overview</span>
+            Overview
           </button>
-          <span className="rp-tab-divider" aria-hidden />
-          <div className="rp-week-strip" ref={stripRef} role="group" aria-label="Weeks">
-            {weeks.map((week) => {
-              const state = lockState.find((l) => l.weekNumber === week.weekNumber);
-              const locked = !!state?.weekLocked;
-              const done = !!state && state.assignment.submissionStatus !== 'none';
-              const active = view === 'module' && selectedWeekNumber === week.weekNumber;
-              return (
-                <button
-                  key={week.id}
-                  type="button"
-                  className={`rp-tab rp-week-tab${active ? ' rp-tab--active' : ''}${locked ? ' rp-tab--disabled' : ''}${done ? ' rp-week-tab--done' : ''}`}
-                  onClick={() => !locked && onOpenWeek(week.weekNumber)}
-                  disabled={locked}
-                  aria-current={active ? 'page' : undefined}
-                  title={locked ? `Finish Week ${week.weekNumber - 1} to unlock` : week.title}
-                >
-                  {done ? <Check size={14} aria-hidden /> : locked ? <Lock size={13} aria-hidden /> : null}
-                  <span>Week {week.weekNumber}</span>
-                </button>
-              );
-            })}
-          </div>
+          <span className="rp-nav__divider" aria-hidden />
+          {weeks.map((w) => {
+            const s = weekStatus(lockState.find((l) => l.weekNumber === w.weekNumber));
+            const locked = s === 'locked';
+            const active = view === 'module' && selectedWeekNumber === w.weekNumber;
+            return (
+              <button
+                key={w.id}
+                type="button"
+                className={`rp-nav__item${isWeekDone(s) ? ' is-done' : ''}`}
+                onClick={() => onOpenWeek(w.weekNumber)}
+                disabled={locked}
+                aria-current={active ? 'page' : undefined}
+                title={locked ? `Finish Week ${w.weekNumber - 1} to unlock` : w.title}
+              >
+                {isWeekDone(s) ? (
+                  <Check size={13} strokeWidth={2.5} aria-hidden />
+                ) : locked ? (
+                  <Lock size={12} aria-hidden />
+                ) : null}
+                Week {w.weekNumber}
+              </button>
+            );
+          })}
         </div>
       </nav>
     </header>

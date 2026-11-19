@@ -26,6 +26,7 @@ import {
   MoreVertical,
   Sparkles,
   Lock,
+  CalendarDays,
 } from 'lucide-react';
 import { GoogleMeetingSvg } from 'src/assets/svg';
 import { useCancelSessionAsStudentMutation } from 'src/app/services/sessions';
@@ -56,7 +57,7 @@ import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
 import { useStudentProfile } from 'src/hooks/useStudentHub';
 import { ApplicantPage } from './applicant/ApplicantPage';
-import { joinNameParts, sanitizeName } from 'src/utils/displayName';
+import { greetingName, joinNameParts, sanitizeName } from 'src/utils/displayName';
 import {
   IVY_WORKSHOP_MEET_URL,
   isIvyWorkshopLive,
@@ -527,7 +528,9 @@ const MyProgressEditorialView: React.FC = () => {
       .map((r, i) => ({ ...r, number: String(i + 1).padStart(2, '0') }));
   }, [nearestDeadline, daysToDeadline, tracks, resumeTrack, upcomingSessions, applications.length, isMastersGoal]);
 
-  const greeting = t('studentHub.myProgress.greeting', 'Hi, {{name}}.', { name: fullName });
+  const greeting = t('studentHub.myProgress.greeting', 'Hi, {{name}}.', {
+    name: greetingName(fullName) || fullName,
+  });
 
   return (
     <ApplicantPage
@@ -731,7 +734,11 @@ const MyProgressEditorialView: React.FC = () => {
                 </button>
               </div>
             ) : (
-            <div className="myprog__tracks-grid">
+            // A single program gets a wide horizontal row so it fills the card
+            // instead of sitting in one third of a three-column grid.
+            <div
+              className={`myprog__tracks-grid${tracks.length === 1 ? ' myprog__tracks-grid--single' : ''}`}
+            >
               {tracks.map((track) => {
                 const stateLabel =
                   track.progressPct >= 100
@@ -849,6 +856,9 @@ const MyProgressEditorialView: React.FC = () => {
           <ul className="myprog__sessions-list">
             {visibleSessions.length === 0 && (
               <li className="myprog__sessions-empty">
+                <span className="myprog__sessions-empty-icon" aria-hidden>
+                  <CalendarDays size={18} />
+                </span>
                 {sessionTab === 'upcoming'
                   ? t(
                       'studentHub.myProgress.emptyUpcoming',
@@ -981,7 +991,7 @@ const MyProgressEditorialView: React.FC = () => {
           <LockedShell
             locked={mmLocked}
             isMastersGoal={isMastersGoal}
-            tone="dark"
+            tone="light"
             className="myprog__card myprog__promo"
             onUnlock={() => navigate(mm.destination)}
           >
@@ -1023,7 +1033,7 @@ const MyProgressEditorialView: React.FC = () => {
           <LockedShell
             locked={mmLocked}
             isMastersGoal={isMastersGoal}
-            tone="dark"
+            tone="light"
             className="myprog__card myprog__promo"
             onUnlock={() => navigate(mm.destination)}
           >
@@ -1059,7 +1069,7 @@ const MyProgressEditorialView: React.FC = () => {
           <LockedShell
             locked={mmLocked}
             isMastersGoal={isMastersGoal}
-            tone="dark"
+            tone="light"
             className="myprog__card myprog__promo"
             onUnlock={() => navigate(mm.destination)}
           >
@@ -1087,7 +1097,7 @@ const MyProgressEditorialView: React.FC = () => {
           <LockedShell
             locked={mmLocked}
             isMastersGoal={isMastersGoal}
-            tone="dark"
+            tone="light"
             className="myprog__card myprog__promo"
             onUnlock={() => navigate(mm.destination)}
           >
@@ -1157,7 +1167,7 @@ const MyProgressEditorialView: React.FC = () => {
           <LockedShell
             locked={mmLocked}
             isMastersGoal={isMastersGoal}
-            tone="dark"
+            tone="light"
             className="myprog__card myprog__promo myprog__promo--empty"
             onUnlock={() => navigate(mm.destination)}
           >
@@ -1179,7 +1189,7 @@ const MyProgressEditorialView: React.FC = () => {
           <LockedShell
             locked={mmLocked}
             isMastersGoal={isMastersGoal}
-            tone="dark"
+            tone="light"
             className="myprog__card myprog__promo"
             onUnlock={() => navigate(mm.destination)}
           >
@@ -1322,6 +1332,11 @@ const MyProgressEditorialView: React.FC = () => {
                     </div>
                     <div className="myprog__airecs-desc">{rec.desc}</div>
                   </div>
+                  <ArrowRight
+                    size={16}
+                    className="myprog__airecs-arrow"
+                    aria-hidden
+                  />
                 </li>
               ))}
             </ol>

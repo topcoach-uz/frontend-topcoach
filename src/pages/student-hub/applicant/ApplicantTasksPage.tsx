@@ -36,6 +36,7 @@ import {
 import MentorAssignedTasks from "./MentorAssignedTasks";
 import YourMentors from "./YourMentors";
 import "./taskWorkspace.scss";
+import { useSegmentLens } from "src/hooks/useSegmentLens";
 
 type TaskForm = Omit<CreateApplicationTaskRequest, "dueDate"> & {
   dueDate?: dayjs.Dayjs;
@@ -58,6 +59,8 @@ export default function ApplicantTasksPage() {
   const [form] = Form.useForm<TaskForm>();
   const source = params.get("source") ?? (params.get("mentorTask") ? "assigned" : "all");
   const showPersonal = source !== "assigned";
+  // Sliding glass thumb, same as the other workspace switchers.
+  const sourceLens = useSegmentLens<HTMLDivElement>(".is-active", [source]);
   const status = params.get("status") ?? "all";
   const application = params.get("application") ?? "all";
   const sort = params.get("sort") ?? "due";
@@ -209,7 +212,14 @@ export default function ApplicantTasksPage() {
     >
       <Breadcrumb>Tasks</Breadcrumb>
       <div className="task-page">
-        <div className="task-segmented" role="group" aria-label="Show tasks">
+        <div
+          ref={sourceLens.ref}
+          className="applicant-view-tabs"
+          data-lens={sourceLens.lensStyle.width != null ? 'on' : undefined}
+          role="group"
+          aria-label="Show tasks"
+        >
+          <span className="applicant-view-tabs__lens" style={sourceLens.lensStyle} aria-hidden />
           {([['all', 'All'], ['assigned', 'Assigned to you'], ['personal', 'Personal']] as const).map(([value, label]) => (
             <button
               key={value}
