@@ -1,4 +1,9 @@
-import { useLayoutEffect, useRef, type DependencyList } from 'react';
+import { useEffect, useLayoutEffect, useRef, type DependencyList } from 'react';
+
+// Layout effect in the browser; plain effect when rendered on a server or in
+// tests (where useLayoutEffect only logs a warning and does nothing).
+const useIsoLayoutEffect =
+  typeof window !== 'undefined' && typeof window.document !== 'undefined' ? useLayoutEffect : useEffect;
 
 /**
  * Grow an element so the page ends exactly at the bottom of the window:
@@ -14,7 +19,7 @@ import { useLayoutEffect, useRef, type DependencyList } from 'react';
 export function useFillViewport<T extends HTMLElement>(deps: DependencyList, minWidth = 900) {
   const ref = useRef<T>(null);
 
-  useLayoutEffect(() => {
+  useIsoLayoutEffect(() => {
     const el = ref.current;
     // The parent box has the same bounds but is never scaled by an entrance animation.
     const box = el?.parentElement;

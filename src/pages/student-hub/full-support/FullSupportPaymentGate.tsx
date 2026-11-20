@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useFillViewport } from "src/hooks/useFillViewport";
+import { useFillViewport } from "../../../hooks/useFillViewport";
 import { CalendarCheck, FileText, GraduationCap, Users } from "lucide-react";
 import "./fullSupportGate.scss";
 
