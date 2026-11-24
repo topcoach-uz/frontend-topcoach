@@ -1,8 +1,159 @@
-// 🎓 Student Profile & Application Hub - Design System
-// Comprehensive design system with consistent colors, typography, and FontAwesome icons
+// Student design system: the single source of design tokens for the
+// student-facing app (auth, onboarding, /student-hub, /learning).
+//
+// Use in CSS:   var(--tc-brand)            (printed once on :root by global.scss)
+// Use in Sass:  @use '/src/styles/student-hub-design-system' as tc;  tc.$tc-brand
+// Spec and table: docs/design-unification/TOKENS.md and MOTION.md
+//
+// This file must not emit CSS when imported. Every rule lives in a mixin.
+//
+// The older variables further down ($primary-*, $gray-*, $text-*, $space-*,
+// $radius-*, …) are DEPRECATED. They keep their old values so pages don't
+// change until each page migrates to the --tc-* tokens (phase 3).
 
 // ========================================
-// 🎨 COLOR PALETTE
+// TOPCOACH STUDENT TOKENS (source of truth)
+// ========================================
+
+// Colour
+$tc-colors: (
+  'canvas': #fbf9f6,
+  'surface': #ffffff,
+  'surface-tonal': #f5f2ee,
+  'surface-sunk': #efeae4,
+  'line': #e7e2dc,
+  'line-strong': #d8d0c8,
+  'ink': #221d1a,
+  'text': #302b28,
+  'muted': #6b625b,
+  'subtle': #9a9089,
+  'on-brand': #ffffff,
+  'brand': #8b0000,
+  'brand-hover': #6e0000,
+  'brand-press': #5a0000,
+  'blush': #f7e6e4,
+  'blush-strong': #f1d9d6,
+  'success': #2f7a4b,
+  'success-bg': #eef5ef,
+  'warning': #95580a,
+  'warning-bg': #fbf3e4,
+  'danger': #b4372b,
+  'danger-bg': #fdeceb,
+);
+$tc-canvas: map-get($tc-colors, 'canvas');
+$tc-surface: map-get($tc-colors, 'surface');
+$tc-surface-tonal: map-get($tc-colors, 'surface-tonal');
+$tc-surface-sunk: map-get($tc-colors, 'surface-sunk');
+$tc-line: map-get($tc-colors, 'line');
+$tc-line-strong: map-get($tc-colors, 'line-strong');
+$tc-ink: map-get($tc-colors, 'ink');
+$tc-text: map-get($tc-colors, 'text');
+$tc-muted: map-get($tc-colors, 'muted');
+$tc-subtle: map-get($tc-colors, 'subtle');
+$tc-brand: map-get($tc-colors, 'brand');
+$tc-brand-hover: map-get($tc-colors, 'brand-hover');
+$tc-blush: map-get($tc-colors, 'blush');
+$tc-focus: rgba(139, 0, 0, 0.14);
+
+// Radius
+$tc-radius: (
+  'xs': 6px,
+  'sm': 12px,
+  'md': 16px,
+  'lg': 20px,
+  'xl': 24px,
+  'pill': 999px,
+);
+
+// Space (4px grid)
+$tc-space: (
+  '1': 4px,
+  '2': 8px,
+  '3': 12px,
+  '4': 16px,
+  '5': 20px,
+  '6': 24px,
+  '8': 32px,
+  '10': 40px,
+  '12': 48px,
+  '16': 64px,
+);
+
+// Type: the workspace scale (h1 28 / h2 20 / h3 17, weight 500)
+$tc-font: "'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+$tc-font-mono: "ui-monospace, 'SF Mono', Menlo, monospace";
+$tc-type: (
+  'micro': 11px,
+  'caption': 12px,
+  'small': 13px,
+  'body-sm': 14px,
+  'body': 15px,
+  'body-lg': 16px,
+  'h3': 17px,
+  'h2': 20px,
+  'h1': 28px,
+  'display': 36px,
+);
+
+// Elevation (glass surfaces carry their own shadows in _liquid-glass.scss)
+$tc-shadow: (
+  '1': (0 1px 2px rgba(48, 43, 40, 0.05)),
+  '2': (inset 0 1px 0 #fff, 0 1px 2px rgba(48, 43, 40, 0.05), 0 10px 28px -18px rgba(48, 43, 40, 0.28)),
+  '3': (0 24px 48px -24px rgba(30, 20, 15, 0.35), 0 2px 6px rgba(48, 43, 40, 0.08)),
+);
+
+// Motion (spec: docs/design-unification/MOTION.md)
+$tc-ease: cubic-bezier(0.32, 0.72, 0, 1);
+$tc-motion: (
+  'dur-1': 120ms, // press, colour
+  'dur-2': 200ms, // state change
+  'dur-3': 320ms, // small spatial move
+  'dur-enter': 460ms, // panels, segmented thumb, lg-enter
+);
+
+// Layers
+$tc-z: (
+  'raised': 1,
+  'sticky': 10,
+  'nav': 100,
+  'dropdown': 1000,
+  'modal': 1100,
+  'toast': 1200,
+);
+
+/// Prints every token as a CSS custom property. Included once, on :root, by global.scss.
+@mixin tc-custom-properties {
+  @each $name, $value in $tc-colors {
+    --tc-#{$name}: #{$value};
+  }
+  --tc-focus: #{$tc-focus};
+  --tc-focus-ring: 0 0 0 3px var(--tc-focus);
+  @each $name, $value in $tc-radius {
+    --tc-radius-#{$name}: #{$value};
+  }
+  @each $name, $value in $tc-space {
+    --tc-space-#{$name}: #{$value};
+  }
+  --tc-font: #{$tc-font};
+  --tc-font-mono: #{$tc-font-mono};
+  @each $name, $value in $tc-type {
+    --tc-text-#{$name}: #{$value};
+  }
+  @each $name, $value in $tc-shadow {
+    --tc-shadow-#{$name}: #{$value};
+  }
+  --tc-ease: #{$tc-ease};
+  --tc-ease-fade: ease;
+  @each $name, $value in $tc-motion {
+    --tc-#{$name}: #{$value};
+  }
+  @each $name, $value in $tc-z {
+    --tc-z-#{$name}: #{$value};
+  }
+}
+
+// ========================================
+// 🎨 COLOR PALETTE (deprecated, see above)
 // ========================================
 
 // Primary Colors - Crimson theme for TopCoach
@@ -328,281 +479,114 @@ $icon-error: 'fas fa-times-circle';
 $icon-info: 'fas fa-info-circle';
 
 // ========================================
-// 🎨 UTILITY CLASSES
+// LEGACY STUDENT FORM FIXES (emitted once)
 // ========================================
+//
+// Removes antd's double borders on inputs and selects in the older student
+// pages. Printed ONCE by src/components/student-hub/StudentHubLayout.scss,
+// never by importing this file, and scoped to student containers so it can't
+// leak into the mentor, counselor or public areas.
+//
+// Focus is visible: brand border plus var(--tc-focus-ring). (The old version
+// removed every focus ring, which broke keyboard use.)
+// The old .text-*, .bg-*, .border-*, .shadow-*, .rounded-* utility classes
+// were removed: nothing used them.
 
-// Text Colors
-.text-primary { color: $text-primary !important; }
-.text-secondary { color: $text-secondary !important; }
-.text-tertiary { color: $text-tertiary !important; }
-.text-success { color: $success !important; }
-.text-warning { color: $warning !important; }
-.text-error { color: $error !important; }
-.text-info { color: $info !important; }
+$tc-legacy-scope: '.applicant-shell, .student-hub-page, .student-profile-page, .academic-profile, .personal-profile';
 
-// Background Colors
-.bg-primary { background-color: $primary-500 !important; }
-.bg-secondary { background-color: $secondary-500 !important; }
-.bg-success { background-color: $success !important; }
-.bg-warning { background-color: $warning !important; }
-.bg-error { background-color: $error !important; }
-.bg-gray-50 { background-color: $gray-50 !important; }
-.bg-gray-100 { background-color: $gray-100 !important; }
-
-// Border Colors
-.border-primary { border-color: $primary-500 !important; }
-.border-secondary { border-color: $secondary-500 !important; }
-.border-success { border-color: $success !important; }
-.border-warning { border-color: $warning !important; }
-.border-error { border-color: $error !important; }
-
-// Shadows
-.shadow-sm { box-shadow: $shadow-sm !important; }
-.shadow-base { box-shadow: $shadow-base !important; }
-.shadow-md { box-shadow: $shadow-md !important; }
-.shadow-lg { box-shadow: $shadow-lg !important; }
-.shadow-xl { box-shadow: $shadow-xl !important; }
-
-// Border Radius
-.rounded-sm { border-radius: $radius-sm !important; }
-.rounded-base { border-radius: $radius-base !important; }
-.rounded-md { border-radius: $radius-md !important; }
-.rounded-lg { border-radius: $radius-lg !important; }
-.rounded-xl { border-radius: $radius-xl !important; }
-.rounded-full { border-radius: $radius-full !important; }
-
-// ========================================
-// 🔧 GLOBAL FORM FIXES - NUCLEAR OPTION
-// ========================================
-
-// NUCLEAR: Fix ALL dropdown double borders and focus states
-// Scope to student hub layout only to avoid affecting header components
-.student-hub-layout .ant-select,
-.student-hub-page .ant-select {
-  .ant-select-selector {
-    border: 1px solid $border-medium !important;
-    border-radius: $radius-md !important;
-    
-    &:focus,
-    &:focus-within,
-    &.ant-select-focused,
-    &:hover {
-      border-color: $border-medium !important;
-      box-shadow: none !important;
-      outline: none !important;
-    }
-    
-    // NUCLEAR: Remove ALL inner borders from EVERYTHING
-    *,
-    *::before,
-    *::after,
-    *::placeholder,
-    div,
-    span,
-    input,
-    i,
-    svg,
-    .ant-select-selection-item,
-    .ant-select-selection-placeholder,
-    .ant-select-selection-search,
-    .ant-select-selection-search-input,
-    .ant-select-selection-overflow,
-    .ant-select-selection-overflow-item,
-    .ant-select-selection-clear,
-    .ant-select-arrow {
-      border: none !important;
-      border-width: 0 !important;
-      border-style: none !important;
-      border-color: transparent !important;
-      background: none !important;
-      background-color: transparent !important;
-      box-shadow: none !important;
-      outline: none !important;
-      outline-width: 0 !important;
-      outline-style: none !important;
-      outline-color: transparent !important;
-    }
-  }
+/// Strips borders, fills, rings and outlines from the inner parts of a field
+/// so only the field's own border shows.
+@mixin tc-legacy-inner-reset {
+  border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  background: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
-// NUCLEAR: Fix ALL input double borders and focus states
-.ant-input,
-.ant-input-number,
-.ant-input-number-input {
+/// One border on the field; stronger on hover; brand border and ring on focus.
+@mixin tc-legacy-field($height: null) {
   border: 1px solid $border-medium !important;
   border-radius: $radius-md !important;
-  
+  @if $height {
+    height: $height !important;
+  }
+
+  &:hover {
+    border-color: var(--tc-line-strong) !important;
+  }
   &:focus,
   &:focus-visible,
+  &:focus-within,
   &.ant-input-focused,
-  &:hover {
-    border-color: $border-medium !important;
-    box-shadow: none !important;
+  &.ant-select-focused,
+  &.ant-picker-focused {
+    border-color: var(--tc-brand) !important;
+    box-shadow: var(--tc-focus-ring) !important;
     outline: none !important;
-  }
-  
-  // NUCLEAR: Remove ALL inner borders
-  *,
-  *::before,
-  *::after,
-  *::placeholder,
-  div,
-  span,
-  input,
-  i,
-  svg {
-    border: none !important;
-    border-width: 0 !important;
-    border-style: none !important;
-    border-color: transparent !important;
-    background: none !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
-    outline: none !important;
-    outline-width: 0 !important;
-    outline-style: none !important;
-    outline-color: transparent !important;
   }
 }
 
-// NUCLEAR: Fix ALL form elements globally
-.ant-form-item {
-  .ant-input,
-  .ant-input-number,
-  .ant-select-selector,
-  .ant-picker {
-    border: 1px solid $border-medium !important;
-    border-radius: $radius-md !important;
-    
-    &:focus,
-    &:focus-visible,
-    &.ant-input-focused,
-    &.ant-select-focused,
-    &.ant-picker-focused,
-    &:hover {
-      border-color: $border-medium !important;
-      box-shadow: none !important;
-      outline: none !important;
-    }
-    
-    // Remove all inner elements borders
-    * {
-      border: none !important;
-      border-width: 0 !important;
-      border-style: none !important;
-      border-color: transparent !important;
-      box-shadow: none !important;
-      outline: none !important;
+@mixin tc-legacy-student-forms {
+  // Raw HTML fields: only in the older profile forms (as before).
+  .student-profile-page,
+  .academic-profile,
+  .personal-profile {
+    input[type='text'],
+    input[type='number'],
+    input[type='email'],
+    input[type='tel'],
+    input[type='url'],
+    input[type='password'],
+    textarea {
+      @include tc-legacy-field;
     }
   }
-}
 
-// ========================================
-// 🚀 ULTRA NUCLEAR: Catch ALL remaining cases
-// ========================================
+  #{$tc-legacy-scope} {
+    // antd fields
+    .ant-input,
+    .ant-input-number,
+    .ant-input-number-input,
+    .ant-picker,
+    .ant-cascader-picker,
+    .ant-tree-select-selector,
+    .ant-mentions,
+    .ant-auto-complete {
+      @include tc-legacy-field;
 
-.student-hub-layout,
-.student-profile-page,
-.academic-profile,
-.personal-profile {
-  // Target ALL input types
-  input[type="text"],
-  input[type="number"],
-  input[type="email"],
-  input[type="tel"],
-  input[type="url"],
-  input[type="password"],
-  textarea,
-  .ant-input,
-  .ant-input-number,
-  .ant-input-number-input,
-  .ant-select-selector,
-  .ant-picker,
-  .ant-cascader-picker,
-  .ant-tree-select-selector,
-  .ant-mentions,
-  .ant-auto-complete {
-    border: 1px solid $border-medium !important;
-    border-radius: $radius-md !important;
-    
-    &:focus,
-    &:focus-visible,
-    &:focus-within,
-    &.ant-input-focused,
-    &.ant-select-focused,
-    &.ant-picker-focused,
-    &:hover {
-      border-color: $border-medium !important;
-      box-shadow: none !important;
-      outline: none !important;
-    }
-    
-    // NUCLEAR: Remove ALL possible inner borders
-    *,
-    *::before,
-    *::after,
-    *::placeholder,
-    div,
-    span,
-    input,
-    i,
-    svg,
-    button,
-    .ant-select-selection-item,
-    .ant-select-selection-placeholder,
-    .ant-select-selection-search,
-    .ant-select-selection-search-input,
-    .ant-select-selection-overflow,
-    .ant-select-selection-overflow-item,
-    .ant-select-selection-clear,
-    .ant-select-arrow,
-    .ant-input-number-handler,
-    .ant-input-number-handler-up,
-    .ant-input-number-handler-down,
-    .ant-picker-input,
-    .ant-picker-suffix,
-    .ant-picker-clear {
-      border: none !important;
-      border-width: 0 !important;
-      border-style: none !important;
-      border-color: transparent !important;
-      background: none !important;
-      background-color: transparent !important;
-      box-shadow: none !important;
-      outline: none !important;
-      outline-width: 0 !important;
-      outline-style: none !important;
-      outline-color: transparent !important;
-    }
-  }
-  
-  // Special handling for select dropdowns to make them thin
-  .ant-select {
-    .ant-select-selector {
-      border: 1px solid $border-medium !important;
-      border-radius: $radius-md !important;
-      height: 40px !important;
-      
-      &:focus,
-      &:focus-within,
-      &.ant-select-focused,
-      &:hover {
-        border-color: $border-medium !important;
-        box-shadow: none !important;
-        outline: none !important;
-      }
-      
-      // NUCLEAR: Remove ALL inner elements
       *,
       *::before,
       *::after,
-      *::placeholder,
-      div,
-      span,
-      input,
-      i,
-      svg,
-      button,
+      .ant-input-number-handler,
+      .ant-input-number-handler-up,
+      .ant-input-number-handler-down,
+      .ant-picker-input,
+      .ant-picker-suffix,
+      .ant-picker-clear {
+        @include tc-legacy-inner-reset;
+      }
+    }
+
+    // An input inside antd's affix wrapper (prefix/suffix icon, clear button):
+    // the wrapper draws the border and ring, so the inner input draws none.
+    .ant-input-affix-wrapper > input.ant-input {
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      background: transparent;
+    }
+
+    // Selects
+    .ant-select .ant-select-selector {
+      @include tc-legacy-field;
+
+      *,
+      *::before,
+      *::after,
       .ant-select-selection-item,
       .ant-select-selection-placeholder,
       .ant-select-selection-search,
@@ -611,17 +595,22 @@ $icon-info: 'fas fa-info-circle';
       .ant-select-selection-overflow-item,
       .ant-select-selection-clear,
       .ant-select-arrow {
-        border: none !important;
-        border-width: 0 !important;
-        border-style: none !important;
-        border-color: transparent !important;
-        background: none !important;
-        background-color: transparent !important;
-        box-shadow: none !important;
-        outline: none !important;
-        outline-width: 0 !important;
-        outline-style: none !important;
-        outline-color: transparent !important;
+        @include tc-legacy-inner-reset;
+      }
+    }
+    // The open/focused state lives on .ant-select, not on the selector.
+    .ant-select-focused .ant-select-selector,
+    .ant-select-open .ant-select-selector {
+      border-color: var(--tc-brand) !important;
+      box-shadow: var(--tc-focus-ring) !important;
+    }
+
+    // Thin single selects in the profile forms
+    .student-profile-page,
+    .academic-profile,
+    .personal-profile {
+      .ant-select:not(.ant-select-multiple) .ant-select-selector {
+        height: 40px !important;
       }
     }
   }
