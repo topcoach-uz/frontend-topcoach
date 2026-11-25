@@ -49,7 +49,7 @@ export function useSessionActions(options?: { onClassesChanged?: () => void }) {
   }, [recordBooking]);
 
   /** Action buttons for one booking (may be empty). */
-  const renderActions = (b: MentorBooking): ReactNode => b.source === 'course-class' ? (
+  const renderActions = (b: MentorBooking): ReactNode => b.source === 'full-support' && (b.raw as SessionLogDto).academicEnrollmentId && !(b.raw as SessionLogDto).recurrence ? null : b.source === 'course-class' ? (
     <Button type={b.status === 'report-due' ? 'primary' : 'default'} size="small" onClick={() => setClassBooking(b)}>
       Classes &amp; attendance
     </Button>
@@ -93,7 +93,7 @@ export function useSessionActions(options?: { onClassesChanged?: () => void }) {
       />
       <LessonRecordModal
         open={!!recordBooking}
-        title="Record Full Support lesson"
+        title="Record lesson"
         value={recordValue}
         plannedMinutes={recordBooking?.durationMinutes ?? 60}
         allowCancelled

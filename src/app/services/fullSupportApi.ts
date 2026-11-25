@@ -56,6 +56,8 @@ export type StudentGoalDto = {
 };
 
 export type SessionLogDto = {
+  academicEnrollmentId?: string | null;
+  program?: string | null;
   recurrence?: { seriesId: string; position: number; timezone: string; repeat: "none" | "weekly" | "biweekly" } | null;
   id: string;
   mentorUserId?: string;
