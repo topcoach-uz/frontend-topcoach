@@ -11,6 +11,13 @@ import {
 import type { MentorRosterProgram } from "src/app/services/fullSupportApi";
 
 describe("program workspace boundaries", () => {
+  it('rounds fractional hour displays while retaining the exact minute inputs', () => {
+    const program = Object.freeze({ usedMinutes: 10, allocatedMinutes: 200, scheduledMinutes: 25, sessionsCount: 2 }) as MentorRosterProgram;
+    expect(enrollmentHours(program)).toMatchObject({ used: 0.17, allocated: 3.33, scheduledHours: 0.42, sessionsCount: 2 });
+    expect(program.usedMinutes).toBe(10);
+    expect(program.allocatedMinutes).toBe(200);
+    expect(program.scheduledMinutes).toBe(25);
+  });
   it('keeps new work out of ambiguous legacy history even when a legacy mentor relationship remains', () => {
     const student = { hasLegacyFullSupport: true, programs: [{ enrollmentId: 'research', capabilities: ['tasks', 'milestones', 'lessons'], state: 'active' } as MentorRosterProgram] };
     for (const tool of ['tasks', 'milestones', 'lessons']) {

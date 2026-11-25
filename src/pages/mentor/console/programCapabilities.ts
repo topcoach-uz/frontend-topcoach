@@ -40,9 +40,9 @@ export function matchesEnrollment(
 }
 export function enrollmentHours(program: MentorRosterProgram) {
   return {
-    used: (program.usedMinutes ?? 0) / 60,
-    allocated: (program.allocatedMinutes ?? 0) / 60,
-    scheduledHours: (program.scheduledMinutes ?? 0) / 60,
+    used: Math.round(((program.usedMinutes ?? 0) / 60) * 100) / 100,
+    allocated: Math.round(((program.allocatedMinutes ?? 0) / 60) * 100) / 100,
+    scheduledHours: Math.round(((program.scheduledMinutes ?? 0) / 60) * 100) / 100,
     allocationKnown: program.allocatedMinutes != null,
     usageKnown: program.usedMinutes != null,
     sessionsCount: program.sessionsCount ?? 0,
