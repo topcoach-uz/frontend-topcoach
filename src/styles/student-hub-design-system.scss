@@ -484,15 +484,25 @@ $icon-info: 'fas fa-info-circle';
 //
 // Removes antd's double borders on inputs and selects in the older student
 // pages. Printed ONCE by src/components/student-hub/StudentHubLayout.scss,
-// never by importing this file, and scoped to student containers so it can't
-// leak into the mentor, counselor or public areas.
+// never by importing this file.
+//
+// Reach and specificity mirror the original rules exactly, with one change:
+// they're limited to student containers instead of the whole site. The
+// container prefix is wrapped in :where(), so it adds no specificity and
+// page-level rules still win as before.
+//   - antd inputs: everywhere in student containers (was: global .ant-input)
+//   - selects and pickers: only inside form items, .student-hub-page and the
+//     older profile forms (as before)
 //
 // Focus is visible: brand border plus var(--tc-focus-ring). (The old version
-// removed every focus ring, which broke keyboard use.)
+// removed every focus ring, which broke keyboard use.) Inner parts (the input
+// inside an affix wrapper or an InputNumber) draw no border or ring of their
+// own, so there's exactly one ring.
 // The old .text-*, .bg-*, .border-*, .shadow-*, .rounded-* utility classes
 // were removed: nothing used them.
 
-$tc-legacy-scope: '.applicant-shell, .student-hub-page, .student-profile-page, .academic-profile, .personal-profile';
+$tc-legacy-shell: ':where(.applicant-shell, .student-hub-page, .student-profile-page, .academic-profile, .personal-profile)';
+$tc-legacy-profile: '.student-profile-page, .academic-profile, .personal-profile';
 
 /// Strips borders, fills, rings and outlines from the inner parts of a field
 /// so only the field's own border shows.
@@ -530,27 +540,75 @@ $tc-legacy-scope: '.applicant-shell, .student-hub-page, .student-profile-page, .
   }
 }
 
+$tc-legacy-select-parts: '*, *::before, *::after, .ant-select-selection-item, .ant-select-selection-placeholder, .ant-select-selection-search, .ant-select-selection-search-input, .ant-select-selection-overflow, .ant-select-selection-overflow-item, .ant-select-selection-clear, .ant-select-arrow';
+
+/// A select's outer box; the open/focused state lives on .ant-select itself.
+@mixin tc-legacy-select($height: null) {
+  .ant-select-selector {
+    @include tc-legacy-field($height);
+
+    #{$tc-legacy-select-parts} {
+      @include tc-legacy-inner-reset;
+    }
+  }
+  &.ant-select-focused .ant-select-selector,
+  &.ant-select-open .ant-select-selector {
+    border-color: var(--tc-brand) !important;
+    box-shadow: var(--tc-focus-ring) !important;
+  }
+}
+
 @mixin tc-legacy-student-forms {
-  // Raw HTML fields: only in the older profile forms (as before).
-  .student-profile-page,
-  .academic-profile,
-  .personal-profile {
+  #{$tc-legacy-shell} {
+    // antd inputs (was: the global .ant-input / .ant-input-number rule)
+    .ant-input,
+    .ant-input-number {
+      @include tc-legacy-field;
+
+      *,
+      *::before,
+      *::after {
+        @include tc-legacy-inner-reset;
+      }
+    }
+    // Inner parts draw nothing: the wrapper carries the border and ring.
+    .ant-input-affix-wrapper > input.ant-input,
+    .ant-input-number .ant-input-number-input {
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      background: transparent;
+    }
+
+    // Fields inside form items (was: .ant-form-item …)
+    .ant-form-item {
+      .ant-picker {
+        @include tc-legacy-field;
+
+        * {
+          @include tc-legacy-inner-reset;
+        }
+      }
+      .ant-select {
+        @include tc-legacy-select;
+      }
+    }
+  }
+
+  // Selects in the older hub pages (was: .student-hub-page .ant-select …)
+  .student-hub-page .ant-select {
+    @include tc-legacy-select;
+  }
+
+  // The older profile forms: every field type, thin selects (was: the "ultra" block)
+  #{$tc-legacy-profile} {
     input[type='text'],
     input[type='number'],
     input[type='email'],
     input[type='tel'],
     input[type='url'],
     input[type='password'],
-    textarea {
-      @include tc-legacy-field;
-    }
-  }
-
-  #{$tc-legacy-scope} {
-    // antd fields
-    .ant-input,
-    .ant-input-number,
-    .ant-input-number-input,
+    textarea,
     .ant-picker,
     .ant-cascader-picker,
     .ant-tree-select-selector,
@@ -561,57 +619,14 @@ $tc-legacy-scope: '.applicant-shell, .student-hub-page, .student-profile-page, .
       *,
       *::before,
       *::after,
-      .ant-input-number-handler,
-      .ant-input-number-handler-up,
-      .ant-input-number-handler-down,
       .ant-picker-input,
       .ant-picker-suffix,
       .ant-picker-clear {
         @include tc-legacy-inner-reset;
       }
     }
-
-    // An input inside antd's affix wrapper (prefix/suffix icon, clear button):
-    // the wrapper draws the border and ring, so the inner input draws none.
-    .ant-input-affix-wrapper > input.ant-input {
-      border: none !important;
-      box-shadow: none !important;
-      border-radius: 0 !important;
-      background: transparent;
-    }
-
-    // Selects
-    .ant-select .ant-select-selector {
-      @include tc-legacy-field;
-
-      *,
-      *::before,
-      *::after,
-      .ant-select-selection-item,
-      .ant-select-selection-placeholder,
-      .ant-select-selection-search,
-      .ant-select-selection-search-input,
-      .ant-select-selection-overflow,
-      .ant-select-selection-overflow-item,
-      .ant-select-selection-clear,
-      .ant-select-arrow {
-        @include tc-legacy-inner-reset;
-      }
-    }
-    // The open/focused state lives on .ant-select, not on the selector.
-    .ant-select-focused .ant-select-selector,
-    .ant-select-open .ant-select-selector {
-      border-color: var(--tc-brand) !important;
-      box-shadow: var(--tc-focus-ring) !important;
-    }
-
-    // Thin single selects in the profile forms
-    .student-profile-page,
-    .academic-profile,
-    .personal-profile {
-      .ant-select:not(.ant-select-multiple) .ant-select-selector {
-        height: 40px !important;
-      }
+    .ant-select {
+      @include tc-legacy-select(40px);
     }
   }
 }

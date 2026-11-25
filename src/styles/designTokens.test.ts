@@ -82,6 +82,32 @@ describe('student design tokens', () => {
     expect(rule![1]).toMatch(/box-shadow:\s*none\s*!important/);
   });
 
+  it('legacy select and picker rules keep their old reach, so page styles still win', () => {
+    // Before: only inside .ant-form-item, .student-hub-page and the profile forms.
+    // Reaching every Select in the shell overrode page rules such as the
+    // university filters' borderless chips (review finding I1).
+    const css = compileFile('src/components/student-hub/StudentHubLayout.scss');
+    const selectors = [...css.matchAll(/([^{}]+)\{/g)]
+      .flatMap((m) => m[1].split(','))
+      .map((s) => s.trim())
+      .filter((s) => /\.ant-select-selector|\.ant-picker\b/.test(s));
+    expect(selectors.length).toBeGreaterThan(0);
+    const outside = selectors.filter(
+      (s) => !/\.ant-form-item|\.student-hub-page|\.student-profile-page|\.academic-profile|\.personal-profile/.test(s),
+    );
+    expect(outside).toEqual([]);
+    // The shell prefix must not add specificity.
+    expect(css).not.toMatch(/(^|,|\})\s*\.applicant-shell \.ant-(select|input|picker)/m);
+  });
+
+  it('the inner input of an InputNumber gets no second focus ring', () => {
+    const css = compileFile('src/components/student-hub/StudentHubLayout.scss');
+    const ringed = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].filter(
+      ([, sel, body]) => /\.ant-input-number-input/.test(sel) && /var\(--tc-focus-ring\)/.test(body),
+    );
+    expect(ringed.map(([, sel]) => sel.trim().slice(0, 80))).toEqual([]);
+  });
+
   it('the legacy form rules are printed once, not by every importer', () => {
     const importers = [
       'src/pages/student-hub/profile/PersonalProfile.scss',
