@@ -1,3 +1,5 @@
+import { programNames } from 'src/pages/student-hub/my-programs/programModel';
+import type { ProgramKey } from 'src/app/services/studentProgramsApi';
 import LessonPlanModal from '../components/LessonPlanModal';
 import { useMemo, useState } from 'react';
 import {
@@ -125,7 +127,7 @@ export default function MentorConsoleSchedulePage() {
     const present = new Set<ProgramFilter>(allSessions.map((b) => b.source));
     if (programFilter !== 'all') present.add(programFilter);
     const labels: [ProgramFilter, string][] = [
-      ['full-support', 'Full Support'],
+      ['full-support', 'Program lessons'],
       ['platform', 'Platform'],
       ['course-class', 'Classes'],
     ];
@@ -189,7 +191,7 @@ export default function MentorConsoleSchedulePage() {
         <div className="mc-scard-meta">
           {b.source === 'course-class'
             ? `Course class · ${b.courseClass?.courseName} · ${b.courseClass?.moduleTitle}`
-            : b.source === 'full-support' ? 'Full Support' : 'Platform booking'}
+            : b.source === 'full-support' ? (programNames[b.program as ProgramKey] ?? 'Full Support') : 'Platform booking'}
           {b.description ? ` · ${b.description}` : ''}
           {b.status === 'cancelled' && b.cancelReason ? ` · ${b.cancelReason}` : ''}
         </div>
@@ -362,7 +364,7 @@ export default function MentorConsoleSchedulePage() {
               onClick={() => setLogOpen(true)}
               disabled={roster.length === 0}
             >
-              Schedule Full Support lessons
+              Schedule lessons
             </Button>
           </div>
         )}

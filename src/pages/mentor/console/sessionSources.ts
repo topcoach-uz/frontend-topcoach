@@ -19,6 +19,7 @@ export type SessionReport = {
 export type MentorBooking = {
   id: string;
   source: 'platform' | 'full-support' | 'course-class';
+  program?: string | null;
   dateTime: string;
   durationLabel: string;
   durationMinutes: number;
@@ -121,6 +122,7 @@ export function normalizeFullSupportSession(
   return {
     id: `fs:${s.id}`,
     source: 'full-support',
+    program: s.program ?? 'full_support',
     dateTime: s.dateTime,
     durationLabel: `${minutes} min`,
     durationMinutes: minutes,

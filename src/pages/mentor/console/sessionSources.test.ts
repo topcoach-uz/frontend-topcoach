@@ -44,6 +44,12 @@ describe("Mentor session attendance states", () => {
       "60 min",
     );
   });
+  it.each(['admissions', 'research', 'customized', 'bootcamp'])('uses the same attendance queue and preserves %s program identity', (program) => {
+    const lesson = fs({ program, academicEnrollmentId: 'program-1', outcome: 'scheduled' });
+    expect(normalizeFullSupportSession(lesson, 'Student')).toMatchObject({ program, status: 'report-due', raw: expect.objectContaining({ academicEnrollmentId: 'program-1' }) });
+    expect(normalizeFullSupportSession({ ...lesson, outcome: 'held', done: true, actualDurationMinutes: 45 }, 'Student')).toMatchObject({ program, status: 'completed' });
+    expect(normalizeFullSupportSession({ ...lesson, outcome: 'student_no_show' }, 'Student').status).toBe('completed');
+  });
   it("does not put Full Support no-shows back in the report queue", () => {
     for (const outcome of [
       "student_no_show",

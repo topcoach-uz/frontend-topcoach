@@ -1,3 +1,4 @@
+import { mentorProgramLabel } from '../mentorProgramLabel';
 import LessonPlanModal from './LessonPlanModal';
 import {useLocation} from 'react-router-dom';
 import SharedApplications from './SharedApplications';
@@ -100,13 +101,7 @@ export type WorkspaceStudent = {
 
 /** "Admissions · Research" — the eyebrow under which the student's name sits. */
 function assignmentLabel(student: WorkspaceStudent, isFullSupport: boolean): string {
-  if (!isFullSupport) return '1:1 mentoring';
-  const parts = (student.programs ?? []).map((p) => {
-    const program = programNames[p.program as ProgramKey] ?? p.program;
-    const roles = p.roles.map((r) => roleNames[r] ?? r).filter((r) => r !== program);
-    return roles.length ? `${program} · ${roles.join(', ')}` : program;
-  });
-  return parts.length ? parts.join(' / ') : 'Full Support';
+  return mentorProgramLabel(student, isFullSupport);
 }
 
 const RG_MC: Record<ResearchSubmission['status'], McPillVariant> = {
@@ -592,7 +587,7 @@ export default function StudentWorkspace({
           <div style={{ fontWeight: 600, fontSize: 13 }}>{formatDateTime(b.dateTime)}</div>
           <div style={{ fontSize: 12, color: 'var(--mc-text-muted)', marginTop: 4 }}>
             {b.durationLabel}
-            {isFs ? ' · Full Support' : ' · 1:1 session'}
+            {isFs ? ` · ${programNames[b.program as ProgramKey] ?? 'Full Support'}` : ' · 1:1 session'}
             {b.description ? ` · ${b.description}` : ''}
             {b.status === 'cancelled' && b.cancelReason ? ` · ${b.cancelReason}` : ''}
           </div>
