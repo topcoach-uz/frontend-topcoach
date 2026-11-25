@@ -5,7 +5,7 @@ const path = require('node:path');
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fs-gate-test-'));
 const outfile = path.join(dir, 'gate.cjs');
 try {
- esbuild.buildSync({stdin:{contents:`import React from 'react'; import {renderToStaticMarkup} from 'react-dom/server'; import {FullSupportPaymentGate} from './src/pages/student-hub/full-support/FullSupportPaymentGate'; export function render(){return renderToStaticMarkup(React.createElement(FullSupportPaymentGate));}`,resolveDir:process.cwd(),loader:'tsx'},bundle:true,platform:'node',format:'cjs',outfile,alias:{'src/app/services/fullSupportCheckoutApi':path.join(process.cwd(),'.github/scripts/full-support-gate-api.stub.cjs')}});
+ esbuild.buildSync({stdin:{contents:`import React from 'react'; import {renderToStaticMarkup} from 'react-dom/server'; import {FullSupportPaymentGate} from './src/pages/student-hub/full-support/FullSupportPaymentGate'; export function render(){return renderToStaticMarkup(React.createElement(FullSupportPaymentGate));}`,resolveDir:process.cwd(),loader:'tsx'},bundle:true,platform:'node',format:'cjs',outfile,loader:{'.scss':'empty','.css':'empty'},alias:{'src/app/services/fullSupportCheckoutApi':path.join(process.cwd(),'.github/scripts/full-support-gate-api.stub.cjs')}});
  global.window={location:{search:''}};
  const {render}=require(outfile); const assert=require('node:assert/strict');
  function state(data,extra={}){global.__fullSupportTestQuery={data:{data},isLoading:false,isError:false,isFetching:false,refetch(){},...extra};return render();}

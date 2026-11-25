@@ -10,7 +10,6 @@ import {
   Paperclip,
   PencilLine,
   RefreshCw,
-  Search,
   Send,
   Trash2,
   Upload as UploadIcon,
@@ -31,6 +30,7 @@ import {
   todayInTashkent,
 } from "src/lib/taskDeadline";
 
+import SearchButton from 'src/components/common/searchButton';
 type FileLink = { fileName: string; url: string };
 /** A file in the submission: an already-uploaded link, or a new local file. */
 export type SubmissionFile = FileLink | UploadFile;
@@ -291,7 +291,7 @@ export function AssignedTaskList({
           className="task-toolbar__search"
           aria-label="Search assigned tasks"
           placeholder="Search tasks or mentors"
-          prefix={<Search size={15} aria-hidden />}
+          suffix={<SearchButton size={24} />}
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           allowClear

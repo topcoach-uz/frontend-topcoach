@@ -291,7 +291,7 @@ function useNavSections() {
           key: 'account',
           label: t('accountNav.account', 'Account'),
           links: [
-            { key: 'accountSettings', label: t('accountNav.settings', 'Account settings'), to: ACCOUNT_SETTINGS_PATH, Icon: Shield, active: settingsTab === 'profile' },
+            { key: 'accountSettings', label: t('accountNav.settings', 'Account settings'), to: ACCOUNT_SETTINGS_PATH, Icon: Shield, active: settingsTab === 'profile' || settingsTab === 'referrals' || settingsTab === 'experience' },
             { key: 'notifications', label: t('applicant.nav.notifications', 'Notifications'), to: notificationsPath, Icon: Bell, active: settingsTab === 'notifications' },
           ],
         },

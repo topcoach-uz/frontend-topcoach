@@ -14,7 +14,8 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import { Search as SearchIcon, Settings2 } from 'lucide-react';
+import { Settings2 } from 'lucide-react';
+import SearchButton from 'src/components/common/searchButton';
 import { useTypedSelector } from 'src/app/store';
 import { useNavigate } from 'react-router-dom';
 import { api } from 'src/app/api';
@@ -28,7 +29,6 @@ import { cleanUserName } from 'src/pages/admin/console/utils';
 import { ManageAccessModal, type ManageAccessRow } from './ManageAccessModal';
 import './index.scss';
 
-const { Search } = Input;
 const { Text: AntText } = Typography;
 
 interface DashboardData {
@@ -531,16 +531,16 @@ const ProgramDashboard: React.FC<ProgramDashboardProps> = ({
                 <Card className="dashboard-filters" style={{ marginTop: 16 }}>
                   <Space direction="vertical" style={{ width: '100%' }} size="large">
                     <Space wrap align="center">
-                    <Search
+                    <Input
                       placeholder="Search by user name or email"
                       allowClear
-                      enterButton={<SearchIcon size={16} />}
+                      suffix={<SearchButton size={30} onClick={() => setDebouncedSearchText(searchText.trim())} />}
                       size="large"
                       value={searchText}
                       onChange={(e) => setSearchText(e.target.value)}
                       // Enter / search button flushes the debounce immediately;
                       // the fetch effect fires when the value actually changes.
-                      onSearch={(value) => setDebouncedSearchText(value.trim())}
+                      onPressEnter={() => setDebouncedSearchText(searchText.trim())}
                       style={{ maxWidth: 400 }}
                     />
                       <Select

@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { List, Avatar, Empty, Spin, Typography, Input } from 'antd';
 import { useSegmentLens } from 'src/hooks/useSegmentLens';
-import { User, Search } from 'lucide-react';
+import { User } from 'lucide-react';
 import { useGetConversationsQuery, chatApi } from 'src/app/services/chat/chatApi';
 import {
   Conversation,
@@ -15,6 +15,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import styles from './ConversationList.module.scss';
 
+import SearchButton from 'src/components/common/searchButton';
 dayjs.extend(relativeTime);
 
 const { Text } = Typography;
@@ -211,7 +212,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
         placeholder="Search…"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        prefix={<Search size={16} className={styles.messengerSearchIcon} aria-hidden />}
+        suffix={<SearchButton size={30} />}
         className={styles.messengerSearchInput}
       />
     </div>

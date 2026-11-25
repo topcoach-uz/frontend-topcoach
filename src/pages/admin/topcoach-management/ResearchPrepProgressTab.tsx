@@ -10,13 +10,14 @@
 
 import React, { useMemo, useState } from 'react';
 import { Alert, Card, Input, Progress, Spin, Table, Tag, Typography } from 'antd';
-import { Search as SearchIcon, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import type { ColumnsType } from 'antd/es/table';
 import {
   useGetResearchPrepAdminRosterQuery,
   type ResearchAdminStudent,
 } from 'src/app/services/research-prep';
 
+import SearchButton from 'src/components/common/searchButton';
 const { Text: AntText } = Typography;
 
 /** Coerce the backend response to a plain array regardless of any wrapper. */
@@ -114,7 +115,7 @@ const ResearchPrepProgressTab: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <Input
             placeholder="Search students by name"
-            prefix={<SearchIcon size={14} />}
+            suffix={<SearchButton size={30} />}
             allowClear
             value={search}
             onChange={(e) => setSearch(e.target.value)}

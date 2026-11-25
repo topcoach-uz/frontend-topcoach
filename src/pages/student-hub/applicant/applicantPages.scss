@@ -1,3 +1,4 @@
+@use "/src/styles/liquid-glass" as lg;
 .applicant-page {
   min-width: 0;
   display: flex;
@@ -1668,48 +1669,71 @@
 }
 
 // ── College List: one segmented switcher for its views ───────────────────
+// Same control as Profile / Settings: frosted pill track, white glass thumb
+// that slides between views (positioned by useSegmentLens).
 .applicant-view-tabs {
+  @include lg.lg-segment-track;
   display: inline-flex;
   align-self: flex-start;
-  gap: 2px;
+  gap: 0;
   padding: 3px;
-  border-radius: 12px;
-  background: #efebe5;
+  border-radius: 999px;
 
-  a {
+  // Links (route views) or buttons (in-page filters) — same look.
+  a,
+  button {
+    position: relative;
+    z-index: 1;
     display: inline-flex;
     align-items: center;
-    min-height: 34px;
-    padding: 0 16px;
-    border-radius: 9px;
-    color: #5f5a54 !important;
+    margin: 0;
+    padding: 8px 20px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: #6b625b !important;
+    font-family: inherit;
+    cursor: pointer;
     font-size: 14px;
     font-weight: 500;
+    line-height: 1.2;
     text-decoration: none;
     white-space: nowrap;
-    transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    transition: color 240ms lg.$lg-ease;
 
-    &:hover { color: #2f2b28 !important; }
+    &:hover { color: #221d1a !important; }
 
     &:focus-visible {
       outline: 2px solid #8b0000;
-      outline-offset: 1px;
+      outline-offset: 2px;
     }
 
     &.is-active {
-      background: #fff;
-      color: #2f2b28 !important;
+      color: #221d1a !important;
       font-weight: 600;
-      box-shadow: 0 1px 2px rgba(47, 43, 40, 0.12), 0 1px 1px rgba(47, 43, 40, 0.04);
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 1),
+        0 6px 16px -6px rgba(48, 43, 40, 0.28),
+        0 1px 3px rgba(48, 43, 40, 0.08);
     }
+  }
+  // The measured glass thumb takes over once it is in place.
+  &[data-lens='on'] .is-active {
+    background: transparent;
+    box-shadow: none;
   }
 
   @media (max-width: 560px) {
     align-self: stretch;
     overflow-x: auto;
     scrollbar-width: none;
-    a { flex: 1 0 auto; justify-content: center; padding: 0 12px; }
+    a,
+    button { flex: 1 0 auto; justify-content: center; padding: 8px 14px; }
   }
+}
+.applicant-view-tabs__lens {
+  @include lg.lg-segment-thumb;
 }
 
 .applicant-section-title {
@@ -2815,5 +2839,99 @@ form.applicant-glass-search {
   form.applicant-glass-search .ant-btn:active,
   form.applicant-glass-search .ant-btn:hover .applicant-glass-search__go {
     transform: none;
+  }
+}
+
+// ── Empty states (every `.applicant-empty` in the workspace) ─────────────
+// One composition: icon in a blush tile, a short title, one muted line,
+// pill actions. The bare 36px outline icon and boxed button read unfinished.
+.applicant-shell .applicant-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 44px 24px 40px;
+  text-align: center;
+
+  > svg {
+    box-sizing: content-box;
+    width: 24px;
+    height: 24px;
+    margin-bottom: 18px;
+    padding: 14px;
+    border-radius: 16px;
+    @include lg.lg-blush;
+    color: #8b0000;
+    stroke-width: 1.9;
+  }
+  h2,
+  h3 {
+    max-width: 30ch;
+    margin: 0 0 8px;
+    color: #221d1a;
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+  }
+  h3 {
+    font-size: 17px;
+  }
+  p {
+    max-width: 44ch;
+    margin: 0 auto;
+    color: #6b625b;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .ant-btn,
+  .applicant-button {
+    min-height: 44px;
+    margin-top: 24px;
+    padding: 0 22px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform 160ms lg.$lg-ease;
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+  // Several actions sit side by side, not stacked with doubled spacing.
+  .ant-btn + .ant-btn,
+  .applicant-button + .applicant-button {
+    margin-left: 10px;
+  }
+  .ant-btn-default:not(.ant-btn-dangerous) {
+    @include lg.lg-thin;
+    color: #8b0000;
+
+    &:hover {
+      color: #6e0000 !important;
+      border-color: rgba(139, 0, 0, 0.25) !important;
+      background: rgba(255, 255, 255, 0.85) !important;
+    }
+  }
+  .ant-btn-primary:not(:disabled) {
+    @include lg.lg-tint;
+  }
+}
+// Non-panel previews (document review) stay light: no tile glow on a sheet.
+.applicant-shell .applicant-empty:not(.applicant-panel) {
+  padding: 32px 16px;
+}
+@media (max-width: 560px) {
+  .applicant-shell .applicant-empty {
+    padding: 36px 20px 32px;
+
+    h2 {
+      font-size: 18px;
+    }
+    .ant-btn + .ant-btn,
+    .applicant-button + .applicant-button {
+      margin-left: 0;
+    }
   }
 }

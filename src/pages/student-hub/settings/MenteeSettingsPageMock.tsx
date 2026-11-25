@@ -1,16 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Card, Button, Upload, Input, Typography, message, Avatar, Select } from 'antd';
+import { Button, Upload, Input, message, Avatar } from 'antd';
 import {
   User,
   Camera,
   CreditCard,
-  Sparkles,
   Users as UsersIcon,
   Bell,
   Target,
   Send,
   CheckCircle2,
+  Check,
+  Compass,
   Lock,
+  Mail,
+  MessageSquare,
+  Smartphone,
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -30,10 +34,10 @@ import { sanitizeName } from 'src/utils/displayName';
 import { ApplicantPage } from '../applicant/ApplicantPage';
 import styles from './MenteeSettingsPageMock.module.scss';
 
-const { Text, Paragraph } = Typography;
 const PROFILE_PHOTO_MAX_MB = 2;
 const PROFILE_PHOTO_MAX_BYTES = PROFILE_PHOTO_MAX_MB * 1024 * 1024;
 const PROFILE_PHOTO_ALLOWED_TYPES = new Set(['image/jpeg', 'image/png']);
+const CHANNEL_ICONS = { Email: Mail, Push: Smartphone, SMS: MessageSquare } as const;
 
 const normalizeUsernameInput = (value: string) =>
   (value || '')
@@ -224,15 +228,29 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
     );
   }
 
+  // Notifications is a standalone page reached from the sidebar, so it gets
+  // its own heading and no Settings switcher.
+  const isNotifications = activeTab === 'notifications';
+
   return (
     <ApplicantPage
-      title={t('studentHub.settingsMock.title', 'Settings')}
-      subtitle={t('studentHub.settingsMock.accountSubtitle', 'Manage your account and preferences.')}
+      title={
+        isNotifications
+          ? t('applicant.nav.notifications', 'Notifications')
+          : t('studentHub.settingsMock.title', 'Settings')
+      }
+      subtitle={
+        isNotifications
+          ? t('studentHub.settingsMock.notificationsSubtitle', 'What TopCoach tells you about, and where.')
+          : t('studentHub.settingsMock.accountSubtitle', 'Manage your account and preferences.')
+      }
     >
     <div className={`${styles.page} ${embeddedInHub ? styles.pageEmbedded : ''}`}>
 
       {/* URL-backed section links preserve deep links and browser history. */}
-      <SettingsNavigation activeTab={activeTab} showExperience={isSuperAdmin} />
+      {!isNotifications && (
+        <SettingsNavigation activeTab={activeTab} showExperience={isSuperAdmin} />
+      )}
 
       {/* The two "this moved" pointers that used to sit here (profile hub,
           study buddy preferences) have been removed. Both surfaces are one
@@ -373,55 +391,82 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           has been removed. The new Phase 1B "Subscription & billing" tab
           (rendered below when activeTab === 'subscription') replaces it. */}
 
-      {activeTab === 'experience' && isSuperAdmin && (
-        <Card
-          className={`${styles.card} ${styles.mockJourneyCard}`}
-          title={
-            <>
-              <Sparkles size={18} style={{ marginRight: 8 }} />
+      {/* Experience mode: two selectable option cards instead of a
+          dropdown, so both modes and what they mean are visible at once.
+          Only super admins can switch; everyone else sees their mode. */}
+      {activeTab === 'experience' && (
+        <section className={styles.card2} aria-labelledby="settings-experience-title">
+          <header className={styles.cardHead}>
+            <h3 id="settings-experience-title">
               {t('studentHub.settingsMock.mockJourneyTitle', 'My Journey experience mode')}
-            </>
-          }
-        >
-          <Paragraph type="secondary" style={{ marginBottom: 16 }}>
-            {t(
-              'studentHub.settingsMock.mockJourneyDesc',
-              'Switch between the non-community hub and the Community hub. The hub title updates to reflect the mode.',
-            )}
-          </Paragraph>
-          <div className={styles.mockJourneyRow}>
-            <Text strong className={styles.mockJourneyLabel}>
-              {t('studentHub.hub.mockView', 'Experience mode')}
-            </Text>
-            <Select
-              className={styles.mockJourneySelect}
-              aria-label={t('studentHub.settingsMock.experienceModeAria', 'Choose My Journey experience mode')}
-              value={isCommunityEnrolled ? 'in' : 'out'}
-              onChange={(v) => {
-                setCommunityEnrolled(v === 'in');
-                navigate('/student-hub?section=account&target=settings', { replace: true });
-              }}
-              options={[
-                { label: t('studentHub.hub.mockNotEnrolled', 'Standard experience'), value: 'out' },
-                { label: t('studentHub.hub.mockEnrolled', 'Community experience'), value: 'in' },
-              ]}
-            />
+            </h3>
+            <p>
+              {isSuperAdmin
+                ? t(
+                    'studentHub.settingsMock.mockJourneyDescShort',
+                    'Preview the hub as a standard or a Community student.',
+                  )
+                : t(
+                    'studentHub.settingsMock.experienceMenteeNote',
+                    'You are in the Community experience. New experience modes will appear here as they roll out.',
+                  )}
+            </p>
+          </header>
+          <div
+            className={styles.modeGrid}
+            role="radiogroup"
+            aria-label={t('studentHub.settingsMock.experienceModeAria', 'Choose My Journey experience mode')}
+          >
+            {[
+              {
+                value: 'out' as const,
+                Icon: Compass,
+                title: t('studentHub.hub.mockNotEnrolled', 'Standard experience'),
+                desc: t(
+                  'studentHub.settingsMock.modeStandardDesc',
+                  'Major Match first, with programs and mentors to explore.',
+                ),
+              },
+              {
+                value: 'in' as const,
+                Icon: UsersIcon,
+                title: t('studentHub.hub.mockEnrolled', 'Community experience'),
+                desc: t(
+                  'studentHub.settingsMock.modeCommunityDesc',
+                  'Learning progress, study buddies and the community feed.',
+                ),
+              },
+            ].map((mode) => {
+              const selected = (isCommunityEnrolled ? 'in' : 'out') === mode.value;
+              return (
+                <button
+                  key={mode.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  disabled={!isSuperAdmin && !selected}
+                  className={`${styles.modeOption} ${selected ? styles.modeOptionActive : ''}`}
+                  onClick={() => {
+                    if (!isSuperAdmin || selected) return;
+                    setCommunityEnrolled(mode.value === 'in');
+                    navigate('/student-hub?section=account&target=settings&tab=experience', { replace: true });
+                  }}
+                >
+                  <span className={styles.modeIcon} aria-hidden>
+                    <mode.Icon size={18} strokeWidth={1.9} />
+                  </span>
+                  <span className={styles.modeText}>
+                    <strong>{mode.title}</strong>
+                    <small>{mode.desc}</small>
+                  </span>
+                  <span className={styles.modeCheck} aria-hidden>
+                    {selected && <Check size={13} strokeWidth={2.8} />}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-        </Card>
-      )}
-
-      {/* Non-SuperAdmin fallback for the Experience tab — the
-          experience-mode toggle is dev-only, so regular users see a
-          short explanatory card instead of an empty pane. */}
-      {activeTab === 'experience' && !isSuperAdmin && (
-        <Card className={styles.card} title={<><Sparkles size={18} style={{ marginRight: 8 }} />Experience mode</>}>
-          <Paragraph type="secondary" style={{ marginBottom: 0 }}>
-            {t(
-              'studentHub.settingsMock.experienceMenteeNote',
-              'You are in the Community experience. New experience modes will appear here as they roll out.',
-            )}
-          </Paragraph>
-        </Card>
+        </section>
       )}
 
       {/* Subscription & billing — Phase 1B scaffold. All data is
@@ -475,25 +520,28 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
               ],
             },
           ].map((group) => (
-            <section key={group.key} className={styles.card2} aria-labelledby={`notif-${group.key}`}>
-              <header className={styles.cardHead}>
-                <h3 id={`notif-${group.key}`}>
-                  <span className={styles.headIcon} aria-hidden>
-                    <group.Icon size={15} strokeWidth={2} />
-                  </span>
-                  {group.title}
-                </h3>
-              </header>
-              <ul className={styles.notifRows}>
+            /* iOS Settings pattern: a small group title above an inset
+               grouped list; each row names the event and lists where it is
+               delivered as quiet trailing text. */
+            <section key={group.key} className={styles.notifGroup2} aria-labelledby={`notif-${group.key}`}>
+              <h3 id={`notif-${group.key}`} className={styles.groupTitle}>
+                <group.Icon size={14} strokeWidth={2} aria-hidden />
+                {group.title}
+              </h3>
+              <ul className={styles.notifList2}>
                 {(group.items as [string, string[]][]).map(([label, channels]) => (
-                  <li key={label} className={styles.notifRow}>
-                    <span className={styles.rowLabelWide}>{label}</span>
-                    <span className={styles.channels}>
-                      {channels.map((channel) => (
-                        <span key={channel} className={styles.channel}>
-                          {channel}
-                        </span>
-                      ))}
+                  <li key={label} className={styles.notifItem}>
+                    <span className={styles.notifItemLabel}>{label}</span>
+                    <span className={styles.notifItemChannels}>
+                      {channels.map((channel) => {
+                        const ChannelIcon = CHANNEL_ICONS[channel as keyof typeof CHANNEL_ICONS];
+                        return (
+                          <span key={channel} className={styles.notifItemChannel}>
+                            {ChannelIcon && <ChannelIcon size={14} strokeWidth={1.9} aria-hidden />}
+                            {channel}
+                          </span>
+                        );
+                      })}
                     </span>
                   </li>
                 ))}

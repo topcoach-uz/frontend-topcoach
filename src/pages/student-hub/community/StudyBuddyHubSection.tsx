@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Avatar, Button, Card, Input, Pagination, Segmented, Space, Spin, Tag, Tabs, Typography, message } from 'antd';
-import { Search, UserPlus, X } from 'lucide-react';
+import { UserPlus, X } from 'lucide-react';
 import {
   useStudyBuddyAcceptRequestMutation,
   useStudyBuddyCancelRequestMutation,
@@ -14,6 +14,7 @@ import StudyBuddyPreferencesPanel from './StudyBuddyPreferencesPanel';
 import { ApplicantPage } from '../applicant/ApplicantPage';
 import styles from './communityHubMock.module.scss';
 
+import SearchButton from 'src/components/common/searchButton';
 const PAGE_SIZE = 6;
 
 const { Paragraph } = Typography;
@@ -230,11 +231,14 @@ export default function StudyBuddyHubSection({ onOpenChat, readOnly = false }: S
               No shared study-buddy tags yet — connect to find common ground.
             </p>
           )}
-          <div className={styles.studyBuddyInstaFooterPill} title={footerSnippet || undefined}>
-            {footerSnippet
-              ? `${footerSnippet}${row.overlap.length > 2 ? '…' : ''}`
-              : `${row.overlapCount} shared interest${row.overlapCount === 1 ? '' : 's'}`}
-          </div>
+          {/* Only when there is something shared — "0 shared interests" is noise. */}
+          {(footerSnippet || row.overlapCount > 0) && (
+            <div className={styles.studyBuddyInstaFooterPill} title={footerSnippet || undefined}>
+              {footerSnippet
+                ? `${footerSnippet}${row.overlap.length > 2 ? '…' : ''}`
+                : `${row.overlapCount} shared interest${row.overlapCount === 1 ? '' : 's'}`}
+            </div>
+          )}
           <div className={styles.studyBuddyInstaActions}>
             {readOnly ? (
               <Button disabled>Community access to connect</Button>
@@ -314,9 +318,10 @@ export default function StudyBuddyHubSection({ onOpenChat, readOnly = false }: S
   return (
     <ApplicantPage
       title="Study buddies"
-      subtitle="Find peers with similar goals, timelines, and study plans."
+      subtitle="Find peers who share your goals, prep schedules and target schools. Matches are based on your exam prep, destinations, majors and focus areas."
     >
-    <div className={`${styles.studyBuddyHub} applicant-panel`}>
+    {/* No outer card: the preferences panel and buddy cards are the surfaces. */}
+    <div className={styles.studyBuddyHub}>
       {!readOnly && <StudyBuddyPreferencesPanel />}
       {readOnly && <p>Browse study buddies. Community access is needed to connect or message.</p>}
       <div className={styles.studyBuddySearchRow}>
@@ -324,7 +329,7 @@ export default function StudyBuddyHubSection({ onOpenChat, readOnly = false }: S
           allowClear={{
             clearIcon: <X size={14} aria-label="Clear search" />,
           }}
-          prefix={<Search size={16} style={{ color: 'rgba(0,0,0,0.45)' }} />}
+          suffix={<SearchButton size={30} />}
           placeholder="Search by name or @handle"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}

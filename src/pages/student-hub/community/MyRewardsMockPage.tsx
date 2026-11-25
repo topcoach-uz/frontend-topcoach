@@ -1,11 +1,12 @@
 import React from 'react';
 import { Button, Card, Input, Modal, Steps, Tag, message } from 'antd';
-import { BookOpen, Compass, MessageCircle, Network, RefreshCw, Bot, Search, ShoppingCart, Trophy, User } from 'lucide-react';
+import { BookOpen, Compass, MessageCircle, Network, RefreshCw, Bot, ShoppingCart, Trophy, User } from 'lucide-react';
 import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import styles from './communityHubMock.module.scss';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { RewardPointsBadge } from './RewardPointsBadge';
 
+import SearchButton from 'src/components/common/searchButton';
 const MOCK_COINS = 1340;
 
 const MOCK_REWARD_ITEMS = [
@@ -332,7 +333,7 @@ export default function MyRewardsMockPage() {
         <div className={styles.centerTopBar}>
           <div className={styles.centerTitle}>My Rewards</div>
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-            <Input prefix={<Search size={16} />} placeholder="Search rewards" style={{ width: 280 }} />
+            <Input suffix={<SearchButton size={24} />} placeholder="Search rewards" style={{ width: 280 }} />
           </div>
         </div>
 

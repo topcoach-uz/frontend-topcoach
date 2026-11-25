@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Alert, Card, Empty, Input, Table, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { Search as SearchIcon } from 'lucide-react';
+
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -10,6 +10,7 @@ import {
 } from 'src/app/services/adminConsoleApi';
 import { AcPill } from '../components/AcPill';
 
+import SearchButton from 'src/components/common/searchButton';
 function formatDateTime(iso: string | null | undefined): string {
   if (!iso) return '—';
   try {
@@ -147,7 +148,7 @@ export default function ContactLeadsPage() {
               'admin.contactLeads.searchPlaceholder',
               'Search by name, email, or phone',
             )}
-            prefix={<SearchIcon size={18} style={{ opacity: 0.45 }} />}
+            suffix={<SearchButton size={30} />}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);

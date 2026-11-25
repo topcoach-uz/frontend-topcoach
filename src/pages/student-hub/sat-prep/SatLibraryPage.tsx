@@ -24,7 +24,6 @@ import {
   BookOpen,
   Calculator,
   Flag,
-  Search,
   Trash2,
   X,
 } from "lucide-react";
@@ -47,6 +46,7 @@ import "./sat-library.scss";
 import "./sat-secondary-pages.scss";
 import SatTextLessonReader from "./SatTextLessonReader";
 
+import SearchButton from 'src/components/common/searchButton';
 // Illustrative equations from the approved design, not course-progress data.
 const LESSON_EXAMPLES: Record<string, string> = {
   "linear equations in one variable": "3x + 5 = 20",
@@ -381,12 +381,15 @@ const SatLibraryPage: React.FC = () => {
             ))}
           </nav>
           {(tab === "lessons" || tab === "practice") && (
-            <input
-              aria-label="Search collection"
-              placeholder="Search collection"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <div className="sat-catalog__search" data-search-root>
+              <input
+                aria-label="Search collection"
+                placeholder="Search collection"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <SearchButton size={24} />
+            </div>
           )}
         </div>
         {tab === "lessons" && !isLoading && !isError && (
@@ -670,8 +673,7 @@ const VocabularyTab: React.FC = () => {
   return (
     <div className="sat-card sat-library__panel">
       <div className="sat-library__panel-toolbar">
-        <div className="sat-library__search">
-          <Search size={14} />
+        <div className="sat-library__search" data-search-root>
           <input
             type="text"
             placeholder="Search words…"
@@ -687,6 +689,7 @@ const VocabularyTab: React.FC = () => {
               <X size={13} />
             </button>
           )}
+          <SearchButton size={28} />
         </div>
         <span className="sat-library__panel-count">
           {filtered.length} of {words.length}

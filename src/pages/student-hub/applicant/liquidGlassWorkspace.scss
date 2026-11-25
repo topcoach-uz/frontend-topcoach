@@ -194,16 +194,10 @@
   .cf__composer,
   .cf__widget,
   .pf-rail,
-  .rp-section,
-  .rp-milestone,
   .task-card,
   .task-form-card {
     @include lg.lg-regular;
     border-radius: 22px;
-  }
-  .rp-topbar {
-    @include lg.lg-thin;
-    border-radius: 20px;
   }
   // Specialist pages paint their own page background; let the workspace light through.
   .applicant-page,
@@ -211,8 +205,6 @@
     background: transparent;
   }
   // Nested inside the new glass surfaces: inset, not glass.
-  .rp-section .rp-milestone,
-  .rp-section .applicant-card,
   .cf__widget .applicant-card,
   .pf-rail .applicant-card {
     @include lg.lg-inset;
@@ -267,12 +259,6 @@
     padding-right: 0 !important;
   }
   [class*='_hubFullBleed'] {
-    max-width: none;
-    margin-left: 0;
-    margin-right: 0;
-  }
-  .rp-topbar-row-inner,
-  .rp-body {
     max-width: none;
     margin-left: 0;
     margin-right: 0;
@@ -424,4 +410,144 @@
 .applicant-shell .applicant-content .applicant-find-filter .ant-select .ant-select-selector {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+}
+
+// ---------- Segmented switchers: one control everywhere ----------
+// Matches the Profile / Settings switcher (frosted track, white glass thumb).
+// Those two slide a measured lens; the strips below are plain tab rows, so
+// the thumb is painted on the selected segment itself.
+.applicant-shell .applicant-content {
+  .applicant-tabs,
+  .apps-tabs,
+  .mp-tabs,
+  .majormatch-results__tabs,
+  .myprog__sessions-tabs,
+  .sat-library__tabs,
+  .ant-tabs-top > .ant-tabs-nav .ant-tabs-nav-list {
+    @include lg.lg-segment-track;
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    width: fit-content;
+    max-width: 100%;
+    padding: 3px;
+    border-radius: 999px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  .applicant-tabs,
+  .apps-tabs,
+  .mp-tabs,
+  .majormatch-results__tabs,
+  .myprog__sessions-tabs,
+  .sat-library__tabs {
+    margin-bottom: 20px;
+  }
+
+  // Segments.
+  .applicant-tabs button,
+  .apps-tabs .apps-tab,
+  .mp-tabs button,
+  .majormatch-results__tab,
+  .myprog__sessions-tab,
+  .sat-library__tab,
+  .ant-tabs-top > .ant-tabs-nav .ant-tabs-tab {
+    position: relative;
+    flex: none;
+    min-height: 0;
+    margin: 0;
+    padding: 8px 20px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    box-shadow: none;
+    color: #6b625b;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      color 240ms lg.$lg-ease,
+      background-color 240ms lg.$lg-ease,
+      box-shadow 240ms lg.$lg-ease;
+
+    &::after {
+      display: none;
+    }
+    &:hover {
+      color: #221d1a;
+      border-color: transparent;
+    }
+    &:focus-visible {
+      outline: 2px solid lg.$lg-brand;
+      outline-offset: 2px;
+    }
+  }
+  .ant-tabs-top > .ant-tabs-nav .ant-tabs-tab + .ant-tabs-tab {
+    margin: 0;
+  }
+  .ant-tabs-top > .ant-tabs-nav .ant-tabs-tab .ant-tabs-tab-btn {
+    color: inherit;
+    font-weight: inherit;
+    text-shadow: none;
+  }
+
+  // Selected segment: the white glass thumb.
+  .applicant-tabs button.is-active,
+  .applicant-tabs button[aria-selected='true'],
+  .apps-tabs .apps-tab--active,
+  .mp-tabs button[aria-selected='true'],
+  .majormatch-results__tab.is-active,
+  .myprog__sessions-tab.is-active,
+  .sat-library__tab--active,
+  .ant-tabs-top > .ant-tabs-nav .ant-tabs-tab-active {
+    background: rgba(255, 255, 255, 0.86);
+    color: #221d1a;
+    font-weight: 600;
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 1),
+      inset 0 -1px 1px rgba(48, 43, 40, 0.05),
+      0 6px 16px -6px rgba(48, 43, 40, 0.28),
+      0 1px 3px rgba(48, 43, 40, 0.08);
+
+    &:hover {
+      color: #221d1a;
+      background: rgba(255, 255, 255, 0.86);
+    }
+  }
+
+  // AntD tabs: the track replaces the ink bar and the bottom rule.
+  .ant-tabs-top > .ant-tabs-nav {
+    margin-bottom: 20px;
+
+    &::before {
+      display: none;
+    }
+    .ant-tabs-ink-bar {
+      display: none;
+    }
+    .ant-tabs-nav-wrap::before,
+    .ant-tabs-nav-wrap::after {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .applicant-tabs button,
+    .apps-tabs .apps-tab,
+    .mp-tabs button,
+    .majormatch-results__tab,
+    .myprog__sessions-tab,
+    .sat-library__tab,
+    .ant-tabs-top > .ant-tabs-nav .ant-tabs-tab {
+      transition: none;
+    }
+  }
 }

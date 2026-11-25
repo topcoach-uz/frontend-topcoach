@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Button, Form, Input, Modal, Popconfirm, Select, Upload, message } from "antd";
 import type { UploadFile } from "antd";
-import { Download, FileText, Info, Plus, Search, Trash2, UploadCloud } from "lucide-react";
+import { Download, FileText, Info, Plus, Trash2, UploadCloud } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   DocumentType,
@@ -21,6 +21,7 @@ import {
 } from "./ApplicantPage";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 
+import SearchButton from 'src/components/common/searchButton';
 const documentLabels: Record<string, string> = {
   transcript: "Transcript",
   test_score: "Test score",
@@ -147,7 +148,7 @@ export default function ApplicantDocumentsPage() {
           placeholder="Search file name or document type"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          prefix={<Search size={18} aria-hidden="true" />}
+          suffix={<SearchButton size={24} />}
           allowClear
         />
       </div>

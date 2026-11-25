@@ -14,7 +14,7 @@ import {
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { Search as SearchIcon } from 'lucide-react';
+
 import {
   useGetAdminSubscriptionDetailQuery,
   useGetAdminSubscriptionStatsQuery,
@@ -24,6 +24,7 @@ import {
 } from 'src/app/services/adminConsoleApi';
 import { AcPill, type AcPillVariant } from '../components/AcPill';
 
+import SearchButton from 'src/components/common/searchButton';
 const { Paragraph } = Typography;
 
 type TabKey = 'subscriptions' | 'stats';
@@ -169,7 +170,7 @@ function SubscriptionsTab() {
             allowClear
             size="large"
             placeholder="Search by user email"
-            prefix={<SearchIcon size={18} style={{ opacity: 0.45 }} />}
+            suffix={<SearchButton size={30} />}
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="ac-directory-search"

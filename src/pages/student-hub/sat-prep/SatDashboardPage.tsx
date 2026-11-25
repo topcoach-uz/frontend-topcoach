@@ -17,6 +17,7 @@ import {
 } from "./sat-overview-model";
 import { answeredCount, findResumableRun } from "./satRunState";
 import { useStudentProfile } from "src/hooks/useStudentHub";
+import { useGetAdmissionsProfileQuery } from "src/app/services/admissionsProfileApi";
 import "./sat-platform.scss";
 
 const BASE = "/student-hub/sat-prep";
@@ -30,7 +31,13 @@ const SatDashboardPage: React.FC = () => {
   const score = scoreBreakdown(data?.mockSessions ?? []);
   // The SAT the student reported in their Academic profile (official score).
   const { profile } = useStudentProfile();
-  const reported = profileSatScore(profile?.academicProfile?.testScores?.sat);
+  // Onboarding stores the SAT on the admissions profile instead; students who
+  // only filled that in used to see no score here at all.
+  const { data: admissions } = useGetAdmissionsProfileQuery();
+  const reported = profileSatScore(
+    profile?.academicProfile?.testScores?.sat,
+    admissions?.satScore,
+  );
   // Headline: latest mock estimate; until both mocks exist, the profile score.
   const headline = score.total ?? reported?.total ?? null;
   const fromProfile = score.total == null && reported?.total != null;
@@ -388,12 +395,20 @@ const SatDashboardPage: React.FC = () => {
 export default SatDashboardPage;
 
 /** Valid SAT numbers from the profile (sections 200–800, total 400–1600). */
-function profileSatScore(sat?: { math?: number; readingWriting?: number; total?: number }) {
-  if (!sat) return null;
-  const inRange = (value: unknown, min: number, max: number) =>
-    typeof value === "number" && Number.isFinite(value) && value >= min && value <= max ? value : undefined;
-  const math = inRange(sat.math, 200, 800);
-  const readingWriting = inRange(sat.readingWriting, 200, 800);
-  const total = inRange(sat.total, 400, 1600) ?? (math != null && readingWriting != null ? math + readingWriting : undefined);
+function profileSatScore(
+  sat?: { math?: number | string; readingWriting?: number | string; total?: number | string },
+  onboardingTotal?: number | string | null,
+) {
+  // Form inputs can persist numbers as strings ("1450"), so coerce first.
+  const inRange = (value: unknown, min: number, max: number) => {
+    const n = typeof value === "string" && value.trim() !== "" ? Number(value) : value;
+    return typeof n === "number" && Number.isFinite(n) && n >= min && n <= max ? n : undefined;
+  };
+  const math = inRange(sat?.math, 200, 800);
+  const readingWriting = inRange(sat?.readingWriting, 200, 800);
+  const total =
+    inRange(sat?.total, 400, 1600) ??
+    (math != null && readingWriting != null ? math + readingWriting : undefined) ??
+    inRange(onboardingTotal, 400, 1600);
   return math == null && readingWriting == null && total == null ? null : { math, readingWriting, total };
 }

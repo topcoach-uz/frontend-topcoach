@@ -26,7 +26,6 @@ import {
   FileSpreadsheet,
   FileText,
   MoreHorizontal,
-  Search as SearchIcon,
   UserMinus,
   Users,
   MapPin,
@@ -64,6 +63,7 @@ dayjs.extend(relativeTime);
 import { useCounselorConsole } from '../CounselorConsoleContext';
 import { activeBranches } from './branchHelpers';
 
+import SearchButton from 'src/components/common/searchButton';
 const PAGE_SIZE = 20;
 /**
  * Largest `limit` the roster endpoint accepts — `GetOrgRosterQueryDto` declares
@@ -688,7 +688,7 @@ export function StudentRosterTab({
         <Input
           className="cc-roster-search"
           allowClear
-          prefix={<SearchIcon size={15} />}
+          suffix={<SearchButton size={24} />}
           placeholder="Search by name or email"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}

@@ -6,7 +6,7 @@ import { buildDegreeOptions, buildPreview } from './universityDegreeOptions';
 import { normalizeStudyArea } from './UniversityStudyAreas';
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Button, Input, Select, Tag } from "antd";
-import { ArrowLeft, ArrowRight, ArrowUpRight, BookmarkPlus, Building2, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, BookmarkPlus, Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useGetGraduateProgramQuery, useGetGraduateProgramsQuery, type GraduateProgram, type GraduateProgramFact } from "src/app/services/graduateProgramsApi";
 import { filterUniversityRows, useGetReviewedUniversitiesQuery, useGetUniversityDetailQuery, useGetUniversityFiltersQuery } from "src/app/services/universities";
@@ -26,6 +26,7 @@ import { DetailHero, SaveToListButton } from "./DetailHero";
 import { CostsFundingSection, UniversityAdmissions, UniversityDetailSkeleton, UniversityGlance, UniversitySectionNav } from "./UniversitySections";
 import { buildComparableFacts, qsRankOf, buildGlanceTiles, buildKeyFactRows, buildScholarshipText, humanizeFacts, shortUniversityName } from "./universityKeyFactsModel";
 
+import SearchButton from 'src/components/common/searchButton';
 const UNIVERSITIES_PER_PAGE = 12;
 
 const factValue = (value: GraduateProgramFact) => humanizeFacts(value) || "Verification needed";
@@ -70,8 +71,8 @@ export default function ApplicantUniversitiesPage() {
   if (degreePending) return <ApplicantPage title="Find universities" subtitle="Loading your study goal…"><QueryState loading error={false} retry={overview.refetch}><span /></QueryState></ApplicantPage>;
   if (!isMasters) return <ApplicantPage title="Find universities" subtitle="Explore Bachelor’s options. Check course availability before adding a university to your College List.">
     <form role="search" className="applicant-find-search applicant-glass-search" onSubmit={(event) => { event.preventDefault(); const next = new URLSearchParams(params); if (value.trim()) next.set("q", value.trim()); else next.delete("q"); next.delete("page"); setParams(next); }}>
-      <Input prefix={<Search size={19} />} value={value} onChange={(event) => setValue(event.target.value)} placeholder="Search universities" allowClear aria-label="Search universities" />
-      <Button type="primary" htmlType="submit" aria-label="Search"><span className="applicant-glass-search__label">Search</span><ArrowRight size={17} aria-hidden className="applicant-glass-search__go" /></Button>
+      <Input value={value} onChange={(event) => setValue(event.target.value)} placeholder="Search universities" allowClear aria-label="Search universities" />
+      <SearchButton type="submit" size={48} className="applicant-glass-search__btn" />
     </form>
     <div className="applicant-find-filters">
       <label className={major ? "applicant-find-filter applicant-find-filter--active" : "applicant-find-filter"}><span>Field of interest</span><Select value={majorKey || undefined} placeholder="Any field" allowClear showSearch optionFilterProp="label" onChange={(selected) => setFilter("major", selected ?? "")} loading={filtersQuery.isLoading} options={subjectOptions} aria-label="Field of interest" /></label>
@@ -88,8 +89,8 @@ export default function ApplicantUniversitiesPage() {
   return <ApplicantPage title={isMasters ? "Explore graduate study options" : "Explore universities"} subtitle={isMasters ? "Search verified graduate programs by program name or university." : "Search the verified TopCoach university catalogue."} actions={<Link to="/student-hub/applications">View your applications →</Link>}>
     <Breadcrumb>{isMasters ? "Graduate study options" : "Explore universities"}</Breadcrumb>
     <form role="search" className="applicant-search applicant-glass-search" onSubmit={(event) => { event.preventDefault(); const next = new URLSearchParams(params); if (value.trim()) next.set("q", value.trim()); else next.delete("q"); next.delete("page"); setParams(next); }}>
-      <Input prefix={<Search size={18} />} value={value} onChange={(event) => setValue(event.target.value)} placeholder={isMasters ? "Search programs or universities" : "Search by university name"} allowClear />
-      <Button type="primary" htmlType="submit" aria-label="Search"><span className="applicant-glass-search__label">Search</span><ArrowRight size={17} aria-hidden className="applicant-glass-search__go" /></Button>
+      <Input value={value} onChange={(event) => setValue(event.target.value)} placeholder={isMasters ? "Search programs or universities" : "Search by university name"} allowClear />
+      <SearchButton type="submit" size={48} className="applicant-glass-search__btn" />
     </form>
     <QueryState loading={isLoading} error={isError} retry={isMasters ? programsQuery.refetch : universityQuery.refetch}>
       <ProgramResults programs={masterPrograms} savedIds={new Set((applications.data?.data ?? []).map((app) => app.programId).filter((id): id is string => Boolean(id)))} />

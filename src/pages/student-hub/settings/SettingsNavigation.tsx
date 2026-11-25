@@ -17,8 +17,8 @@ export default function SettingsNavigation({
   const lens = useSegmentLens<HTMLElement>('[aria-current="page"]', [activeTab]);
   const sections = [
     // Billing is its own destination (rail → Billing), not a settings tab.
+    // Notifications is its own page (sidebar → Notifications), not a tab here.
     { key: 'profile', label: t('accountNav.account', 'Account') },
-    { key: 'notifications', label: t('studentHub.settingsMock.notifications', 'Notifications') },
     { key: 'referrals', label: t('settings.referrals.tab', 'Referrals') },
     ...(showExperience
       ? [

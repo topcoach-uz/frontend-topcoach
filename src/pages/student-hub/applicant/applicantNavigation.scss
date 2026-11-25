@@ -182,13 +182,11 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
+  // Fixed colour: swapping it on hover forced the whole blurred glass panel
+  // to repaint every time the pointer entered it, which read as lag.
+  scrollbar-color: rgba(48, 43, 40, 0.14) transparent;
   animation: applicant-panel-in 420ms $ease-out both;
 
-  &:hover,
-  &:focus-within {
-    scrollbar-color: rgba(48, 43, 40, 0.18) transparent;
-  }
   &[hidden] {
     display: none;
   }
@@ -288,14 +286,12 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   font-size: 14px;
   font-weight: 400;
   line-height: normal;
-  transition:
-    background-color 200ms $ease-out,
-    color 200ms $ease-out;
+  // No fade: the hover highlight lands with the pointer instead of trailing it.
+  transition: none;
 
   svg {
     flex: none;
     color: $nav-muted;
-    transition: color 200ms $ease-out;
   }
   &:hover {
     background: rgba(255, 255, 255, 0.7);

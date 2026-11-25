@@ -1,5 +1,5 @@
 import { Card, Button, Table, Tag, Typography, message, Skeleton } from 'antd';
-import { Copy, Gift, Send } from 'lucide-react';
+import { Copy, Gift, Send, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -184,31 +184,35 @@ export default function ReferralsPanel() {
         className={styles.card}
         title={t('settings.referrals.historyTitle', 'Who used your code')}
       >
-        <Table<ReferralHistoryItem>
-          rowKey="id"
-          size="small"
-          columns={columns}
-          dataSource={history}
-          loading={historyLoading}
-          pagination={false}
-          locale={{
-            // Most people will see this on day one, so the empty state has to
-            // do the explaining rather than just saying "no data".
-            emptyText: (
-              <div className={styles.empty}>
-                <Text strong>
-                  {t('settings.referrals.emptyTitle', 'No referrals yet')}
-                </Text>
-                <Paragraph type="secondary">
-                  {t(
-                    'settings.referrals.emptyBody',
-                    'Share your code above. When someone uses it, their purchase shows up here with what you earned.',
-                  )}
-                </Paragraph>
-              </div>
-            ),
-          }}
-        />
+        {/* Most people will see this on day one, so the empty state does the
+            explaining — and stands on its own instead of sitting under five
+            column headers with nothing in them. */}
+        {!historyLoading && history.length === 0 ? (
+          <div className={styles.empty}>
+            <span className={styles.emptyIcon} aria-hidden>
+              <Users size={20} />
+            </span>
+            <Text strong>
+              {t('settings.referrals.emptyTitle', 'No referrals yet')}
+            </Text>
+            <Paragraph type="secondary">
+              {t(
+                'settings.referrals.emptyBody',
+                'Share your code above. When someone uses it, their purchase shows up here with what you earned.',
+              )}
+            </Paragraph>
+          </div>
+        ) : (
+          <Table<ReferralHistoryItem>
+            rowKey="id"
+            size="small"
+            columns={columns}
+            dataSource={history}
+            loading={historyLoading}
+            pagination={false}
+            scroll={{ x: 'max-content' }}
+          />
+        )}
       </Card>
     </>
   );

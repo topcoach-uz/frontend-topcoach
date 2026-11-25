@@ -22,7 +22,7 @@ import {
   message,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { RefreshCw, Search, Users as UsersIcon } from 'lucide-react';
+import { RefreshCw, Users as UsersIcon } from 'lucide-react';
 import {
   useGetAdminMajorMatchHistoryDetailQuery,
   useGetAdminMajorMatchHistoryQuery,
@@ -36,6 +36,7 @@ import {
 } from 'src/app/services/adminConsoleApi';
 import { AcPill } from '../components/AcPill';
 
+import SearchButton from 'src/components/common/searchButton';
 const { Text, Paragraph } = Typography;
 
 function formatDate(iso: string | null) {
@@ -387,7 +388,7 @@ function UsagePanel() {
         <Input
           size="large"
           allowClear
-          prefix={<Search size={16} style={{ opacity: 0.5 }} />}
+          suffix={<SearchButton size={30} />}
           placeholder="Search by name or email"
           value={search}
           onChange={(e) => {
@@ -524,7 +525,7 @@ function HistoryPanel() {
           <Input
             size="large"
             allowClear
-            prefix={<Search size={16} style={{ opacity: 0.5 }} />}
+            suffix={<SearchButton size={30} />}
             placeholder="Search by name, email, or RIASEC code"
             value={search}
             onChange={(e) => {

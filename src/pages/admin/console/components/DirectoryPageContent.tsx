@@ -14,7 +14,7 @@ import {
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { Search } from 'lucide-react';
+
 import { useSearchParams } from 'react-router-dom';
 import UserDetailDrawer from './UserDetailDrawer';
 import { AcPill, type AcPillVariant } from './AcPill';
@@ -25,6 +25,7 @@ import {
 } from 'src/app/services/adminConsoleApi';
 import { avatarStyleForId, initialsFromName } from '../utils';
 
+import SearchButton from 'src/components/common/searchButton';
 const { Text } = Typography;
 
 export type DirectoryVariant = 'mentees' | 'mentors' | 'counselors' | 'admins';
@@ -348,7 +349,7 @@ export default function DirectoryPageContent({ variant }: { variant: DirectoryVa
             allowClear
             size="large"
             placeholder="Search name, email"
-            prefix={<Search size={18} style={{ opacity: 0.45 }} />}
+            suffix={<SearchButton size={30} />}
             value={q}
             onChange={(e) => setQ(e.target.value)}
             className="ac-directory-search"
