@@ -1,3 +1,4 @@
+import EyufWorkshopCard from './_components/EyufWorkshopCard';
 import RecordedWorkshopGridCards from './_components/RecordedWorkshopGridCards';
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Spin } from 'antd';
@@ -242,6 +243,7 @@ export default function EventsPage() {
             mb={48}
           />
         </div>
+        {selectedType !== 'event' && <EyufWorkshopCard />}
         {/* <YouthLeadersProgramCard /> */}
         {selectedType !== 'event' && <HolisticReviewWorkshopCard />}
         {selectedType !== 'event' && <MastersAbroadWorkshopCard />}
