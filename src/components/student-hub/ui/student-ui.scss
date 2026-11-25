@@ -49,7 +49,10 @@ $wash-strong: rgba(48, 43, 40, 0.08);
     transform: scale(0.97);
   }
   &:focus-visible {
-    outline: none;
+    // Transparent outline: invisible normally, drawn in forced-colors mode,
+    // where box-shadow rings are removed.
+    outline: 2px solid transparent;
+    outline-offset: 2px;
     box-shadow: var(--tc-focus-ring);
   }
   &:disabled,
@@ -136,7 +139,8 @@ $wash-strong: rgba(48, 43, 40, 0.08);
   &:focus,
   &:focus-visible {
     border-color: var(--tc-brand);
-    outline: none;
+    outline: 2px solid transparent;
+    outline-offset: 2px;
     box-shadow: var(--tc-focus-ring);
   }
   &:disabled {
@@ -329,7 +333,10 @@ button.tc-row {
     color: var(--tc-text);
   }
   &:focus-visible {
-    outline: none;
+    // Transparent outline: invisible normally, drawn in forced-colors mode,
+    // where box-shadow rings are removed.
+    outline: 2px solid transparent;
+    outline-offset: 2px;
     box-shadow: var(--tc-focus-ring);
   }
 }
@@ -661,7 +668,10 @@ button.tc-row {
     font-weight: 600;
   }
   &:focus-visible {
-    outline: none;
+    // Transparent outline: invisible normally, drawn in forced-colors mode,
+    // where box-shadow rings are removed.
+    outline: 2px solid transparent;
+    outline-offset: 2px;
     box-shadow: var(--tc-focus-ring);
   }
 }
@@ -671,7 +681,20 @@ button.tc-row {
   font-variant-numeric: tabular-nums;
 }
 
-// View tabs count badge (the tabs themselves are .applicant-view-tabs).
+// View tabs: the track (.applicant-view-tabs, styled in applicantPages.scss)
+// never overflows its container; a long row scrolls inside it, scrollbar hidden.
+// ViewTabs keeps the active item scrolled into view.
+.applicant-view-tabs {
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// View tabs count badge.
 .tc-tab-count {
   margin-left: 6px;
   color: var(--tc-muted);
@@ -697,7 +720,9 @@ button.tc-row {
 // ─── Touch screens: compact controls grow to a 44px target ───────────────
 @media (pointer: coarse) {
   .tc-btn--sm,
-  .tc-chip {
+  .tc-chip,
+  .applicant-view-tabs a,
+  .applicant-view-tabs button {
     min-height: 44px;
   }
 }

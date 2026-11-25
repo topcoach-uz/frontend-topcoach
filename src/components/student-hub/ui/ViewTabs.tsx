@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useSegmentLens } from 'src/hooks/useSegmentLens';
 
@@ -10,6 +10,8 @@ export interface ViewTab {
   count?: number;
 }
 
+const ACTIVE = '[aria-current="page"], [aria-pressed="true"]';
+
 export interface ViewTabsProps {
   items: ViewTab[];
   value: string;
@@ -19,15 +21,46 @@ export interface ViewTabsProps {
 }
 
 /**
+ * Changes whenever something that moves the active item changes: the active
+ * view, the number of items, or a count appearing on an earlier tab. Used as
+ * the thumb's re-measure key.
+ */
+export function viewTabsSignature(items: ViewTab[], value: string) {
+  return `${value}|${items.map((i) => `${i.key}:${i.count ?? ''}`).join(',')}`;
+}
+
+/**
  * The workspace segmented switcher: frosted pill track with a white glass thumb
  * that slides to the active view (useSegmentLens). Links when items have `to`,
  * buttons otherwise.
  */
 export function ViewTabs({ items, value, onChange, ariaLabel, className }: ViewTabsProps) {
-  const lens = useSegmentLens<HTMLElement>('[aria-current="page"], [aria-pressed="true"]', [value, items.length]);
+  const signature = viewTabsSignature(items, value);
+  const lens = useSegmentLens<HTMLElement>(ACTIVE, [signature]);
+  const [track, setTrack] = useState<HTMLElement | null>(null);
+  const lensRef = lens.ref;
+  const ref = useCallback(
+    (el: HTMLElement | null) => {
+      lensRef(el);
+      setTrack(el);
+    },
+    [lensRef],
+  );
+
+  // A long row scrolls inside its track: keep the active item in view by
+  // adjusting only the track's own scroll (never the page).
+  useEffect(() => {
+    const active = track?.querySelector<HTMLElement>(ACTIVE);
+    if (!track || !active) return;
+    const left = active.offsetLeft;
+    const right = left + active.offsetWidth;
+    if (left < track.scrollLeft) track.scrollLeft = left - 8;
+    else if (right > track.scrollLeft + track.clientWidth) track.scrollLeft = right - track.clientWidth + 8;
+  }, [track, signature]);
+
   return (
     <nav
-      ref={lens.ref}
+      ref={ref}
       className={['applicant-view-tabs', className].filter(Boolean).join(' ')}
       // Until the thumb is measured, the active item paints its own highlight.
       data-lens={lens.lensStyle.width != null ? 'on' : undefined}

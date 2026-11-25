@@ -80,4 +80,25 @@ describe('student UI stylesheet', () => {
     expect(rule).toMatch(/-webkit-line-clamp:\s*2/);
     expect(rule).not.toMatch(/white-space:\s*nowrap/);
   });
+
+  it('view tab items grow to 44px on touch screens', () => {
+    const coarse = css().match(/@media \(pointer: coarse\)\s*\{([\s\S]*?)\}\s*\}/)?.[1] ?? '';
+    expect(coarse).toMatch(/\.applicant-view-tabs a/);
+    expect(coarse).toMatch(/\.applicant-view-tabs button/);
+  });
+
+  it('a long tab row scrolls inside its container instead of overflowing', () => {
+    const rule = css().match(/\.applicant-view-tabs\s*\{([^}]*)\}/)?.[1] ?? '';
+    expect(rule).toMatch(/max-width:\s*100%/);
+    expect(rule).toMatch(/overflow-x:\s*auto/);
+  });
+
+  it('focus stays visible in forced-colors mode (outline, not none)', () => {
+    const focusRules = [...css().matchAll(/([^{}]*\.tc-(?:btn|field|row|chip)[^{}]*:focus(?:-visible)?[^{}]*)\{([^}]*)\}/g)];
+    expect(focusRules.length).toBeGreaterThan(0);
+    for (const [, sel, body] of focusRules) {
+      expect(body, sel.trim()).not.toMatch(/outline:\s*none/);
+      expect(body, sel.trim()).toMatch(/outline:\s*2px solid transparent/);
+    }
+  });
 });

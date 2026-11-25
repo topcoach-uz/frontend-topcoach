@@ -286,3 +286,14 @@ describe('studentUi strings', () => {
     }
   });
 });
+
+import { viewTabsSignature } from './ViewTabs';
+
+describe('ViewTabs thumb', () => {
+  it('re-measures when a count or the active view changes', () => {
+    const a = viewTabsSignature([{ key: 'x', label: 'X' }, { key: 'y', label: 'Y' }], 'y');
+    const b = viewTabsSignature([{ key: 'x', label: 'X', count: 12 }, { key: 'y', label: 'Y' }], 'y');
+    const c = viewTabsSignature([{ key: 'x', label: 'X', count: 12 }, { key: 'y', label: 'Y' }], 'x');
+    expect(new Set([a, b, c]).size).toBe(3);
+  });
+});
