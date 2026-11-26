@@ -1,3 +1,4 @@
+import { ProgramPayments } from './ProgramPayments';
 import { downloadProgramReport } from "src/app/services/programReports";
 import { useEffect, useState } from 'react';
 import { applicantLinks } from 'src/lib/applicantWorkspace';
@@ -21,6 +22,7 @@ export default function MyProgramsStudentPage(){
  const legacy=location.pathname!=='/student-hub/my-programs';const requested=params.get('program')||(legacy?'full_support':null);
  const requestedEnrollment=params.get('enrollment');
  const program=selectProgramEnrollment(data?.programs??[],requested,requestedEnrollment);
+ useEffect(()=>{if(params.get('programPayment')!=='returned'||program?.state==='active')return;let checks=0;const timer=window.setInterval(()=>{void q.refetch();if(++checks>=40)window.clearInterval(timer);},3000);return()=>window.clearInterval(timer);},[params,program?.state,q.refetch]);
  useEffect(()=>{setLesson(null);setReportError(null);},[program?.id]);
  const canUse=(tool:string)=>!program||(program.capabilities??program.enabledTools??['lessons','tasks','milestones','reports','progress']).includes(tool);
  const visibleTabs=tabs.filter(t=>t==='Lessons'?canUse('lessons'):t==='Tasks'?canUse('tasks'):true);
@@ -35,6 +37,8 @@ export default function MyProgramsStudentPage(){
  const shared=!!(data.unscopedSessions.length||data.unscopedTasks.length||data.unscopedMilestones?.length);
  const sessionRows=(sessions:SessionLogDto[])=><div className="mp-rows">{sessions.length?sessions.map(s=><div className="mp-row" key={s.id}><div><button className="mp-link" onClick={()=>setLesson(s)}>{s.description||'Mentoring session'}</button><p>{time(s.dateTime)} · {s.mentorName} · {s.actualDurationMinutes!=null?s.actualDurationMinutes+' min actual':s.duration+' planned'}</p></div><span className="mp-badge">{lessonLabel(s)}</span></div>):<p className="mp-empty">No lessons recorded for this program yet.</p>}</div>;
  return <section className="my-programs">
+ <ProgramPayments/>
+ {params.get('programPayment')==='returned'&&program?.state!=='active'&&<p role="status">Waiting for CLICK confirmation. Returning here alone does not confirm payment. <button className="mp-secondary" onClick={()=>void q.refetch()}>Check access</button></p>}
  <header className="mp-heading"><div><h1>{program?programDisplayName(program):'My Programs'}</h1><p>{program?'Your mentors, lessons, and next steps.':'Your next lessons and tasks across your programs.'}</p></div>{q.isFetching&&<small role="status">Updating…</small>}</header>
  {program&&(data.programs.length>1)&&<div className="mp-switcher"><Link to={programUrl()}>← All programs</Link><label>Program <select aria-label="Switch program" value={program.id} onChange={e=>{setParams({enrollment:e.target.value});setLesson(null);}}>{data.programs.map(p=><option value={p.id} key={p.id}>{programDisplayName(p)} · {date(p.startsAt)} · {stateLabels[p.state]}</option>)}</select></label></div>}
  {!program&&(requested||requestedEnrollment)&&<p role="status">You don’t have an enrollment for that program. Your available programs are below.</p>}
