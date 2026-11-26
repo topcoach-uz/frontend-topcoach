@@ -72,6 +72,21 @@ Commits `12e1c936`, review fixes `f6deb06a`.
 - Tests are SSR-only (no effect, click or keyboard paths); there are mid-file imports; the `localStorage` stub isn't guarded.
 - Found for Phase 3: `.applicant-page .ant-btn { border-radius: 10px }` blocks the theme's pill buttons on workspace pages.
 
+## Phase 3: page sweep
+
+### Batch 1: shell
+
+- **Buttons are pills on every workspace page.** `.applicant-page .ant-btn` forced 10px corners over the student theme; the save footer, document rows, modal footers, university search and "save university" did the same. All now use `--tc-radius-pill`, and the save footer button is 44px tall (was 42).
+- **Tokens:** `applicantPages.scss`, `liquidGlassWorkspace.scss`, `applicantWorkspace.scss` and `applicantNavigation.scss` use `--tc-*` for colour, radius, font size and transition timing. About 870 literals replaced, by a new codemod (`tools/tokenize.mjs`): exact matches 1:1, near matches unified (e.g. `#655c55` and the blue-grey `#606976` → `--tc-muted`, `#ece7e1` → `--tc-line`, `100ms ease-out` press → `--tc-dur-1 --tc-ease`). Literal hex colours in these files went from about 600 to 60 (gradient stops, university logo colours, one-off tints).
+- **Off-brand blues gone:** the blue field borders (`#d1dbe9`, `#d8dfeb`) are `--tc-line-strong`; the "waitlisted / deferred" and "in review" pills are blush/brand instead of blue. University logo colours (UCLA etc.) stay.
+- **Tools:** `shoot.mjs --session <file>` loads a local login (localhost only) so headless screenshots can reach signed-in pages.
+- **Sizes:** student hub CSS 634 → 636 kB raw (81.6 → 81.7 kB gz); `var(--tc-…)` is a little longer than a hex.
+
+**Rulings**
+- Near radii snap to the scale: 10px → 12 (`sm`), 14 → 16 (`md`), 18 → 20 (`lg`), 22 → 24 (`xl`). Cost if wrong: corners 2px rounder or squarer than before.
+- The nav's uppercase section label moves from `#a39890` to `--tc-subtle` (`#9a9089`), slightly darker. Cost if wrong: none.
+- The page-specific button overrides in admissions, tasks (`.ant-btn-sm` 8px), settings and community go with their own batches.
+
 ## Known, not caused by this work
 
 - `codex-sat-lessons.test.ts` fails locally because it reads `D:\Projects\TopCoach\output\…\lesson-pack.json`, which isn't in the repo. CI doesn't run vitest.

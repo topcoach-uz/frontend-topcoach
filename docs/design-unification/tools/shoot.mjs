@@ -63,6 +63,19 @@ try {
   if (flag('reduced-transparency')) features.push({ name: 'prefers-reduced-transparency', value: 'reduce' });
   if (features.length) await send('Emulation.setEmulatedMedia', { features });
 
+  // --session <file.json>: localStorage entries (e.g. a local test login) set on the
+  // page's origin before loading. Local dev hosts only, so a session never reaches
+  // another site.
+  const sessionFile = opt('session');
+  if (sessionFile) {
+    const target = new URL(url);
+    if (!['localhost', '127.0.0.1', '[::1]'].includes(target.hostname)) throw new Error('--session is only allowed for localhost URLs');
+    const entries = JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
+    await send('Page.navigate', { url: `${target.origin}/robots.txt` });
+    await sleep(500);
+    await evaluate(`(() => { const e = ${JSON.stringify(entries)}; for (const [k, v] of Object.entries(e)) localStorage.setItem(k, v); return Object.keys(e).length; })()`);
+  }
+
   await send('Page.navigate', { url });
   for (let i = 0; i < 60; i++) { if ((await evaluate('document.readyState')) === 'complete') break; await sleep(250); }
   await evaluate('document.fonts ? document.fonts.ready.then(() => true) : true');
