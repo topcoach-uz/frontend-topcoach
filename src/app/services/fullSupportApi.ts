@@ -28,6 +28,9 @@ export type MentorRosterStudent = {
   allocated: number;
   scheduledHours?: number;
   sessionsCount: number;
+  completedSessionsCount?: number;
+  allocationKnown?: boolean;
+  usageKnown?: boolean;
   /** Assigned through the older Full Support flow (no program / role). */
   hasLegacyFullSupport?: boolean;
   /** Programs this mentor is assigned to for the student, with their roles. */
@@ -37,6 +40,14 @@ export type MentorRosterStudent = {
 export type MentorRosterProgram = {
   enrollmentId: string;
   program: string;
+  name?: string;
+  capabilities?: string[];
+  enabledTools?: string[];
+  startsAt?: string;
+  accessEndsAt?: string | null;
+  state?: string;
+  scheduledMinutes?: number;
+  sessionsCount?: number;
   roles: string[];
   usedMinutes?: number | null;
   allocatedMinutes?: number | null;
@@ -56,6 +67,8 @@ export type StudentGoalDto = {
 };
 
 export type SessionLogDto = {
+  academicEnrollmentId?: string | null;
+  program?: string | null;
   recurrence?: { seriesId: string; position: number; timezone: string; repeat: "none" | "weekly" | "biweekly" } | null;
   id: string;
   mentorUserId?: string;
@@ -77,6 +90,7 @@ export type SessionLogDto = {
 };
 
 export type TaskDto = {
+  academicEnrollmentId?: string | null;
   id: string;
   lessonId?: string | null;
   task: string;
@@ -131,6 +145,8 @@ export type TaskExtensionRequest = {
 };
 
 export type MilestoneDto = {
+  description?: string | null;
+  academicEnrollmentId?: string | null;
   id: string;
   label: string;
   date: string | null;
@@ -392,7 +408,7 @@ export const fullSupportApi = RtkApi.injectEndpoints({
     }),
     createMentorTask: builder.mutation<
       { data: unknown; success: boolean },
-      { studentUserId: string; task: string; deadline: string; description?: string; lessonId?: string }
+      { studentUserId: string; task: string; deadline: string; description?: string; lessonId?: string; enrollmentId?: string }
     >({
       query: (body) => ({
         url: '/full-support/mentor/tasks',
@@ -513,16 +529,16 @@ export const fullSupportApi = RtkApi.injectEndpoints({
       },
       invalidatesTags: ['FullSupportMentorTasks'],
     }),
-    getMentorMilestones: builder.query<{ data: MilestoneDto[] }, string>({
-      query: (studentUserId) => ({
-        url: `/full-support/mentor/milestones?studentUserId=${encodeURIComponent(studentUserId)}`,
+    getMentorMilestones: builder.query<{ data: MilestoneDto[] }, string | { studentUserId: string; enrollmentId?: string }>({
+      query: (arg) => ({
+        url: `/full-support/mentor/milestones?studentUserId=${encodeURIComponent(typeof arg === "string" ? arg : arg.studentUserId)}${typeof arg !== "string" && arg.enrollmentId ? `&enrollmentId=${encodeURIComponent(arg.enrollmentId)}` : ""}`,
         method: 'GET',
       }),
       transformResponse: (res: unknown) => {
         const raw = res && typeof res === 'object' && 'data' in (res as object) ? (res as { data: unknown }).data : res;
         return { data: Array.isArray(raw) ? raw : [] };
       },
-      providesTags: (_res, _err, studentUserId) => [{ type: 'FullSupportMentorMilestones' as const, id: studentUserId }],
+      providesTags: (_res, _err, studentUserId) => [{ type: 'FullSupportMentorMilestones' as const, id: typeof studentUserId === 'string' ? studentUserId : studentUserId.studentUserId }],
     }),
     // Cross-student roll-up: every milestone across the mentor's roster.
     getAllMentorMilestones: builder.query<{ data: MentorMilestoneRow[] }, void>({
@@ -535,7 +551,7 @@ export const fullSupportApi = RtkApi.injectEndpoints({
     }),
     createMentorMilestone: builder.mutation<
       { data: unknown; success: boolean },
-      { studentUserId: string; label: string; date?: string | null }
+      { studentUserId: string; label: string; date?: string | null; enrollmentId?: string }
     >({
       query: (body) => ({
         url: '/full-support/mentor/milestones',

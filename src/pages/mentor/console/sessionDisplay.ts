@@ -1,3 +1,4 @@
+import { lessonMinutes } from './fullSupportLessons';
 import type { SessionLogDto } from 'src/app/services/fullSupportApi';
 import type { MentorBooking } from './sessionSources';
 import type { McPillVariant } from './components/McPill';
@@ -56,7 +57,7 @@ export function fullSupportDisplay(
       };
   }
   if (lesson.done) return { ...details, label: 'Held', variant: 'success' };
-  const awaiting = new Date(lesson.dateTime).getTime() <= now;
+  const awaiting = new Date(lesson.dateTime).getTime() + lessonMinutes(lesson.duration) * 60_000 <= now;
   return {
     ...details,
     label: awaiting ? 'Awaiting record' : 'Upcoming',
