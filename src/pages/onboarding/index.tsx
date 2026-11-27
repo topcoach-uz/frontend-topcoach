@@ -7,6 +7,7 @@ import Loader from 'src/components/loader';
 import { usesJuniorCommunity } from 'src/lib/onboarding';
 import OnboardingPreview from 'src/pages/onboarding-preview/OnboardingPreview';
 import useOrgStaff from 'src/hooks/useOrgStaff';
+import StudentThemeProvider from 'src/lib/antd/StudentThemeProvider';
 
 /** The server-backed onboarding flow is the default for every account version. */
 export default function OnboardingWizardPage() {
@@ -25,5 +26,9 @@ export default function OnboardingWizardPage() {
   if (usesJuniorCommunity(studentProfile?.academicProfile)) {
     return <Navigate to="/student-hub?section=feed" replace />;
   }
-  return <OnboardingPreview mode="production" />;
+  return (
+    <StudentThemeProvider>
+      <OnboardingPreview mode="production" />
+    </StudentThemeProvider>
+  );
 }

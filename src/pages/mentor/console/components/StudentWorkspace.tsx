@@ -308,13 +308,13 @@ export default function StudentWorkspace({
   }, [student.id, student.programs, selectedEnrollmentId]);
 
   // Tasks first — the mockup's everyday view. Heavy sections load lazily.
-  const [activeTab, setActiveTab] = useState("tasks");
+  const [activeTab, setActiveTab] = useState(new URLSearchParams(location.search).get('tab') === 'applications' ? 'essays' : 'tasks');
   useEffect(() => {
     if (requestedEnrollmentId && student.programs?.some(program => program.enrollmentId === requestedEnrollmentId)) {
       setSelectedEnrollmentId(requestedEnrollmentId);
       setProgressEditorOpen(false);
     }
-    const requestedTab = new URLSearchParams(location.search).get('tab');
+    const requestedTab = new URLSearchParams(location.search).get('tab') === 'applications' ? 'essays' : new URLSearchParams(location.search).get('tab');
     if (requestedTab && ['tasks', 'sessions', 'message', 'reports', 'reviews', 'essays', 'more'].includes(requestedTab)) setActiveTab(requestedTab);
     // Apply navigation once; roster refreshes must preserve the mentor's selection.
     // eslint-disable-next-line react-hooks/exhaustive-deps

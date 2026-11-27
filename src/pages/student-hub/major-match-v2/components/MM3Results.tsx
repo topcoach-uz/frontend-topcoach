@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ArrowUpRight, BookmarkCheck, BookmarkPlus, Building2, ChevronDown, ChevronRight, Clock3, Compass, Flag, Lock, MessageCircle, RotateCcw, Sparkles, Users, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUpRight, BookmarkCheck, BookmarkPlus, Building2, ChevronDown, ChevronRight, Clock3, Compass, Flag, Lock, MessageCircle, RotateCcw, Sparkles, Users, X } from 'lucide-react';
 import type {
   MajorMatchAccessStatus,
   Mm3Major,
@@ -27,6 +27,10 @@ import UniversityDetailContent from './UniversityDetailContent';
 import CampusEditorialIllustration from './CampusEditorialIllustration';
 import RoadmapJourneyBoard from './RoadmapJourneyBoard';
 import OutcomeWorkPreview from './OutcomeWorkPreview';
+import { useGetUniversityFiltersQuery } from '../../../../app/services/universities';
+import { buildUniversitySubjectOptions } from '../../applicant/universityFieldOptions';
+import { findUniversitiesLink } from '../../applicant/findUniversitiesLink';
+import { applicantLinks } from '../../../../lib/applicantWorkspace';
 import '../mm3-results.scss';
 import '../mm3-results-refresh.scss';
 import '../university-detail.scss';
@@ -454,7 +458,7 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; degreeLevel: 'ba
                     type="button"
                     className="mm3-modal__save-link"
                     onClick={() =>
-                      navigate('/student-hub?section=others&target=profile&tab=college-lists')
+                      navigate(applicantLinks.applications)
                     }
                   >
                     {t('majorMatch3.results.savedToListViewCta', 'View list')}
@@ -481,6 +485,25 @@ const Mm3UniversityModal: React.FC<{ university: Mm3University; degreeLevel: 'ba
       </div>
     </div>,
     document.body,
+  );
+};
+
+/** Primary hand-off from results into Find universities, pre-filtered to the major when the catalogue has a match. */
+const SeeUniversitiesCta: React.FC<{ majorName: string; degree: 'bachelor' | 'master'; placement: 'matches' | 'end' }> = ({ majorName, degree, placement }) => {
+  const { t } = useTranslation();
+  const isMaster = degree === 'master';
+  const filters = useGetUniversityFiltersQuery('undergraduate', { skip: isMaster });
+  const to = isMaster ? applicantLinks.universities : findUniversitiesLink(majorName, buildUniversitySubjectOptions(filters.data?.majors ?? [], 'undergraduate'));
+  return (
+    <div className={`mm3-results__see-universities mm3-results__see-universities--${placement}`}>
+      {placement === 'end' && <p>{t('majorMatch3.results.seeUniversitiesEndLead', 'Your matches are ready. See where you could study them.')}</p>}
+      <Link className="mm2__btn mm2__btn--primary" to={to}>
+        {isMaster
+          ? t('majorMatch3.results.seeUniversitiesMaster', 'See universities')
+          : t('majorMatch3.results.seeUniversitiesCta', { major: majorName, defaultValue: 'See universities for {{major}}' })}
+        <ArrowRight size={15} aria-hidden="true" />
+      </Link>
+    </div>
   );
 };
 
@@ -905,6 +928,7 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
               aria-labelledby={`mm3-major-tab-${selectedMajorIndex}`}
             >
               <MajorProfileOverview major={selectedMajor} />
+              {!readOnly && !sampleReport && selectedMajor && <SeeUniversitiesCta majorName={selectedMajor.name} degree={report.meta?.targetDegree ?? 'bachelor'} placement="matches" />}
 
               {/* Universities for THIS major only, grouped by majorIndex —
                   previously a single flat list shared across all majors,
@@ -1116,6 +1140,8 @@ export const MM3Results: React.FC<MM3ResultsProps> = ({
 
       {/* TopCoach's static programme catalogue, separate from the roadmap. */}
       <TopCoachPrograms defaultOpen readOnly={readOnly || sampleReport} onLearnMore={() => setContactOpen(true)} />
+
+      {!readOnly && !sampleReport && majors[0] && <SeeUniversitiesCta majorName={majors[0].name} degree={report.meta?.targetDegree ?? 'bachelor'} placement="end" />}
 
       <div className="mm3-results__actions">
         {onBack && (

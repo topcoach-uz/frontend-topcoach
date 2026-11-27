@@ -350,7 +350,7 @@ $brand: #8b0000;
 
   strong { font-size: 15px; color: $ink; }
   p { margin: 0 0 6px; font-size: 14px; color: $muted; }
-  .ant-btn { min-height: 36px !important; border-radius: 10px; font-size: 14px; }
+  .ant-btn { min-height: 36px !important; border-radius: var(--tc-radius-pill); font-size: var(--tc-text-body-sm); }
 }
 
 .task-loading {

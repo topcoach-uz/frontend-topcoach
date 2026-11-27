@@ -1,5 +1,8 @@
 @import '../../styles/student-hub-design-system.scss';
 
+// Legacy student form fixes, printed once here (see the mixin's notes).
+@include tc-legacy-student-forms;
+
 // Shared page layout: consistent horizontal breathing room on all My Journey pages
 .student-hub-page {
   width: 100%;

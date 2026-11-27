@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
-import { Alert, Button, Skeleton } from "antd";
+import { Alert, Button } from "antd";
+
+import { ErrorState, SkeletonBlock } from "src/components/student-hub/ui";
 
 export function QueryState({
   loading,
@@ -7,8 +9,12 @@ export function QueryState({
   retry,
   children,
   hasData = false,
+  empty,
+  emptyState,
 }: {
   hasData?: boolean;
+  empty?: boolean;
+  emptyState?: ReactNode;
   loading?: boolean;
   error?: boolean;
   retry: () => unknown;
@@ -17,19 +23,11 @@ export function QueryState({
   if (loading && !hasData)
     return (
       <div className="applicant-panel">
-        <Skeleton active paragraph={{ rows: 5 }} />
+        <SkeletonBlock variant="panel" lines={5} />
       </div>
     );
-  if (error && !hasData)
-    return (
-      <Alert
-        type="error"
-        showIcon
-        message="We couldn’t finish that request."
-        description="Your saved information is unchanged. Please try again."
-        action={<Button onClick={retry}>Try again</Button>}
-      />
-    );
+  if (error && !hasData) return <ErrorState onRetry={retry} />;
+  if (empty && emptyState && !error) return <>{emptyState}</>;
   return (
     <>
       {error && hasData && (

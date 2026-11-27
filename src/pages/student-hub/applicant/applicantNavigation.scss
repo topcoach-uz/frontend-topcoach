@@ -1,15 +1,15 @@
 @use '/src/styles/liquid-glass' as lg;
 // Student workspace navigation: floating icon rail + glass section panel.
-$nav-brand: #8b0000;
-$nav-brand-deep: #6e0000;
-$nav-ink: #2a2522;
-$nav-muted: #6b625b;
-$nav-label: #a39890;
+$nav-brand: var(--tc-brand);
+$nav-brand-deep: var(--tc-brand-hover);
+$nav-ink: var(--tc-ink);
+$nav-muted: var(--tc-muted);
+$nav-label: var(--tc-subtle);
 $nav-active-bg: rgba(139, 0, 0, 0.08);
 $nav-border: rgba(255, 255, 255, 0.72);
 $nav-top: 72px; // site header height
 $nav-gap: 12px; // breathing room around the floating surfaces
-$ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
+$ease-out: var(--tc-ease); // iOS-style deceleration
 
 // ---------- Rail ----------
 .applicant-rail {
@@ -41,9 +41,9 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   top: 0;
   left: 0;
   z-index: 0;
-  border-radius: 20px;
+  border-radius: var(--tc-radius-lg);
   @include lg.lg-blush;
-  border-radius: 20px;
+  border-radius: var(--tc-radius-lg);
   pointer-events: none;
   opacity: 1;
 
@@ -73,13 +73,13 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   flex: none;
   padding: 0 2px;
   border: 0;
-  border-radius: 20px;
+  border-radius: var(--tc-radius-lg);
   background: transparent;
   position: relative;
   z-index: 1;
   color: $nav-muted;
   font: inherit;
-  font-size: 11px;
+  font-size: var(--tc-text-micro);
   font-weight: 500;
   line-height: normal;
   letter-spacing: 0;
@@ -99,7 +99,7 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   }
   svg {
     flex: none;
-    transition: transform 240ms $ease-out;
+    transition: transform var(--tc-dur-2) var(--tc-ease);
   }
   &:hover {
     background: rgba(139, 0, 0, 0.05);
@@ -177,7 +177,7 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   flex-direction: column;
   gap: 22px;
   padding: 26px 14px 22px;
-  border-radius: 24px;
+  border-radius: var(--tc-radius-xl);
   @include lg.lg-thick;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -213,7 +213,7 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   width: 22px;
   height: 64px;
   padding: 0;
-  border-radius: 999px;
+  border-radius: var(--tc-radius-pill);
   @include lg.lg-thin;
   // A hairline edge so the handle stays visible against the white panel.
   border: 1px solid rgba(48, 43, 40, 0.14);
@@ -254,7 +254,7 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   p {
     margin: 0;
     color: $nav-muted;
-    font-size: 13px;
+    font-size: var(--tc-text-small);
     line-height: normal;
   }
 }
@@ -268,7 +268,7 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   margin: 0;
   padding: 0 0 8px 12px;
   color: $nav-label;
-  font-size: 11px;
+  font-size: var(--tc-text-micro);
   font-weight: 600;
   line-height: normal;
   letter-spacing: 0.1em;
@@ -281,9 +281,9 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   gap: 12px;
   height: 40px;
   padding: 0 12px;
-  border-radius: 12px;
+  border-radius: var(--tc-radius-sm);
   color: $nav-ink;
-  font-size: 14px;
+  font-size: var(--tc-text-body-sm);
   font-weight: 400;
   line-height: normal;
   // No fade: the hover highlight lands with the pointer instead of trailing it.
@@ -316,7 +316,7 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
       color: $nav-brand;
     }
     .applicant-section-panel-meta {
-      background: #fff;
+      background: var(--tc-surface);
       color: $nav-brand;
     }
   }
@@ -338,10 +338,10 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   gap: 4px;
   flex: none;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--tc-radius-pill);
   background: rgba(48, 43, 40, 0.05);
   color: $nav-muted;
-  font-size: 12px;
+  font-size: var(--tc-text-caption);
   font-weight: 500;
   line-height: normal;
   font-variant-numeric: tabular-nums;
@@ -350,7 +350,7 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
     color: currentColor;
   }
   &.is-accent {
-    background: #fff;
+    background: var(--tc-surface);
     color: $nav-brand;
   }
 }
@@ -378,18 +378,18 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   gap: 6px;
   min-height: 36px;
   padding: 0 14px;
-  border: 1px solid #e7e2dc;
-  border-radius: 999px;
-  background: #fff;
+  border: 1px solid var(--tc-line);
+  border-radius: var(--tc-radius-pill);
+  background: var(--tc-surface);
   color: $nav-muted;
   font-size: 0.8125rem;
   white-space: nowrap;
   text-decoration: none;
   transition:
-    background-color 150ms $ease-out,
-    color 150ms $ease-out,
-    border-color 150ms $ease-out,
-    transform 150ms $ease-out;
+    background-color var(--tc-dur-1) var(--tc-ease-fade),
+    color var(--tc-dur-1) var(--tc-ease-fade),
+    border-color var(--tc-dur-1) var(--tc-ease-fade),
+    transform var(--tc-dur-1) var(--tc-ease);
   &:hover {
     color: $nav-brand;
   }
@@ -412,9 +412,15 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   .applicant-panel-slot {
     display: none;
   }
+  // The chip row runs edge to edge, so chips scroll out at the screen edge
+  // instead of being clipped mid-word inside the content padding.
   .applicant-section-tabs {
     display: block;
-    margin: 0 0 12px;
+    margin: 0 calc(-1 * var(--applicant-gutter, 24px)) 12px;
+  }
+  .applicant-section-tabs__list {
+    padding-inline: var(--applicant-gutter, 24px);
+    scroll-padding-inline: var(--applicant-gutter, 24px);
   }
   .applicant-org-mobile {
     display: block;
@@ -425,8 +431,17 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
   }
 }
 
+@media (pointer: coarse) {
+  .applicant-section-tabs__link {
+    min-height: 44px;
+  }
+}
+
 // Phone: the rail becomes a floating glass tab bar.
 @media (max-width: 760px) {
+  .applicant-section-tabs {
+    --applicant-gutter: 16px;
+  }
   .applicant-rail {
     position: fixed;
     top: auto;
@@ -441,7 +456,7 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
     justify-content: space-around;
     gap: 0;
     padding: 5px 4px;
-    border-radius: 24px;
+    border-radius: var(--tc-radius-xl);
     @include lg.lg-thick;
     overflow: visible;
   }
@@ -456,8 +471,24 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
     height: 54px;
     gap: 4px;
     padding: 0;
-    border-radius: 18px;
+    border-radius: var(--tc-radius-lg);
     font-size: 10px;
+    // Six tabs share the width: tight tracking keeps "Community" whole.
+    letter-spacing: -0.01em;
+  }
+  @media (max-width: 374px) {
+    .applicant-rail__item {
+      letter-spacing: -0.03em;
+    }
+  }
+  // 320px phones (first-gen SE): slimmer bar padding and labels.
+  @media (max-width: 340px) {
+    .applicant-rail {
+      padding-inline: 2px;
+    }
+    .applicant-rail__item {
+      font-size: 9.5px;
+    }
   }
   .applicant-rail__item.is-phone-hidden {
     display: none;
@@ -472,7 +503,7 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
 
 @media (prefers-reduced-motion: reduce) {
   .applicant-rail__lens.is-ready {
-    transition: opacity 150ms ease-out;
+    transition: opacity var(--tc-dur-1) var(--tc-ease-fade);
   }
   .applicant-rail__item,
   .applicant-rail__item svg,
@@ -495,18 +526,18 @@ $ease-out: cubic-bezier(0.32, 0.72, 0, 1); // iOS-style deceleration
 // Solid materials when the user asks for less transparency or more contrast.
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   .applicant-rail {
-    background: #fff;
+    background: var(--tc-surface);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
   .applicant-rail__lens {
-    background: #f7e6e4;
+    background: var(--tc-blush);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
   .applicant-section-panel,
   .applicant-panel-toggle {
-    background: #fff;
+    background: var(--tc-surface);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }

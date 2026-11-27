@@ -84,6 +84,7 @@ import ScholarshipManagement from "./ScholarshipManagement";
 import ApplicationRequirements from "./ApplicationRequirements";
 import ApplicationMentor from "./ApplicationMentor";
 import ApplicationTimeline from "../applications/components/ApplicationTimeline";
+import { NextStepCard } from "./NextStepCard";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 
 export default function ApplicantApplicationsPage() {
@@ -645,6 +646,7 @@ export default function ApplicantApplicationsPage() {
         </>
       }
     >
+      <NextStepCard />
       <section
         className="application-list-controls"
         aria-label="Application list controls"
@@ -1220,7 +1222,10 @@ export function ApplicantApplicationPage() {
   const closeStatus = (saved = false) => {
     if (
       !saved &&
-      ((status && status !== app?.status) || notes.trim()) &&
+      ((status && status !== app?.status) ||
+        notes.trim() ||
+        (submissionDate?.format("YYYY-MM-DD") ?? "") !==
+          (statusSnapshot?.submittedAt ? dayjs(statusSnapshot.submittedAt).format("YYYY-MM-DD") : "")) &&
       !window.confirm("Discard your unsaved status changes?")
     )
       return;

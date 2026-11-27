@@ -3831,5 +3831,9 @@
   "accountNav.accessUntil": "Access until",
   "accountNav.noRenewal": "Paid with Click. Your access will not renew automatically.",
   "accountNav.checkoutHint": "Choose your access period. You’ll pay securely on Click’s page, and access starts after payment is confirmed.",
-  "accountNav.onePeriod": "One payment for one period. No automatic renewal."
+  "accountNav.onePeriod": "One payment for one period. No automatic renewal.",
+  "studentUi.error.title": "We couldn’t finish that request.",
+  "studentUi.error.body": "Your saved information is unchanged. Please try again.",
+  "studentUi.error.retry": "Try again",
+  "studentUi.loading": "Loading…"
 }

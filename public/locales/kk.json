@@ -3831,5 +3831,9 @@
   "accountNav.accessUntil": "Kiriw múddeti",
   "accountNav.noRenewal": "Click arqalı tólengen. Kiriw avtomatik uzaytılmaydı.",
   "accountNav.checkoutHint": "Kiriw múddetin tańlań. Tólem Click betinde ámelge asırıladı, tastıyıqlanǵannan keyin kiriw ashıladı.",
-  "accountNav.onePeriod": "Bir múddet ushın bir tólem. Avtomatik uzaytıw joq."
+  "accountNav.onePeriod": "Bir múddet ushın bir tólem. Avtomatik uzaytıw joq.",
+  "studentUi.error.title": "Sorawdı orınlaw múmkin bolmadı.",
+  "studentUi.error.body": "Saqlanǵan maǵlıwmatlarıńız ózgermedi. Qayta urınıp kóriń.",
+  "studentUi.error.retry": "Qayta urınıw",
+  "studentUi.loading": "Júklenbekte…"
 }

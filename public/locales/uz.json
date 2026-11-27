@@ -3831,5 +3831,9 @@
   "accountNav.accessUntil": "Kirish muddati",
   "accountNav.noRenewal": "Click orqali to‘langan. Kirish avtomatik uzaytirilmaydi.",
   "accountNav.checkoutHint": "Kirish muddatini tanlang. To‘lov Click sahifasida amalga oshiriladi va tasdiqlangach kirish ochiladi.",
-  "accountNav.onePeriod": "Bitta muddat uchun bir to‘lov. Avtomatik uzaytirish yo‘q."
+  "accountNav.onePeriod": "Bitta muddat uchun bir to‘lov. Avtomatik uzaytirish yo‘q.",
+  "studentUi.error.title": "So‘rovni bajarib bo‘lmadi.",
+  "studentUi.error.body": "Saqlangan ma’lumotlaringiz o‘zgarmadi. Qayta urinib ko‘ring.",
+  "studentUi.error.retry": "Qayta urinish",
+  "studentUi.loading": "Yuklanmoqda…"
 }
