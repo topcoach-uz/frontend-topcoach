@@ -732,7 +732,7 @@
     display: block;
   }
   .applicant-content {
-    padding: 16px 16px calc(96px + env(safe-area-inset-bottom));
+    padding: 16px 16px calc(104px + env(safe-area-inset-bottom));
     // Guard: nothing inside a page may widen the phone viewport. clip (not
     // hidden) keeps sticky children working and creates no scroll box.
     overflow-x: clip;
