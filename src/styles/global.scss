@@ -1,6 +1,13 @@
+@use './student-hub-design-system.scss' as tc;
 @import './normalize.scss';
 @import './variables.scss';
 @import './help.scss';
+
+// Student design tokens as CSS custom properties, printed once for the whole app.
+// Source: src/styles/student-hub-design-system.scss (docs/design-unification/TOKENS.md).
+:root {
+  @include tc.tc-custom-properties;
+}
 /* Fonts are preloaded asynchronously in index.html with preconnect + async
    stylesheet links, which lets the rest of CSS parse without waiting for
    the Google Fonts roundtrip. `display=swap` there means text paints in

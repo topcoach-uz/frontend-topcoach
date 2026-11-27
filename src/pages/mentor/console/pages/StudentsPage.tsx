@@ -1,21 +1,36 @@
-import { useMemo, useState } from 'react';
-import { Alert, Button, Card, Input, Spin, Table, Tabs, Typography } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import { Search } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import ReviewsPage from './ReviewsPage';
-import { useReviewCounts } from '../components/reviews/reviewCounts';
+import { useMemo, useState } from "react";
+import {
+  Alert,
+  Button,
+  Card,
+  Input,
+  Spin,
+  Table,
+  Tabs,
+  Typography,
+} from "antd";
+import type { ColumnsType } from "antd/es/table";
+
+import { useNavigate, useSearchParams } from "react-router-dom";
+import ReviewsPage from "./ReviewsPage";
+import { isAccessDenied } from "../programCapabilities";
+import { rosterHoursLabel, rosterProgramLabel } from "../rosterDisplay";
+import { useReviewCounts } from "../components/reviews/reviewCounts";
 import {
   useGetMentorRosterQuery,
   useGetMentorTasksQuery,
   type MentorRosterProgram,
-} from 'src/app/services/fullSupportApi';
-import { programNames, roleNames } from 'src/pages/student-hub/my-programs/programModel';
-import type { ProgramKey } from 'src/app/services/studentProgramsApi';
-import { McPill } from '../components/McPill';
-import { useMentorBookings, useMentorMentees } from '../sessionSources';
-import { avatarStyleForId, formatDateTime, initialsFromName } from '../utils';
+} from "src/app/services/fullSupportApi";
+import {
+  programNames,
+  roleNames,
+} from "src/pages/student-hub/my-programs/programModel";
+import type { ProgramKey } from "src/app/services/studentProgramsApi";
+import { McPill } from "../components/McPill";
+import { useMentorBookings, useMentorMentees } from "../sessionSources";
+import { avatarStyleForId, formatDateTime, initialsFromName } from "../utils";
 
+import SearchButton from "src/components/common/searchButton";
 const { Text } = Typography;
 
 /** Row model unifying Full Support roster students and 1:1 platform mentees. */
@@ -27,29 +42,33 @@ type ConsoleStudent = {
   allocated: number;
   scheduledHours?: number;
   sessionsCount: number;
-  isFullSupport: boolean;
+  isProgramStudent: boolean;
+  completedSessionsCount?: number;
+  allocationKnown?: boolean;
+  usageKnown?: boolean;
   /** What the mentor is assigned for: program + roles (empty for 1:1 mentees). */
   programs: MentorRosterProgram[];
   hasLegacyFullSupport: boolean;
 };
 
-const programLabel = (program: string) => programNames[program as ProgramKey] ?? program;
+const programLabel = (program: string) =>
+  programNames[program as ProgramKey] ?? program;
 const roleLabel = (role: string) => roleNames[role] ?? role;
 
 export default function MentorConsoleStudentsPage() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const activeTab = params.get('tab') === 'reviews' ? 'reviews' : 'students';
+  const activeTab = params.get("tab") === "reviews" ? "reviews" : "students";
   const { total: pendingReviews } = useReviewCounts();
-  const [q, setQ] = useState('');
+  const [q, setQ] = useState("");
 
-  const { data, isLoading, isError } = useGetMentorRosterQuery();
+  const { currentData: data, error: rosterError, isLoading, isError } = useGetMentorRosterQuery(undefined, { refetchOnMountOrArgChange: true, refetchOnFocus: true });
   const { mentees, isLoading: menteesLoading } = useMentorMentees();
 
   // Full Support roster first (richer record); then 1:1 mentees the mentor
   // isn't formally assigned to, deduped against the roster.
   const rows = useMemo<ConsoleStudent[]>(() => {
-    const fs: ConsoleStudent[] = (data?.data ?? []).map((r) => ({
+    const fs: ConsoleStudent[] = (isAccessDenied(rosterError) ? [] : data?.data ?? []).map((r) => ({
       id: r.id,
       name: r.name,
       initials: r.initials,
@@ -57,9 +76,13 @@ export default function MentorConsoleStudentsPage() {
       scheduledHours: r.scheduledHours,
       allocated: r.allocated,
       sessionsCount: r.sessionsCount,
-      isFullSupport: true,
+      isProgramStudent: true,
+      completedSessionsCount: r.completedSessionsCount,
+      allocationKnown: r.allocationKnown,
+      usageKnown: r.usageKnown,
       programs: r.programs ?? [],
-      hasLegacyFullSupport: Boolean(r.hasLegacyFullSupport) || !r.programs?.length,
+      hasLegacyFullSupport:
+        r.hasLegacyFullSupport ?? !r.programs?.length,
     }));
     const fsIds = new Set(fs.map((r) => r.id));
     const oneOnOne: ConsoleStudent[] = mentees
@@ -71,12 +94,12 @@ export default function MentorConsoleStudentsPage() {
         used: 0,
         allocated: 0,
         sessionsCount: m.sessionsCount,
-        isFullSupport: false,
+        isProgramStudent: false,
         programs: [],
         hasLegacyFullSupport: false,
       }));
     return [...fs, ...oneOnOne];
-  }, [data?.data, mentees]);
+  }, [data?.data, mentees, rosterError]);
 
   // Answer "who needs me?" from the list itself — next session + attention.
   const { bookings } = useMentorBookings(null, { includeFullSupport: true });
@@ -85,8 +108,11 @@ export default function MentorConsoleStudentsPage() {
   const nextSessionByStudent = useMemo(() => {
     const map = new Map<string, string>();
     bookings
-      .filter((b) => b.status === 'upcoming' && b.studentUserId)
-      .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())
+      .filter((b) => b.status === "upcoming" && b.studentUserId)
+      .sort(
+        (a, b) =>
+          new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
+      )
       .forEach((b) => {
         if (!map.has(b.studentUserId!)) map.set(b.studentUserId!, b.dateTime);
       });
@@ -96,7 +122,7 @@ export default function MentorConsoleStudentsPage() {
   const reportsDueByStudent = useMemo(() => {
     const map = new Map<string, number>();
     bookings.forEach((b) => {
-      if (b.status === 'report-due' && b.studentUserId) {
+      if (b.status === "report-due" && b.studentUserId) {
         map.set(b.studentUserId, (map.get(b.studentUserId) ?? 0) + 1);
       }
     });
@@ -107,7 +133,8 @@ export default function MentorConsoleStudentsPage() {
     const map = new Map<string, number>();
     (tasksRes?.data ?? []).forEach((t) => {
       const awaiting =
-        !t.hasFeedback && (t.submissionText || (t.submissionFileUrls?.length ?? 0) > 0);
+        !t.hasFeedback &&
+        (t.submissionText || (t.submissionFileUrls?.length ?? 0) > 0);
       if (awaiting && t.studentUserId) {
         map.set(t.studentUserId, (map.get(t.studentUserId) ?? 0) + 1);
       }
@@ -123,8 +150,8 @@ export default function MentorConsoleStudentsPage() {
 
   const columns: ColumnsType<ConsoleStudent> = [
     {
-      title: 'Student',
-      key: 'name',
+      title: "Student",
+      key: "name",
       render: (_, row) => (
         <div className="mc-user-cell">
           <div className="mc-avatar" style={avatarStyleForId(row.id)}>
@@ -138,21 +165,26 @@ export default function MentorConsoleStudentsPage() {
       ),
     },
     {
-      title: 'Assigned for',
-      key: 'type',
+      title: "Assigned for",
+      key: "type",
       width: 240,
       render: (_, row) => {
-        if (!row.isFullSupport) return <McPill variant="info">1:1 mentee</McPill>;
+        if (!row.isProgramStudent)
+          return <McPill variant="info">1:1 mentee</McPill>;
         return (
           <div className="mc-assignment">
             {row.programs.map((p) => {
-              const program = programLabel(p.program);
+              const program = p.name || programLabel(p.program);
               // Skip a role that only repeats the program ("Research · Research").
               const roles = p.roles.map(roleLabel).filter((r) => r !== program);
               return (
                 <div key={p.enrollmentId} className="mc-assignment-item">
                   <McPill variant="accent">{program}</McPill>
-                  {roles.length > 0 && <span className="mc-assignment-roles">{roles.join(' · ')}</span>}
+                  {roles.length > 0 && (
+                    <span className="mc-assignment-roles">
+                      {roles.join(" · ")}
+                    </span>
+                  )}
                 </div>
               );
             })}
@@ -167,46 +199,80 @@ export default function MentorConsoleStudentsPage() {
       },
     },
     {
-      title: 'Next session',
-      key: 'next',
+      title: "Next session",
+      key: "next",
       width: 170,
+      responsive: ["xl"],
       render: (_, row) => {
         const next = nextSessionByStudent.get(row.id);
         return next ? (
-          <Text style={{ color: 'var(--mc-text)', fontSize: 13 }}>{formatDateTime(next)}</Text>
+          <Text style={{ color: "var(--mc-text)", fontSize: 13 }}>
+            {formatDateTime(next)}
+          </Text>
         ) : (
-          <Text style={{ color: 'var(--mc-text-muted)', fontSize: 13 }}>—</Text>
+          <Text style={{ color: "var(--mc-text-muted)", fontSize: 13 }}>—</Text>
         );
       },
     },
     {
-      title: 'Lesson hours',
-      key: 'hours',
-      width: 130,
+      title: "Lesson hours",
+      key: "hours",
+      width: 180,
       render: (_, row) =>
-        row.isFullSupport ? (
-          <Text style={{ color: 'var(--mc-text)' }}>
-            {row.used}h completed <span style={{ color: 'var(--mc-text-muted)' }}>· {row.scheduledHours ?? 0}h scheduled</span>
-          </Text>
+        row.isProgramStudent ? (
+          <div
+            aria-label={rosterHoursLabel(row)}
+            style={{ wordBreak: "normal" }}
+          >
+            <div>
+              {row.usageKnown === false
+                ? row.used > 0
+                  ? `${row.used}h+ recorded`
+                  : "Time not recorded"
+                : `${row.used}h used`}
+            </div>
+            <Text
+              style={{ color: "var(--mc-text-muted)", wordBreak: "normal" }}
+            >
+              {row.allocationKnown === false
+                ? "Allocation unknown"
+                : `${row.allocated}h allocated`}
+            </Text>
+          </div>
         ) : (
-          <Text style={{ color: 'var(--mc-text-muted)' }}>—</Text>
+          <Text style={{ color: "var(--mc-text-muted)" }}>—</Text>
         ),
     },
     {
-      title: 'Sessions',
-      dataIndex: 'sessionsCount',
-      key: 'sessionsCount',
+      title: "Sessions",
+      dataIndex: "sessionsCount",
+      key: "sessionsCount",
       width: 100,
+      render: (_, row) => (
+        <div>
+          {row.sessionsCount} total
+          {row.completedSessionsCount != null && (
+            <div style={{ color: "var(--mc-text-muted)" }}>
+              {row.completedSessionsCount} completed
+            </div>
+          )}
+        </div>
+      ),
     },
     {
-      title: 'Attention',
-      key: 'attention',
+      title: "Attention",
+      key: "attention",
       width: 150,
+      responsive: ["xl"],
       render: (_, row) => {
         const due = reportsDueByStudent.get(row.id) ?? 0;
         const review = awaitingReviewByStudent.get(row.id) ?? 0;
         if (due > 0) {
-          return <McPill variant="danger">{due} report{due === 1 ? '' : 's'} due</McPill>;
+          return (
+            <McPill variant="danger">
+              {due} report{due === 1 ? "" : "s"} due
+            </McPill>
+          );
         }
         if (review > 0) {
           return <McPill variant="warning">{review} to review</McPill>;
@@ -215,10 +281,10 @@ export default function MentorConsoleStudentsPage() {
       },
     },
     {
-      title: '',
-      key: 'actions',
-      width: 90,
-      fixed: 'right',
+      title: "",
+      key: "actions",
+      width: 80,
+      fixed: "right",
       render: (_, row) => (
         <Button
           size="small"
@@ -226,8 +292,8 @@ export default function MentorConsoleStudentsPage() {
           ghost
           onClick={() => navigate(`/mentor/students/${row.id}`)}
           style={{
-            borderColor: 'var(--mc-accent)',
-            color: 'var(--mc-accent)',
+            borderColor: "var(--mc-accent)",
+            color: "var(--mc-accent)",
           }}
         >
           Open
@@ -244,71 +310,86 @@ export default function MentorConsoleStudentsPage() {
         </div>
         <h1 className="mc-page-title">Students</h1>
         <p className="mc-page-lead">
-          Your Full Support students and 1:1 mentees. Open a workspace to manage tasks, review
-          essays, documents, sessions and message them in one place.
+          Your assigned students across mentorship programs. Open a workspace to
+          view program sessions, tasks, reports and messages.
         </p>
       </div>
 
       <Tabs
         activeKey={activeTab}
-        onChange={(tab) => setParams((current) => {
-          if (tab === 'reviews') current.set('tab', tab);
-          else { current.delete('tab'); current.delete('type'); }
-          return current;
-        })}
+        onChange={(tab) =>
+          setParams((current) => {
+            if (tab === "reviews") current.set("tab", tab);
+            else {
+              current.delete("tab");
+              current.delete("type");
+            }
+            return current;
+          })
+        }
         items={[
-          { key: 'students', label: 'All students' },
-          { key: 'reviews', label: pendingReviews > 0 ? `Reviews (${pendingReviews})` : 'Reviews' },
+          { key: "students", label: "All students" },
+          {
+            key: "reviews",
+            label:
+              pendingReviews > 0 ? `Reviews (${pendingReviews})` : "Reviews",
+          },
         ]}
       />
-      {activeTab === 'reviews' ? <ReviewsPage embedded /> : <Card bordered={false} className="mc-panel">
-        <div style={{ marginBottom: 12 }}>
-          <Input
-            size="large"
-            allowClear
-            prefix={<Search size={16} style={{ opacity: 0.45 }} />}
-            placeholder="Search by name"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            style={{ maxWidth: 360 }}
-          />
-        </div>
-
-        {isError && (
-          <Alert
-            type="error"
-            showIcon
-            message="Failed to load your roster"
-            description="Retry shortly."
-            style={{ marginBottom: 12 }}
-          />
-        )}
-
-        {isLoading || menteesLoading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
-            <Spin size="large" />
+      {activeTab === "reviews" ? (
+        <ReviewsPage embedded />
+      ) : (
+        <Card bordered={false} className="mc-panel">
+          <div style={{ marginBottom: 12 }}>
+            <Input
+              size="large"
+              allowClear
+              suffix={<SearchButton size={30} />}
+              placeholder="Search by name"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              style={{ maxWidth: 360 }}
+            />
           </div>
-        ) : filtered.length === 0 ? (
-          <Alert
-            type="info"
-            showIcon
-            message="No students yet"
-            description={
-              rows.length === 0
-                ? 'Students appear here once you have a 1:1 session booked or an admin assigns you Full Support students.'
-                : 'Try clearing the search.'
-            }
-          />
-        ) : (
-          <Table<ConsoleStudent>
-            rowKey="id"
-            columns={columns}
-            dataSource={filtered}
-            pagination={{ pageSize: 20 }}
-            size="middle"
-          />
-        )}
-      </Card>}
+
+          {isError && (
+            <Alert
+              type="error"
+              showIcon
+              message="Failed to load your roster"
+              description="Retry shortly."
+              style={{ marginBottom: 12 }}
+            />
+          )}
+
+          {isLoading || menteesLoading ? (
+            <div
+              style={{ display: "flex", justifyContent: "center", padding: 40 }}
+            >
+              <Spin size="large" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <Alert
+              type="info"
+              showIcon
+              message="No students yet"
+              description={
+                rows.length === 0
+                  ? "Students appear here once you have a 1:1 session booked or an admin assigns you Full Support students."
+                  : "Try clearing the search."
+              }
+            />
+          ) : (
+            <Table<ConsoleStudent>
+              rowKey="id"
+              columns={columns}
+              dataSource={filtered}
+              pagination={{ pageSize: 20 }}
+              size="middle"
+            />
+          )}
+        </Card>
+      )}
     </div>
   );
 }

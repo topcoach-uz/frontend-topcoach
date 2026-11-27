@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Skeleton } from 'antd';
-import { ArrowRight, Heart, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowRight, ChevronRight, GraduationCap, Heart, ListChecks, RefreshCw, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -561,12 +561,16 @@ export default function ApplicantOverviewPage() {
       </nav>
 
       <div className="ov-grid">
-        <div className="ov-col">
-          <section className="ov-card" aria-labelledby="ov-apps-title">
+        <div className="ov-col ov-glass-stage">
+          <section className="ov-card ov-card--liquid" aria-labelledby="ov-apps-title">
             <div className="ov-card__head">
+              <span className="ov-card__icon" aria-hidden>
+                <GraduationCap size={17} />
+              </span>
               <h2 id="ov-apps-title">{t('applicant.yourApplications')}</h2>
-              <Link className="ov-link" to={applicantLinks.applications}>
+              <Link className="ov-capsule" to={applicantLinks.applications}>
                 {t('applicant.viewAll')}
+                <ChevronRight size={14} aria-hidden />
               </Link>
             </div>
             {!apps ? (
@@ -585,7 +589,7 @@ export default function ApplicantOverviewPage() {
                           {date(app.deadline)}
                         </time>
                       )}
-                      <span className="ov-pill">
+                      <span className="ov-pill" data-status={app.status}>
                         {t(`applicant.status.${app.status}`, t('applicant.statusUnknown'))}
                       </span>
                     </Link>
@@ -593,7 +597,10 @@ export default function ApplicantOverviewPage() {
                 ))}
               </ul>
             ) : (
-              <div className="ov-empty">
+              <div className="ov-empty ov-empty--liquid">
+                <span className="ov-empty__icon" aria-hidden>
+                  <GraduationCap size={18} />
+                </span>
                 <p>{t('applicant.empty.active.body')}</p>
                 <Link className="ov-link" to={applicantLinks.newApplication}>
                   {t('applicant.addApplication')} <ArrowRight size={14} aria-hidden />
@@ -602,11 +609,15 @@ export default function ApplicantOverviewPage() {
             )}
           </section>
 
-          <section className="ov-card" aria-labelledby="ov-tasks-title">
+          <section className="ov-card ov-card--liquid" aria-labelledby="ov-tasks-title">
             <div className="ov-card__head">
+              <span className="ov-card__icon" aria-hidden>
+                <ListChecks size={17} />
+              </span>
               <h2 id="ov-tasks-title">{t('applicant.upcomingTasks')}</h2>
-              <Link className="ov-link" to={applicantLinks.tasks}>
+              <Link className="ov-capsule" to={applicantLinks.tasks}>
                 {t('applicant.viewAll')}
+                <ChevronRight size={14} aria-hidden />
               </Link>
             </div>
             {!tasks ? (
@@ -634,7 +645,10 @@ export default function ApplicantOverviewPage() {
                 ))}
               </ul>
             ) : (
-              <div className="ov-empty">
+              <div className="ov-empty ov-empty--liquid">
+                <span className="ov-empty__icon" aria-hidden>
+                  <ListChecks size={18} />
+                </span>
                 <p>{t('applicant.noTasks')}</p>
               </div>
             )}

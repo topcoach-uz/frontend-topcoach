@@ -1,3 +1,6 @@
+import { isAccessDenied } from '../programCapabilities';
+import { programNames } from 'src/pages/student-hub/my-programs/programModel';
+import type { ProgramKey } from 'src/app/services/studentProgramsApi';
 import LessonPlanModal from '../components/LessonPlanModal';
 import { useMemo, useState } from 'react';
 import {
@@ -65,7 +68,7 @@ function upcomingPill(b: MentorBooking) {
 
 export default function MentorConsoleSchedulePage() {
   const navigate = useNavigate();
-  const { id: mentorId, displayName, hasFullSupport, isMentor } = useMentorConsole();
+  const { id: mentorId, displayName, hasProgramLessons, isMentor } = useMentorConsole();
   const [searchParams, setSearchParams] = useSearchParams();
   const programParam = searchParams.get('program');
   const programFilter: ProgramFilter =
@@ -87,36 +90,36 @@ export default function MentorConsoleSchedulePage() {
 
 
   // Shared (RTK-cached) with the gate/layout, which fire it for every mentor —
-  // `hasFullSupport` is derived from this same query, so its loading flag tells
+  // `hasProgramLessons` is derived from this same query, so its loading flag tells
   // us whether Full Support participation is actually known yet.
-  const { data: rosterRes, isLoading: rosterLoading } = useGetMentorRosterQuery(undefined, {
+  const { currentData: rosterRes, error: rosterError, isLoading: rosterLoading } = useGetMentorRosterQuery(undefined, {
     skip: !isMentor,
   });
-  const roster = useMemo(() => rosterRes?.data ?? [], [rosterRes?.data]);
+  const roster = useMemo(() => isAccessDenied(rosterError) ? [] : rosterRes?.data ?? [], [rosterRes?.data, rosterError]);
   const rosterById = useMemo(() => new Map(roster.map((r) => [r.id, r])), [roster]);
 
   // Non-FS mentors get a "students can't book you yet" nudge instead of tiles.
   const { data: availabilityRes, isLoading: availabilityLoading } =
     useGetMentorAvailabilityQuery(mentorId, {
-      skip: hasFullSupport || !mentorId,
+      skip: hasProgramLessons || !mentorId,
     });
   const hasAvailability = (availabilityRes?.slots?.length ?? 0) > 0;
-  // `hasFullSupport` and `hasAvailability` are both false while their queries
+  // `hasProgramLessons` and `hasAvailability` are both false while their queries
   // are still in flight — only surface the nudge once everything has settled.
   const bookabilityKnown = !rosterLoading && !availabilityLoading;
 
   const { bookings, isLoading, isError } = useMentorBookings(null, {
-    includeFullSupport: hasFullSupport,
+    includeFullSupport: hasProgramLessons,
   });
   const courseClasses = useMentorCourseClasses(isMentor);
   const sessionActions = useSessionActions({ onClassesChanged: courseClasses.refetch });
 
   const allSessions = useMemo<MentorBooking[]>(
     () => [
-      ...(hasFullSupport ? bookings : bookings.filter((b) => b.source === 'platform')),
+      ...(hasProgramLessons ? bookings : bookings.filter((b) => b.source === 'platform')),
       ...courseClasses.classes,
     ],
-    [bookings, courseClasses.classes, hasFullSupport],
+    [bookings, courseClasses.classes, hasProgramLessons],
   );
   // Only offer sources the mentor actually has sessions from (plus the one in
   // the URL, so a deep link never lands on a hidden option). The filter row
@@ -125,7 +128,7 @@ export default function MentorConsoleSchedulePage() {
     const present = new Set<ProgramFilter>(allSessions.map((b) => b.source));
     if (programFilter !== 'all') present.add(programFilter);
     const labels: [ProgramFilter, string][] = [
-      ['full-support', 'Full Support'],
+      ['full-support', 'Program lessons'],
       ['platform', 'Platform'],
       ['course-class', 'Classes'],
     ];
@@ -189,7 +192,7 @@ export default function MentorConsoleSchedulePage() {
         <div className="mc-scard-meta">
           {b.source === 'course-class'
             ? `Course class · ${b.courseClass?.courseName} · ${b.courseClass?.moduleTitle}`
-            : b.source === 'full-support' ? 'Full Support' : 'Platform booking'}
+            : b.source === 'full-support' ? (rosterById.get(b.studentUserId || '')?.programs?.find(program => program.enrollmentId === (b.raw as { academicEnrollmentId?: string }).academicEnrollmentId)?.name || programNames[b.program as ProgramKey] || b.program || 'Legacy program history') : 'Platform booking'}
           {b.description ? ` · ${b.description}` : ''}
           {b.status === 'cancelled' && b.cancelReason ? ` · ${b.cancelReason}` : ''}
         </div>
@@ -301,7 +304,7 @@ export default function MentorConsoleSchedulePage() {
         </div>
       </header>
 
-      {bookabilityKnown && !hasFullSupport && !hasAvailability && (
+      {bookabilityKnown && !hasProgramLessons && !hasAvailability && (
         <button
           type="button"
           className="mc-sched-nudge"
@@ -354,7 +357,7 @@ export default function MentorConsoleSchedulePage() {
             <span className="mc-sched-tab-count">{t.count}</span>
           </button>
         ))}
-        {hasFullSupport && (
+        {hasProgramLessons && (
           <div className="mc-sched-tabbar-tools">
             <Button
               type="primary"
@@ -362,7 +365,7 @@ export default function MentorConsoleSchedulePage() {
               onClick={() => setLogOpen(true)}
               disabled={roster.length === 0}
             >
-              Schedule Full Support lessons
+              Schedule lessons
             </Button>
           </div>
         )}

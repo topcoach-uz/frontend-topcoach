@@ -15,7 +15,6 @@ import {
   FileQuestion,
   Play,
   RotateCcw,
-  Search,
   TimerReset,
 } from "lucide-react";
 import {
@@ -34,6 +33,7 @@ import "src/components/sat-prep/sat-prep-shell.scss";
 import "./sat-test-packs.scss";
 import "./sat-secondary-pages.scss";
 
+import SearchButton from 'src/components/common/searchButton';
 interface PackAttempt {
   attempts: number;
   bestPct: number;
@@ -233,7 +233,7 @@ const SatTestPacksPage: React.FC = () => {
         <Input
           allowClear
           placeholder="Search packs by domain…"
-          prefix={<Search size={14} style={{ color: "#9ca3af" }} />}
+          suffix={<SearchButton size={24} />}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="sat-packs__search"

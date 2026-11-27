@@ -45,6 +45,16 @@ export function displayName(
 }
 
 /**
+ * First name for a greeting ("Hi, Ismatov."): the first word of the cleaned
+ * name with its first letter upper-cased, so a lowercase stored name such as
+ * "ismatov" or "ali ismatov" never greets as "Hi, ismatov." / "Hi, ali ismatov.".
+ */
+export function greetingName(name: unknown): string {
+  const first = sanitizeName(name).split(' ')[0] ?? '';
+  return first ? first.charAt(0).toLocaleUpperCase() + first.slice(1) : '';
+}
+
+/**
  * Join name parts that may individually be missing — the safe replacement for
  * `${firstName} ${lastName}`.
  */

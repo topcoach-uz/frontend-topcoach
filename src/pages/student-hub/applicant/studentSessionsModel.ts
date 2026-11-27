@@ -1,4 +1,6 @@
 import { SessionTypeEnum } from "src/app/api/Api";
+import type { SessionLogDto } from "src/app/services/fullSupportApi";
+import { lessonMinutes, lessonOutcome } from "src/pages/mentor/console/fullSupportLessons";
 
 /** Loose shape of a row from `GET /sessions/me` (backend returns the entity). */
 export interface StudentSessionRow {
@@ -8,7 +10,7 @@ export interface StudentSessionRow {
   note?: string | null;
   cancelStatus?: unknown;
   calendarInfo?: { meetingLink?: string | null } | null;
-  mentor?: { id?: string; profile?: { name?: string | null } | null } | null;
+  mentor?: { id?: string; profile?: { name?: string | null; avatar?: string | null } | null } | null;
   reviews?: Array<{
     rating?: number;
     summary?: string;
@@ -79,6 +81,57 @@ export function pickSummaryFields(session: StudentSessionRow) {
   return { topicsCovered: topicsCovered || null, homework: homework || null };
 }
 
-export function mentorName(session: StudentSessionRow) {
+/**
+ * The mentor's display name. Never falls back to another participant; if the
+ * "mentor" on the row is the viewer themself (bad/test data) we don't show
+ * the student their own name as the mentor.
+ */
+export function mentorName(session: StudentSessionRow, viewerId?: string | null) {
+  if (viewerId && session.mentor?.id === viewerId) return "your mentor";
   return session.mentor?.profile?.name?.trim() || "your mentor";
 }
+
+export function mentorAvatar(session: StudentSessionRow, viewerId?: string | null) {
+  if (viewerId && session.mentor?.id === viewerId) return null;
+  return session.mentor?.profile?.avatar?.trim() || null;
+}
+
+export function initials(name: string) {
+  const parts = name.split(/\s+/).filter(Boolean);
+  if (!parts.length) return "M";
+  return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase();
+}
+
+/** Row title: the mentor's name, or "Mentor session" when unknown. */
+export function mentorTitle(session: StudentSessionRow, viewerId?: string | null) {
+  const name = mentorName(session, viewerId);
+  return name === "your mentor" ? "Mentor session" : name;
+}
+
+/**
+ * Full Support / program lessons the mentor scheduled (from
+ * `GET /full-support/mentee/sessions`). Upcoming = still scheduled and not yet
+ * over (so a lesson in progress keeps its Join link); everything else is past.
+ */
+export function splitLessons(lessons: SessionLogDto[], now = Date.now()) {
+  const valid = lessons.filter((l) => Number.isFinite(new Date(l.dateTime).getTime()));
+  const end = (l: SessionLogDto) => new Date(l.dateTime).getTime() + lessonMinutes(l.duration) * 60_000;
+  const isUpcoming = (l: SessionLogDto) => lessonOutcome(l) === "scheduled" && end(l) > now;
+  const upcoming = valid
+    .filter(isUpcoming)
+    .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
+  // A rescheduled lesson is replaced by its new booking, so it isn't listed.
+  const past = valid
+    .filter((l) => !isUpcoming(l) && lessonOutcome(l) !== "rescheduled")
+    .sort((a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime());
+  return { upcoming, past };
+}
+
+export const LESSON_OUTCOME_LABELS: Record<SessionLogDto["outcome"], string> = {
+  scheduled: "Scheduled",
+  held: "Held",
+  cancelled: "Cancelled",
+  student_no_show: "Missed",
+  mentor_no_show: "Mentor didn’t join",
+  rescheduled: "Rescheduled",
+};

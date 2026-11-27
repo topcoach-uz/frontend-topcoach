@@ -243,8 +243,7 @@ const SatMockTestsPage: React.FC = () => {
           <div className="sat-eyebrow">Timed practice</div>
           <h1 className="sat-page-title">Mock tests</h1>
           <p className="sat-page-desc">
-            Choose a Math or Reading & Writing section. Each mock is timed, with
-            an estimated score after submission.
+            Timed Math or Reading & Writing sections.
           </p>
           <div className="sat-mocks__hero-actions">
             <button className="sat-action" onClick={() => setScoringOpen(true)}>

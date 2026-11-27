@@ -24,7 +24,6 @@ import {
   TrendingUp,
   GraduationCap,
   Star,
-  Search,
   Hash,
   MoreHorizontal,
   Copy,
@@ -84,6 +83,7 @@ import { hostName } from 'src/app/services/api/const';
 import { ApplicantPage } from '../applicant/ApplicantPage';
 import './CommunityFeedEditorialView.scss';
 
+import SearchButton from 'src/components/common/searchButton';
 /**
  * Avatar / media URLs from the backend can be relative (`/uploads/...`)
  * or already absolute (`https://...` or `http://...`). Prepend the API
@@ -898,8 +898,7 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
               the Saved view is already filtered by bookmark. */}
           {viewMode === 'feed' && (
             <div className="cf__filter-row">
-              <div className="cf__search-wrap">
-                <Search size={14} className="cf__search-icon" aria-hidden />
+              <div className="cf__search-wrap" data-search-root>
                 <input
                   type="search"
                   className="cf__search-input"
@@ -919,6 +918,7 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
                     <X size={12} />
                   </button>
                 )}
+                <SearchButton size={34} className="cf__search-btn" />
               </div>
               {activeHashtag && (
                 <button

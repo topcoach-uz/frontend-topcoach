@@ -1,9 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { Skeleton } from 'antd';
 import { universityApi } from 'src/app/services/universities';
 import {
   BookOpen,
-  Calendar,
   Check,
   Circle,
   ClipboardList,
@@ -42,14 +40,13 @@ import {
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useTypedSelector } from 'src/app/store';
 import { useGetMyMentoringProgramsQuery } from 'src/app/services/studentProgramsApi';
 import { ACCOUNT_SETTINGS_PATH, MEMBERSHIP_BILLING_PATH } from 'src/lib/accountNavigation';
 import { applicantLinks, isOverviewLocation } from 'src/lib/applicantWorkspace';
 import { useJourneyExperience } from 'src/contexts/JourneyExperienceContext';
 import { programNavigation } from '../my-programs/programModel';
 import OrgMembershipSidebar from '../components/OrgMembershipSidebar';
-import { applicantDegree, displayName } from './applicantOverviewModel';
+import { applicantDegree } from './applicantOverviewModel';
 import { useApplicantOverview } from './ApplicantOverviewContext';
 import './applicantNavigation.scss';
 
@@ -133,10 +130,7 @@ function useNavSections() {
       ];
 
   const learningLinks: NavLinkItem[] = [
-    ...(degree === 'master'
-      ? [{ key: 'myProgress', label: t('applicant.myProgress'), to: applicantLinks.learning, Icon: Target, active: matches(applicantLinks.learning) }]
-      : []),
-    { key: 'mySessions', label: t('applicant.mySessions', 'My sessions'), to: applicantLinks.sessions, Icon: Calendar, active: matches(applicantLinks.sessions, true) },
+    { key: 'myProgress', label: t('applicant.myLearning', 'My learning'), to: applicantLinks.learning, Icon: Target, active: matches(applicantLinks.learning) || matches(applicantLinks.sessions, true) },
     { key: 'admissions', label: t('applicant.admissions'), to: applicantLinks.admissions, Icon: GraduationCap, active: matches(applicantLinks.admissions), locked: locked(true) },
     { key: 'researchPrep', label: t('applicant.researchPrepShort'), to: '/student-hub/research-prep', Icon: FlaskConical, active: matches('/student-hub/research-prep', true) || current.get('section') === 'research-program', locked: locked(true) },
     ...(degree === 'master'
@@ -277,7 +271,6 @@ function useNavSections() {
     {
       key: 'settings',
       bottom: true,
-      phoneHidden: true,
       label: t('accountNav.settings', 'Account settings'),
       railLabel: t('applicant.nav.settings', 'Settings'),
       subtitle: t('applicant.nav.settingsSubtitle', 'Profile and preferences'),
@@ -297,7 +290,7 @@ function useNavSections() {
           key: 'account',
           label: t('accountNav.account', 'Account'),
           links: [
-            { key: 'accountSettings', label: t('accountNav.settings', 'Account settings'), to: ACCOUNT_SETTINGS_PATH, Icon: Shield, active: settingsTab === 'profile' },
+            { key: 'accountSettings', label: t('accountNav.settings', 'Account settings'), to: ACCOUNT_SETTINGS_PATH, Icon: Shield, active: settingsTab === 'profile' || settingsTab === 'referrals' || settingsTab === 'experience' },
             { key: 'notifications', label: t('applicant.nav.notifications', 'Notifications'), to: notificationsPath, Icon: Bell, active: settingsTab === 'notifications' },
           ],
         },
@@ -366,48 +359,13 @@ function PanelLink({ link, onNavigate }: { link: NavLinkItem; onNavigate?: () =>
   );
 }
 
-function ProfileCard({ onNavigate }: { onNavigate?: () => void }) {
-  const { currentData: data, isLoading, isError } = useApplicantOverview();
-  const authName = useTypedSelector((state) => state.auth.profile?.profile?.name);
-  const { t } = useTranslation();
-  const degree = applicantDegree(data?.profile?.targetDegree);
-  const name = displayName(data?.profile?.name) || displayName(authName) || t('applicant.yourWorkspace');
-  const intake = data?.profile?.intakeYear
-    ? [
-        data.profile.intakeTerm && t(`applicant.term.${data.profile.intakeTerm}`, data.profile.intakeTerm),
-        data.profile.intakeYear,
-      ].filter(Boolean).join(' ')
-    : t('applicant.intakeNotSet');
-  return (
-    <Link to={applicantLinks.profile} onClick={onNavigate} className="applicant-section-panel-profile">
-      <span className="applicant-section-panel-profile__avatar" aria-hidden>
-        {name.trim().charAt(0).toUpperCase() || <User size={18} />}
-      </span>
-      <span className="applicant-section-panel-profile__text">
-        <strong>{name}</strong>
-        <span>
-          {isLoading
-            ? t('applicant.loadingProfile')
-            : degree
-              ? t(`applicant.${degree}Applicant`)
-              : t('applicant.applicant')}
-        </span>
-        {isLoading ? (
-          <Skeleton.Input active size="small" style={{ height: 12, width: 110 }} />
-        ) : (
-          <span>{isError ? t('applicant.profileUnavailable') : intake}</span>
-        )}
-      </span>
-    </Link>
-  );
-}
-
 function PanelGroups({ groups, onNavigate }: { groups: NavGroup[]; onNavigate?: () => void }) {
   return (
     <>
       {groups.map((group) => (
         <div key={group.key} className="applicant-section-panel-group">
-          <p className="applicant-section-panel-group__label">{group.label}</p>
+          {/* A lone group repeats the panel heading ("Application" / "APPLICATION"), so only label groups when there are several. */}
+          {groups.length > 1 && <p className="applicant-section-panel-group__label">{group.label}</p>}
           {group.links.map((link) => (
             <PanelLink key={link.key} link={link} onNavigate={onNavigate} />
           ))}
@@ -503,7 +461,6 @@ export function ApplicantPanel({ collapsed, onToggle }: { collapsed: boolean; on
           <h2>{active.label}</h2>
           <p>{active.subtitle}</p>
         </div>
-        <ProfileCard />
         <PanelGroups groups={active.groups} />
         <OrgMembershipSidebar />
       </aside>
@@ -537,9 +494,27 @@ export function ApplicantSectionTabs() {
         .filter((link) => (seen.has(link.to) ? false : (seen.add(link.to), true)));
   const activeKey = links.find((link) => link.active)?.key;
 
+  // Keep the active chip in view by scrolling only the row (scrollIntoView also
+  // scrolled the page, and centring it cut the first chip in half).
   useEffect(() => {
-    const target = listRef.current?.querySelector<HTMLElement>('.is-active');
-    target?.scrollIntoView?.({ block: 'nearest', inline: 'center' });
+    const list = listRef.current;
+    if (!list) return;
+    let cancelled = false;
+    const reveal = () => {
+      const target = list.querySelector<HTMLElement>('.is-active');
+      if (cancelled || !target) return;
+      const pad = parseFloat(getComputedStyle(list).paddingLeft) || 0;
+      const box = list.getBoundingClientRect();
+      const chip = target.getBoundingClientRect();
+      if (chip.left < box.left + pad) list.scrollLeft -= box.left + pad - chip.left;
+      else if (chip.right > box.right - pad) list.scrollLeft += chip.right - (box.right - pad);
+    };
+    reveal();
+    // Chip widths change once the web font arrives; measure again then.
+    document.fonts?.ready.then(reveal);
+    return () => {
+      cancelled = true;
+    };
   }, [active.key, activeKey]);
 
   if (links.length < 2) return null;

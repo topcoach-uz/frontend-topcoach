@@ -26,7 +26,7 @@
 
 import { useMemo, useState } from 'react';
 import { Input, Skeleton } from 'antd';
-import { Search, X, Sparkles, GraduationCap, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { X, Sparkles, GraduationCap, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import CustomSelect from 'src/components/common/select';
@@ -40,6 +40,7 @@ import { ApplicantPage } from '../applicant/ApplicantPage';
 
 import './CommunityMentorsView.scss';
 
+import SearchButton from 'src/components/common/searchButton';
 const RATING_OPTIONS = [
   { value: 'all', threshold: 0 },
   { value: '4', threshold: 4 },
@@ -333,7 +334,7 @@ export default function CommunityMentorsView() {
       <div className="communityMentors__filterField communityMentors__filterSearch">
         <Input
           allowClear
-          prefix={<Search size={15} style={{ opacity: 0.45 }} />}
+          suffix={<SearchButton size={24} />}
           placeholder={t('mentors.filters.searchPlaceholder', 'Search by name')}
           value={nameQuery}
           onChange={(e) => setNameQuery(e.target.value)}

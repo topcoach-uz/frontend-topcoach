@@ -1,14 +1,11 @@
 /**
- * Knowledge Check (quiz) column — center of the module view.
- *
- * Renders all quiz questions with hint + explanation + retake. Pass = 100%.
+ * Step 2 of a week: the knowledge check. Hints on demand, explanations after
+ * submitting, unlimited retakes. Pass = 100%.
  */
 
 import React, { useMemo, useState } from 'react';
 import { message } from 'antd';
-import { Lightbulb, ListChecks, Lock, RefreshCw } from 'lucide-react';
-
-const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
+import { Lightbulb, ListChecks, Lock, RotateCcw } from 'lucide-react';
 import {
   useSubmitQuizAttemptMutation,
   researchPrepErrorMessage,
@@ -16,6 +13,9 @@ import {
   type ResearchQuiz,
   type WeekLockState,
 } from 'src/app/services/research-prep';
+import RpPanel from './RpPanel';
+
+const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
 interface KnowledgeCheckColumnProps {
   weekId: string;
@@ -28,11 +28,16 @@ const KnowledgeCheckColumn: React.FC<KnowledgeCheckColumnProps> = ({ weekId, qui
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [hintsShown, setHintsShown] = useState<Record<string, boolean>>({});
   const [result, setResult] = useState<QuizAttemptResult | null>(null);
+  // A passed quiz stays folded to its score unless the student wants to practise.
+  const [practising, setPractising] = useState(false);
 
-  const allAnswered = useMemo(
-    () => quiz.questions.every((q) => typeof answers[q.id] === 'number'),
+  const answeredCount = useMemo(
+    () => quiz.questions.filter((q) => typeof answers[q.id] === 'number').length,
     [answers, quiz.questions],
   );
+  const allAnswered = answeredCount === quiz.questions.length;
+  const passed = lock.passed || !!result?.passed;
+  const count = quiz.questions.length;
 
   const handleSubmit = async () => {
     if (!allAnswered) {
@@ -61,180 +66,67 @@ const KnowledgeCheckColumn: React.FC<KnowledgeCheckColumnProps> = ({ weekId, qui
     setResult(null);
   };
 
+  const panelProps = {
+    step: 2,
+    title: 'Knowledge check',
+    subtitle: `${count} question${count === 1 ? '' : 's'} · 100% to pass`,
+    done: passed,
+  };
+
   if (lock.locked) {
     return (
-      <div className="rp-section">
-        <div className="rp-section-head">
-          <span className="icon">
-            <ListChecks size={14} />
+      <RpPanel {...panelProps}>
+        <p className="rp-notice">
+          <Lock size={14} aria-hidden />
+          <span>
+            Watch every lesson to unlock the knowledge check.
+            {lock.bestScorePercent > 0 && ` Best score so far: ${lock.bestScorePercent}%.`}
           </span>
-          Knowledge Check
-          <span style={{ marginLeft: 'auto', color: '#8a93a0', fontSize: 11 }}>
-            {quiz.questions.length} Questions
-          </span>
-        </div>
-        <div className="rp-section-body">
-          <div
-            style={{
-              padding: 14,
-              border: '1px solid #e5e7eb',
-              borderRadius: 10,
-              background: '#f3f4f6',
-              fontSize: 12.5,
-              color: '#5b6470',
-              display: 'flex',
-              gap: 8,
-              alignItems: 'center',
-            }}
-          >
-            <Lock size={13} />
-            Watch all videos in this week to unlock the quiz. Best score so far:{' '}
-            <strong style={{ marginLeft: 4 }}>{lock.bestScorePercent}%</strong>
-          </div>
-        </div>
-      </div>
+        </p>
+      </RpPanel>
     );
   }
 
-  // Result-view (after submitting)
+  // After submitting
   if (result) {
     return (
-      <div className="rp-section">
-        <div className="rp-section-head">
-          <span className="icon">
-            <ListChecks size={14} />
-          </span>
-          Knowledge Check
-          <span style={{ marginLeft: 'auto', color: '#8a93a0', fontSize: 11 }}>
-            {quiz.questions.length} Questions
-          </span>
-        </div>
-        <div className="rp-section-body">
-          <div className={`rp-quiz`}>
-            <div className={`quiz-summary ${result.passed ? 'is-passed' : ''}`}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <span className="score">{result.scorePercent}%</span>
-                <div>
-                  <div style={{ fontWeight: 700, color: '#0f1419' }}>
-                    {result.passed ? 'Passed — assignment unlocked' : 'Need 100% to unlock'}
-                  </div>
-                  <div style={{ fontSize: 11.5 }}>
-                    Attempt #{result.attemptNumber} · best{' '}
-                    {Math.max(lock.bestScorePercent, result.scorePercent)}%
-                  </div>
-                </div>
-              </div>
-              <button type="button" className="q-hint-toggle" onClick={reset}>
-                <RefreshCw size={12} /> Retake
-              </button>
-            </div>
-
-            {quiz.questions.map((q, idx) => {
-              const per = result.perQuestion.find((p) => p.questionId === q.id);
-              const selected = per?.selectedIndex ?? -1;
-              const isCorrect = per?.isCorrect ?? false;
-              return (
-                <div key={q.id} className={`rp-quiz-q ${isCorrect ? 'is-correct' : 'is-wrong'}`}>
-                  <div className="q-prompt">
-                    <span className="num">{idx + 1}.</span>
-                    <span>{q.prompt}</span>
-                  </div>
-                  <div className="q-options">
-                    {q.options.map((opt, optIdx) => {
-                      const isSelected = optIdx === selected;
-                      const isRight = optIdx === q.correctIndex;
-                      // Only highlight the correct option when the student
-                      // actually got it right. On wrong answers we mark only
-                      // their pick (red) — the answer stays hidden so they
-                      // re-think on retake.
-                      let cls = 'q-opt disabled';
-                      if (isCorrect && isRight) cls += ' right';
-                      else if (!isCorrect && isSelected) cls += ' wrong';
-                      return (
-                        <div key={optIdx} className={cls}>
-                          <span className="letter" aria-hidden>
-                            {OPTION_LETTERS[optIdx] ?? optIdx + 1}
-                          </span>
-                          <span>{opt}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {isCorrect ? (
-                    <div className="q-explanation">
-                      <span className="lab">Why:</span>
-                      {q.explanation}
-                    </div>
-                  ) : (
-                    <div className="q-explanation q-explanation--retry">
-                      <span className="lab">Not quite —</span>
-                      reread the question, use the hint, and retake.
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Fresh attempt
-  return (
-    <div className="rp-section">
-      <div className="rp-section-head">
-        <span className="icon">
-          <ListChecks size={14} />
-        </span>
-        Knowledge Check
-        <span style={{ marginLeft: 'auto', color: '#8a93a0', fontSize: 11 }}>
-          {quiz.questions.length} Questions
-        </span>
-      </div>
-      <div className="rp-section-body">
+      <RpPanel {...panelProps}>
         <div className="rp-quiz">
-          {lock.attempts > 0 && (
-            <div className="quiz-summary">
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <span className="score">{lock.bestScorePercent}%</span>
-                <div>
-                  <div style={{ fontWeight: 700, color: '#0f1419' }}>Best so far</div>
-                  <div style={{ fontSize: 11.5 }}>
-                    {lock.attempts} attempt{lock.attempts === 1 ? '' : 's'} · need 100%
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          <div className={`rp-score${result.passed ? ' is-passed' : ''}`}>
+            <span className="rp-score__value">{result.scorePercent}%</span>
+            <span className="rp-score__text">
+              <strong>{result.passed ? 'Passed — assignment unlocked' : 'Not yet — 100% needed'}</strong>
+              <small>
+                Attempt {result.attemptNumber} · best {Math.max(lock.bestScorePercent, result.scorePercent)}%
+              </small>
+            </span>
+            {!result.passed && (
+              <button type="button" className="rp-btn rp-btn--secondary rp-btn--sm" onClick={reset}>
+                <RotateCcw size={14} aria-hidden /> Retake
+              </button>
+            )}
+          </div>
 
           {quiz.questions.map((q, idx) => {
-            const selected = answers[q.id];
+            const per = result.perQuestion.find((p) => p.questionId === q.id);
+            const selected = per?.selectedIndex ?? -1;
+            const isCorrect = per?.isCorrect ?? false;
             return (
-              <div key={q.id} className="rp-quiz-q">
-                <div className="q-prompt">
-                  <span className="num">{idx + 1}.</span>
-                  <span>{q.prompt}</span>
-                </div>
-                <div className="q-options">
+              <div key={q.id} className={`rp-q ${isCorrect ? 'is-correct' : 'is-wrong'}`}>
+                <p className="rp-q__prompt">
+                  <span className="rp-q__num">{idx + 1}</span>
+                  {q.prompt}
+                </p>
+                <div className="rp-q__options">
                   {q.options.map((opt, optIdx) => {
-                    const isSelected = optIdx === selected;
+                    // On a wrong answer only the student's pick is marked, so
+                    // the right answer stays hidden for the retake.
+                    let cls = 'rp-opt is-static';
+                    if (isCorrect && optIdx === q.correctIndex) cls += ' is-right';
+                    else if (!isCorrect && optIdx === selected) cls += ' is-wrong';
                     return (
-                      <div
-                        key={optIdx}
-                        role="button"
-                        tabIndex={0}
-                        aria-pressed={isSelected}
-                        className={`q-opt ${isSelected ? 'selected' : ''}`}
-                        onClick={() => setAnswers((prev) => ({ ...prev, [q.id]: optIdx }))}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            setAnswers((prev) => ({ ...prev, [q.id]: optIdx }));
-                          }
-                        }}
-                      >
-                        <span className="letter" aria-hidden>
+                      <div key={optIdx} className={cls}>
+                        <span className="rp-opt__letter" aria-hidden>
                           {OPTION_LETTERS[optIdx] ?? optIdx + 1}
                         </span>
                         <span>{opt}</span>
@@ -242,54 +134,135 @@ const KnowledgeCheckColumn: React.FC<KnowledgeCheckColumnProps> = ({ weekId, qui
                     );
                   })}
                 </div>
-                {q.hint && !hintsShown[q.id] && (
-                  <button
-                    type="button"
-                    className="q-hint-toggle"
-                    onClick={() => setHintsShown((prev) => ({ ...prev, [q.id]: true }))}
-                  >
-                    <Lightbulb size={12} /> Show hint
-                  </button>
-                )}
-                {q.hint && hintsShown[q.id] && (
-                  <div className="q-hint">
-                    <span className="lab">Hint:</span>
-                    {q.hint}
-                  </div>
+                {isCorrect ? (
+                  <p className="rp-q__explain">
+                    <strong>Why: </strong>
+                    {q.explanation}
+                  </p>
+                ) : (
+                  <p className="rp-q__explain is-retry">
+                    <strong>Not quite. </strong>
+                    Reread the question, use the hint, and retake.
+                  </p>
                 )}
               </div>
             );
           })}
+        </div>
+      </RpPanel>
+    );
+  }
 
+  if (lock.passed && !practising) {
+    return (
+      <RpPanel {...panelProps}>
+        <div className="rp-score is-passed">
+          <span className="rp-score__value">{lock.bestScorePercent}%</span>
+          <span className="rp-score__text">
+            <strong>Passed — assignment unlocked</strong>
+            <small>
+              {lock.attempts} attempt{lock.attempts === 1 ? '' : 's'}
+            </small>
+          </span>
           <button
             type="button"
+            className="rp-btn rp-btn--secondary rp-btn--sm"
+            onClick={() => setPractising(true)}
+          >
+            <RotateCcw size={14} aria-hidden /> Practice again
+          </button>
+        </div>
+      </RpPanel>
+    );
+  }
+
+  // Fresh attempt
+  return (
+    <RpPanel {...panelProps}>
+      <div className="rp-quiz">
+        {lock.attempts > 0 && (
+          <div className={`rp-score${lock.passed ? ' is-passed' : ''}`}>
+            <span className="rp-score__value">{lock.bestScorePercent}%</span>
+            <span className="rp-score__text">
+              <strong>{lock.passed ? 'Passed' : 'Best so far'}</strong>
+              <small>
+                {lock.attempts} attempt{lock.attempts === 1 ? '' : 's'}
+                {lock.passed ? '' : ' · 100% needed'}
+              </small>
+            </span>
+          </div>
+        )}
+
+        {quiz.questions.map((q, idx) => {
+          const selected = answers[q.id];
+          return (
+            <div key={q.id} className="rp-q" role="group" aria-labelledby={`rp-q-${q.id}`}>
+              <p className="rp-q__prompt" id={`rp-q-${q.id}`}>
+                <span className="rp-q__num">{idx + 1}</span>
+                {q.prompt}
+              </p>
+              <div className="rp-q__options" role="radiogroup" aria-labelledby={`rp-q-${q.id}`}>
+                {q.options.map((opt, optIdx) => {
+                  const isSelected = optIdx === selected;
+                  const choose = () => setAnswers((prev) => ({ ...prev, [q.id]: optIdx }));
+                  return (
+                    <div
+                      key={optIdx}
+                      role="radio"
+                      tabIndex={0}
+                      aria-checked={isSelected}
+                      className={`rp-opt${isSelected ? ' is-selected' : ''}`}
+                      onClick={choose}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          choose();
+                        }
+                      }}
+                    >
+                      <span className="rp-opt__letter" aria-hidden>
+                        {OPTION_LETTERS[optIdx] ?? optIdx + 1}
+                      </span>
+                      <span>{opt}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              {q.hint && !hintsShown[q.id] && (
+                <button
+                  type="button"
+                  className="rp-q__hint-toggle"
+                  onClick={() => setHintsShown((prev) => ({ ...prev, [q.id]: true }))}
+                >
+                  <Lightbulb size={14} aria-hidden /> Show hint
+                </button>
+              )}
+              {q.hint && hintsShown[q.id] && (
+                <p className="rp-q__hint">
+                  <Lightbulb size={14} aria-hidden />
+                  <span>{q.hint}</span>
+                </p>
+              )}
+            </div>
+          );
+        })}
+
+        <div className="rp-quiz__submit">
+          <span className="rp-quiz__answered">
+            {answeredCount} of {count} answered
+          </span>
+          <button
+            type="button"
+            className="rp-btn rp-btn--primary"
             disabled={!allAnswered || isLoading}
             onClick={handleSubmit}
-            style={{
-              marginTop: 14,
-              width: '100%',
-              padding: '12px 16px',
-              borderRadius: 10,
-              background: !allAnswered ? '#e5e7eb' : '#7c1c1c',
-              color: !allAnswered ? '#8a93a0' : '#fff',
-              border: 0,
-              fontWeight: 700,
-              fontSize: 13,
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              cursor: !allAnswered ? 'not-allowed' : 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-            }}
           >
-            <ListChecks size={14} />
-            {isLoading ? 'Submitting…' : 'Submit Quiz'}
+            <ListChecks size={16} aria-hidden />
+            {isLoading ? 'Submitting…' : lock.attempts > 0 ? 'Submit again' : 'Submit answers'}
           </button>
         </div>
       </div>
-    </div>
+    </RpPanel>
   );
 };
 

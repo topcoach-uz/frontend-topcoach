@@ -20,7 +20,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
-import { ArrowLeft, Download, Search } from 'lucide-react';
+import { ArrowLeft, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 import {
@@ -30,6 +30,7 @@ import {
   type TopcoachLaunchEventStatus,
 } from 'src/app/services/topcoachLaunchEventApi';
 
+import SearchButton from 'src/components/common/searchButton';
 const { Paragraph } = Typography;
 
 /** Tag color per status. */
@@ -248,7 +249,7 @@ export default function TopcoachLaunchEventAdminPage() {
         <Space wrap size={12} style={{ width: '100%', justifyContent: 'space-between' }}>
           <Space wrap size={8}>
             <Input
-              prefix={<Search size={14} />}
+              suffix={<SearchButton size={24} />}
               placeholder="Search name, email, phone, telegram, id"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

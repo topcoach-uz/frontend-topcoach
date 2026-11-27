@@ -32,11 +32,15 @@ export function useSegmentLens<T extends HTMLElement>(activeSelector: string, de
       setRect({ x: active.offsetLeft, y: active.offsetTop, w: active.offsetWidth, h: active.offsetHeight });
     };
     measure();
+    // Enable the slide only after the first placement has painted. A timer
+    // backs up rAF, which browsers pause for background tabs.
     const frame = requestAnimationFrame(() => setReady(true));
+    const timer = window.setTimeout(() => setReady(true), 80);
     const observer = new ResizeObserver(measure);
     observer.observe(node);
     return () => {
       cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
       observer.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

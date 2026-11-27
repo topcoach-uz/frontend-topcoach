@@ -26,6 +26,7 @@ import {
   MoreVertical,
   Sparkles,
   Lock,
+  CalendarDays,
 } from 'lucide-react';
 import { GoogleMeetingSvg } from 'src/assets/svg';
 import { useCancelSessionAsStudentMutation } from 'src/app/services/sessions';
@@ -56,7 +57,7 @@ import { useMentorSessions } from 'src/hooks/useMentorSessions';
 import { useMajorMatchPromptState } from 'src/hooks/useMajorMatchPrompt';
 import { useStudentProfile } from 'src/hooks/useStudentHub';
 import { ApplicantPage } from './applicant/ApplicantPage';
-import { joinNameParts, sanitizeName } from 'src/utils/displayName';
+import { greetingName, joinNameParts, sanitizeName } from 'src/utils/displayName';
 import {
   IVY_WORKSHOP_MEET_URL,
   isIvyWorkshopLive,
@@ -66,6 +67,8 @@ import {
   isIvyEssayWorkshopLive,
   ivyEssayWorkshopHasJoinLink,
 } from '../events/_components/ivyEssayWorkshop';
+import { isAlmostThere, pickMostProgressed, unitsLeftText } from './learningTracks';
+import { applicantLinks } from 'src/lib/applicantWorkspace';
 import './MyProgressEditorialView.scss';
 
 interface TrackInfo {
@@ -234,7 +237,7 @@ const MyProgressEditorialView: React.FC = () => {
         total,
         progressPct: pct,
         unitLabel: 'lessons',
-        ctaPath: '/student-hub?section=admissions-program',
+        ctaPath: '/learning?course=admissions',
       });
     }
     if (!isMastersGoal && satEnrollment?.canAccessLearning && satProgress) {
@@ -271,11 +274,8 @@ const MyProgressEditorialView: React.FC = () => {
     return list;
   }, [admissionsEnrollment, satEnrollment, admissionsProgress, satProgress, researchSummary, isMastersGoal]);
 
-  /** Most-progressed enrolled program is treated as the "active track". */
-  const activeTrack: TrackInfo | null = useMemo(() => {
-    if (!tracks.length) return null;
-    return [...tracks].sort((a, b) => b.progressPct - a.progressPct)[0];
-  }, [tracks]);
+  /** In-progress track with the highest completion %. */
+  const resumeTrack = useMemo(() => pickMostProgressed(tracks), [tracks]);
 
   // Pull college applications to derive the nearest-deadline card.
   const { data: applicationsResponse, isLoading: applicationsLoading } =
@@ -457,11 +457,8 @@ const MyProgressEditorialView: React.FC = () => {
       });
     }
 
-    // In-progress track with most lessons remaining.
-    const tracksByLessonsLeft = [...tracks].sort(
-      (a, b) => (b.total - b.completed) - (a.total - a.completed),
-    );
-    const headTrack = tracksByLessonsLeft[0];
+    // In-progress track with the highest completion %.
+    const headTrack = resumeTrack;
     if (headTrack && headTrack.total > headTrack.completed) {
       const remaining = headTrack.total - headTrack.completed;
       recs.push({
@@ -529,13 +526,15 @@ const MyProgressEditorialView: React.FC = () => {
       .sort((a, b) => a.priority - b.priority)
       .slice(0, 3)
       .map((r, i) => ({ ...r, number: String(i + 1).padStart(2, '0') }));
-  }, [nearestDeadline, daysToDeadline, tracks, upcomingSessions, applications.length, isMastersGoal]);
+  }, [nearestDeadline, daysToDeadline, tracks, resumeTrack, upcomingSessions, applications.length, isMastersGoal]);
 
-  const greeting = t('studentHub.myProgress.greeting', 'Hi, {{name}}.', { name: fullName });
+  const greeting = t('studentHub.myProgress.greeting', 'Hi, {{name}}.', {
+    name: greetingName(fullName) || fullName,
+  });
 
   return (
     <ApplicantPage
-      title={t('studentHub.myProgress.dashboardTitle', 'Dashboard')}
+      title={t('applicant.myLearning', 'My learning')}
       subtitle={greeting}
     >
       <div className="myprog applicant-progress-page">
@@ -661,6 +660,32 @@ const MyProgressEditorialView: React.FC = () => {
       {isCommunityEnrolled ? (
         <section className="myprog__tracks-section">
           <article className="myprog__card myprog__tracks applicant-panel">
+            {!(tracksLoading && tracks.length === 0) && resumeTrack ? (
+              <div className="myprog__resume">
+                <div className="myprog__resume-text">
+                  <div className="myprog__card-eyebrow">
+                    {resumeTrack.progressPct > 0
+                      ? t('studentHub.myProgress.resumeEyebrow', 'Pick up where you left off')
+                      : t('studentHub.myProgress.startEyebrow', 'Start here')}
+                  </div>
+                  <div className="myprog__resume-title">
+                    {resumeTrack.progressPct > 0
+                      ? `${resumeTrack.title} · ${resumeTrack.progressPct}% ${t('studentHub.myProgress.doneSuffix', 'done')}`
+                      : `${resumeTrack.title} · ${resumeTrack.total} ${resumeTrack.unitLabel}`}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="myprog__btn myprog__btn--primary"
+                  onClick={() => navigate(resumeTrack.ctaPath)}
+                >
+                  {resumeTrack.progressPct > 0
+                    ? t('studentHub.myProgress.resume', 'Resume')
+                    : t('studentHub.myProgress.start', 'Start')}{' '}
+                  <ArrowRight size={13} aria-hidden />
+                </button>
+              </div>
+            ) : null}
             <div className="myprog__tracks-head">
               <div>
                 <div className="myprog__card-eyebrow">
@@ -709,7 +734,11 @@ const MyProgressEditorialView: React.FC = () => {
                 </button>
               </div>
             ) : (
-            <div className="myprog__tracks-grid">
+            // A single program gets a wide horizontal row so it fills the card
+            // instead of sitting in one third of a three-column grid.
+            <div
+              className={`myprog__tracks-grid${tracks.length === 1 ? ' myprog__tracks-grid--single' : ''}`}
+            >
               {tracks.map((track) => {
                 const stateLabel =
                   track.progressPct >= 100
@@ -748,6 +777,14 @@ const MyProgressEditorialView: React.FC = () => {
                         </div>
                       </div>
                     </div>
+                    {unitsLeftText(track) ? (
+                      <div className="myprog__track-left">
+                        {unitsLeftText(track)}
+                        {isAlmostThere(track)
+                          ? ` · ${t('studentHub.myProgress.almostThere', 'Almost there')}`
+                          : ''}
+                      </div>
+                    ) : null}
                     <div className="myprog__track-bar">
                       <div
                         className="myprog__track-bar-fill"
@@ -774,7 +811,7 @@ const MyProgressEditorialView: React.FC = () => {
       {/* Bottom row: Mentor sessions + Top Coach promo + AI recs */}
       <section className="myprog__btmgrid">
         <LockedShell
-          locked={mmLocked}
+          locked={false}
           isMastersGoal={isMastersGoal}
           tone="light"
           className="myprog__card myprog__sessions applicant-panel"
@@ -784,6 +821,13 @@ const MyProgressEditorialView: React.FC = () => {
             <h3 className="myprog__sessions-title">
               {t('studentHub.myProgress.mentorSessionsTitle', 'Mentor sessions')}
             </h3>
+            <button
+              type="button"
+              className="myprog__sessions-all"
+              onClick={() => navigate(applicantLinks.sessions)}
+            >
+              {t('studentHub.myProgress.allSessions', 'All sessions')} <ArrowRight size={13} aria-hidden />
+            </button>
           </div>
           <div className="myprog__sessions-tabs">
             {(['upcoming', 'past', 'cancelled'] as const).map((tab) => {
@@ -812,6 +856,9 @@ const MyProgressEditorialView: React.FC = () => {
           <ul className="myprog__sessions-list">
             {visibleSessions.length === 0 && (
               <li className="myprog__sessions-empty">
+                <span className="myprog__sessions-empty-icon" aria-hidden>
+                  <CalendarDays size={18} />
+                </span>
                 {sessionTab === 'upcoming'
                   ? t(
                       'studentHub.myProgress.emptyUpcoming',
@@ -944,7 +991,7 @@ const MyProgressEditorialView: React.FC = () => {
           <LockedShell
             locked={mmLocked}
             isMastersGoal={isMastersGoal}
-            tone="dark"
+            tone="light"
             className="myprog__card myprog__promo"
             onUnlock={() => navigate(mm.destination)}
           >
@@ -986,7 +1033,7 @@ const MyProgressEditorialView: React.FC = () => {
           <LockedShell
             locked={mmLocked}
             isMastersGoal={isMastersGoal}
-            tone="dark"
+            tone="light"
             className="myprog__card myprog__promo"
             onUnlock={() => navigate(mm.destination)}
           >
@@ -1022,7 +1069,7 @@ const MyProgressEditorialView: React.FC = () => {
           <LockedShell
             locked={mmLocked}
             isMastersGoal={isMastersGoal}
-            tone="dark"
+            tone="light"
             className="myprog__card myprog__promo"
             onUnlock={() => navigate(mm.destination)}
           >
@@ -1050,7 +1097,7 @@ const MyProgressEditorialView: React.FC = () => {
           <LockedShell
             locked={mmLocked}
             isMastersGoal={isMastersGoal}
-            tone="dark"
+            tone="light"
             className="myprog__card myprog__promo"
             onUnlock={() => navigate(mm.destination)}
           >
@@ -1120,7 +1167,7 @@ const MyProgressEditorialView: React.FC = () => {
           <LockedShell
             locked={mmLocked}
             isMastersGoal={isMastersGoal}
-            tone="dark"
+            tone="light"
             className="myprog__card myprog__promo myprog__promo--empty"
             onUnlock={() => navigate(mm.destination)}
           >
@@ -1142,7 +1189,7 @@ const MyProgressEditorialView: React.FC = () => {
           <LockedShell
             locked={mmLocked}
             isMastersGoal={isMastersGoal}
-            tone="dark"
+            tone="light"
             className="myprog__card myprog__promo"
             onUnlock={() => navigate(mm.destination)}
           >
@@ -1285,6 +1332,11 @@ const MyProgressEditorialView: React.FC = () => {
                     </div>
                     <div className="myprog__airecs-desc">{rec.desc}</div>
                   </div>
+                  <ArrowRight
+                    size={16}
+                    className="myprog__airecs-arrow"
+                    aria-hidden
+                  />
                 </li>
               ))}
             </ol>

@@ -14,7 +14,7 @@ import {
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useMemo, useState } from 'react';
-import { Search } from 'lucide-react';
+
 import dayjs, { type Dayjs } from 'dayjs';
 import {
   useGetAdminPaymentsQuery,
@@ -23,6 +23,7 @@ import {
 import { AcPill, type AcPillVariant } from '../components/AcPill';
 import { cleanUserName, formatUZS } from '../utils';
 
+import SearchButton from 'src/components/common/searchButton';
 const { Paragraph } = Typography;
 const { RangePicker } = DatePicker;
 
@@ -242,7 +243,7 @@ export default function AdminConsolePaymentsPage() {
             allowClear
             size="large"
             placeholder="Search name, email, transaction ID"
-            prefix={<Search size={18} style={{ opacity: 0.45 }} />}
+            suffix={<SearchButton size={30} />}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="ac-directory-search"

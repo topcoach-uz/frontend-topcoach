@@ -4,9 +4,9 @@ import { ClampedText } from './ClampedText';
 import { UniversityDegreeFinder } from './UniversityDegreeFinder';
 import { buildDegreeOptions, buildPreview } from './universityDegreeOptions';
 import { normalizeStudyArea } from './UniversityStudyAreas';
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Button, Input, Select, Tag, type SelectProps } from "antd";
-import { ArrowLeft, ArrowRight, ArrowUpRight, BookmarkPlus, Building2, Search } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, BookmarkPlus, Building2, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useGetGraduateProgramQuery, useGetGraduateProgramsQuery, type GraduateProgram, type GraduateProgramFact } from "src/app/services/graduateProgramsApi";
 import { filterUniversityRows, useGetReviewedUniversitiesQuery, useGetUniversityDetailQuery, useGetUniversityFiltersQuery } from "src/app/services/universities";
@@ -31,6 +31,7 @@ import { DetailHero, SaveToListButton } from "./DetailHero";
 import { CostsFundingSection, UniversityAdmissions, UniversityDetailSkeleton, UniversityGlance, UniversitySectionNav } from "./UniversitySections";
 import { buildComparableFacts, qsRankOf, buildGlanceTiles, buildKeyFactRows, buildScholarshipText, humanizeFacts, shortUniversityName } from "./universityKeyFactsModel";
 
+import SearchButton from 'src/components/common/searchButton';
 const UNIVERSITIES_PER_PAGE = 12;
 
 const factValue = (value: GraduateProgramFact) => humanizeFacts(value) || "Verification needed";
@@ -100,9 +101,9 @@ export default function ApplicantUniversitiesPage() {
   if (degreePending) return <ApplicantPage title="Find universities" subtitle="Loading your study goal…"><QueryState loading error={false} retry={overview.refetch}><span /></QueryState></ApplicantPage>;
   if (!isMasters) return <ApplicantPage title="Find universities" subtitle="Explore Bachelor’s options. Check course availability before adding a university to your College List.">
     <NextStepCard current="universities" />
-    <form className="applicant-find-search" onSubmit={(event) => { event.preventDefault(); const next = new URLSearchParams(params); if (value.trim()) next.set("q", value.trim()); else next.delete("q"); next.delete("page"); setParams(next); }}>
+    <form role="search" className="applicant-find-search applicant-glass-search" onSubmit={(event) => { event.preventDefault(); const next = new URLSearchParams(params); if (value.trim()) next.set("q", value.trim()); else next.delete("q"); next.delete("page"); setParams(next); }}>
       <AnimatedPlaceholderInput prefix={<Search size={21} />} value={value} onChange={(event) => setValue(event.target.value)} examples={searchExamples} staticPlaceholder="Search universities" allowClear aria-label="Search universities" />
-      <Button type="primary" htmlType="submit">Search</Button>
+      <SearchButton type="submit" size={48} className="applicant-glass-search__btn" />
     </form>
     <div className="applicant-find-filters">
       <label className={major ? "applicant-find-filter applicant-find-filter--active" : "applicant-find-filter"}><span>Field of interest</span><Select value={majorKey || undefined} placeholder={fieldPlaceholder} allowClear showSearch optionFilterProp="label" onChange={(selected) => setFilter("major", selected ?? "")} loading={filtersQuery.isLoading} options={selectOptions} aria-label="Field of interest" /></label>
@@ -116,22 +117,44 @@ export default function ApplicantUniversitiesPage() {
     {filtersQuery.isError && <Alert type="warning" message="Filters could not be loaded. Search is still available." />}
     <QueryState loading={isLoading} error={isError} retry={universityQuery.refetch}>
       <UniversityResults universities={universities} rankOffset={(page - 1) * UNIVERSITIES_PER_PAGE} selectedField={majorLabel} onQuickAdd={(id) => quickAdd.add(id, majorLabel || undefined)} addingId={quickAdd.pendingId} savedIds={savedUniversityIds} applicationsLoading={applications.isLoading} applicationsError={applications.isError} />
-      {total > perPage && <div className="applicant-actions applicant-actions--end"><Button disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button><span>Page {page} of {Math.ceil(total / perPage)}</span><Button disabled={page >= Math.ceil(total / perPage)} onClick={() => setPage(page + 1)}>Next</Button></div>}
+      {total > perPage && <ResultsPagination page={page} pageCount={Math.ceil(total / perPage)} onChange={setPage} />}
     </QueryState>
     <Link className="applicant-find-open-list" to="/student-hub/applications">Open College List <ArrowRight size={21} /></Link>
   </ApplicantPage>;
   return <ApplicantPage title={isMasters ? "Explore graduate study options" : "Explore universities"} subtitle={isMasters ? "Search verified graduate programs by program name or university." : "Search the verified TopCoach university catalogue."} actions={<Link to="/student-hub/applications">View your applications →</Link>}>
     <Breadcrumb>{isMasters ? "Graduate study options" : "Explore universities"}</Breadcrumb>
-    <form className="applicant-search" onSubmit={(event) => { event.preventDefault(); const next = new URLSearchParams(params); if (value.trim()) next.set("q", value.trim()); else next.delete("q"); next.delete("page"); setParams(next); }}>
-      <Input prefix={<Search size={18} />} value={value} onChange={(event) => setValue(event.target.value)} placeholder={isMasters ? "Search programs or universities" : "Search by university name"} allowClear />
-      <Button type="primary" htmlType="submit">Search</Button>
+    <form role="search" className="applicant-search applicant-glass-search" onSubmit={(event) => { event.preventDefault(); const next = new URLSearchParams(params); if (value.trim()) next.set("q", value.trim()); else next.delete("q"); next.delete("page"); setParams(next); }}>
+      <Input value={value} onChange={(event) => setValue(event.target.value)} placeholder={isMasters ? "Search programs or universities" : "Search by university name"} allowClear />
+      <SearchButton type="submit" size={48} className="applicant-glass-search__btn" />
     </form>
     <QueryState loading={isLoading} error={isError} retry={isMasters ? programsQuery.refetch : universityQuery.refetch}>
       <ProgramResults programs={masterPrograms} savedIds={new Set((applications.data?.data ?? []).map((app) => app.programId).filter((id): id is string => Boolean(id)))} />
-      {total > perPage && <div className="applicant-actions applicant-actions--end"><Button disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button><span>Page {page} of {Math.ceil(total / perPage)}</span><Button disabled={page >= Math.ceil(total / perPage)} onClick={() => setPage(page + 1)}>Next</Button></div>}
+      {total > perPage && <ResultsPagination page={page} pageCount={Math.ceil(total / perPage)} onChange={setPage} />}
     </QueryState>
     <p>{isMasters ? "Program requirements and funding are shown only when they are in the verified program record. Check the official source before applying." : "Confirm current programme and intake availability on each university’s official website."}</p>
   </ApplicantPage>;
+}
+
+/** Pages to show: first, last, and a window around the current one; null = gap. */
+function paginationItems(page: number, pageCount: number): (number | null)[] {
+  const pages = new Set([1, pageCount, page - 1, page, page + 1].filter((n) => n >= 1 && n <= pageCount));
+  const sorted = [...pages].sort((a, b) => a - b);
+  return sorted.flatMap((n, i) => (i > 0 && n - sorted[i - 1] > 1 ? [null, n] : [n]));
+}
+
+function ResultsPagination({ page, pageCount, onChange }: { page: number; pageCount: number; onChange: (page: number) => void }) {
+  const navRef = useRef<HTMLElement>(null);
+  // Results scroll inside the workspace pane, not the window: bring the page top back into view.
+  const go = (next: number) => { onChange(next); navRef.current?.closest(".applicant-page")?.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); };
+  return <nav ref={navRef} className="applicant-pager" aria-label="Results pages">
+    <button type="button" className="applicant-pager__arrow" disabled={page <= 1} onClick={() => go(page - 1)} aria-label="Previous page"><ChevronLeft size={18} aria-hidden /></button>
+    <ol className="applicant-pager__pages">
+      {paginationItems(page, pageCount).map((item, index) => item === null
+        ? <li key={`gap-${index}`} className="applicant-pager__gap" aria-hidden>…</li>
+        : <li key={item}><button type="button" className={`applicant-pager__page${item === page ? " is-active" : ""}`} aria-current={item === page ? "page" : undefined} aria-label={`Page ${item}`} onClick={() => item !== page && go(item)}>{item}</button></li>)}
+    </ol>
+    <button type="button" className="applicant-pager__arrow" disabled={page >= pageCount} onClick={() => go(page + 1)} aria-label="Next page"><ChevronRight size={18} aria-hidden /></button>
+  </nav>;
 }
 
 function ProgramResults({ programs, savedIds }: { programs: GraduateProgram[]; savedIds: Set<string> }) {

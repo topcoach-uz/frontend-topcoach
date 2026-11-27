@@ -1,12 +1,9 @@
 /**
  * ResearchPrepPage
  *
- * Full-bleed Research Prep experience inside the Community Hub. Two modes:
- *   - 'overview' — Major Milestones strip + 4×2 week grid
- *   - 'module'   — single-week deep-dive (Materials | Quiz | Assignment)
- *
- * The parent (CommunityHubMockPage) collapses its sidebars when this page
- * mounts, so the visual is edge-to-edge.
+ * Research Program inside the student workspace. Two modes:
+ *   - 'overview' — current-week card, milestones and the 8-week curriculum
+ *   - 'module'   — single-week deep-dive (Lessons → Knowledge check → Assignment)
  *
  * Data: research-prep RTK slice (mock-mode today; swaps to real backend
  * later without component changes).
@@ -106,7 +103,7 @@ const ResearchPrepPage: React.FC<ResearchPrepPageProps> = ({ isFullSupport = fal
   if (weeksLoading || lockLoading || !weeks || !lockState) {
     return (
       <div className="applicant-page applicant-specialist-page rp">
-        <div style={{ display: 'flex', justifyContent: 'center', padding: 96 }}>
+        <div className="rp-loading">
           <Spin size="large" />
         </div>
       </div>
@@ -115,13 +112,13 @@ const ResearchPrepPage: React.FC<ResearchPrepPageProps> = ({ isFullSupport = fal
 
   const { weeksCompleted, overallPercent } = progress;
   const currentWeekNumber = progress.currentWeekNumber || summary?.currentWeekNumber || 1;
+  const allWeeksDone = weeks.length > 0 && weeksCompleted >= weeks.length;
 
   return (
     <div className="applicant-page applicant-specialist-page rp">
       <ResearchTopBar
         view={view}
         selectedWeekNumber={openWeekNumber ?? undefined}
-        selectedWeekTitle={openWeek?.title}
         weeksCompleted={weeksCompleted}
         totalWeeks={weeks.length}
         overallPercent={overallPercent}
@@ -138,11 +135,13 @@ const ResearchPrepPage: React.FC<ResearchPrepPageProps> = ({ isFullSupport = fal
             weeks={weeks}
             lockState={lockState}
             currentWeekNumber={currentWeekNumber}
+            allWeeksDone={allWeeksDone}
             onOpenWeek={handleOpenWeek}
           />
         )}
         {view === 'module' && openWeek && openLock && (
           <ResearchModuleView
+            key={openWeek.id}
             week={openWeek}
             lock={openLock}
             nextWeek={nextWeek}

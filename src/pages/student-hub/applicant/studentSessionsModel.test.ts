@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   hasStudentRated,
+  mentorName,
+  mentorTitle,
   needsRating,
   pickSummaryFields,
   splitSessions,
@@ -64,5 +66,20 @@ describe("unwrapSessions", () => {
     expect(unwrapSessions([{ id: "a", date: "2026-11-01" }])).toHaveLength(1);
     expect(unwrapSessions(undefined)).toEqual([]);
     expect(unwrapSessions({ total: 0 })).toEqual([]);
+  });
+});
+
+describe("mentorName", () => {
+  const withMentor = row("m", "2026-11-01T10:00:00Z", { mentor: { id: "mentor1", profile: { name: " QA Mentor " } } });
+  it("uses the mentor's profile name", () => {
+    expect(mentorName(withMentor, "student1")).toBe("QA Mentor");
+  });
+  it("never shows the viewer's own name as the mentor", () => {
+    const self = row("s", "2026-11-01T10:00:00Z", { mentor: { id: "student1", profile: { name: "Demo Student" } } });
+    expect(mentorName(self, "student1")).toBe("your mentor");
+    expect(mentorTitle(self, "student1")).toBe("Mentor session");
+  });
+  it("falls back when no mentor", () => {
+    expect(mentorTitle(row("n", "2026-11-01T10:00:00Z"))).toBe("Mentor session");
   });
 });

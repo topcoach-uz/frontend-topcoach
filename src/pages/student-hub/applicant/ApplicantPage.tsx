@@ -1,6 +1,4 @@
 import type { ReactNode } from "react";
-import { Alert, Button, Skeleton } from "antd";
-import { Link } from "react-router-dom";
 import { Building2 } from "lucide-react";
 import { useGetUniversityDetailQuery } from "src/app/services/universities";
 import type { CollegeApplication } from "src/app/services/student-hub/types";
@@ -8,26 +6,56 @@ import { getTranslation } from "src/lib/i18n/translationUtils";
 import { displayApplicantDate } from "./applicantDate";
 import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import "./applicantPages.scss";
+import { Breadcrumb } from "./Breadcrumb";
+import { ErrorState, SkeletonBlock, ViewTabs } from "src/components/student-hub/ui";
 
+/**
+ * The student page shell: page trail, title row and content.
+ *
+ * - `breadcrumb`: the trail (same children as <Breadcrumb>); rendered above the title.
+ * - `eyebrow`: a short label above the title (e.g. "Week 3 of 8").
+ * - `titleAddon`: next to the title (e.g. a StatusPill).
+ * - `meta`: right side of the heading (e.g. a ProgressBar), before `actions`.
+ * Without these props the markup is exactly what it always was.
+ */
 export function ApplicantPage({
   title,
   subtitle,
   actions,
+  eyebrow,
+  breadcrumb,
+  titleAddon,
+  meta,
   children,
 }: {
   title?: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   actions?: ReactNode;
+  eyebrow?: ReactNode;
+  breadcrumb?: ReactNode;
+  titleAddon?: ReactNode;
+  meta?: ReactNode;
   children: ReactNode;
 }) {
+  const hasHeading = Boolean(title || subtitle || actions || eyebrow || meta || titleAddon);
   return (
     <section className="applicant-page">
-      {(title || subtitle || actions) && (
+      {breadcrumb && <Breadcrumb>{breadcrumb}</Breadcrumb>}
+      {hasHeading && (
         <header className="applicant-page__heading">
           <div>
-            {title && <h1>{title}</h1>}
+            {eyebrow && <span className="applicant-page__eyebrow">{eyebrow}</span>}
+            {titleAddon ? (
+              <div className="applicant-page__title-row">
+                {title && <h1>{title}</h1>}
+                {titleAddon}
+              </div>
+            ) : (
+              title && <h1>{title}</h1>
+            )}
             {subtitle && <p>{subtitle}</p>}
           </div>
+          {meta && <div className="applicant-page__meta">{meta}</div>}
           {actions && <div className="applicant-page__actions">{actions}</div>}
         </header>
       )}
@@ -35,33 +63,34 @@ export function ApplicantPage({
     </section>
   );
 }
+
+/**
+ * Loading, error and empty states around page content, in the student kit's
+ * look (skeleton, ErrorState with retry, any empty state you pass).
+ */
 export function QueryState({
   loading,
   error,
   retry,
+  empty,
+  emptyState,
   children,
 }: {
   loading?: boolean;
   error?: boolean;
   retry: () => unknown;
+  empty?: boolean;
+  emptyState?: ReactNode;
   children: ReactNode;
 }) {
   if (loading)
     return (
       <div className="applicant-panel">
-        <Skeleton active paragraph={{ rows: 5 }} />
+        <SkeletonBlock variant="panel" lines={5} />
       </div>
     );
-  if (error)
-    return (
-      <Alert
-        type="error"
-        showIcon
-        message="We couldn’t finish that request."
-        description="Your saved information is unchanged. Please try again."
-        action={<Button onClick={retry}>Try again</Button>}
-      />
-    );
+  if (error) return <ErrorState onRetry={retry} />;
+  if (empty && emptyState) return <>{emptyState}</>;
   return <>{children}</>;
 }
 export function UniversityIdentity({
@@ -114,29 +143,10 @@ export function CollegeListTabs({ current, masters = false }: { current: College
     { key: "scholarships", label: "Scholarships", to: "/student-hub/applications?tab=scholarships" },
     { key: "archived", label: "Archived", to: "/student-hub/applications?view=archived" },
   ];
-  return (
-    <nav className="applicant-view-tabs" aria-label="College List views">
-      {views.map((view) => (
-        <Link key={view.key} to={view.to} className={view.key === current ? "is-active" : undefined} aria-current={view.key === current ? "page" : undefined}>
-          {view.label}
-        </Link>
-      ))}
-    </nav>
-  );
+  return <ViewTabs items={views} value={current} ariaLabel="College List views" />;
 }
 
-export function Breadcrumb({ children }: { children: ReactNode }) {
-  return (
-    <>
-      <nav className="applicant-breadcrumb" aria-label="Breadcrumb">
-        <Link to="/student-hub/overview">My journey</Link>
-        <span>/</span>
-        {children}
-      </nav>
-      <ApplicantMobileTrail>{children}</ApplicantMobileTrail>
-    </>
-  );
-}
+export { Breadcrumb };
 export const displayDate = displayApplicantDate;
 export const applicationStatusLabels: Record<string, string> = {
   researching: "Saved for later",

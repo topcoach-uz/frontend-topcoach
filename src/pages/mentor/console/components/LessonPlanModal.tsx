@@ -1,3 +1,5 @@
+import { programNames } from 'src/pages/student-hub/my-programs/programModel';
+import type { ProgramKey } from 'src/app/services/studentProgramsApi';
 import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
@@ -36,6 +38,7 @@ import './LessonPlanModal.scss';
 
 type Values = {
   studentUserId: string;
+  programEnrollmentId: string;
   startsOn: Dayjs;
   time: Dayjs;
   timezone: string;
@@ -63,10 +66,12 @@ export default function LessonPlanModal({
   open,
   onClose,
   studentId,
+  enrollmentId,
 }: {
   open: boolean;
   onClose: () => void;
   studentId?: string;
+  enrollmentId?: string;
 }) {
   const { id: mentorId } = useMentorConsole();
   const draftKey = `create:${mentorId}`;
@@ -110,12 +115,15 @@ export default function LessonPlanModal({
       saved
         ? {
             ...saved.input,
+            programEnrollmentId:
+              saved.input.enrollmentId ?? 'legacy-full-support',
             startsOn: dayjs(saved.input.startsOn),
             time: dayjs(`2000-01-01 ${saved.input.time}`),
             until: saved.input.until ? dayjs(saved.input.until) : undefined,
           }
         : {
             studentUserId: studentId,
+            programEnrollmentId: enrollmentId,
             startsOn: tomorrow,
             time: dayjs('2000-01-01 18:00'),
             timezone: 'Asia/Tashkent',
@@ -129,25 +137,39 @@ export default function LessonPlanModal({
             meetingLink: '',
           },
     );
-  }, [open, studentId, draftKey, form]);
+  }, [open, studentId, enrollmentId, draftKey, form]);
 
+  // Only the latest check may update the screen (answers can arrive out of order).
+  const checkSeq = useRef(0);
   const loadPreview = async (next: LessonPlanInput) => {
+    const seq = ++checkSeq.current;
     setError('');
     try {
       const result = await previewPlan(next).unwrap();
+      if (seq !== checkSeq.current) return;
       setInput(next);
       setPreview(result.data);
     } catch (failure) {
+      if (seq !== checkSeq.current) return;
       setPreview(null);
       setError(lessonPlanError(failure));
     }
   };
-  const showDates = async () => {
-    const v = await form.validateFields().catch(() => null);
-    if (!v) return;
+  /** Check dates and conflicts quietly — no field errors until the mentor saves. */
+  const checkDates = async () => {
+    const v = await form
+      .validateFields({ validateOnly: true })
+      .catch(() => null);
+    if (!v) {
+      setPreview(null);
+      return;
+    }
     await loadPreview({
       requestId: requestId.current,
       studentUserId: v.studentUserId,
+      ...(v.programEnrollmentId !== 'legacy-full-support'
+        ? { enrollmentId: v.programEnrollmentId }
+        : {}),
       startsOn: v.startsOn.format('YYYY-MM-DD'),
       time: v.time.format('HH:mm'),
       timezone: v.timezone,
@@ -191,14 +213,58 @@ export default function LessonPlanModal({
     }
   };
   const selected = preview?.sessions.filter((row) => !row.excluded).length ?? 0;
-  // Lessons can only be planned for students this mentor is the Full Support
-  // mentor of. Say so up front instead of letting the save fail with a 403.
+  // Re-check automatically shortly after the mentor stops editing.
+  const watched = Form.useWatch([], form);
+  useEffect(() => {
+    if (!open || pending) return;
+    const timer = window.setTimeout(() => void checkDates(), 450);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, pending, JSON.stringify(watched ?? {})]);
+  const conflicts = preview?.conflicts.length ?? 0;
+  const upToDate = !!input && !!preview && !previewing;
+  // Scheduling options come from active program assignments, including legacy Full Support.
   const chosenStudent = Form.useWatch('studentUserId', form);
+  const selectedStudent = (roster.data?.data ?? []).find(
+    (row) => row.id === chosenStudent,
+  );
+  const programEnrollmentId = Form.useWatch('programEnrollmentId', form);
+  const programOptions = (selectedStudent?.programs ?? []).map((program) => ({
+    value: program.enrollmentId ?? 'legacy-full-support',
+    label: program.name || programNames[program.program as ProgramKey] || program.program,
+  }));
+  const programKey = JSON.stringify(
+    programOptions.map((option) => option.value),
+  );
+  useEffect(() => {
+    if (!open || pending || !roster.isSuccess) return;
+    if (
+      !programOptions.some((option) => option.value === programEnrollmentId)
+    ) {
+      ++checkSeq.current;
+      form.setFieldValue(
+        'programEnrollmentId',
+        programOptions.length === 1 ? programOptions[0].value : undefined,
+      );
+      setInput(null);
+      setPreview(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    open,
+    pending,
+    chosenStudent,
+    programKey,
+    programEnrollmentId,
+    roster.isSuccess,
+    form,
+  ]);
   const eligibleIds = new Set((roster.data?.data ?? []).map((row) => row.id));
-  const notEligible = roster.isSuccess && !!chosenStudent && !eligibleIds.has(chosenStudent);
+  const notEligible =
+    roster.isSuccess && !!chosenStudent && !eligibleIds.has(chosenStudent);
   return (
     <Modal
-      title="Schedule Full Support lessons"
+      title="Schedule lessons"
       width={760}
       style={{ top: 32 }}
       rootClassName="lesson-plan-modal"
@@ -208,21 +274,26 @@ export default function LessonPlanModal({
         <Button key="cancel" disabled={saving} onClick={onClose}>
           Close
         </Button>,
-        <Button
-          key="preview"
-          loading={previewing}
-          disabled={saving || pending || notEligible}
-          onClick={() => void showDates()}
+        <span
+          key="status"
+          className="lesson-plan-modal__check"
+          aria-live="polite"
         >
-          Preview dates
-        </Button>,
+          {notEligible
+            ? ''
+            : previewing
+              ? 'Checking dates…'
+              : !preview
+                ? 'Fill in the student and topic to check dates.'
+                : conflicts > 0
+                  ? `${conflicts} conflict${conflicts === 1 ? '' : 's'} — change the time or skip those dates`
+                  : 'No conflicts'}
+        </span>,
         <Button
           key="save"
           type="primary"
           loading={saving}
-          disabled={
-            notEligible || !preview || !selected || preview.conflicts.length > 0 || previewing
-          }
+          disabled={notEligible || !upToDate || !selected || conflicts > 0}
           onClick={() => void save()}
         >
           {pending
@@ -242,8 +313,8 @@ export default function LessonPlanModal({
           type="warning"
           showIcon
           className="lesson-plan-modal__alert"
-          message="You’re not this student’s Full Support mentor yet"
-          description="Lessons can only be planned for students assigned to you for Full Support. An admin can assign you in the admin panel under Program access → Full Support. Then reopen this window."
+          message="You’re not assigned to an active program for this student"
+          description="An admin must assign you to the student’s program under Program access. Then reopen this window."
         />
       )}
       {error && (
@@ -257,16 +328,18 @@ export default function LessonPlanModal({
       {roster.isError && (
         <Alert
           type="error"
-          message="Could not load Full Support students"
+          message="Could not load assigned students"
           action={<Button onClick={() => void roster.refetch()}>Retry</Button>}
         />
       )}
       <Form
         form={form}
         layout="vertical"
-        disabled={saving || previewing || pending}
+        disabled={saving || pending}
         onValuesChange={() => {
-          setPreview(null);
+          // Keep the old dates on screen while the new check runs, but don't
+          // allow saving them.
+          ++checkSeq.current;
           setInput(null);
         }}
       >
@@ -275,17 +348,24 @@ export default function LessonPlanModal({
             <Form.Item
               name="studentUserId"
               label="Student"
-              rules={[{ required: true, message: 'Choose a Full Support student' }]}
+              rules={[
+                { required: true, message: 'Choose an assigned student' },
+              ]}
             >
               <Select
                 loading={roster.isLoading}
-                placeholder="Select a Full Support student"
+                placeholder="Select an assigned student"
                 status={notEligible ? 'warning' : undefined}
                 options={(roster.data?.data ?? []).map((row) => ({
                   value: row.id,
                   label: row.name,
                 }))}
-                labelRender={(option) => option.label ?? (notEligible ? 'Not one of your Full Support students' : option.value)}
+                labelRender={(option) =>
+                  option.label ??
+                  (notEligible
+                    ? 'Not one of your assigned students'
+                    : option.value)
+                }
               />
             </Form.Item>
           </Col>
@@ -304,6 +384,19 @@ export default function LessonPlanModal({
             </Form.Item>
           </Col>
         </Row>
+        <Form.Item
+          name="programEnrollmentId"
+          label="Program"
+          rules={[
+            { required: true, message: 'Choose the program for these lessons' },
+          ]}
+        >
+          <Select
+            options={programOptions}
+            placeholder="Select a program"
+            disabled={!selectedStudent || saving || pending}
+          />
+        </Form.Item>
         <Form.Item name="repeat" label="Repeat">
           <Radio.Group
             optionType="button"
@@ -417,8 +510,8 @@ export default function LessonPlanModal({
               </Col>
             </Row>
             <p style={{ color: '#736b60', fontSize: 12 }}>
-              Up to 52 lessons within one year. Uncheck individual dates in the
-              preview to skip holidays or exams.
+              Up to 52 lessons within one year. Dates are checked for conflicts
+              automatically — uncheck a date below to skip holidays or exams.
             </p>
           </>
         )}

@@ -1,6 +1,6 @@
 {
-  "studentHub.hub.ieltsTestPrep": "IELTS test prep",
-  "applicant.ieltsTestPrep": "IELTS test prep",
+  "studentHub.hub.ieltsTestPrep": "IELTS prep",
+  "applicant.ieltsTestPrep": "IELTS prep",
   "onboarding.info.searchOrEnter": "Search or enter your own",
   "studentHub.nav.openJourneyMenu": "Open My Journey menu",
   "studentHub.nav.expandJourneyMenu": "Expand My Journey menu",
@@ -2954,7 +2954,7 @@
   "studentHub.hub.admissionsSubtitle": "Continue to your admissions lessons from the learning catalog.",
   "studentHub.hub.admissionsTrackEyebrow": "Top Coach · Admissions track",
   "studentHub.hub.aiMajorMatch": "AI Major Match",
-  "studentHub.hub.backToMainMenu": "Back to main menu",
+  "studentHub.hub.backToMainMenu": "Back to My learning",
   "studentHub.hub.browse": "Browse",
   "studentHub.hub.buddiesPreview": "Accountability: SAT Math 3x/week",
   "studentHub.hub.buddiesSubtitle": "Connect with peers who share your goals, prep schedules, and target schools.",
@@ -3824,5 +3824,9 @@
   "accountNav.accessUntil": "Access until",
   "accountNav.noRenewal": "Paid with Click. Your access will not renew automatically.",
   "accountNav.checkoutHint": "Choose your access period. You’ll pay securely on Click’s page, and access starts after payment is confirmed.",
-  "accountNav.onePeriod": "One payment for one period. No automatic renewal."
+  "accountNav.onePeriod": "One payment for one period. No automatic renewal.",
+  "studentUi.error.title": "We couldn’t finish that request.",
+  "studentUi.error.body": "Your saved information is unchanged. Please try again.",
+  "studentUi.error.retry": "Try again",
+  "studentUi.loading": "Loading…"
 }

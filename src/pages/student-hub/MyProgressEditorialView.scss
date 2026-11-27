@@ -207,6 +207,28 @@
     color: #6b7280;
     font-weight: 700;
   }
+  &__resume {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    border: 1px solid #e7e2dc;
+    border-radius: 12px;
+    background: #fbf9f6;
+  }
+  &__resume-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #302b28;
+  }
+  &__track-left {
+    font-size: 13px;
+    color: #655c55;
+    margin: 0 0 6px;
+  }
   &__track-bar {
     height: 4px;
     background: #ece9df;
@@ -1297,16 +1319,42 @@
 
     &:last-child { border-bottom: none; }
 
+    /* Button-style tile: bordered, padded, lifts on hover, focus ring. */
     &--link {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 12px;
       cursor: pointer;
-      transition: background 0.15s ease;
-      border-radius: 8px;
-      padding: 7px 12px;
-      margin: 0 -12px;
+      background: #fff;
+      border: 1px solid rgba(146, 64, 14, 0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 0 0 10px;
+      box-shadow: 0 1px 2px rgba(146, 64, 14, 0.08);
+      transition: background 0.15s ease, border-color 0.15s ease,
+        box-shadow 0.15s ease, transform 0.15s ease;
 
-      &:hover { background: rgba(255, 255, 255, 0.5); }
+      &:last-child { border-bottom: 1px solid rgba(146, 64, 14, 0.2); }
+
+      &:hover {
+        background: #fffaf0;
+        border-color: #b45309;
+        box-shadow: 0 4px 12px rgba(146, 64, 14, 0.15);
+        transform: translateY(-1px);
+      }
+      &:active { transform: translateY(0); }
+      &:focus-visible {
+        outline: 2px solid #b45309;
+        outline-offset: 2px;
+      }
     }
   }
+  &__airecs-arrow {
+    align-self: center;
+    color: #b45309;
+    transition: transform 0.15s ease;
+  }
+  &__airecs-row--link:hover .myprog__airecs-arrow { transform: translateX(3px); }
   &__airecs-empty {
     margin: 6px 0 0;
     font-size: 0.9rem;
@@ -1410,25 +1458,23 @@
    instead of stacked. Horizontally the bottom rule reads as a stray
    underline, so the separator becomes a vertical hairline. */
 @media (min-width: 900px) {
+  /* Equal-width, equal-height button tiles. auto-fit keeps 2 items from
+     hugging the left edge and lets 3 items share the row. */
   .myprog__airecs-list {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    column-gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin-top: 10px;
   }
   .myprog__airecs-row {
     border-bottom: none;
-    border-right: 1px solid rgba(146, 64, 14, 0.12);
-    padding: 2px 20px 2px 0;
     margin: 0;
   }
   .myprog__airecs-row:last-child {
-    border-right: none;
-    padding-right: 0;
+    border-bottom: none;
   }
   .myprog__airecs-row--link {
-    border-radius: 8px;
-    padding: 6px 20px 6px 8px;
-    margin-left: -8px;
+    margin: 0;
   }
 }
 
@@ -1657,5 +1703,385 @@
     .myprog__btn--ghost {
       border-color: #8a847b;
     }
+  }
+}
+
+/* ===================================================================
+   Minimal / premium pass (2026-11-19) — "Top Coach presents" and
+   AI recommendations. The workspace paints every .myprog__card white,
+   which left the old dark-gradient promo as white text on white. Both
+   cards are now quiet light surfaces: one typographic hierarchy, neutral
+   greys, a single solid pill as the only accent, hairlines over shadows.
+   =================================================================== */
+.applicant-progress-page {
+  /* ── Top Coach presents ── */
+  .myprog__card.myprog__promo {
+    background: #fff;
+    color: #302f2d;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    padding: 28px 30px 24px;
+    gap: 0;
+  }
+  .myprog__promo-yr {
+    top: 28px;
+    right: 30px;
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: #606976;
+    font-variant-numeric: tabular-nums;
+  }
+  .myprog__promo-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #606976;
+    margin-bottom: 14px;
+  }
+  .myprog__promo-title {
+    font-family: inherit;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    line-height: 1.18;
+    color: #302f2d;
+    margin: 0 0 8px;
+    max-width: 88%;
+  }
+  .myprog__promo-meta {
+    font-size: 0.82rem;
+    color: #606976;
+    margin-bottom: 16px;
+  }
+  .myprog__promo-desc {
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: #302f2d;
+    margin: 0 0 24px;
+    max-width: 60ch;
+  }
+  .myprog__promo-foot {
+    background: none;
+    border-radius: 0;
+    padding: 18px 0 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .myprog__promo-foot-status {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #606976;
+  }
+  .myprog__btn.myprog__promo-cta {
+    min-height: 40px;
+    padding: 0 20px;
+    border-radius: 999px;
+    background: #8b0000 !important;
+    border-color: #8b0000 !important;
+    color: #fff !important;
+    font-size: 0.86rem;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+
+    &:hover {
+      background: #6d0000 !important;
+      border-color: #6d0000 !important;
+    }
+    &:focus-visible {
+      outline: 2px solid #8b0000;
+      outline-offset: 2px;
+    }
+  }
+  .myprog__promo-tag {
+    &--pending { background: #fef3c7; color: #92400e; }
+    &--paid { background: rgba(22, 163, 74, 0.1); color: #15803d; }
+    &--cancelled { background: #f7f5f2; color: #606976; }
+  }
+
+  /* ── AI recommendations ── */
+  .myprog__card.myprog__airecs {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .myprog__airecs-head { gap: 8px; margin-bottom: 10px; }
+  .myprog__airecs-glyph {
+    background: #f7f5f2;
+    color: #302f2d;
+  }
+  .myprog__airecs-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #606976;
+  }
+  .myprog__airecs-title {
+    font-family: inherit;
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #302f2d;
+    margin: 0 0 18px;
+  }
+  .myprog__airecs-row--link {
+    background: #f7f5f2;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    padding: 18px 18px 18px 20px;
+    box-shadow: none;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+
+    &:last-child { border-bottom: 1px solid transparent; }
+
+    &:hover {
+      background: #e7e2dc;
+      border-color: transparent;
+      box-shadow: none;
+      transform: none;
+    }
+    &:active { transform: scale(0.99); }
+    &:focus-visible {
+      outline: 2px solid #8b0000;
+      outline-offset: 2px;
+    }
+  }
+  .myprog__airecs-num {
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #606976;
+    padding-top: 2px;
+  }
+  .myprog__airecs-rt { align-items: center; }
+  .myprog__airecs-name {
+    font-size: 0.98rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #302f2d;
+  }
+  .myprog__airecs-time {
+    background: #fff;
+    color: #606976;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    padding: 3px 10px;
+  }
+  .myprog__airecs-desc {
+    margin-top: 6px;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: #606976;
+  }
+  .myprog__airecs-arrow { color: #606976; }
+  .myprog__airecs-row--link:hover .myprog__airecs-arrow { color: #302f2d; }
+}
+
+@media (max-width: 767px) {
+  .applicant-progress-page {
+    .myprog__card.myprog__promo { padding: 22px 20px 20px; }
+    .myprog__promo-yr { top: 22px; right: 20px; }
+    .myprog__promo-title { font-size: 1.3rem; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .applicant-progress-page .myprog__airecs-row--link,
+  .applicant-progress-page .myprog__airecs-arrow {
+    transition: none;
+    transform: none !important;
+  }
+}
+
+/* ── Major Match hero — same quiet system as the cards above ── */
+.applicant-progress-page {
+  .myprog__card.myprog__mmhero {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: none;
+    padding: 32px 32px 32px 40px;
+    gap: 48px;
+  }
+  .myprog__mmhero__left { gap: 0; }
+  .myprog__mmhero__eyebrow {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: #606976;
+    margin-bottom: 14px;
+
+    &::before { display: none; }
+  }
+  .myprog__mmhero__title {
+    font-family: inherit;
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.028em;
+    line-height: 1.12;
+    color: #302f2d;
+    max-width: 20ch;
+    margin: 0 0 12px;
+  }
+  .myprog__mmhero__lede {
+    font-size: 1rem;
+    line-height: 1.55;
+    color: #606976;
+    max-width: 42ch;
+  }
+  .myprog__mmhero__actions { margin-top: 28px; }
+  .myprog__btn.myprog__mmhero__cta {
+    min-height: 44px;
+    padding: 0 22px;
+    border-radius: 999px;
+    background: #8b0000;
+    border-color: #8b0000;
+    color: #fff;
+    font-size: 0.92rem;
+    font-weight: 500;
+    box-shadow: none;
+
+    svg { transition: transform 0.2s ease; }
+    &:hover {
+      background: #6d0000;
+      border-color: #6d0000;
+      box-shadow: none;
+      transform: none;
+      svg { transform: translateX(2px); }
+    }
+    &:focus-visible {
+      outline: 2px solid #8b0000;
+      outline-offset: 2px;
+    }
+  }
+  .myprog__mmvideo {
+    border-radius: 16px;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+  }
+}
+
+@media (max-width: 1024px) {
+  .applicant-progress-page .myprog__mmhero__title { font-size: 1.75rem; }
+}
+@media (max-width: 900px) {
+  .applicant-progress-page .myprog__card.myprog__mmhero {
+    padding: 28px 24px 24px;
+    gap: 28px;
+  }
+}
+@media (max-width: 480px) {
+  .applicant-progress-page {
+    .myprog__card.myprog__mmhero { padding: 22px 20px 20px; }
+    .myprog__mmhero__title { font-size: 1.5rem; }
+    .myprog__btn.myprog__mmhero__cta { width: 100%; }
+  }
+}
+
+/* ── Learning progress: one program fills the card ── */
+.myprog__tracks-grid:not(.myprog__tracks-grid--single) {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+.myprog__tracks-grid.myprog__tracks-grid--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 900px) {
+  .myprog__tracks-grid--single .myprog__track {
+    display: grid;
+    grid-template-columns: minmax(200px, 1fr) minmax(0, 1.5fr) minmax(190px, 0.8fr);
+    grid-template-areas:
+      'head  stats cta'
+      'left  bar   bar';
+    align-items: center;
+    column-gap: 32px;
+    row-gap: 18px;
+    padding: 22px 26px;
+  }
+  .myprog__tracks-grid--single {
+    .myprog__track-head { grid-area: head; flex-wrap: nowrap; }
+    .myprog__track-stats {
+      grid-area: stats;
+      padding: 0;
+      border: 0;
+    }
+    .myprog__track-stat {
+      padding: 2px 20px;
+      border-right: 1px solid #e7e2dc;
+      &:first-child { padding-left: 0; }
+      &:last-child { border-right: 0; }
+    }
+    .myprog__track-left { grid-area: left; margin: 0; }
+    .myprog__track-bar { grid-area: bar; }
+    .myprog__track-cta { grid-area: cta; margin: 0; }
+  }
+}
+
+/* ── Mentor sessions: proportions ── */
+.applicant-progress-page {
+  .myprog__sessions {
+    display: flex;
+    flex-direction: column;
+  }
+  .myprog__sessions-head {
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .myprog__sessions-title {
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .myprog__sessions-all {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #606976;
+  }
+  .myprog__sessions-list {
+    flex: 1;
+  }
+  .myprog__sessions-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 28px 16px;
+    background: none;
+    border: 0;
+    font-size: 0.88rem;
+    color: #606976;
+  }
+  .myprog__sessions-empty-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #f8ecec;
+    color: #8b0000;
+  }
+  .myprog__btn.myprog__sessions-book {
+    margin-top: 16px;
+    border: 1px solid #e7e2dc !important;
+    border-style: solid !important;
+    background: #fff;
+    color: #8b0000 !important;
+    font-weight: 600;
+
+    &:hover {
+      color: #6d0000 !important;
+      border-color: rgba(139, 0, 0, 0.3) !important;
+    }
+  }
+}
+/* Inside a card the switcher spans the card, with equal compact segments. */
+.applicant-shell .applicant-content .applicant-progress-page {
+  .myprog__sessions-tabs {
+    display: flex;
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  .myprog__sessions-tab {
+    flex: 1 1 0;
+    padding: 7px 10px;
+    font-size: 13px;
+    text-align: center;
   }
 }

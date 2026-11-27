@@ -1,14 +1,25 @@
 // Student-side glass treatment for the shared referrals panel.
+// The panel's module classes are hashed, so they are matched by substring
+// ([class*='codeRow']) to keep the mentor console untouched.
 @use '/src/styles/liquid-glass' as lg;
+
+$ink: #221d1a;
+$muted: #6b625b;
+$faint: #a39890;
+$brand: #8b0000;
+$line: rgba(48, 43, 40, 0.07);
 
 .referrals {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   gap: 20px;
-  align-items: start;
+  // Summary cards share one height so their edges line up.
+  align-items: stretch;
 
   // The panel's own card rules use !important; match them deliberately.
   :global(.ant-card) {
+    display: flex;
+    flex-direction: column;
     margin: 0 !important;
     border-radius: 24px !important;
     border: 1px solid rgba(255, 255, 255, 0.75) !important;
@@ -20,42 +31,169 @@
       0 18px 40px -30px rgba(48, 43, 40, 0.32) !important;
     @include lg.lg-enter;
   }
+  :global(.ant-card):nth-child(2) {
+    @include lg.lg-enter(60ms);
+  }
   // The activity list spans the full width under the two summary cards.
   :global(.ant-card):last-child {
     grid-column: 1 / -1;
+    @include lg.lg-enter(120ms);
   }
+  // Titles sit inside the card (no divider): one calm surface per card.
   :global(.ant-card-head) {
-    border-bottom: 1px solid rgba(48, 43, 40, 0.07) !important;
-    padding: 18px 24px !important;
+    min-height: 0 !important;
+    border-bottom: 0 !important;
+    padding: 22px 26px 0 !important;
   }
   :global(.ant-card-head-title) {
+    display: flex;
+    align-items: center;
+    padding: 0 !important;
     font-family: inherit !important;
-    font-size: 16px !important;
+    font-size: 15px !important;
     font-weight: 600 !important;
     letter-spacing: -0.01em;
-    color: #221d1a !important;
+    color: $ink !important;
+
+    svg {
+      color: $brand;
+    }
   }
   :global(.ant-card-body) {
-    padding: 20px 24px !important;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 18px 26px 24px !important;
   }
-  // Referral code: a calm inset chip.
+
+  // ---------- Code card ----------
+  [class*='codeRow'] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 16px;
+  }
   code {
-    padding: 10px 16px;
+    display: inline-flex;
+    align-items: center;
+    height: 44px;
+    margin: 0;
+    padding: 0 18px;
     border-radius: 14px;
     @include lg.lg-inset;
-    color: #8b0000;
-    font-size: 18px;
+    color: $brand;
+    font-size: 17px;
     font-weight: 600;
     letter-spacing: 0.08em;
   }
+  :global(.ant-btn) {
+    height: 44px;
+    padding: 0 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    gap: 6px;
+    transition: transform 160ms lg.$lg-ease;
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
   :global(.ant-btn-primary:not(:disabled)) {
     @include lg.lg-tint;
-    border-radius: 999px;
   }
   :global(.ant-btn-default) {
     @include lg.lg-thin;
-    border-radius: 999px;
-    color: #8b0000;
+    color: $brand;
+
+    &:hover {
+      color: $brand !important;
+      border-color: rgba(255, 255, 255, 0.82) !important;
+      background: rgba(255, 255, 255, 0.85) !important;
+    }
+  }
+  [class*='explainer'] {
+    margin: auto 0 0 !important;
+    padding-top: 4px;
+    color: $muted !important;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  // ---------- Balance card ----------
+  [class*='balance'] {
+    margin: 0 0 4px;
+    color: $ink;
+    font-size: 40px;
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+  :global(.ant-card):nth-child(2) :global(.ant-typography-secondary):not([class*='explainer']) {
+    color: $muted;
+    font-size: 14px;
+  }
+
+  // ---------- History table ----------
+  :global(.ant-table-wrapper) {
+    width: 100%;
+  }
+  :global(.ant-table) {
+    background: transparent;
+  }
+  :global(.ant-table-thead > tr > th) {
+    padding: 0 12px 10px !important;
+    background: transparent !important;
+    border-bottom: 1px solid $line !important;
+    color: $muted !important;
+    font-size: 12px;
+    font-weight: 500 !important;
+    letter-spacing: 0.02em;
+
+    &::before {
+      display: none;
+    }
+  }
+  :global(.ant-table-tbody > tr > td) {
+    padding: 14px 12px !important;
+    border-bottom: 1px solid $line !important;
+    color: $ink;
+    font-size: 14px;
+  }
+  :global(.ant-table-tbody > tr:last-child > td) {
+    border-bottom: 0 !important;
+  }
+  :global(.ant-table-tbody > tr.ant-table-placeholder:hover > td),
+  :global(.ant-table-tbody > tr.ant-table-placeholder > td) {
+    background: transparent !important;
+  }
+  :global(.ant-table-cell:first-child) {
+    padding-left: 0 !important;
+  }
+  :global(.ant-table-cell:last-child) {
+    padding-right: 0 !important;
+  }
+  [class*='empty']:not([class*='emptyIcon']) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    padding: 20px 16px 8px;
+
+    strong {
+      color: $ink;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    :global(.ant-typography) {
+      max-width: 44ch;
+      margin: 0;
+      color: $muted;
+      font-size: 14px;
+    }
   }
 
   @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
@@ -67,5 +205,16 @@
   }
   @media (max-width: 900px) {
     grid-template-columns: minmax(0, 1fr);
+  }
+  @media (max-width: 640px) {
+    :global(.ant-card-head) {
+      padding: 18px 20px 0 !important;
+    }
+    :global(.ant-card-body) {
+      padding: 14px 20px 20px !important;
+    }
+    [class*='balance'] {
+      font-size: 32px;
+    }
   }
 }

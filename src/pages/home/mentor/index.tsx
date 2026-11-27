@@ -28,7 +28,7 @@ export default function MentorHome() {
   const isSuperAdmin = currentUser?.managementRole === 'SuperAdmin' || currentUser?.managementRole === 'Owner';
   const isYouthLeadersApplicationsAdmin = currentUser?.managementRole === 'SuperAdmin';
   const { data: mentorRosterData } = useGetMentorRosterQuery(undefined, { skip: !isAuthenticated });
-  const hasFullSupportAssignments = (mentorRosterData?.data?.length ?? 0) > 0;
+  const hasAssignedPrograms = (mentorRosterData?.data?.length ?? 0) > 0;
 
   const sectionSpacing = 24;
 
@@ -145,7 +145,7 @@ export default function MentorHome() {
                     </CustomButton>
                   </Space>
                 </CustomCard>
-                {hasFullSupportAssignments && (
+                {hasAssignedPrograms && (
                   <CustomCard
                     className={styles.card_wrapper}
                     bgColor={colors.colorBgContainer}
@@ -156,7 +156,7 @@ export default function MentorHome() {
                     style={{ width: '100%' }}
                   >
                     <CustomText fontSize={32} fontWeight={600} color={colors.colorTextBase} lineHeight="38px" mb={4}>
-                      {t('fullSupport.mentorManagement', 'Full Support Mentorship program')}
+                      {t('mentorConsole.programMentorship', 'Mentoring programs')}
                     </CustomText>
                     <CustomText fontSize={16} fontWeight={400} lineHeight="22px" color={colors.colorTextSecondary} mb={24}>
                       {t('fullSupport.mentorManagementDesc', 'Mentor management: monitor your students, log sessions, assign tasks, and track applications.')}
@@ -164,7 +164,7 @@ export default function MentorHome() {
                     <CustomButton
                       size="small"
                       height={40}
-                      onClick={() => navigate('/full-support/mentor')}
+                      onClick={() => navigate('/mentor/students')}
                       icon={<Users size={16} />}
                       style={{
                         backgroundColor: 'transparent',
@@ -183,7 +183,7 @@ export default function MentorHome() {
           </Row>
         ) : (
           <>
-            {hasFullSupportAssignments && (
+            {hasAssignedPrograms && (
               <CustomCard
                 className={styles.card_wrapper}
                 bgColor={colors.colorBgContainer}
@@ -194,7 +194,7 @@ export default function MentorHome() {
                 style={{ width: '100%', maxWidth: '100%', boxShadow: '0 1px 3px rgba(0, 0, 0, 0.06)' }}
               >
                 <CustomText fontSize={32} fontWeight={600} color={colors.colorTextBase} lineHeight="38px" mb={4}>
-                  {t('fullSupport.mentorManagement', 'Full Support Mentorship program')}
+                  {t('mentorConsole.programMentorship', 'Mentoring programs')}
                 </CustomText>
                 <CustomText fontSize={16} fontWeight={400} lineHeight="22px" color={colors.colorTextSecondary} mb={24}>
                   {t('fullSupport.mentorManagementDesc', 'Mentor management: monitor your students, log sessions, assign tasks, and track applications.')}
@@ -202,7 +202,7 @@ export default function MentorHome() {
                 <CustomButton
                   size="small"
                   height={40}
-                  onClick={() => navigate('/full-support/mentor')}
+                  onClick={() => navigate('/mentor/students')}
                   icon={<Users size={16} />}
                   style={{
                     backgroundColor: 'transparent',

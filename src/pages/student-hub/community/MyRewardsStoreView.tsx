@@ -1,10 +1,11 @@
 import React from 'react';
 import { Button, Card, Input, Modal, Steps, Tag, message } from 'antd';
 import { RefreshCw, Bot, ShoppingCart, User, Boxes, Coffee, GraduationCap, PenLine, Shirt, type LucideIcon } from 'lucide-react';
-import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
 import { RewardPointsBadge } from './RewardPointsBadge';
 import styles from './communityHubMock.module.scss';
 
+import UnifiedIcon from '../../../components/common/icons/UnifiedIcon';
+import SearchButton from 'src/components/common/searchButton';
 type RewardItem = {
   id: string;
   kind: 'coffee' | 'pack' | 'merch' | 'essay' | 'mentorship';
@@ -120,6 +121,7 @@ export default function MyRewardsStoreView() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search rewards"
+              suffix={<SearchButton size={24} />}
               style={{ width: 280 }}
             />
             <Button type="primary" icon={<ShoppingCart size={16} />} onClick={() => message.info('Pick a reward to redeem.')}>

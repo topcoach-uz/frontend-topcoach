@@ -1,0 +1,1548 @@
+{
+ "filesScanned": 498,
+ "totals": {
+  "color": 5389,
+  "radius": 1442,
+  "shadow": 231,
+  "fontSize": 2620,
+  "spacing": 5268,
+  "motion": 368,
+  "fontFamily": 116,
+  "zIndex": 94
+ },
+ "distinct": {
+  "color": 1209,
+  "radius": 70,
+  "shadow": 196,
+  "fontSize": 184,
+  "spacing": 763,
+  "motion": 204,
+  "fontFamily": 17,
+  "zIndex": 26
+ },
+ "topColors": [
+  {
+   "v": "#8b0000",
+   "n": 444,
+   "token": "--tc-brand",
+   "offBrand": ""
+  },
+  {
+   "v": "#fff",
+   "n": 398,
+   "token": "--tc-surface",
+   "offBrand": ""
+  },
+  {
+   "v": "#7b1f2f",
+   "n": 170,
+   "token": "--tc-brand-hover",
+   "offBrand": ""
+  },
+  {
+   "v": "#1f2937",
+   "n": 127,
+   "token": "--tc-text",
+   "offBrand": ""
+  },
+  {
+   "v": "#655c55",
+   "n": 110,
+   "token": "--tc-muted",
+   "offBrand": ""
+  },
+  {
+   "v": "#6b7280",
+   "n": 106,
+   "token": "--tc-muted",
+   "offBrand": ""
+  },
+  {
+   "v": "#e7e2dc",
+   "n": 105,
+   "token": "--tc-line",
+   "offBrand": ""
+  },
+  {
+   "v": "#302b28",
+   "n": 101,
+   "token": "--tc-text",
+   "offBrand": ""
+  },
+  {
+   "v": "#e5e3da",
+   "n": 84,
+   "token": "--tc-line",
+   "offBrand": ""
+  },
+  {
+   "v": "#64748b",
+   "n": 82,
+   "token": "--tc-muted",
+   "offBrand": "blue/purple"
+  },
+  {
+   "v": "#0f172a",
+   "n": 55,
+   "token": "--tc-ink",
+   "offBrand": ""
+  },
+  {
+   "v": "#606976",
+   "n": 49,
+   "token": "--tc-muted",
+   "offBrand": ""
+  },
+  {
+   "v": "#302f2d",
+   "n": 48,
+   "token": "--tc-text",
+   "offBrand": ""
+  },
+  {
+   "v": "#f0f0f0",
+   "n": 43,
+   "token": "--tc-surface-tonal",
+   "offBrand": ""
+  },
+  {
+   "v": "#9ca3af",
+   "n": 42,
+   "token": "--tc-subtle",
+   "offBrand": ""
+  },
+  {
+   "v": "#ffffff",
+   "n": 41,
+   "token": "--tc-surface",
+   "offBrand": ""
+  },
+  {
+   "v": "#faf8f3",
+   "n": 36,
+   "token": "--tc-canvas",
+   "offBrand": ""
+  },
+  {
+   "v": "#6b6258",
+   "n": 33,
+   "token": "--tc-muted",
+   "offBrand": ""
+  },
+  {
+   "v": "#666",
+   "n": 33,
+   "token": "--tc-muted",
+   "offBrand": ""
+  },
+  {
+   "v": "#ece9df",
+   "n": 32,
+   "token": "--tc-surface-sunk",
+   "offBrand": ""
+  },
+  {
+   "v": "#1c1a17",
+   "n": 29,
+   "token": "--tc-ink",
+   "offBrand": ""
+  },
+  {
+   "v": "#e5e7eb",
+   "n": 28,
+   "token": "--tc-surface-sunk",
+   "offBrand": ""
+  },
+  {
+   "v": "#fffdf7",
+   "n": 27,
+   "token": "--tc-canvas",
+   "offBrand": ""
+  },
+  {
+   "v": "rgba(123,31,47,0.08)",
+   "n": 25,
+   "token": "--tc-brand-hover @0.08",
+   "offBrand": ""
+  },
+  {
+   "v": "#fffdf9",
+   "n": 24,
+   "token": "--tc-surface",
+   "offBrand": ""
+  },
+  {
+   "v": "#f8fafc",
+   "n": 23,
+   "token": "--tc-canvas",
+   "offBrand": ""
+  },
+  {
+   "v": "#f6e8e7",
+   "n": 23,
+   "token": "--tc-blush",
+   "offBrand": ""
+  },
+  {
+   "v": "rgba(139,0,0,0.08)",
+   "n": 21,
+   "token": "--tc-brand @0.08",
+   "offBrand": ""
+  },
+  {
+   "v": "#221d1a",
+   "n": 21,
+   "token": "--tc-ink",
+   "offBrand": ""
+  },
+  {
+   "v": "#b91c1c",
+   "n": 21,
+   "token": "--tc-danger",
+   "offBrand": ""
+  },
+  {
+   "v": "#b9aa94",
+   "n": 21,
+   "token": "--tc-subtle",
+   "offBrand": ""
+  },
+  {
+   "v": "#f59e0b",
+   "n": 20,
+   "token": "--tc-warning",
+   "offBrand": "orange/amber"
+  },
+  {
+   "v": "#fbf9f6",
+   "n": 20,
+   "token": "--tc-canvas",
+   "offBrand": ""
+  },
+  {
+   "v": "#1a1a1a",
+   "n": 20,
+   "token": "--tc-ink",
+   "offBrand": ""
+  },
+  {
+   "v": "#6b625b",
+   "n": 19,
+   "token": "--tc-muted",
+   "offBrand": ""
+  },
+  {
+   "v": "rgba(255,255,255,0.95)",
+   "n": 19,
+   "token": "--tc-surface @0.95",
+   "offBrand": ""
+  },
+  {
+   "v": "#fbfaf6",
+   "n": 19,
+   "token": "--tc-canvas",
+   "offBrand": ""
+  },
+  {
+   "v": "#ecfdf5",
+   "n": 19,
+   "token": "--tc-canvas",
+   "offBrand": ""
+  },
+  {
+   "v": "#858c95",
+   "n": 19,
+   "token": "--tc-subtle",
+   "offBrand": ""
+  },
+  {
+   "v": "#e2e8f0",
+   "n": 18,
+   "token": "--tc-surface-sunk",
+   "offBrand": ""
+  }
+ ],
+ "offBrandColorCount": 497,
+ "offBrandByHue": [
+  [
+   "blue/purple",
+   279
+  ],
+  [
+   "green",
+   176
+  ],
+  [
+   "orange/amber",
+   39
+  ],
+  [
+   "pink",
+   3
+  ]
+ ],
+ "topRadius": [
+  [
+   "999px",
+   223
+  ],
+  [
+   "12px",
+   145
+  ],
+  [
+   "8px",
+   140
+  ],
+  [
+   "10px",
+   132
+  ],
+  [
+   "50%",
+   128
+  ],
+  [
+   "14px",
+   94
+  ],
+  [
+   "16px",
+   78
+  ],
+  [
+   "6px",
+   62
+  ],
+  [
+   "4px",
+   44
+  ],
+  [
+   "0",
+   42
+  ],
+  [
+   "999px !important",
+   28
+  ],
+  [
+   "20px",
+   24
+  ],
+  [
+   "24px",
+   20
+  ],
+  [
+   "18px",
+   20
+  ],
+  [
+   "5px",
+   20
+  ],
+  [
+   "3px",
+   19
+  ],
+  [
+   "inherit",
+   18
+  ],
+  [
+   "22px",
+   16
+  ],
+  [
+   "9px",
+   14
+  ],
+  [
+   "0 !important",
+   13
+  ],
+  [
+   "7px",
+   13
+  ],
+  [
+   "10px !important",
+   12
+  ],
+  [
+   "12",
+   12
+  ],
+  [
+   "2px",
+   11
+  ],
+  [
+   "28px",
+   10
+  ]
+ ],
+ "radiusByToken": [
+  [
+   "--tc-radius-sm",
+   435
+  ],
+  [
+   "--tc-radius-pill",
+   395
+  ],
+  [
+   "--tc-radius-xs",
+   337
+  ],
+  [
+   "--tc-radius-md",
+   107
+  ],
+  [
+   "(none)",
+   62
+  ],
+  [
+   "--tc-radius-xl",
+   46
+  ],
+  [
+   "--tc-radius-lg",
+   42
+  ],
+  [
+   "?",
+   18
+  ]
+ ],
+ "topFontSize": [
+  [
+   "14px",
+   234
+  ],
+  [
+   "12px",
+   200
+  ],
+  [
+   "13px",
+   176
+  ],
+  [
+   "0.75rem",
+   94
+  ],
+  [
+   "16px",
+   90
+  ],
+  [
+   "15px",
+   86
+  ],
+  [
+   "0.78rem",
+   85
+  ],
+  [
+   "0.875rem",
+   75
+  ],
+  [
+   "11px",
+   75
+  ],
+  [
+   "0.95rem",
+   68
+  ],
+  [
+   "0.85rem",
+   67
+  ],
+  [
+   "0.82rem",
+   64
+  ],
+  [
+   "0.9rem",
+   64
+  ],
+  [
+   "18px",
+   56
+  ],
+  [
+   "0.92rem",
+   54
+  ],
+  [
+   "0.72rem",
+   48
+  ],
+  [
+   "0.88rem",
+   43
+  ],
+  [
+   "1rem",
+   40
+  ],
+  [
+   "20px",
+   39
+  ],
+  [
+   "0.86rem",
+   38
+  ],
+  [
+   "0.7rem",
+   37
+  ],
+  [
+   "0.8rem",
+   33
+  ],
+  [
+   "12",
+   32
+  ],
+  [
+   "10px",
+   29
+  ],
+  [
+   "12.5px",
+   28
+  ],
+  [
+   "24px",
+   27
+  ],
+  [
+   "1.05rem",
+   24
+  ],
+  [
+   "13",
+   21
+  ],
+  [
+   "17px",
+   20
+  ],
+  [
+   "13.5px",
+   20
+  ]
+ ],
+ "fontSizeOffScale": 404,
+ "fontFamilies": [
+  [
+   "Iowan Old Style",
+   74
+  ],
+  [
+   "DM Sans",
+   12
+  ],
+  [
+   "-apple-system, BlinkMacSystemFont,",
+   7
+  ],
+  [
+   "Lora, Georgia, serif",
+   4
+  ],
+  [
+   "ui-monospace, SFMono-Regular, Menlo, monospace",
+   3
+  ],
+  [
+   "Lora, Georgia, serif !important",
+   2
+  ],
+  [
+   "SFMono-Regular",
+   2
+  ],
+  [
+   "JetBrains Mono",
+   2
+  ],
+  [
+   "monospace, monospace",
+   2
+  ],
+  [
+   "monospace",
+   1
+  ],
+  [
+   "TopCoach IELTS Inter",
+   1
+  ],
+  [
+   "Arial, sans-serif",
+   1
+  ],
+  [
+   "Georgia, serif",
+   1
+  ],
+  [
+   "MM_SERIF",
+   1
+  ],
+  [
+   "Lora,Georgia,serif!important",
+   1
+  ]
+ ],
+ "spacingOffGrid": 2491,
+ "topShadows": [
+  [
+   "0 4px 12px rgba(139, 0, 0, 0.3)",
+   5
+  ],
+  [
+   "0 1px 2px rgba(15, 23, 42, 0.04)",
+   4
+  ],
+  [
+   "0 2px 8px rgba(0, 0, 0, 0.1)",
+   4
+  ],
+  [
+   "0 4px 12px rgba(0, 0, 0, 0.15)",
+   3
+  ],
+  [
+   "0 1px 2px rgba(28, 26, 23, 0.03)",
+   3
+  ],
+  [
+   "0 1px 0 rgba(0, 0, 0, 0.05)",
+   3
+  ],
+  [
+   "0 4px 12px rgba(37, 99, 235, 0.3)",
+   2
+  ],
+  [
+   "0 20px 40px rgba(139, 0, 0, 0.15)",
+   2
+  ],
+  [
+   "0 4px 12px rgba(0, 0, 0, 0.1)",
+   2
+  ],
+  [
+   "0 4px 12px rgba(139, 0, 0, 0.1)",
+   2
+  ],
+  [
+   "0 1px 3px rgba(0, 0, 0, 0.1)",
+   2
+  ],
+  [
+   "0 4px 12px rgba(0, 0, 0, 0.08)",
+   2
+  ],
+  [
+   "0 0 0 2px rgba(139, 0, 0, 0.2) !important",
+   2
+  ],
+  [
+   "inset 0 1px 2px rgba(48, 43, 40, 0.08)",
+   2
+  ],
+  [
+   "0 2px 14px rgb(0 0 0 / 10%)",
+   2
+  ]
+ ],
+ "durations": [
+  [
+   "150",
+   197
+  ],
+  [
+   "120",
+   80
+  ],
+  [
+   "200",
+   73
+  ],
+  [
+   "300",
+   28
+  ],
+  [
+   "180",
+   23
+  ],
+  [
+   "100",
+   20
+  ],
+  [
+   "240",
+   19
+  ],
+  [
+   "160",
+   16
+  ],
+  [
+   "400",
+   12
+  ],
+  [
+   "220",
+   10
+  ],
+  [
+   "1000",
+   6
+  ],
+  [
+   "80",
+   5
+  ],
+  [
+   "250",
+   4
+  ],
+  [
+   "1400",
+   4
+  ],
+  [
+   "0",
+   4
+  ],
+  [
+   "800",
+   4
+  ],
+  [
+   "900",
+   3
+  ],
+  [
+   "0.01",
+   3
+  ],
+  [
+   "420",
+   2
+  ],
+  [
+   "560",
+   2
+  ],
+  [
+   "2000",
+   2
+  ],
+  [
+   "280",
+   2
+  ],
+  [
+   "50",
+   2
+  ],
+  [
+   "600",
+   2
+  ],
+  [
+   "620",
+   1
+  ]
+ ],
+ "eases": [
+  [
+   "ease",
+   287
+  ],
+  [
+   "(unspecified)",
+   70
+  ],
+  [
+   "ease-out",
+   44
+  ],
+  [
+   "$ease",
+   21
+  ],
+  [
+   "$ease-out",
+   14
+  ],
+  [
+   "ease-in-out",
+   13
+  ],
+  [
+   "lg.$lg-ease",
+   11
+  ],
+  [
+   "linear",
+   11
+  ],
+  [
+   "cubic-bezier(0.32, 0.72, 0, 1)",
+   8
+  ],
+  [
+   "$g-ease",
+   8
+  ],
+  [
+   "cubic-bezier(0.4, 0, 0.2, 1)",
+   6
+  ],
+  [
+   "ease-in",
+   6
+  ],
+  [
+   "cubic-bezier(.2, .8, .2, 1)",
+   4
+  ],
+  [
+   "cubic-bezier(0.2, 0.8, 0.2, 1)",
+   1
+  ],
+  [
+   "cubic-bezier(.4, 0, .2, 1)",
+   1
+  ],
+  [
+   "cubic-bezier(0.22, 1, 0.36, 1)",
+   1
+  ],
+  [
+   "cubic-bezier(0.645, 0.045, 0.355, 1)",
+   1
+  ]
+ ],
+ "zIndex": [
+  [
+   "1",
+   27
+  ],
+  [
+   "2",
+   17
+  ],
+  [
+   "10",
+   9
+  ],
+  [
+   "1000",
+   6
+  ],
+  [
+   "0",
+   3
+  ],
+  [
+   "-1",
+   3
+  ],
+  [
+   "100",
+   3
+  ],
+  [
+   "900",
+   2
+  ],
+  [
+   "5",
+   2
+  ],
+  [
+   "1100",
+   2
+  ],
+  [
+   "50",
+   2
+  ],
+  [
+   "20",
+   2
+  ],
+  [
+   "90",
+   2
+  ],
+  [
+   "1030",
+   2
+  ],
+  [
+   "3",
+   1
+  ],
+  [
+   "30",
+   1
+  ],
+  [
+   "1200",
+   1
+  ],
+  [
+   "40",
+   1
+  ],
+  [
+   "45",
+   1
+  ],
+  [
+   "200",
+   1
+  ],
+  [
+   "80",
+   1
+  ],
+  [
+   "70",
+   1
+  ],
+  [
+   "26",
+   1
+  ],
+  [
+   "1005",
+   1
+  ],
+  [
+   "1020",
+   1
+  ],
+  [
+   "2000",
+   1
+  ]
+ ],
+ "worstFiles": [
+  [
+   "src/pages/student-hub/applicant/applicantPages.scss",
+   1408,
+   {
+    "color": 604,
+    "radius": 129,
+    "shadow": 16,
+    "fontSize": 224,
+    "spacing": 401,
+    "motion": 34,
+    "fontFamily": 0,
+    "zIndex": 5,
+    "lines": 2938
+   }
+  ],
+  [
+   "src/pages/student-hub/community/communityHubMock.module.scss",
+   926,
+   {
+    "color": 385,
+    "radius": 80,
+    "shadow": 17,
+    "fontSize": 119,
+    "spacing": 300,
+    "motion": 20,
+    "fontFamily": 5,
+    "zIndex": 1,
+    "lines": 3418
+   }
+  ],
+  [
+   "src/pages/student-hub/MyProgressEditorialView.scss",
+   638,
+   {
+    "color": 280,
+    "radius": 40,
+    "shadow": 12,
+    "fontSize": 107,
+    "spacing": 166,
+    "motion": 12,
+    "fontFamily": 21,
+    "zIndex": 0,
+    "lines": 2088
+   }
+  ],
+  [
+   "src/pages/student-hub/ielts-prep/style.css",
+   630,
+   {
+    "color": 139,
+    "radius": 56,
+    "shadow": 8,
+    "fontSize": 127,
+    "spacing": 295,
+    "motion": 3,
+    "fontFamily": 2,
+    "zIndex": 7,
+    "lines": 2376
+   }
+  ],
+  [
+   "src/pages/student-hub/admissions-program/AdmissionsProgramPage.scss",
+   575,
+   {
+    "color": 217,
+    "radius": 38,
+    "shadow": 29,
+    "fontSize": 103,
+    "spacing": 174,
+    "motion": 11,
+    "fontFamily": 3,
+    "zIndex": 17,
+    "lines": 2000
+   }
+  ],
+  [
+   "src/pages/student-hub/community/CommunityFeedEditorialView.scss",
+   554,
+   {
+    "color": 106,
+    "radius": 77,
+    "shadow": 13,
+    "fontSize": 91,
+    "spacing": 233,
+    "motion": 30,
+    "fontFamily": 4,
+    "zIndex": 10,
+    "lines": 2231
+   }
+  ],
+  [
+   "src/pages/student-hub/sat-prep/sat-platform.scss",
+   488,
+   {
+    "color": 180,
+    "radius": 31,
+    "shadow": 2,
+    "fontSize": 95,
+    "spacing": 168,
+    "motion": 4,
+    "fontFamily": 8,
+    "zIndex": 0,
+    "lines": 1617
+   }
+  ],
+  [
+   "src/pages/student-hub/major-match-v2/mm3-results-refresh.scss",
+   452,
+   {
+    "color": 155,
+    "radius": 46,
+    "shadow": 8,
+    "fontSize": 97,
+    "spacing": 142,
+    "motion": 4,
+    "fontFamily": 0,
+    "zIndex": 4,
+    "lines": 371
+   }
+  ],
+  [
+   "src/pages/student-hub/sat-prep/sat-runner.scss",
+   399,
+   {
+    "color": 134,
+    "radius": 46,
+    "shadow": 11,
+    "fontSize": 60,
+    "spacing": 138,
+    "motion": 8,
+    "fontFamily": 2,
+    "zIndex": 4,
+    "lines": 1301
+   }
+  ],
+  [
+   "src/pages/student-hub/research/research-prep.scss",
+   350,
+   {
+    "color": 89,
+    "radius": 41,
+    "shadow": 4,
+    "fontSize": 70,
+    "spacing": 133,
+    "motion": 13,
+    "fontFamily": 0,
+    "zIndex": 1,
+    "lines": 1850
+   }
+  ],
+  [
+   "src/pages/student-hub/sat-prep/sat-secondary-pages.scss",
+   304,
+   {
+    "color": 126,
+    "radius": 22,
+    "shadow": 3,
+    "fontSize": 62,
+    "spacing": 80,
+    "motion": 2,
+    "fontFamily": 9,
+    "zIndex": 0,
+    "lines": 884
+   }
+  ],
+  [
+   "src/pages/student-hub/psychometric-assessment/components/AssessmentResults.scss",
+   301,
+   {
+    "color": 53,
+    "radius": 35,
+    "shadow": 0,
+    "fontSize": 68,
+    "spacing": 137,
+    "motion": 8,
+    "fontFamily": 0,
+    "zIndex": 0,
+    "lines": 1402
+   }
+  ],
+  [
+   "src/pages/student-hub/applicant/applicantOverview.scss",
+   295,
+   {
+    "color": 117,
+    "radius": 36,
+    "shadow": 5,
+    "fontSize": 43,
+    "spacing": 76,
+    "motion": 18,
+    "fontFamily": 0,
+    "zIndex": 1,
+    "lines": 1374
+   }
+  ],
+  [
+   "src/pages/student-hub/ielts-prep/browse.css",
+   284,
+   {
+    "color": 110,
+    "radius": 26,
+    "shadow": 2,
+    "fontSize": 54,
+    "spacing": 90,
+    "motion": 2,
+    "fontFamily": 0,
+    "zIndex": 0,
+    "lines": 829
+   }
+  ],
+  [
+   "src/pages/student-hub/settings/MenteeSettingsPageMock.module.scss",
+   270,
+   {
+    "color": 66,
+    "radius": 27,
+    "shadow": 4,
+    "fontSize": 51,
+    "spacing": 115,
+    "motion": 6,
+    "fontFamily": 1,
+    "zIndex": 1,
+    "lines": 1250
+   }
+  ],
+  [
+   "src/pages/student-hub/sat-prep/sat-dashboard.scss",
+   268,
+   {
+    "color": 131,
+    "radius": 19,
+    "shadow": 1,
+    "fontSize": 42,
+    "spacing": 70,
+    "motion": 5,
+    "fontFamily": 0,
+    "zIndex": 0,
+    "lines": 739
+   }
+  ],
+  [
+   "src/pages/student-hub/major-match-v2/mm3-results.scss",
+   253,
+   {
+    "color": 34,
+    "radius": 29,
+    "shadow": 3,
+    "fontSize": 48,
+    "spacing": 134,
+    "motion": 5,
+    "fontFamily": 0,
+    "zIndex": 1,
+    "lines": 1303
+   }
+  ],
+  [
+   "src/pages/student-hub/applications/ApplicationsPage.scss",
+   228,
+   {
+    "color": 115,
+    "radius": 8,
+    "shadow": 10,
+    "fontSize": 23,
+    "spacing": 53,
+    "motion": 16,
+    "fontFamily": 3,
+    "zIndex": 0,
+    "lines": 1724
+   }
+  ],
+  [
+   "src/pages/student-hub/applicant/taskWorkspace.scss",
+   223,
+   {
+    "color": 64,
+    "radius": 23,
+    "shadow": 3,
+    "fontSize": 46,
+    "spacing": 87,
+    "motion": 0,
+    "fontFamily": 0,
+    "zIndex": 0,
+    "lines": 776
+   }
+  ],
+  [
+   "src/pages/student-hub/MyRewardsEditorialView.scss",
+   219,
+   {
+    "color": 44,
+    "radius": 25,
+    "shadow": 0,
+    "fontSize": 52,
+    "spacing": 81,
+    "motion": 5,
+    "fontFamily": 12,
+    "zIndex": 0,
+    "lines": 933
+   }
+  ],
+  [
+   "src/pages/student-hub/major-match-v2/topcoach-programs.scss",
+   218,
+   {
+    "color": 63,
+    "radius": 19,
+    "shadow": 5,
+    "fontSize": 55,
+    "spacing": 75,
+    "motion": 0,
+    "fontFamily": 1,
+    "zIndex": 0,
+    "lines": 158
+   }
+  ],
+  [
+   "src/pages/student-hub/applicant/applicantWorkspace.scss",
+   214,
+   {
+    "color": 86,
+    "radius": 11,
+    "shadow": 2,
+    "fontSize": 30,
+    "spacing": 81,
+    "motion": 4,
+    "fontFamily": 0,
+    "zIndex": 1,
+    "lines": 865
+   }
+  ],
+  [
+   "src/pages/student-hub/major-match-v2/mm3-workspace.scss",
+   164,
+   {
+    "color": 50,
+    "radius": 12,
+    "shadow": 1,
+    "fontSize": 25,
+    "spacing": 76,
+    "motion": 0,
+    "fontFamily": 0,
+    "zIndex": 0,
+    "lines": 621
+   }
+  ],
+  [
+   "src/pages/student-hub/psychometric-assessment/PsychometricAssessmentPage.scss",
+   164,
+   {
+    "color": 35,
+    "radius": 13,
+    "shadow": 0,
+    "fontSize": 35,
+    "spacing": 68,
+    "motion": 4,
+    "fontFamily": 9,
+    "zIndex": 0,
+    "lines": 1059
+   }
+  ],
+  [
+   "src/components/referral/ReferralCodeDisplay.scss",
+   153,
+   {
+    "color": 54,
+    "radius": 14,
+    "shadow": 8,
+    "fontSize": 25,
+    "spacing": 44,
+    "motion": 8,
+    "fontFamily": 0,
+    "zIndex": 1,
+    "lines": 531
+   }
+  ],
+  [
+   "src/pages/student-hub/major-match-v2/MajorMatchV2Page.scss",
+   147,
+   {
+    "color": 22,
+    "radius": 22,
+    "shadow": 0,
+    "fontSize": 33,
+    "spacing": 63,
+    "motion": 7,
+    "fontFamily": 0,
+    "zIndex": 0,
+    "lines": 655
+   }
+  ],
+  [
+   "src/components/sat-prep/sat-prep-shell.scss",
+   140,
+   {
+    "color": 63,
+    "radius": 14,
+    "shadow": 1,
+    "fontSize": 19,
+    "spacing": 39,
+    "motion": 4,
+    "fontFamily": 0,
+    "zIndex": 1,
+    "lines": 478
+   }
+  ],
+  [
+   "src/pages/student-hub/major-match-v2/mm3-motion.scss",
+   127,
+   {
+    "color": 45,
+    "radius": 6,
+    "shadow": 5,
+    "fontSize": 22,
+    "spacing": 42,
+    "motion": 7,
+    "fontFamily": 0,
+    "zIndex": 5,
+    "lines": 547
+   }
+  ],
+  [
+   "src/pages/student-hub/sat-prep/sat-library.scss",
+   120,
+   {
+    "color": 55,
+    "radius": 12,
+    "shadow": 1,
+    "fontSize": 15,
+    "spacing": 33,
+    "motion": 4,
+    "fontFamily": 0,
+    "zIndex": 0,
+    "lines": 362
+   }
+  ],
+  [
+   "src/pages/student-hub/psychometric-assessment/components/AssessmentQuestions.scss",
+   117,
+   {
+    "color": 26,
+    "radius": 17,
+    "shadow": 0,
+    "fontSize": 22,
+    "spacing": 42,
+    "motion": 10,
+    "fontFamily": 0,
+    "zIndex": 0,
+    "lines": 547
+   }
+  ],
+  [
+   "src/pages/student-hub/community/MyRewardsMockPage.tsx",
+   116,
+   {
+    "color": 80,
+    "radius": 3,
+    "shadow": 0,
+    "fontSize": 14,
+    "spacing": 19,
+    "motion": 0,
+    "fontFamily": 0,
+    "zIndex": 0,
+    "lines": 525
+   }
+  ],
+  [
+   "src/pages/learning/index.scss",
+   109,
+   {
+    "color": 3,
+    "radius": 8,
+    "shadow": 0,
+    "fontSize": 35,
+    "spacing": 60,
+    "motion": 2,
+    "fontFamily": 1,
+    "zIndex": 2,
+    "lines": 699
+   }
+  ],
+  [
+   "src/pages/student-hub/applicant/liquidGlassWorkspace.scss",
+   107,
+   {
+    "color": 53,
+    "radius": 23,
+    "shadow": 3,
+    "fontSize": 3,
+    "spacing": 21,
+    "motion": 4,
+    "fontFamily": 0,
+    "zIndex": 2,
+    "lines": 554
+   }
+  ],
+  [
+   "src/components/sat-prep/sat-prep.scss",
+   103,
+   {
+    "color": 29,
+    "radius": 12,
+    "shadow": 1,
+    "fontSize": 19,
+    "spacing": 38,
+    "motion": 1,
+    "fontFamily": 3,
+    "zIndex": 0,
+    "lines": 379
+   }
+  ],
+  [
+   "src/pages/student-hub/sat-prep/sat-mock-tests.scss",
+   97,
+   {
+    "color": 37,
+    "radius": 7,
+    "shadow": 0,
+    "fontSize": 17,
+    "spacing": 33,
+    "motion": 3,
+    "fontFamily": 0,
+    "zIndex": 0,
+    "lines": 293
+   }
+  ],
+  [
+   "src/pages/student-hub/major-match-v2/university-detail.scss",
+   96,
+   {
+    "color": 14,
+    "radius": 5,
+    "shadow": 0,
+    "fontSize": 30,
+    "spacing": 47,
+    "motion": 0,
+    "fontFamily": 0,
+    "zIndex": 1,
+    "lines": 103
+   }
+  ],
+  [
+   "src/pages/student-hub/sat-prep/sat-test-packs.scss",
+   96,
+   {
+    "color": 44,
+    "radius": 9,
+    "shadow": 0,
+    "fontSize": 15,
+    "spacing": 25,
+    "motion": 3,
+    "fontFamily": 0,
+    "zIndex": 0,
+    "lines": 286
+   }
+  ],
+  [
+   "src/pages/student-hub/applicant/studentSessionCards.scss",
+   95,
+   {
+    "color": 36,
+    "radius": 9,
+    "shadow": 5,
+    "fontSize": 14,
+    "spacing": 29,
+    "motion": 2,
+    "fontFamily": 0,
+    "zIndex": 0,
+    "lines": 288
+   }
+  ],
+  [
+   "src/components/sat-prep/runner-modal.scss",
+   94,
+   {
+    "color": 47,
+    "radius": 7,
+    "shadow": 0,
+    "fontSize": 12,
+    "spacing": 23,
+    "motion": 0,
+    "fontFamily": 5,
+    "zIndex": 1,
+    "lines": 358
+   }
+  ],
+  [
+   "src/pages/student-hub/research/ResearchPrepLockedPreview.tsx",
+   89,
+   {
+    "color": 46,
+    "radius": 11,
+    "shadow": 0,
+    "fontSize": 18,
+    "spacing": 14,
+    "motion": 0,
+    "fontFamily": 0,
+    "zIndex": 0,
+    "lines": 336
+   }
+  ]
+ ]
+}
