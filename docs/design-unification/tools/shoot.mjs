@@ -92,6 +92,9 @@ try {
     const check = await evaluate(`[matchMedia('(prefers-reduced-motion: reduce)').matches, matchMedia('(prefers-reduced-transparency: reduce)').matches]`);
     console.log('emulated media (motion, transparency):', JSON.stringify(check));
   }
+  // --eval "<expression>": print a value from the page (e.g. overflow checks).
+  const probe = opt('eval');
+  if (probe) console.log('eval:', JSON.stringify(await evaluate(probe)));
   let clip;
   if (flag('full')) {
     const h = await evaluate('Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)');

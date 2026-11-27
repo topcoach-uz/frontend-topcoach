@@ -316,6 +316,29 @@
     background: transparent;
     box-shadow: none;
   }
+  .pf-tabs {
+    max-width: 100%;
+  }
+  // Phones: the switcher fits the screen. Equal segments, and a long label
+  // ("Activities & Achievements") wraps inside its segment instead of pushing
+  // the whole page sideways.
+  @media (max-width: 760px) {
+    .pf-tabs {
+      display: flex;
+      width: 100%;
+    }
+    .pf-tab {
+      flex: 1 1 0;
+      min-width: 0;
+      min-height: 44px;
+      padding: 6px 8px;
+      font-size: var(--tc-text-small);
+      line-height: 1.25;
+      text-align: center;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+  }
   // Each form section is a glass card (real fill: no blur over transparency).
   .section-card {
     margin: 0 0 20px !important;
@@ -473,7 +496,8 @@
     line-height: 1.2;
     white-space: nowrap;
     cursor: pointer;
-    transition:
+    transition:
+
       color 240ms lg.$lg-ease,
       background-color 240ms lg.$lg-ease,
       box-shadow 240ms lg.$lg-ease;
