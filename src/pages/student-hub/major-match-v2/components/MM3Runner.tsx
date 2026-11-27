@@ -10,6 +10,7 @@ import {
   MM3_TOTAL_QUESTIONS,
   mm3QuestionKey,
 } from '../mm3-content';
+import { overallProgressPct } from '../mm3-progress';
 import { MM3Answer, MM3QuestionInput, isMM3Answered } from './MM3Inputs';
 import '../mm3-inputs.scss';
 import '../mm3-runner.scss';
@@ -55,7 +56,7 @@ export const MM3Runner: React.FC<MM3RunnerProps> = ({
   const part = MM3_PARTS[question.part - 1];
   const withinPartIndex = part.questionIds.indexOf(question.id) + 1;
   const withinPartTotal = part.questionIds.length;
-  const partProgressPct = (withinPartIndex / withinPartTotal) * 100;
+  const overallPct = overallProgressPct(currentIndex, MM3_TOTAL_QUESTIONS);
 
   const root = mm3QuestionKey(question.slug);
   const value = answers[question.slug];
@@ -85,8 +86,15 @@ export const MM3Runner: React.FC<MM3RunnerProps> = ({
             </button>
           )}
         </div>
-        <div className="mm2-runner__bar">
-          <div className="mm2-runner__bar-fill" style={{ width: `${partProgressPct}%` }} />
+        <div
+          className="mm2-runner__bar"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={MM3_TOTAL_QUESTIONS}
+          aria-valuenow={currentIndex + 1}
+          aria-label={t('majorMatch3.nav.overallProgress', 'Overall progress')}
+        >
+          <div className="mm2-runner__bar-fill" style={{ width: `${overallPct}%` }} />
         </div>
       </div>
 

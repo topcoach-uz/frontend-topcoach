@@ -1,29 +1,32 @@
-import { Alert, Spin } from 'antd';
-import { ArrowLeft } from 'lucide-react';
-import { useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Alert, Spin } from "antd";
+import { ArrowLeft } from "lucide-react";
+import { useMemo } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   useGetMentorRosterQuery,
   useGetStudentGoalQuery,
-} from 'src/app/services/fullSupportApi';
-import StudentWorkspace, { type WorkspaceStudent } from '../components/StudentWorkspace';
-import { useMentorMentees } from '../sessionSources';
-import { initialsFromName } from '../utils';
-import '../components/StudentWorkspace.scss';
+} from "src/app/services/fullSupportApi";
+import StudentWorkspace, {
+  type WorkspaceStudent,
+} from "../components/StudentWorkspace";
+import { useMentorMentees } from "../sessionSources";
+import { isAccessDenied } from "../programCapabilities";
+import { initialsFromName } from "../utils";
+import "../components/StudentWorkspace.scss";
 
 export default function MentorStudentWorkspacePage() {
   const navigate = useNavigate();
-  const { id = '' } = useParams<{ id: string }>();
-  const { data, isLoading } = useGetMentorRosterQuery();
-  const { data: goalRes } = useGetStudentGoalQuery(id, { skip: !id });
+  const { id = "" } = useParams<{ id: string }>();
+  const { currentData: data, isLoading, error: rosterError } = useGetMentorRosterQuery(undefined, { refetchOnMountOrArgChange: true, refetchOnFocus: true });
+  const { currentData: goalRes } = useGetStudentGoalQuery(id, { skip: !id });
   const { mentees, isLoading: menteesLoading } = useMentorMentees();
 
   // A student can reach this page from the Full Support roster or from the
   // 1:1 mentee list. Prefer the richer Full Support record; otherwise build a
   // workspace student from the mentee's session history.
-  const rosterStudent = (data?.data ?? []).find((r) => r.id === id) ?? null;
+  const rosterStudent = (isAccessDenied(rosterError) ? [] : data?.data ?? []).find((r) => r.id === id) ?? null;
   const mentee = mentees.find((m) => m.id === id) ?? null;
-  const isFullSupport = !!rosterStudent;
+  const isProgramStudent = !!rosterStudent;
   const student: WorkspaceStudent | null = rosterStudent
     ? rosterStudent
     : mentee
@@ -49,14 +52,16 @@ export default function MentorStudentWorkspacePage() {
       .map((m) => m.major)
       .filter(Boolean);
     const segments: { label: string; value: string }[] = [];
-    if (careerGoals.length > 0) segments.push({ label: 'Goal', value: careerGoals.join(', ') });
-    if (majors.length > 0) segments.push({ label: 'Majors', value: majors.join(', ') });
+    if (careerGoals.length > 0)
+      segments.push({ label: "Goal", value: careerGoals.join(", ") });
+    if (majors.length > 0)
+      segments.push({ label: "Majors", value: majors.join(", ") });
     return segments;
   }, [goalRes?.data]);
 
   if (isLoading || menteesLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
+      <div style={{ display: "flex", justifyContent: "center", padding: 60 }}>
         <Spin size="large" />
       </div>
     );
@@ -65,7 +70,11 @@ export default function MentorStudentWorkspacePage() {
   if (!student) {
     return (
       <div>
-        <button type="button" className="mc-ws-back" onClick={() => navigate('/mentor/students')}>
+        <button
+          type="button"
+          className="mc-ws-back"
+          onClick={() => navigate("/mentor/students")}
+        >
           <ArrowLeft size={15} /> All students
         </button>
         <Alert
@@ -80,20 +89,28 @@ export default function MentorStudentWorkspacePage() {
 
   return (
     <div>
-      <button type="button" className="mc-ws-back" onClick={() => navigate('/mentor/students')}>
+      <button
+        type="button"
+        className="mc-ws-back"
+        onClick={() => navigate("/mentor/students")}
+      >
         <ArrowLeft size={15} /> All students
       </button>
 
       <StudentWorkspace
+        key={student.id}
         student={student}
-        isFullSupport={isFullSupport}
+        isProgramStudent={isProgramStudent}
         identityDetails={
           goalSegments.length > 0 && (
             <div className="mc-ws-identity-goal">
               {goalSegments.map((seg, i) => (
                 <span key={seg.label}>
-                  {i > 0 ? ' · ' : ''}
-                  <span className="mc-ws-identity-goal-label">{seg.label}:</span> {seg.value}
+                  {i > 0 ? " · " : ""}
+                  <span className="mc-ws-identity-goal-label">
+                    {seg.label}:
+                  </span>{" "}
+                  {seg.value}
                 </span>
               ))}
             </div>

@@ -8,7 +8,7 @@ export type MentorConsoleUser = {
   managementRole: string | null;
   isMentor: boolean;
   isSuperAdmin: boolean;
-  hasFullSupport: boolean;
+  hasProgramLessons: boolean;
 };
 
 const MentorConsoleCtx = createContext<MentorConsoleUser | null>(null);

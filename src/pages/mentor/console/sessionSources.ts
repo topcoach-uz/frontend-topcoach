@@ -1,3 +1,4 @@
+import { isAccessDenied } from './programCapabilities';
 import { lessonMinutes, lessonOutcome } from './fullSupportLessons';
 import { useMemo } from 'react';
 import { SessionTypeEnum, type SessionsSchema } from 'src/app/api/Api';
@@ -19,6 +20,7 @@ export type SessionReport = {
 export type MentorBooking = {
   id: string;
   source: 'platform' | 'full-support' | 'course-class';
+  program?: string | null;
   dateTime: string;
   durationLabel: string;
   durationMinutes: number;
@@ -121,6 +123,7 @@ export function normalizeFullSupportSession(
   return {
     id: `fs:${s.id}`,
     source: 'full-support',
+    program: s.program ?? null,
     dateTime: s.dateTime,
     durationLabel: `${minutes} min`,
     durationMinutes: minutes,
@@ -212,15 +215,19 @@ export function useMentorBookings(
 ) {
   const includeFs = options?.includeFullSupport ?? true;
   const {
-    data: platformRes,
+    currentData: platformData,
+    error: platformReadError,
     isLoading: loadingPlatform,
     isError: platformError,
   } = useGetMySessionsQuery();
   const {
-    data: fullSupportRes,
+    currentData: fullSupportData,
+    error: programReadError,
     isLoading: loadingFs,
     isError: fsError,
-  } = useGetMentorSessionsQuery(studentFilterId ?? null, { skip: !includeFs });
+   } = useGetMentorSessionsQuery(studentFilterId ?? null, { skip: !includeFs, refetchOnMountOrArgChange: true, refetchOnFocus: true, pollingInterval: 30000 });
+  const platformRes = isAccessDenied(platformReadError) ? undefined : platformData;
+  const fullSupportRes = !includeFs || isAccessDenied(programReadError) ? undefined : fullSupportData;
 
   const rosterNameByStudentId = useMemo(() => {
     const map = new Map<string, string>();
@@ -239,7 +246,7 @@ export function useMentorBookings(
       (Array.isArray(platformRes) ? (platformRes as SessionsSchema[]) : [])) as SessionsSchema[];
 
     const platform = platformRaw.filter((session) => session.participants?.length).map(normalizePlatformBooking);
-    const fs = (fullSupportRes?.data ?? []).map((s) =>
+    const fs = (fullSupportRes?.data ?? []).filter(s => !studentFilterId || s.studentUserId === studentFilterId).map((s) =>
       normalizeFullSupportSession(
         s as SessionLogDto & { studentUserId?: string },
         rosterNameByStudentId.get(
@@ -250,7 +257,7 @@ export function useMentorBookings(
     return [...platform, ...fs].sort(
       (a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime(),
     );
-  }, [platformRes, fullSupportRes?.data, rosterNameByStudentId]);
+  }, [platformRes, fullSupportRes?.data, rosterNameByStudentId, studentFilterId]);
 
   return {
     bookings,
