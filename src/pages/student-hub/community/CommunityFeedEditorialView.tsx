@@ -39,6 +39,7 @@ import {
   Check,
   CheckCheck,
   Calendar,
+  CalendarClock,
   ArrowUpRight,
 } from 'lucide-react';
 import dayjs from 'dayjs';
@@ -82,8 +83,10 @@ import { useCommunitySocket } from 'src/lib/socket/communitySocket';
 import { hostName } from 'src/app/services/api/const';
 import { ApplicantPage } from '../applicant/ApplicantPage';
 import './CommunityFeedEditorialView.scss';
+import './communityFeedStudent.scss';
 
 import SearchButton from 'src/components/common/searchButton';
+import { useSegmentThumb, SegmentThumb } from 'src/components/student-hub/ui/SegmentThumb';
 /**
  * Avatar / media URLs from the backend can be relative (`/uploads/...`)
  * or already absolute (`https://...` or `http://...`). Prepend the API
@@ -470,6 +473,7 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
    *    OFFICIAL chip — the right choice for a personal note from an admin/coach.
    */
   const [composerPersona, setComposerPersona] = useState<'OFFICIAL' | 'SELF'>('SELF');
+  const personaThumb = useSegmentThumb<HTMLDivElement>(composerPersona);
   const [composerCopiedToast, setComposerCopiedToast] = useState<string | null>(null);
 
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
@@ -1001,8 +1005,15 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
                       : 'Share something with the community…'
                   }
                   value={composerDraft}
-                  onChange={(e) => setComposerDraft(e.target.value)}
+                  onChange={(e) => {
+                    setComposerDraft(e.target.value);
+                    // Grow with the text (up to a cap), like a message field.
+                    const el = e.currentTarget;
+                    el.style.height = 'auto';
+                    el.style.height = `${Math.min(el.scrollHeight, 240)}px`;
+                  }}
                   rows={2}
+                  aria-label={composerKind === 'QUESTION' ? 'Ask the community a question' : 'Write a post'}
                 />
               </div>
 
@@ -1011,7 +1022,8 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
                   own face. Without two real choices the toggle would be noise,
                   so we render nothing for non-SuperAdmin posters. */}
               {currentUser.canPin && (
-                <div className="cf__composer-persona" role="radiogroup" aria-label="Post as">
+                <div ref={personaThumb.ref} data-lens={personaThumb.lens} className="cf__composer-persona" role="radiogroup" aria-label="Post as">
+                  <SegmentThumb style={personaThumb.style} />
                   <button
                     type="button"
                     role="radio"
@@ -1247,7 +1259,10 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
                   </button>
                 </div>
                 <div className="cf__composer-actions">
-                  <span className="cf__composer-coins">+10 coins</span>
+                  <span className="cf__composer-coins" title="Posting earns you coins">
+                    <Coins size={13} aria-hidden />
+                    +10 coins
+                  </span>
                   <button
                     type="button"
                     className="cf__btn cf__btn--primary"
@@ -1730,19 +1745,34 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
 
           {/* ─── Upcoming sessions (student only) ─── */}
           {showUpcomingSessions && (
-            <section className="cf__widget cf__sessions-widget">
-              <div className="cf__widget-head">
-                <Calendar size={13} /> {t('studentHub.feed.upcomingSessionsTitle', 'UPCOMING SESSIONS')}
+            <section className="cf__widget cf__sessions-widget" aria-labelledby="cf-sessions-title">
+              <div className="cf__sessions-head">
+                <span className="cf__sessions-icon" aria-hidden><Calendar size={16} /></span>
+                <h2 id="cf-sessions-title" className="cf__sessions-title">
+                  {t('studentHub.feed.upcomingSessionsHeading', 'Upcoming sessions')}
+                </h2>
               </div>
               {upcomingSessions.length === 0 ? (
                 <div className="cf__sessions-empty">
-                  <p>{t('studentHub.feed.noUpcomingSessions', 'No upcoming sessions.')}</p>
+                  <span className="cf__sessions-empty-icon" aria-hidden><CalendarClock size={22} /></span>
+                  <p className="cf__sessions-empty-title">{t('studentHub.feed.noUpcomingSessions', 'No upcoming sessions.')}</p>
+                  <p className="cf__sessions-empty-body">
+                    {t('studentHub.feed.noUpcomingSessionsHint', 'Book a 1:1 with a mentor and it will appear here.')}
+                  </p>
                   <button
                     type="button"
                     className="cf__sessions-book"
                     onClick={() => navigate('/mentors')}
                   >
                     {t('studentHub.feed.bookAMentor', 'Book a mentor')}
+                    <ArrowUpRight size={14} aria-hidden />
+                  </button>
+                  <button
+                    type="button"
+                    className="cf__sessions-viewall cf__sessions-viewall--quiet"
+                    onClick={() => navigate('/student-hub?section=my-learning')}
+                  >
+                    {t('studentHub.feed.viewPastSessions', 'See past sessions')}
                   </button>
                 </div>
               ) : (
@@ -1751,6 +1781,10 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
                     const date = dayjs(s.date);
                     return (
                       <li key={s.id} className="cf__session-item">
+                        <span className="cf__session-date" aria-hidden>
+                          <span className="cf__session-date-month">{date.format('MMM')}</span>
+                          <span className="cf__session-date-day">{date.format('D')}</span>
+                        </span>
                         <div
                           className="cf__session-main"
                           role="button"
@@ -1764,7 +1798,7 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
                         >
                           <div className="cf__session-mentor">{s.mentor}</div>
                           <div className="cf__session-meta">
-                            {date.format('MMM D, h:mm A')} ·{' '}
+                            {date.format('ddd, h:mm A')} ·{' '}
                             {t('studentHub.feed.minSession', '{{min}} min session', {
                               min: s.durationMin,
                             })}
@@ -1777,9 +1811,11 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
+                            aria-label={`${t('studentHub.feed.joinSession', 'Join')}: ${s.mentor}`}
+                            title={t('studentHub.feed.joinSession', 'Join')}
                           >
                             {t('studentHub.feed.joinSession', 'Join')}
-                            <ArrowUpRight size={11} />
+                            <ArrowUpRight size={11} aria-hidden />
                           </a>
                         ) : null}
                       </li>
@@ -1787,14 +1823,16 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
                   })}
                 </ul>
               )}
-              <button
-                type="button"
-                className="cf__sessions-viewall"
-                onClick={() => navigate('/student-hub?section=my-learning')}
-              >
-                {t('studentHub.feed.viewAllSessions', 'View all')}
-                <ArrowUpRight size={11} />
-              </button>
+              {upcomingSessions.length > 0 && (
+                <button
+                  type="button"
+                  className="cf__sessions-viewall cf__sessions-viewall--footer"
+                  onClick={() => navigate('/student-hub?section=my-learning')}
+                >
+                  {t('studentHub.feed.viewAllSessions', 'View all')}
+                  <ArrowUpRight size={12} aria-hidden />
+                </button>
+              )}
             </section>
           )}
 

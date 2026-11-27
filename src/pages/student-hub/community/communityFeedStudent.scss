@@ -1,0 +1,442 @@
+@use '/src/styles/liquid-glass' as lg;
+
+// Community feed inside the student workspace: composer and Upcoming sessions.
+// Apple-style: one calm glass surface for writing. The field melts into the
+// card and the whole card takes the focus ring; tools are even, quiet glass
+// pills; the one primary action is the red Post pill. The feed is shared with
+// the mentor console, so everything here stays inside the student shell.
+.applicant-shell .applicant-content {
+  .cf__composer {
+    padding: 20px 22px 16px;
+    margin-bottom: 24px;
+    transition: box-shadow var(--tc-dur-2) var(--tc-ease-fade);
+
+    &:focus-within {
+      box-shadow: var(--tc-focus-ring), 0 18px 40px -28px rgba(48, 43, 40, 0.35);
+    }
+  }
+  .cf__composer-top {
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .cf__composer-input {
+    min-height: 56px;
+    padding: 10px 2px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--tc-ink);
+    font-size: var(--tc-text-body-lg);
+    line-height: 1.5;
+    transition: none;
+
+    &::placeholder {
+      color: var(--tc-subtle);
+    }
+    &:focus {
+      border: 0;
+      background: transparent;
+    }
+  }
+
+  // "Post as" (admins): the same sliding segmented control as everywhere else.
+  .cf__composer-persona {
+    position: relative;
+    display: inline-flex;
+    gap: 0;
+    margin: 0 0 14px 58px;
+    padding: 3px;
+    border-radius: var(--tc-radius-pill);
+    @include lg.lg-segment-track;
+
+    > .tc-seg-thumb {
+      @include lg.lg-segment-thumb;
+      margin: 0;
+    }
+  }
+  .cf__persona-chip {
+    position: relative;
+    z-index: 1;
+    min-height: 34px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: var(--tc-radius-pill);
+    background: transparent;
+    color: var(--tc-muted);
+    font-size: var(--tc-text-small);
+    transition: color var(--tc-dur-2) var(--tc-ease-fade);
+
+    strong {
+      color: inherit;
+    }
+    &:hover {
+      background: transparent;
+      color: var(--tc-ink);
+    }
+  }
+  .cf__persona-chip--on,
+  .cf__persona-chip--on:hover {
+    background: rgba(255, 255, 255, 0.86);
+    color: var(--tc-ink);
+    box-shadow: 0 4px 12px -6px rgba(48, 43, 40, 0.3);
+
+    strong {
+      color: var(--tc-brand);
+    }
+  }
+  .cf__composer-persona[data-lens='on'] .cf__persona-chip--on {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .cf__composer-toolbar {
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(48, 43, 40, 0.07);
+  }
+  .cf__composer-tools {
+    gap: 6px;
+  }
+  .cf__composer-chip,
+  .cf__composer-tool-btn {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: var(--tc-radius-pill);
+    @include lg.lg-thin;
+    color: var(--tc-text);
+    font-size: var(--tc-text-small);
+    font-weight: 500;
+    transition:
+      background-color var(--tc-dur-2) var(--tc-ease-fade),
+      color var(--tc-dur-2) var(--tc-ease-fade),
+      transform var(--tc-dur-1) var(--tc-ease);
+
+    @media (hover: hover) {
+      &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.85);
+      }
+    }
+    &:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--tc-brand);
+      outline-offset: 2px;
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+  .cf__composer-tool-btn--image {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+  // A toggled tool (Pin, Poll, Question) reads as "on": blush glass, brand text.
+  .cf__composer-tool-btn.cf__composer-pin--on {
+    @include lg.lg-blush;
+    color: var(--tc-brand);
+  }
+  .cf__category-menu {
+    padding: 6px;
+    border: 0;
+    border-radius: var(--tc-radius-lg);
+    @include lg.lg-thick;
+  }
+  .cf__category-menu-item {
+    border-radius: var(--tc-radius-sm);
+  }
+
+  .cf__composer-actions {
+    gap: 10px;
+  }
+  .cf__composer-coins {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 30px;
+    padding: 0 11px;
+    border-radius: var(--tc-radius-pill);
+    background: var(--tc-warning-bg);
+    color: var(--tc-warning);
+    font-size: var(--tc-text-caption);
+    font-weight: 600;
+  }
+  .cf__composer-actions .cf__btn--primary {
+    min-height: 40px;
+    padding: 0 22px;
+    border-radius: var(--tc-radius-pill);
+    font-weight: 600;
+    transition:
+      background-color var(--tc-dur-2) var(--tc-ease-fade),
+      transform var(--tc-dur-1) var(--tc-ease);
+
+    &:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+    // Not ready yet: a neutral well, not a washed-out red.
+    &:disabled {
+      background: var(--tc-surface-sunk);
+      color: var(--tc-subtle);
+      box-shadow: none;
+      opacity: 1;
+    }
+  }
+
+  // ---- Upcoming sessions ----
+  .cf__sessions-widget {
+    padding: 18px 16px 16px;
+  }
+  .cf__sessions-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .cf__sessions-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--tc-radius-sm);
+    @include lg.lg-blush;
+    color: var(--tc-brand);
+  }
+  .cf__sessions-title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    color: var(--tc-ink);
+    font-size: var(--tc-text-body);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cf__sessions-viewall {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    width: auto;
+    min-height: 32px;
+    margin: 0;
+    padding: 0 8px;
+    border: 0;
+    border-radius: var(--tc-radius-pill);
+    background: transparent;
+    color: var(--tc-brand);
+    font-size: var(--tc-text-small);
+    font-weight: 600;
+    box-shadow: none;
+    cursor: pointer;
+
+    @media (hover: hover) {
+      &:hover {
+        background: rgba(139, 0, 0, 0.06);
+      }
+    }
+    &:focus-visible {
+      outline: 2px solid var(--tc-brand);
+      outline-offset: 2px;
+    }
+  }
+  .cf__sessions-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    padding: 20px 14px 8px;
+    border-radius: var(--tc-radius-lg);
+    @include lg.lg-inset;
+    text-align: center;
+  }
+  .cf__sessions-empty-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    border-radius: var(--tc-radius-md);
+    @include lg.lg-blush;
+    color: var(--tc-brand);
+  }
+  .cf__sessions-empty-title {
+    margin: 0 0 4px;
+    color: var(--tc-ink);
+    font-size: var(--tc-text-body);
+    font-weight: 600;
+  }
+  .cf__sessions-empty-body {
+    max-width: 30ch;
+    margin: 0 0 16px;
+    color: var(--tc-muted);
+    font-size: var(--tc-text-small);
+    line-height: 1.5;
+  }
+  .cf__sessions-book {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+    border: 0;
+    border-radius: var(--tc-radius-pill);
+    @include lg.lg-tint;
+    color: var(--tc-on-brand);
+    font-size: var(--tc-text-body-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      transform var(--tc-dur-1) var(--tc-ease),
+      background-color var(--tc-dur-2) var(--tc-ease-fade);
+
+    @media (hover: hover) {
+      &:hover {
+        background: var(--tc-brand-hover);
+        color: var(--tc-on-brand);
+      }
+    }
+    &:active {
+      transform: scale(0.97);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--tc-brand);
+      outline-offset: 3px;
+    }
+  }
+  .cf__sessions-viewall--footer {
+    display: flex;
+    margin: 10px auto 0;
+  }
+  .cf__sessions-viewall--quiet {
+    margin-top: 6px;
+    color: var(--tc-muted);
+    font-weight: 500;
+  }
+  .cf__sessions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .cf__session-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border: 0;
+    border-radius: var(--tc-radius-lg);
+    @include lg.lg-inset;
+  }
+  // Calendar tile: month over day, like a date on an iOS event row.
+  .cf__session-date {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex: none;
+    width: 44px;
+    height: 48px;
+    overflow: hidden;
+    border-radius: var(--tc-radius-sm);
+    background: var(--tc-surface);
+    box-shadow:
+      0 0 0 1px var(--tc-line),
+      0 4px 10px -8px rgba(48, 43, 40, 0.3);
+  }
+  .cf__session-date-month {
+    padding: 2px 0;
+    background: var(--tc-brand);
+    color: var(--tc-on-brand);
+    font-size: var(--tc-text-micro);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+  .cf__session-date-day {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    color: var(--tc-ink);
+    font-size: var(--tc-text-h3);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .cf__session-main {
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+  }
+  .cf__session-mentor {
+    overflow: hidden;
+    color: var(--tc-ink);
+    font-size: var(--tc-text-body-sm);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cf__session-meta {
+    overflow: visible;
+    white-space: normal;
+    margin-top: 2px;
+    color: var(--tc-muted);
+    font-size: var(--tc-text-caption);
+    line-height: 1.35;
+  }
+  // Compact round Join button: the rail is narrow; the label stays for screen
+  // readers and returns when there's room.
+  .cf__session-join {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    overflow: hidden;
+    font-size: 0;
+    border-radius: var(--tc-radius-pill);
+    @include lg.lg-tint;
+    color: var(--tc-on-brand) !important;
+    font-weight: 600;
+
+    svg {
+      width: 15px;
+      height: 15px;
+    }
+    &:active {
+      transform: scale(0.94);
+    }
+  }
+  .cf__session-item {
+    padding: 8px 10px 8px 8px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cf__composer,
+    .cf__composer-chip,
+    .cf__composer-tool-btn,
+    .cf__persona-chip,
+    .cf__composer-actions .cf__btn--primary,
+    .cf__sessions-book {
+      transition: none;
+    }
+  }
+  @media (max-width: 640px) {
+    .cf__composer {
+      padding: 16px;
+    }
+    .cf__composer-persona {
+      margin-left: 0;
+    }
+  }
+}

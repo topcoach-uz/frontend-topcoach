@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { useSegmentLens } from 'src/hooks/useSegmentLens';
 
 /** What marks the selected segment, across the student switchers. */
-export const SEGMENT_SELECTED = '[aria-selected="true"], [aria-pressed="true"], [aria-current="page"], .is-active';
+export const SEGMENT_SELECTED = '[aria-selected="true"], [aria-pressed="true"], [aria-checked="true"], [aria-current="page"], .is-active';
 
 /**
  * Sliding glass thumb for a segmented row that renders its own buttons

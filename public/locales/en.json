@@ -3836,5 +3836,8 @@
   "studentHub.documents.dropHint": "or drag a file here",
   "studentHub.documents.dropTitle": "Drop to add this file",
   "studentHub.documents.dropTypes": "PDF, Word or image files",
-  "studentHub.documents.dropUnsupported": "Use a PDF, Word or image file."
+  "studentHub.documents.dropUnsupported": "Use a PDF, Word or image file.",
+  "studentHub.feed.upcomingSessionsHeading": "Upcoming sessions",
+  "studentHub.feed.noUpcomingSessionsHint": "Book a 1:1 with a mentor and it will appear here.",
+  "studentHub.feed.viewPastSessions": "See past sessions"
 }

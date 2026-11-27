@@ -3836,5 +3836,8 @@
   "studentHub.documents.dropHint": "yoki faylni shu yerga torting",
   "studentHub.documents.dropTitle": "Faylni qo‘shish uchun qo‘yib yuboring",
   "studentHub.documents.dropTypes": "PDF, Word yoki rasm fayllari",
-  "studentHub.documents.dropUnsupported": "PDF, Word yoki rasm faylidan foydalaning."
+  "studentHub.documents.dropUnsupported": "PDF, Word yoki rasm faylidan foydalaning.",
+  "studentHub.feed.upcomingSessionsHeading": "Yaqinlashayotgan sessiyalar",
+  "studentHub.feed.noUpcomingSessionsHint": "Mentor bilan 1:1 uchrashuvga yoziling — u shu yerda paydo bo‘ladi.",
+  "studentHub.feed.viewPastSessions": "O‘tgan sessiyalar"
 }

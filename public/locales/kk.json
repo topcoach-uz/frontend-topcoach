@@ -3836,5 +3836,8 @@
   "studentHub.documents.dropHint": "yamasa fayldı usı jerge súyreń",
   "studentHub.documents.dropTitle": "Fayldı qosıw ushın jiberiń",
   "studentHub.documents.dropTypes": "PDF, Word yamasa súwret faylları",
-  "studentHub.documents.dropUnsupported": "PDF, Word yamasa súwret faylın paydalanıń."
+  "studentHub.documents.dropUnsupported": "PDF, Word yamasa súwret faylın paydalanıń.",
+  "studentHub.feed.upcomingSessionsHeading": "Jaqınlap kiyatırǵan sessiyalar",
+  "studentHub.feed.noUpcomingSessionsHint": "Mentor menen 1:1 ushırasıwǵa jazılıń — ol usı jerde payda boladı.",
+  "studentHub.feed.viewPastSessions": "Ótken sessiyalar"
 }

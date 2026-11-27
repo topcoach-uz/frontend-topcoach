@@ -3836,5 +3836,8 @@
   "studentHub.documents.dropHint": "или перетащите файл сюда",
   "studentHub.documents.dropTitle": "Отпустите, чтобы добавить файл",
   "studentHub.documents.dropTypes": "PDF, Word или изображения",
-  "studentHub.documents.dropUnsupported": "Загрузите файл PDF, Word или изображение."
+  "studentHub.documents.dropUnsupported": "Загрузите файл PDF, Word или изображение.",
+  "studentHub.feed.upcomingSessionsHeading": "Ближайшие сессии",
+  "studentHub.feed.noUpcomingSessionsHint": "Запишитесь на встречу 1:1 с ментором — она появится здесь.",
+  "studentHub.feed.viewPastSessions": "Прошедшие сессии"
 }
