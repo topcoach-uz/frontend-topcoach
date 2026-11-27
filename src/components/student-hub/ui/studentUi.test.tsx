@@ -297,3 +297,21 @@ describe('ViewTabs thumb', () => {
     expect(new Set([a, b, c]).size).toBe(3);
   });
 });
+
+import { SEGMENT_SELECTED, SegmentThumb } from './SegmentThumb';
+
+describe('SegmentThumb', () => {
+  it('is hidden from assistive tech and out of the row flow, even unstyled', () => {
+    const html = renderToStaticMarkup(<SegmentThumb style={{ width: 40, transform: 'translate3d(3px, 3px, 0)' }} />);
+    expect(html).toContain('class="tc-seg-thumb"');
+    expect(html).toContain('aria-hidden="true"');
+    expect(html).toContain('position:absolute');
+    expect(html).toContain('pointer-events:none');
+    expect(html).toContain('width:40px');
+  });
+  it('finds the selected segment for tablists, filter rows and link tabs', () => {
+    for (const marker of ['[aria-selected="true"]', '[aria-pressed="true"]', '[aria-current="page"]', '.is-active']) {
+      expect(SEGMENT_SELECTED).toContain(marker);
+    }
+  });
+});

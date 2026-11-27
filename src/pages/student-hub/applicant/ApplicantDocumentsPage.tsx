@@ -22,6 +22,7 @@ import {
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 
 import SearchButton from 'src/components/common/searchButton';
+import { useSegmentThumb, SegmentThumb } from 'src/components/student-hub/ui/SegmentThumb';
 const documentLabels: Record<string, string> = {
   transcript: "Transcript",
   test_score: "Test score",
@@ -67,6 +68,7 @@ export default function ApplicantDocumentsPage() {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<"all" | "application" | "drafts">("all");
+  const tabsThumb = useSegmentThumb<HTMLDivElement>(tab);
   const [upload, uploadState] = useUploadDocumentMutation();
   const [remove] = useDeleteDocumentMutation();
   const [download] = useDownloadDocumentMutation();
@@ -152,7 +154,8 @@ export default function ApplicantDocumentsPage() {
           allowClear
         />
       </div>
-      <div className="applicant-tabs" role="tablist" aria-label="Document filters">
+      <div ref={tabsThumb.ref} data-lens={tabsThumb.lens} className="applicant-tabs" role="tablist" aria-label="Document filters">
+        <SegmentThumb style={tabsThumb.style} />
         {([
           ["all", "All files"],
           ["application", "Application files"],

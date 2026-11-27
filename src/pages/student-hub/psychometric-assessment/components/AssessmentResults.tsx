@@ -12,6 +12,7 @@ import { BigFiveChart } from './BigFiveChart';
 import { ConfidenceIndicator } from './ConfidenceIndicator';
 import { UniversityMatches } from './UniversityMatches';
 import './AssessmentResults.scss';
+import { useSegmentThumb, SegmentThumb } from 'src/components/student-hub/ui/SegmentThumb';
 
 interface AssessmentResultsProps {
   assessmentId: string;
@@ -102,6 +103,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const tabsThumb = useSegmentThumb<HTMLElement>(activeTab);
   const [selectedMajor, setSelectedMajor] = useState<number | null>(null);
 
   // Compute derived values with defensive null checks
@@ -280,7 +282,8 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({
       </header>
 
       {/* Editorial tab bar */}
-      <nav className="majormatch-results__tabs" role="tablist">
+      <nav ref={tabsThumb.ref} data-lens={tabsThumb.lens} className="majormatch-results__tabs" role="tablist">
+        <SegmentThumb style={tabsThumb.style} />
         {TABS.map(({ key, label, Icon }) => (
           <button
             key={key}

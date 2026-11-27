@@ -10,6 +10,7 @@ import { selectProgramEnrollment, programDisplayName, roleNames, currentPrograms
 import {nextLesson,lessonLabel,mentorTaskLink} from '../full-support/fullSupportOverviewModel';
 import {FullSupportPaymentGate} from '../full-support/FullSupportPaymentGate';
 import './myPrograms.scss';
+import { useSegmentThumb, SegmentThumb } from 'src/components/student-hub/ui/SegmentThumb';
 const time=(value:string)=>new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Asia/Tashkent'}).format(new Date(value));
 const date=(value:string)=>new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'Asia/Tashkent'}).format(new Date(value));
 const stateLabels={active:'Active',scheduled:'Starts soon',expired:'Access ended',revoked:'Enrollment ended'};
@@ -27,6 +28,7 @@ export default function MyProgramsStudentPage(){
  const canUse=(tool:string)=>!program||(program.capabilities??program.enabledTools??['lessons','tasks','milestones','reports','progress']).includes(tool);
  const visibleTabs=tabs.filter(t=>t==='Lessons'?canUse('lessons'):t==='Tasks'?canUse('tasks'):true);
  const selectedTab=params.get('tab');const tab=visibleTabs.find(t=>t.toLowerCase()===selectedTab)||'Overview';
+ const tabsThumb=useSegmentThumb<HTMLDivElement>(tab);
  const selectTab=(value:string)=>{const next=new URLSearchParams(params);next.set('tab',value.toLowerCase());setParams(next);setLesson(null);};
  const tasks=(list:ProgramTask[],name?:string)=><div className="mp-rows">{list.length?list.map(t=><div className="mp-row" key={t.id}><div>{name&&<small className="mp-badge">{name}</small>}<Link to={mentorTaskLink(t.id)}>{t.task}</Link><p>Due {date(t.deadline)} · {t.mentorName}</p></div><span className="mp-badge">{taskStatus[t.status]}</span></div>):<p className="mp-empty">No assignments yet. Your mentor’s tasks and feedback will appear here.</p>}</div>;
  const mentors=(p:StudentProgram)=><div className="mp-rows">{p.roles.map(role=>{const m=p.mentors.find(m=>m.role===role);return <div className="mp-row" key={role}><div className="mp-person"><span className="mp-avatar">{m?m.name.split(/\s+/).map(s=>s[0]).slice(0,2).join(''):<Users size={18}/>}</span><div><strong>{m?.name||'Not assigned yet'}</strong><p>{roleNames[role]||role} mentor</p></div></div>{m&&<Link to="/student-hub?section=messages">Messages <ArrowUpRight size={14}/></Link>}</div>})}{p.mentors.filter(m=>m.role==='legacy').map(m=><div className="mp-row" key={m.id}><div><strong>{m.name}</strong><p>Existing mentor</p></div><Link to="/student-hub?section=messages">Messages</Link></div>)}</div>;
@@ -57,7 +59,7 @@ export default function MyProgramsStudentPage(){
  <div className="mp-access"><span className="mp-badge">{stateLabels[program.state]}</span><div><small>Enrolled</small>{date(program.startsAt)}</div>{program.teachingEndsAt&&<div><small>Teaching ends</small>{time(program.teachingEndsAt)}</div>}<div><small>Access until</small>{program.accessEndsAt?time(program.accessEndsAt):'No end date set'}</div></div>
  {program.state==='scheduled'&&<p className="mp-notice">Your program starts {date(program.startsAt)}. Your assigned mentors and schedule are shown below.</p>}
  {['expired','revoked'].includes(program.state)&&<p className="mp-notice">This enrollment has ended. Your lesson records remain available here. Contact your program team about renewal.</p>}
- <div className="mp-tabs" role="tablist" aria-label="Program sections">{visibleTabs.map(t=><button role="tab" aria-selected={tab===t} id={'mp-tab-'+t} aria-controls="mp-content" key={t} onClick={()=>selectTab(t)}>{t}{t==='Tasks'?' ('+program.tasks.length+')':''}</button>)}</div>
+ <div ref={tabsThumb.ref} data-lens={tabsThumb.lens} className="mp-tabs" role="tablist" aria-label="Program sections"><SegmentThumb style={tabsThumb.style}/>{visibleTabs.map(t=><button role="tab" aria-selected={tab===t} id={'mp-tab-'+t} aria-controls="mp-content" key={t} onClick={()=>selectTab(t)}>{t}{t==='Tasks'?' ('+program.tasks.length+')':''}</button>)}</div>
  <div role="tabpanel" id="mp-content" aria-labelledby={'mp-tab-'+tab}>
  {tab==='Overview'&&<><div className="mp-two">{canUse("lessons")&&lessonCard(program)}<section className="mp-panel"><div className="mp-eyebrow"><Users size={16}/>Your mentors</div>{mentors(program)}</section></div>
  {canUse('progress')&&!!program.progress?.length&&<section className="mp-panel mp-section"><h2>Your program progress</h2>{program.progress.map(item=><div key={item.key}><div className="mp-row"><span>{item.key}</span><span>{item.percent}%{item.target?' · '+item.target:''}</span></div><progress aria-label={item.key} max={100} value={item.percent}/></div>)}</section>}

@@ -59,6 +59,7 @@ import { PinnedAngleStrip } from "./PinnedAngleStrip";
 import { clearPinnedAngle, loadPinnedAngle, pinnedAngleFrom, savePinnedAngle, type PinnedAngle } from "./essayAngles";
 import type { EssayIdeaAngle, EssayIdeasResponse } from "src/app/services/student-hub/essayManagementApi";
 import { countWords, ideasForEssay, essayWordLimit, formatSavedTime, limitLevel, limitMessage, saveState } from "./essayWriting";
+import { useSegmentThumb, SegmentThumb } from 'src/components/student-hub/ui/SegmentThumb';
 
 const essayTypes: Array<{ value: StudentEssay["essayType"]; label: string }> = [
   { value: "personal_statement", label: "Personal statement" },
@@ -390,6 +391,7 @@ export function ApplicantEssayEditorPage() {
   const savingRef = useRef(false);
   const [params, setParams] = useSearchParams();
   const [reviewTab, setReviewTab] = useState<"preview" | "feedback" | "versions">("preview");
+  const reviewThumb = useSegmentThumb<HTMLDivElement>(reviewTab);
   const [sidePanel, setSidePanel] = useState<"ideas" | "review" | null>(null);
   // Keeps the last panel mounted while it slides out.
   const [panelExited, setPanelExited] = useState(true);
@@ -739,7 +741,8 @@ export function ApplicantEssayEditorPage() {
         {essay && isMasters && params.get("view") === "review" ? (
           <div className="applicant-statement-review">
             <p className="applicant-statement-review__meta">Master’s · {essay.title} · Private</p>
-            <div className="applicant-tabs" role="tablist" aria-label="Statement review">
+            <div ref={reviewThumb.ref} data-lens={reviewThumb.lens} className="applicant-tabs" role="tablist" aria-label="Statement review">
+              <SegmentThumb style={reviewThumb.style} />
               {(["preview", "feedback", "versions"] as const).map((view) => (
                 <button key={view} type="button" role="tab" aria-selected={reviewTab === view}
                   className={reviewTab === view ? "is-active" : ""} onClick={() => setReviewTab(view)}>

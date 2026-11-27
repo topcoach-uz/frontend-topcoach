@@ -547,15 +547,55 @@
     }
   }
 
-  // AntD tabs: the track replaces the ink bar and the bottom rule.
+  // Sliding thumb (useSegmentThumb): the same white glass lens as ViewTabs and
+  // the Settings switcher, gliding between segments. Once it's measured
+  // (data-lens="on"), the selected segment stops painting its own fill.
+  // Specific enough to beat row rules aimed at count badges (e.g.
+  // `.applicant-tabs span`), which would shift the thumb off its segment.
+  :is(.applicant-tabs, .apps-tabs, .mp-tabs, .majormatch-results__tabs, .myprog__sessions-tabs) > .tc-seg-thumb {
+    @include lg.lg-segment-thumb;
+    margin: 0;
+    padding: 0;
+  }
+  :is(.applicant-tabs, .apps-tabs, .mp-tabs, .majormatch-results__tabs, .myprog__sessions-tabs) {
+    > :not(.tc-seg-thumb) {
+      z-index: 1;
+    }
+    &[data-lens='on'] > :not(.tc-seg-thumb) {
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+  }
+
+  // AntD tabs: the track replaces the bottom rule, and antd's own sliding ink
+  // bar becomes the glass thumb (it already animates left/width).
   .ant-tabs-top > .ant-tabs-nav {
     margin-bottom: 20px;
 
     &::before {
       display: none;
     }
+    .ant-tabs-tab {
+      z-index: 1;
+    }
+    .ant-tabs-tab-active {
+      background: transparent;
+      box-shadow: none;
+
+      &:hover {
+        background: transparent;
+      }
+    }
     .ant-tabs-ink-bar {
-      display: none;
+      @include lg.lg-segment-thumb;
+      top: 3px;
+      bottom: auto;
+      // antd sets the bar's 2–4px underline height with its own rules.
+      height: calc(100% - 6px) !important;
+      transition:
+        left var(--tc-dur-enter) var(--tc-ease),
+        width var(--tc-dur-enter) var(--tc-ease),
+        opacity var(--tc-dur-2) var(--tc-ease-fade);
     }
     .ant-tabs-nav-wrap::before,
     .ant-tabs-nav-wrap::after {
@@ -564,6 +604,9 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .ant-tabs-top > .ant-tabs-nav .ant-tabs-ink-bar {
+      transition: none;
+    }
     .applicant-tabs button,
     .apps-tabs .apps-tab,
     .mp-tabs button,
