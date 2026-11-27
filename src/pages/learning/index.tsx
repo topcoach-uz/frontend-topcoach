@@ -22,6 +22,7 @@ import { coursesApi } from 'src/app/services/courses';
 import { useTypedSelector } from 'src/app/store';
 import { baseUrl } from 'src/app/services/api/const';
 
+import StudentThemeProvider from 'src/lib/antd/StudentThemeProvider';
 const { Sider, Content } = Layout;
 
 const LAST_VIEWED_KEY = 'topcoach-last-viewed-lesson';
@@ -1047,4 +1048,11 @@ const LearningPage: React.FC<LearningPageProps> = () => {
   );
 };
 
-export default LearningPage;
+/** The lesson player is student-facing: it gets the student antd theme. */
+const LearningRoute: React.FC<LearningPageProps> = (props) => (
+  <StudentThemeProvider>
+    <LearningPage {...props} />
+  </StudentThemeProvider>
+);
+
+export default LearningRoute;

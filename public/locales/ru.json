@@ -3824,5 +3824,9 @@
   "accountNav.accessUntil": "Доступ до",
   "accountNav.noRenewal": "Оплачено через Click. Доступ не продлевается автоматически.",
   "accountNav.checkoutHint": "Выберите период доступа. Оплата пройдёт на странице Click, а доступ откроется после подтверждения платежа.",
-  "accountNav.onePeriod": "Один платёж за один период. Без автопродления."
+  "accountNav.onePeriod": "Один платёж за один период. Без автопродления.",
+  "studentUi.error.title": "Не удалось выполнить запрос.",
+  "studentUi.error.body": "Сохранённые данные не изменились. Попробуйте ещё раз.",
+  "studentUi.error.retry": "Повторить",
+  "studentUi.loading": "Загрузка…"
 }
