@@ -42,6 +42,7 @@ import ApplicationRequirements from './ApplicationRequirements';
 import ApplicationMentor from './ApplicationMentor';
 import ApplicationTimeline from "../applications/components/ApplicationTimeline";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
+import { EmptyState } from 'src/components/student-hub/ui/EmptyState';
 
 export default function ApplicantApplicationsPage() {
   const [listParams, setListParams] = useSearchParams();
@@ -261,12 +262,15 @@ export default function ApplicantApplicationsPage() {
               ))}
             </div>
           ) : (
-            <div className="applicant-panel applicant-empty">
-              <ClipboardList size={36} />
-              <h2>No deadlines yet.</h2>
-              <p>Add a planning deadline or a dated task to an application to see it here.</p>
-              <Button onClick={() => navigate("/student-hub/applications")}>Open College List</Button>
-            </div>
+            <EmptyState
+              panel
+              fill
+              level={2}
+              icon={ClipboardList}
+              title="No deadlines yet."
+              description="Add a planning deadline or a dated task to an application to see it here."
+              actions={<Button type="primary" onClick={() => navigate("/student-hub/applications")}>Open College List</Button>}
+            />
           )}
         </QueryState>
         <Modal title={selectedMilestone?.title} open={!!selectedMilestone} footer={null} onCancel={() => { const next = new URLSearchParams(listParams); next.delete('milestone'); setListParams(next); }}>

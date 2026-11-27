@@ -3231,7 +3231,7 @@
   "majorMatch3.intro.partQuestionCount": "{{count}} questions",
   "majorMatch3.intro.publicSubtitle": "Answer {{total}} questions about your academics, interests and preferences. You get your best-fit majors free, no account needed to start.",
   "majorMatch3.intro.publicTitle": "Which major actually fits you?",
-  "majorMatch3.intro.questionCount": "{{total}} questions",
+  "majorMatch3.intro.questionCount": "{{total}} soraw",
   "majorMatch3.intro.signal.interests": "Qızıǵıwlar",
   "majorMatch3.intro.signal.skills": "Kónlikpeler",
   "majorMatch3.intro.signal.workStyle": "Jumıs usılı",
@@ -3828,5 +3828,13 @@
   "studentUi.error.title": "Sorawdı orınlaw múmkin bolmadı.",
   "studentUi.error.body": "Saqlanǵan maǵlıwmatlarıńız ózgermedi. Qayta urınıp kóriń.",
   "studentUi.error.retry": "Qayta urınıw",
-  "studentUi.loading": "Júklenbekte…"
+  "studentUi.loading": "Júklenbekte…",
+  "studentHub.scholarships.emptyTitle": "Ele saqlanǵan stipendiyalar joq.",
+  "studentHub.scholarships.emptyBody": "Tapsırıp atırǵan stipendiyalarıńızdı múddeti hám sheshimi menen bir orında baqlań.",
+  "studentHub.scholarships.add": "Stipendiya qosıw",
+  "studentHub.documents.add": "Hújjet qosıw",
+  "studentHub.documents.dropHint": "yamasa fayldı usı jerge súyreń",
+  "studentHub.documents.dropTitle": "Fayldı qosıw ushın jiberiń",
+  "studentHub.documents.dropTypes": "PDF, Word yamasa súwret faylları",
+  "studentHub.documents.dropUnsupported": "PDF, Word yamasa súwret faylın paydalanıń."
 }

@@ -3231,7 +3231,7 @@
   "majorMatch3.intro.partQuestionCount": "{{count}} questions",
   "majorMatch3.intro.publicSubtitle": "Answer {{total}} questions about your academics, interests and preferences. You get your best-fit majors free, no account needed to start.",
   "majorMatch3.intro.publicTitle": "Which major actually fits you?",
-  "majorMatch3.intro.questionCount": "{{total}} questions",
+  "majorMatch3.intro.questionCount": "{{total}} ta savol",
   "majorMatch3.intro.signal.interests": "Qiziqishlar",
   "majorMatch3.intro.signal.skills": "Ko‘nikmalar",
   "majorMatch3.intro.signal.workStyle": "Ish uslubi",
@@ -3828,5 +3828,13 @@
   "studentUi.error.title": "So‘rovni bajarib bo‘lmadi.",
   "studentUi.error.body": "Saqlangan ma’lumotlaringiz o‘zgarmadi. Qayta urinib ko‘ring.",
   "studentUi.error.retry": "Qayta urinish",
-  "studentUi.loading": "Yuklanmoqda…"
+  "studentUi.loading": "Yuklanmoqda…",
+  "studentHub.scholarships.emptyTitle": "Hali saqlangan stipendiyalar yo‘q.",
+  "studentHub.scholarships.emptyBody": "Topshirayotgan stipendiyalaringizni muddati va qarori bilan bir joyda kuzating.",
+  "studentHub.scholarships.add": "Stipendiya qo‘shish",
+  "studentHub.documents.add": "Hujjat qo‘shish",
+  "studentHub.documents.dropHint": "yoki faylni shu yerga torting",
+  "studentHub.documents.dropTitle": "Faylni qo‘shish uchun qo‘yib yuboring",
+  "studentHub.documents.dropTypes": "PDF, Word yoki rasm fayllari",
+  "studentHub.documents.dropUnsupported": "PDF, Word yoki rasm faylidan foydalaning."
 }

@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Button, DatePicker, Form, Input, InputNumber, Modal, Select, message } from 'antd';
 import dayjs from 'dayjs';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Award, Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { EmptyState } from 'src/components/student-hub/ui/EmptyState';
 import { useDeleteScholarshipApplicationMutation, useGetScholarshipApplicationsQuery, useUpdateScholarshipApplicationMutation } from 'src/app/services/student-hub/applicationTrackingApi';
 import type { ScholarshipApplication } from 'src/app/services/student-hub/types';
 import { ApplicantPage, Breadcrumb, CollegeListTabs, QueryState, displayDate } from './ApplicantPage';
@@ -11,6 +13,7 @@ const statuses = ['researching', 'eligible', 'applying', 'submitted', 'under_rev
 const label = (value: string) => value.replaceAll('_', ' ').replace(/^./, c => c.toUpperCase());
 
 export default function ScholarshipManagement() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const query = useGetScholarshipApplicationsQuery({ page: 1, limit: 100 }, { pollingInterval: 10000 });
   const [editing, setEditing] = useState<ScholarshipApplication>();
@@ -37,7 +40,15 @@ export default function ScholarshipManagement() {
     <Breadcrumb><Link to="/student-hub/applications">College List</Link><span>/</span>Scholarships</Breadcrumb>
     <CollegeListTabs current="scholarships" />
     <QueryState loading={query.isLoading} error={query.isError} retry={query.refetch}>
-      {!query.data?.data.length ? <p>No scholarships saved yet.</p> : query.data.data.map(scholarship => <section key={scholarship.id} className="applicant-panel" aria-label={scholarship.scholarshipName}>
+      {!query.data?.data.length ? <EmptyState
+        panel
+        fill
+        level={2}
+        icon={Award}
+        title={t('studentHub.scholarships.emptyTitle', 'No scholarships saved yet.')}
+        description={t('studentHub.scholarships.emptyBody', 'Track the funding you apply for, with its deadline and decision, in one place.')}
+        actions={<Button type="primary" icon={<Plus size={16} />} onClick={() => navigate('/student-hub/applications/scholarships/new')}>{t('studentHub.scholarships.add', 'Add scholarship')}</Button>}
+      /> : query.data.data.map(scholarship => <section key={scholarship.id} className="applicant-panel" aria-label={scholarship.scholarshipName}>
         <h2>{scholarship.scholarshipName || 'Scholarship'}</h2>
         <p>{scholarship.organization} · {label(scholarship.status)}</p>
         <p>Deadline: {displayDate(scholarship.applicationDeadline)}</p>

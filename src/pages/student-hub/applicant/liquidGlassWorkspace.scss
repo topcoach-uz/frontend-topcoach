@@ -182,6 +182,119 @@
   .mm3-motion-intro__button {
     @include lg.lg-tint;
   }
+
+  // Start screen, left column (Apple-style): the copy sits in the optical
+  // centre of the hero instead of hugging the top; a blush glass eyebrow names
+  // the tool; the headline is tight and heavy; the action row pairs a pill CTA
+  // with two glass fact chips instead of a ruled line of small caps.
+  .mm3-motion-intro__copy {
+    justify-content: center;
+    gap: 0;
+    padding: 56px 24px 56px 56px;
+  }
+  .mm3-motion-intro__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 22px;
+    padding: 6px 12px 6px 10px;
+    border-radius: var(--tc-radius-pill);
+    @include lg.lg-blush;
+    color: var(--tc-brand);
+    font-size: var(--tc-text-micro);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .mm3-motion-intro__title {
+    max-width: 12ch;
+    margin: 0 0 16px;
+    color: var(--tc-ink);
+    font-size: clamp(36px, 3.6vw, 54px);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+  .mm3-motion-intro__subtitle {
+    max-width: 36ch;
+    color: var(--tc-muted);
+    font-size: var(--tc-text-body-lg);
+    line-height: 1.55;
+  }
+  .mm3-motion-intro__action {
+    justify-content: flex-start;
+    gap: 12px 14px;
+    width: auto;
+    margin-top: 36px;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .mm3-motion-intro__button {
+    min-height: 54px;
+    padding: 0 26px 0 28px;
+    border-radius: var(--tc-radius-pill);
+    font-size: var(--tc-text-body-lg);
+    transition:
+      background-color var(--tc-dur-2) var(--tc-ease-fade),
+      box-shadow var(--tc-dur-2) var(--tc-ease-fade),
+      transform var(--tc-dur-1) var(--tc-ease);
+
+    svg { transition: transform var(--tc-dur-2) var(--tc-ease); }
+    &:hover { transform: none; }
+    @media (hover: hover) {
+      &:hover svg { transform: translateX(3px); }
+    }
+    &:active { transform: scale(0.97); }
+  }
+  .mm3-motion-intro__scope {
+    gap: 8px;
+    color: var(--tc-muted);
+    font-size: var(--tc-text-small);
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 36px;
+      padding: 0 14px;
+      border-radius: var(--tc-radius-pill);
+      @include lg.lg-thin;
+    }
+    span + span::before { content: none; }
+    svg { color: var(--tc-brand); }
+  }
+  // "I already know what I want to study": a quiet glass pill, not a bare link.
+  .mm3-motion-intro__direct {
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: var(--tc-radius-pill);
+    @include lg.lg-thin;
+    color: var(--tc-brand);
+    font-size: var(--tc-text-body-sm);
+    font-weight: 600;
+    transition: background-color var(--tc-dur-2) var(--tc-ease-fade), transform var(--tc-dur-1) var(--tc-ease);
+
+    svg { transition: transform var(--tc-dur-2) var(--tc-ease); }
+    &:hover { text-decoration: none; }
+    @media (hover: hover) {
+      &:hover { background: rgba(255, 255, 255, 0.82); }
+      &:hover svg { transform: translateX(3px); }
+    }
+    &:active { transform: scale(0.97); }
+  }
+  @media (max-width: 900px) {
+    .mm3-motion-intro__copy { padding: 36px 24px 28px; }
+    .mm3-motion-intro__title { max-width: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mm3-motion-intro__button,
+    .mm3-motion-intro__button svg,
+    .mm3-motion-intro__direct,
+    .mm3-motion-intro__direct svg { transition: none; }
+  }
   .mm2__intro .majormatch__upsell {
     @include lg.lg-inset;
     border-radius: var(--tc-radius-xl);

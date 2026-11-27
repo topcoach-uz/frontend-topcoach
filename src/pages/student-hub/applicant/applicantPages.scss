@@ -2937,3 +2937,171 @@ form.applicant-glass-search {
     }
   }
 }
+
+// ---------- Find universities: glass filters and the College List action ----------
+// Same material as the search bar above them: frosted white glass, a bright
+// top rim, soft depth. A chosen filter tints blush so the active state reads
+// at a glance; the chevron sits in its own small well, like an iOS menu.
+.applicant-find-filters {
+  gap: 10px;
+  margin-top: 0;
+}
+.applicant-find-filter {
+  position: relative;
+  min-height: 62px;
+  padding: 9px 52px 9px 18px;
+  border: 0;
+  border-radius: var(--tc-radius-lg);
+  @include lg.lg-thin;
+  cursor: pointer;
+  transition:
+    background-color var(--tc-dur-2) var(--tc-ease-fade),
+    box-shadow var(--tc-dur-2) var(--tc-ease-fade),
+    transform var(--tc-dur-1) var(--tc-ease);
+
+  > span {
+    color: var(--tc-subtle);
+    font-size: var(--tc-text-micro);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .ant-select { min-height: 24px; }
+  .ant-select-selector { font-size: var(--tc-text-body); font-weight: 500; }
+  .ant-select-selection-item,
+  .ant-select-selection-placeholder { line-height: 24px !important; color: var(--tc-ink); }
+  // Chevron in a round well on the right edge of the field.
+  .ant-select-arrow {
+    position: absolute;
+    top: 50%;
+    right: -38px;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    margin-top: -15px;
+    border-radius: 50%;
+    background: rgba(118, 107, 99, 0.08);
+    color: var(--tc-muted);
+    transition: transform var(--tc-dur-2) var(--tc-ease), background-color var(--tc-dur-2) var(--tc-ease-fade);
+  }
+  .ant-select-open .ant-select-arrow { transform: rotate(180deg); }
+  .ant-select-clear { right: -38px; width: 30px; height: 30px; margin-top: -15px; display: grid; place-items: center; border-radius: 50%; background: var(--tc-surface); }
+
+  @media (hover: hover) {
+    &:hover:not(.applicant-find-filter--disabled) {
+      background: rgba(255, 255, 255, 0.78);
+      .ant-select-arrow { background: rgba(118, 107, 99, 0.14); }
+    }
+  }
+  &:active:not(.applicant-find-filter--disabled) { transform: scale(0.99); }
+  &:focus-within { box-shadow: var(--tc-focus-ring), 0 10px 24px -18px rgba(48, 43, 40, 0.3); }
+}
+.applicant-find-filter--active {
+  background: rgba(247, 230, 228, 0.72);
+  > span { color: var(--tc-brand); }
+  .ant-select-selection-item { color: var(--tc-brand); }
+  .ant-select-arrow { background: rgba(139, 0, 0, 0.1); color: var(--tc-brand); }
+}
+.applicant-find-filter--disabled {
+  cursor: not-allowed;
+  .ant-select-disabled .ant-select-selection-item { color: var(--tc-muted) !important; }
+  .ant-select-arrow { opacity: 0.5; }
+}
+
+// The College List action: centred under the results, a white glass pill.
+.applicant-find-open-list {
+  align-self: center;
+  gap: 10px;
+  min-height: 52px;
+  margin-top: 4px;
+  padding: 0 26px;
+  border-radius: var(--tc-radius-pill);
+  @include lg.lg-thin;
+  color: var(--tc-brand) !important;
+  font-weight: 600;
+  transition:
+    background-color var(--tc-dur-2) var(--tc-ease-fade),
+    box-shadow var(--tc-dur-2) var(--tc-ease-fade),
+    transform var(--tc-dur-1) var(--tc-ease);
+
+  svg { transition: transform var(--tc-dur-2) var(--tc-ease); }
+  @media (hover: hover) {
+    &:hover {
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1), 0 12px 26px -16px rgba(139, 0, 0, 0.35);
+      svg { transform: translateX(3px); }
+    }
+  }
+  &:active { transform: scale(0.97); }
+  &:focus-visible { outline: 2px solid var(--tc-brand); outline-offset: 3px; }
+}
+@media (max-width: 650px) {
+  .applicant-find-filter { min-height: 60px; }
+  .applicant-find-open-list { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .applicant-find-filter,
+  .applicant-find-filter .ant-select-arrow,
+  .applicant-find-open-list,
+  .applicant-find-open-list svg { transition: none; }
+}
+
+// Empty states that fill the page (EmptyState `fill`): content sits in the
+// optical centre of the card, which grows to the bottom of the window.
+.applicant-shell .applicant-empty--fill {
+  justify-content: center;
+  padding-bottom: 64px;
+}
+
+// ---------- Documents: glass search, drop zone ----------
+.applicant-shell form.applicant-document-search-bar {
+  width: 100%;
+}
+// The whole documents area takes a dropped file. While a file is dragged over
+// it, a blush glass sheet with a dashed rim says what will happen.
+.applicant-dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.applicant-dropzone__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: var(--tc-z-sticky);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 2px dashed rgba(139, 0, 0, 0.35);
+  border-radius: var(--tc-radius-xl);
+  @include lg.lg-blush;
+  color: var(--tc-brand);
+  pointer-events: none;
+  animation: applicant-drop-in var(--tc-dur-2) var(--tc-ease) both;
+
+  > svg { margin-bottom: 4px; }
+  strong { font-size: var(--tc-text-h3); font-weight: 600; }
+  span { color: var(--tc-muted); font-size: var(--tc-text-small); }
+}
+@keyframes applicant-drop-in {
+  from { opacity: 0; transform: scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+.applicant-shell .applicant-empty .applicant-dropzone__hint {
+  margin-top: 12px;
+  color: var(--tc-subtle);
+  font-size: var(--tc-text-small);
+}
+@media (prefers-reduced-motion: reduce) {
+  .applicant-dropzone__overlay { animation: none; }
+}
+.applicant-empty-fill {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  > .applicant-empty--fill { flex: 1 1 auto; }
+}

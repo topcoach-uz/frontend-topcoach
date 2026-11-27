@@ -76,6 +76,11 @@ try {
     await evaluate(`(() => { const e = ${JSON.stringify(entries)}; for (const [k, v] of Object.entries(e)) localStorage.setItem(k, v); return Object.keys(e).length; })()`);
   }
 
+  // --init <file.js>: a script run in the page before its own code (e.g. to stub
+  // a request and preview a state the signed-in account isn't in).
+  const initFile = opt('init');
+  if (initFile) await send('Page.addScriptToEvaluateOnNewDocument', { source: fs.readFileSync(initFile, 'utf8') });
+
   await send('Page.navigate', { url });
   for (let i = 0; i < 60; i++) { if ((await evaluate('document.readyState')) === 'complete') break; await sleep(250); }
   await evaluate('document.fonts ? document.fonts.ready.then(() => true) : true');

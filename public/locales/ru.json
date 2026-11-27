@@ -3231,7 +3231,7 @@
   "majorMatch3.intro.partQuestionCount": "{{count}} questions",
   "majorMatch3.intro.publicSubtitle": "Answer {{total}} questions about your academics, interests and preferences. You get your best-fit majors free, no account needed to start.",
   "majorMatch3.intro.publicTitle": "Which major actually fits you?",
-  "majorMatch3.intro.questionCount": "{{total}} questions",
+  "majorMatch3.intro.questionCount": "{{total}} вопросов",
   "majorMatch3.intro.signal.interests": "Интересы",
   "majorMatch3.intro.signal.skills": "Навыки",
   "majorMatch3.intro.signal.workStyle": "Стиль работы",
@@ -3828,5 +3828,13 @@
   "studentUi.error.title": "Не удалось выполнить запрос.",
   "studentUi.error.body": "Сохранённые данные не изменились. Попробуйте ещё раз.",
   "studentUi.error.retry": "Повторить",
-  "studentUi.loading": "Загрузка…"
+  "studentUi.loading": "Загрузка…",
+  "studentHub.scholarships.emptyTitle": "Сохранённых стипендий пока нет.",
+  "studentHub.scholarships.emptyBody": "Отслеживайте стипендии, на которые подаёте, вместе с дедлайнами и решениями — в одном месте.",
+  "studentHub.scholarships.add": "Добавить стипендию",
+  "studentHub.documents.add": "Добавить документ",
+  "studentHub.documents.dropHint": "или перетащите файл сюда",
+  "studentHub.documents.dropTitle": "Отпустите, чтобы добавить файл",
+  "studentHub.documents.dropTypes": "PDF, Word или изображения",
+  "studentHub.documents.dropUnsupported": "Загрузите файл PDF, Word или изображение."
 }
