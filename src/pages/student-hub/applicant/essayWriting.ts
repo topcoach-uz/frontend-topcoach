@@ -84,3 +84,12 @@ export function ideasForEssay(type: EssayTypeKey, prompt?: string): string[] {
       ];
   }
 }
+
+export const ESSAY_TITLE_EXAMPLES = ["A moment that changed my mind…", "The summer I learned to…", "Why I keep asking questions…", "What my family taught me…"];
+
+/** Placeholder hint for the title field: the first few words of the essay prompt, else empty. */
+export function essayTitleHint(prompt?: string | null): string {
+  const words = (prompt ?? "").trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return "";
+  return words.slice(0, 6).join(" ") + (words.length > 6 ? "…" : "");
+}

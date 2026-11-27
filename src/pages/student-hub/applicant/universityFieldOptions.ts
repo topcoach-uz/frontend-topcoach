@@ -114,3 +114,18 @@ export function buildUniversityFieldOptions(majors: UniversityMajor[]) {
     .sort((a, b) => a.localeCompare(b))
     .map((name) => ({ value: name, label: name }));
 }
+
+/**
+ * Finds the catalogue option that best matches a free-text major name (for example an AI Major Match
+ * result). Exact subject key first, then the closest option that contains or is contained by it.
+ * Returns undefined when nothing plausible exists, so callers can open Find universities unfiltered.
+ */
+export function matchSubjectOption<T extends { value: string }>(options: T[], majorName: string, degree: SubjectDegreeType = "undergraduate"): T | undefined {
+  const key = subjectKey(majorName, degree);
+  if (!key) return undefined;
+  const exact = options.find((option) => option.value === key);
+  if (exact) return exact;
+  const padded = ` ${key} `;
+  const related = options.filter((option) => option.value.length > 2 && (` ${option.value} `.includes(padded) || padded.includes(` ${option.value} `)));
+  return related.sort((a, b) => Math.abs(a.value.length - key.length) - Math.abs(b.value.length - key.length))[0];
+}

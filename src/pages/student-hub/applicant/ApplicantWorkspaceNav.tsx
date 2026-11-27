@@ -271,7 +271,6 @@ function useNavSections() {
     {
       key: 'settings',
       bottom: true,
-      phoneHidden: true,
       label: t('accountNav.settings', 'Account settings'),
       railLabel: t('applicant.nav.settings', 'Settings'),
       subtitle: t('applicant.nav.settingsSubtitle', 'Profile and preferences'),
@@ -495,9 +494,27 @@ export function ApplicantSectionTabs() {
         .filter((link) => (seen.has(link.to) ? false : (seen.add(link.to), true)));
   const activeKey = links.find((link) => link.active)?.key;
 
+  // Keep the active chip in view by scrolling only the row (scrollIntoView also
+  // scrolled the page, and centring it cut the first chip in half).
   useEffect(() => {
-    const target = listRef.current?.querySelector<HTMLElement>('.is-active');
-    target?.scrollIntoView?.({ block: 'nearest', inline: 'center' });
+    const list = listRef.current;
+    if (!list) return;
+    let cancelled = false;
+    const reveal = () => {
+      const target = list.querySelector<HTMLElement>('.is-active');
+      if (cancelled || !target) return;
+      const pad = parseFloat(getComputedStyle(list).paddingLeft) || 0;
+      const box = list.getBoundingClientRect();
+      const chip = target.getBoundingClientRect();
+      if (chip.left < box.left + pad) list.scrollLeft -= box.left + pad - chip.left;
+      else if (chip.right > box.right - pad) list.scrollLeft += chip.right - (box.right - pad);
+    };
+    reveal();
+    // Chip widths change once the web font arrives; measure again then.
+    document.fonts?.ready.then(reveal);
+    return () => {
+      cancelled = true;
+    };
   }, [active.key, activeKey]);
 
   if (links.length < 2) return null;
