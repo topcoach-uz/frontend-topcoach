@@ -1,5 +1,6 @@
-import { lessonMinutes, lessonOutcome } from './fullSupportLessons';
 import { useMemo } from 'react';
+import { isAccessDenied } from './programCapabilities';
+import { importedSessionInfo } from './importedSession';
 import { SessionTypeEnum, type SessionsSchema } from 'src/app/api/Api';
 import {
   useGetMentorSessionsQuery,
@@ -19,6 +20,7 @@ export type SessionReport = {
 export type MentorBooking = {
   id: string;
   source: 'platform' | 'full-support' | 'course-class';
+  program?: string | null;
   dateTime: string;
   durationLabel: string;
   durationMinutes: number;
@@ -60,7 +62,10 @@ function durationFromSessionType(type: SessionTypeEnum | string | undefined): {
 }
 
 export function parseFullSupportDuration(raw: string | undefined | null): number {
-  return lessonMinutes(raw);
+  // Full Support stores planned duration in hours (e.g. "1", "1h", "0.5").
+  const text = String(raw ?? '').trim();
+  const hours = Number.parseFloat(text) / (/m$/i.test(text) ? 60 : 1);
+  return Number.isFinite(hours) && hours > 0 ? Math.round(hours * 60) : 60;
 }
 
 export function normalizePlatformBooking(s: SessionsSchema): MentorBooking {
@@ -110,10 +115,13 @@ export function normalizeFullSupportSession(
   studentName: string | null,
 ): MentorBooking {
   const minutes = parseFullSupportDuration(s.duration);
+  const imported = importedSessionInfo(s);
+  const unknownDuration = imported && !Number.isFinite(Number.parseFloat(s.duration));
   const now = Date.now();
 
   let status: MentorBooking['status'];
-  if (s.outcome === 'cancelled' || s.outcome === 'rescheduled') status = 'cancelled';
+  if (imported?.sourceStatus === 'scheduled' || imported?.sourceStatus === 'rescheduled' || imported?.sourceStatus === 'missed_unspecified') status = 'cancelled';
+  else if (s.outcome === 'cancelled' || s.outcome === 'rescheduled') status = 'cancelled';
   else if (s.done || ['held', 'student_no_show', 'mentor_no_show'].includes(s.outcome)) status = 'completed';
   else if (new Date(s.dateTime).getTime() + minutes * 60_000 <= now) status = 'report-due';
   else status = 'upcoming';
@@ -121,10 +129,11 @@ export function normalizeFullSupportSession(
   return {
     id: `fs:${s.id}`,
     source: 'full-support',
+    program: s.program ?? null,
     dateTime: s.dateTime,
-    durationLabel: `${minutes} min`,
-    durationMinutes: minutes,
-    description: s.description || null,
+    durationLabel: unknownDuration ? 'Duration not recorded' : `${minutes} min`,
+    durationMinutes: unknownDuration ? 0 : minutes,
+    description: imported ? (s.description || '').replace(/^\[Imported source report;[^\]]+\]\s*/, '') : s.description || null,
     studentUserId: s.studentUserId ?? null,
     studentName,
     status,
@@ -212,15 +221,24 @@ export function useMentorBookings(
 ) {
   const includeFs = options?.includeFullSupport ?? true;
   const {
-    data: platformRes,
+    currentData: platformData,
+    error: platformReadError,
     isLoading: loadingPlatform,
     isError: platformError,
   } = useGetMySessionsQuery();
   const {
-    data: fullSupportRes,
+    currentData: fullSupportData,
+    error: programReadError,
     isLoading: loadingFs,
     isError: fsError,
-  } = useGetMentorSessionsQuery(studentFilterId ?? null, { skip: !includeFs });
+  } = useGetMentorSessionsQuery(studentFilterId ?? null, {
+    skip: !includeFs,
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+    pollingInterval: 30000,
+  });
+  const platformRes = isAccessDenied(platformReadError) ? undefined : platformData;
+  const fullSupportRes = !includeFs || isAccessDenied(programReadError) ? undefined : fullSupportData;
 
   const rosterNameByStudentId = useMemo(() => {
     const map = new Map<string, string>();
@@ -239,7 +257,7 @@ export function useMentorBookings(
       (Array.isArray(platformRes) ? (platformRes as SessionsSchema[]) : [])) as SessionsSchema[];
 
     const platform = platformRaw.filter((session) => session.participants?.length).map(normalizePlatformBooking);
-    const fs = (fullSupportRes?.data ?? []).map((s) =>
+    const fs = (fullSupportRes?.data ?? []).filter(s => !studentFilterId || s.studentUserId === studentFilterId).map((s) =>
       normalizeFullSupportSession(
         s as SessionLogDto & { studentUserId?: string },
         rosterNameByStudentId.get(
@@ -250,7 +268,7 @@ export function useMentorBookings(
     return [...platform, ...fs].sort(
       (a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime(),
     );
-  }, [platformRes, fullSupportRes?.data, rosterNameByStudentId]);
+  }, [platformRes, fullSupportRes?.data, rosterNameByStudentId, studentFilterId]);
 
   return {
     bookings,

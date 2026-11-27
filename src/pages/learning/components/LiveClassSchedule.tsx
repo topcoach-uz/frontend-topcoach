@@ -1,3 +1,4 @@
+import { SessionRecording } from 'src/components/session-recording/SessionRecording';
 import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { ACCESS_TOKEN } from 'src/constants/storage';
@@ -27,6 +28,7 @@ export default function LiveClassSchedule({ lessonId }: { lessonId: string }) {
       <strong>{dayjs(liveClass.startsAt).format('DD MMM YYYY, HH:mm')}</strong> · {liveClass.durationMinutes} min · {liveClass.status}
       {liveClass.status !== 'cancelled' && liveClass.meetingUrl && <div><a href={liveClass.meetingUrl} target="_blank" rel="noreferrer">Open meeting room ↗</a></div>}
       {liveClass.status === 'held' && <div>Attendance: {liveClass.attendance ?? 'Not recorded yet'}</div>}
+      <SessionRecording source="course-class" sessionId={liveClass.id} />
       {liveClass.summary && <p style={{ margin: '8px 0 0' }}>{liveClass.summary}</p>}
     </div>)}
   </div>;

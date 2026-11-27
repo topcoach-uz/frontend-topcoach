@@ -73,7 +73,7 @@ export default function MentorConsoleLayout() {
     return () => window.removeEventListener('keydown', onKey);
   }, [isMobileConsole, mobileMenuOpen]);
 
-  const { displayName, avatarUrl, managementRole, isMentor, hasFullSupport } =
+  const { displayName, avatarUrl, managementRole, isMentor, hasProgramLessons } =
     useMentorConsole();
 
   // Sidebar badges — Schedule shows pending reports, Students shows how many
@@ -82,13 +82,13 @@ export default function MentorConsoleLayout() {
   //
   // Fired unconditionally for mentors: the backend scopes each endpoint to the
   // requesting mentor and returns empty arrays for mentors without Full Support
-  // assignments. `hasFullSupport` is kept for rendering decisions only.
+  // assignments. `hasProgramLessons` is kept for rendering decisions only.
   const { data: tasksRes } = useGetMentorTasksQuery(undefined, { skip: !isMentor, pollingInterval: 10000 });
   const { bookings } = useMentorBookings(null, { includeFullSupport: isMentor });
 
   const relevantBookings = useMemo(
-    () => (hasFullSupport ? bookings : bookings.filter((b) => b.source === 'platform')),
-    [bookings, hasFullSupport],
+    () => (hasProgramLessons ? bookings : bookings.filter((b) => b.source === 'platform')),
+    [bookings, hasProgramLessons],
   );
 
   const reportDueCount = useMemo(

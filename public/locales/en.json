@@ -1,4 +1,11 @@
 {
+  "studentHub.orgMembership.settingsTitle": "School & counselors",
+  "studentHub.orgMembership.loading": "Loading school details…",
+  "studentHub.orgMembership.empty": "You are not connected to a school or organization.",
+  "applicant.nav.applicationCount_other": "{{count}} applications",
+  "applicant.nav.applicationCount_one": "{{count}} application",
+  "applicant.nav.applicationsTitle": "Applications",
+  "applicant.applicationList": "My applications",
   "studentHub.hub.ieltsTestPrep": "IELTS prep",
   "applicant.ieltsTestPrep": "IELTS prep",
   "onboarding.info.searchOrEnter": "Search or enter your own",

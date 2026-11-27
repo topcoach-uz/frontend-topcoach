@@ -1,24 +1,7 @@
-/**
- * Org Membership (sidebar)
- *
- * Shown under the profile card in the student hub sidebar, so a student who
- * belongs to an organization sees it on every page of the hub rather than on
- * one screen they may never open.
- *
- * This replaces the placement in the legacy `Dashboard.tsx`, which stopped
- * rendering when the hub moved to the editorial layout: `<Dashboard />` was
- * swapped for `<MyProgressEditorialView />` and nothing imports it any more,
- * so `OrgMembershipCard` became unreachable. The endpoint and the data were
- * fine the whole time; only the mount point was gone.
- *
- * Unlike the old card this one does NOT stay silent on error. Silence made a
- * failed request indistinguishable from "no organization", which is exactly
- * how the previous placement went unnoticed. A student who IS in an org should
- * not be told nothing because a request failed.
- */
-
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { SCHOOL_SETTINGS_PATH } from 'src/lib/accountNavigation';
 import { Building2, Eye } from 'lucide-react';
 import { useGetMyOrgMembershipQuery } from '../../../app/services/student-hub/orgMembershipApi';
 import './OrgMembershipSidebar.scss';
@@ -26,6 +9,8 @@ import './OrgMembershipSidebar.scss';
 interface OrgMembershipSidebarProps {
   /** When true, do not fetch or render (read-only / staff preview). */
   skip?: boolean;
+  /** Full membership information lives in Settings. */
+  details?: boolean;
 }
 
 /** "Springfield High School" -> "SH" */
@@ -51,6 +36,7 @@ const joinedLabel = (joinedAt: string | null): string | null => {
 
 const OrgMembershipSidebar: React.FC<OrgMembershipSidebarProps> = ({
   skip,
+  details = false,
 }) => {
   const { t } = useTranslation();
   const {
@@ -59,11 +45,15 @@ const OrgMembershipSidebar: React.FC<OrgMembershipSidebarProps> = ({
     isError,
   } = useGetMyOrgMembershipQuery(undefined, { skip: !!skip });
 
-  if (skip || isLoading) return null;
+  if (skip) return null;
+  if (isLoading) return details ? <p role="status">{t('studentHub.orgMembership.loading', 'Loading school details…')}</p> : null;
 
   // A student with no organization is the common case and gets nothing. An
   // error is different: we do not know whether they have one, so say that
   // rather than implying they have none.
+  if (isError && !details) {
+    return <Link className="org-school-link" to={SCHOOL_SETTINGS_PATH}><Building2 size={16} aria-hidden="true" /><span>{t('studentHub.orgMembership.settingsTitle', 'School & counselors')}</span></Link>;
+  }
   if (isError) {
     return (
       <div className="org-side org-side--error">
@@ -78,10 +68,21 @@ const OrgMembershipSidebar: React.FC<OrgMembershipSidebarProps> = ({
   }
 
   const rows = (memberships ?? []).filter((m) => !!m.organization);
-  if (!rows.length) return null;
+  if (!rows.length) return details ? <p>{t('studentHub.orgMembership.empty', 'You are not connected to a school or organization.')}</p> : null;
+
+  if (!details) return (
+    <div className="org-school-footer">
+      {rows.map(({ organization: org }) => (
+        <Link key={org.id} className="org-school-link" to={SCHOOL_SETTINGS_PATH} title={org.name}>
+          <Building2 size={16} aria-hidden="true" />
+          <span>{org.name}</span>
+        </Link>
+      ))}
+    </div>
+  );
 
   return (
-    <div className="org-side">
+    <div className="org-side org-side--settings">
       {rows.map(({ organization: org, joinedAt }) => {
         const joined = joinedLabel(joinedAt);
         return (

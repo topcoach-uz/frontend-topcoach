@@ -1,3 +1,4 @@
+import { SessionRecording } from "src/components/session-recording/SessionRecording";
 import { FullSupportPaymentGate } from './FullSupportPaymentGate';
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
@@ -289,7 +290,7 @@ export function FullSupportOverview({
                     {lessonLabel(s, now)}
                   </span>
                 </summary>
-                <div className="fs-overview__lesson-detail">
+                <div className="fs-overview__lesson-detail"><SessionRecording source="full-support" sessionId={s.id} />
                   <p>
                     {plannedMinutes(s.duration)}m planned
                     {s.actualDurationMinutes !== null &&

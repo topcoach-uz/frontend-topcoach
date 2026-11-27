@@ -1,6 +1,7 @@
 @import './normalize.scss';
 @import './variables.scss';
 @import './help.scss';
+@import './antd-inputs.scss';
 /* Fonts are preloaded asynchronously in index.html with preconnect + async
    stylesheet links, which lets the rest of CSS parse without waiting for
    the Google Fonts roundtrip. `display=swap` there means text paints in

@@ -7,6 +7,7 @@ import { useTypedSelector } from 'src/app/store';
 import useOrgStaff from 'src/hooks/useOrgStaff';
 import { MentorConsoleProvider, type MentorConsoleUser } from './MentorConsoleContext';
 import { cleanName } from './utils';
+import { isAccessDenied, rosterHasTool } from './programCapabilities';
 
 function pickAvatarUrl(
   media: Array<{ tags?: string[] | null; url?: string; createdAt?: string }> | undefined,
@@ -36,12 +37,16 @@ export default function MentorConsoleGate() {
     ?.managementRole;
   const isMentor = profileRole === 'Mentor';
 
-  // Detect Full Support participation by checking the mentor roster. Non-mentors
+  // Detect program lesson capability through the mentor roster. Non-mentors
   // (e.g. SuperAdmin previewing) skip this fetch.
-  const { data: rosterRes } = useGetMentorRosterQuery(undefined, {
+  const { currentData: rosterRes, error: rosterError } = useGetMentorRosterQuery(undefined, {
     skip: !isAuthenticated || !isMentor,
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+    pollingInterval: 30000,
   });
-  const hasFullSupport = (rosterRes?.data?.length ?? 0) > 0;
+  const roster = isAccessDenied(rosterError) ? [] : rosterRes?.data ?? [];
+  const hasProgramLessons = roster.some(student => rosterHasTool(student, 'lessons'));
 
   // Org owners/counselors belong in the organization console, even when their
   // personal profile role is Mentor (the invite flow makes that common). Note
@@ -77,7 +82,7 @@ export default function MentorConsoleGate() {
     managementRole: managementRole ?? null,
     isMentor,
     isSuperAdmin: managementRole === 'SuperAdmin' || managementRole === 'Owner',
-    hasFullSupport,
+    hasProgramLessons,
   };
 
   return (

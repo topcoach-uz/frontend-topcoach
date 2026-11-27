@@ -84,7 +84,6 @@ export default function ApplicantUniversitiesPage() {
       <UniversityResults universities={universities} rankOffset={(page - 1) * UNIVERSITIES_PER_PAGE} selectedField={majorLabel} savedIds={savedUniversityIds} applicationsLoading={applications.isLoading} applicationsError={applications.isError} />
       {total > perPage && <ResultsPagination page={page} pageCount={Math.ceil(total / perPage)} onChange={setPage} />}
     </QueryState>
-    <Link className="applicant-find-open-list" to="/student-hub/applications">Open College List <ArrowRight size={21} /></Link>
   </ApplicantPage>;
   return <ApplicantPage title={isMasters ? "Explore graduate study options" : "Explore universities"} subtitle={isMasters ? "Search verified graduate programs by program name or university." : "Search the verified TopCoach university catalogue."} actions={<Link to="/student-hub/applications">View your applications →</Link>}>
     <Breadcrumb>{isMasters ? "Graduate study options" : "Explore universities"}</Breadcrumb>

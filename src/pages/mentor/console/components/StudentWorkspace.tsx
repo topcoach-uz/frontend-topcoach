@@ -1,17 +1,32 @@
-import LessonPlanModal from './LessonPlanModal';
-import {useLocation} from 'react-router-dom';
-import SharedApplications from './SharedApplications';
+import { LEGACY_ENROLLMENT, canCreateProgramWork, enrollmentHours, isAccessDenied, matchesEnrollment, programHasTool } from "../programCapabilities";
+import { validateProgramProgress } from "../programProgress";
+import { downloadProgramReport } from "src/app/services/programReports";
+import { mentorProgramLabel } from '../mentorProgramLabel';
+import { useGetSharedMentorApplicationsQuery } from "src/app/services/student-hub/sharedApplicationsApi";
+import { SessionRecording } from "src/components/session-recording/SessionRecording";
+import LessonPlanModal from "./LessonPlanModal";
+import { useLocation } from "react-router-dom";
+import SharedApplications from "./SharedApplications";
 import { useGetMentorEssayReviewsQuery } from "src/app/services/student-hub/essayReviewApi";
-import { calendarDateValue } from '../calendarDate';
+import { calendarDateValue } from "../calendarDate";
 import ApplicationRequirements from "src/pages/student-hub/applicant/ApplicationRequirements";
-import { useUpdateMentorApplicationRequirementsMutation } from 'src/app/services/student-hub/applicationTrackingApi';
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useUpdateMentorApplicationRequirementsMutation } from "src/app/services/student-hub/applicationTrackingApi";
 import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  Alert,
   Button,
   Checkbox,
   DatePicker,
   Form,
   Input,
+  InputNumber,
   Modal,
   Popconfirm,
   Progress,
@@ -24,9 +39,9 @@ import {
   Tabs,
   Typography,
   message,
-} from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import dayjs, { type Dayjs } from 'dayjs';
+} from "antd";
+import type { ColumnsType } from "antd/es/table";
+import dayjs, { type Dayjs } from "dayjs";
 import {
   AlertCircle,
   Calendar,
@@ -41,7 +56,7 @@ import {
   Plus,
   RotateCcw,
   X,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   useCreateMentorMilestoneMutation,
   useCreateMentorPipelineRowMutation,
@@ -60,29 +75,48 @@ import {
   type MilestoneDto,
   type PipelineDto,
   type TaskDto,
-} from 'src/app/services/fullSupportApi';
-import { useGetGraderInboxQuery, type ResearchSubmission } from 'src/app/services/research-prep';
-import { useFindOrCreateConversationMutation } from 'src/app/services/chat/chatApi';
-import MessageList from 'src/components/chat/MessageList';
-import ChatInput from 'src/components/chat/ChatInput';
-import SubmissionDrawer from '../../research-grading/SubmissionDrawer';
-import { useMentorBookings } from '../sessionSources';
-import { bookingDisplay, groupStudentSessions } from '../sessionDisplay';
-import { useSessionActions } from './sessions/useSessionActions';
-import { EssayReviewList } from './reviews/EssayReviewList';
-import { DocumentReviewList } from './reviews/DocumentReviewList';
-import { useReviewCounts } from './reviews/reviewCounts';
-import { useMentorConsole } from '../MentorConsoleContext';
-import { McPill, type McPillVariant } from './McPill';
-import { McStat } from './McStat';
-import { avatarStyleForId, formatDate, formatDateTime, initialsFromName } from '../utils';
-import { programNames, roleNames } from 'src/pages/student-hub/my-programs/programModel';
-import type { ProgramKey } from 'src/app/services/studentProgramsApi';
-import type { MentorRosterProgram } from 'src/app/services/fullSupportApi';
-import { canUseResearchPrepLive } from 'src/lib/researchPrepAccess';
-import { deadlineDay, isTaskOverdue, pendingExtension } from 'src/lib/taskDeadline';
-import { hostName } from 'src/app/services/api/const';
-import './StudentWorkspace.scss';
+} from "src/app/services/fullSupportApi";
+import {
+  useGetGraderInboxQuery,
+  type ResearchSubmission,
+} from "src/app/services/research-prep";
+import { useFindOrCreateConversationMutation } from "src/app/services/chat/chatApi";
+import MessageList from "src/components/chat/MessageList";
+import ChatInput from "src/components/chat/ChatInput";
+import SubmissionDrawer from "../../research-grading/SubmissionDrawer";
+import { useMentorBookings } from "../sessionSources";
+import { bookingDisplay, groupStudentSessions } from "../sessionDisplay";
+import { useSessionActions } from "./sessions/useSessionActions";
+import { EssayReviewList } from "./reviews/EssayReviewList";
+import { DocumentReviewList } from "./reviews/DocumentReviewList";
+import { useReviewCounts } from "./reviews/reviewCounts";
+import { useMentorConsole } from "../MentorConsoleContext";
+import { McPill, type McPillVariant } from "./McPill";
+import { McStat } from "./McStat";
+import {
+  avatarStyleForId,
+  formatDate,
+  formatDateTime,
+  initialsFromName,
+} from "../utils";
+import {
+  programNames,
+  roleNames,
+} from "src/pages/student-hub/my-programs/programModel";
+import { useGetProgramEnrollmentProgressQuery, useSetProgramEnrollmentProgressMutation, type ProgramProgressItem, type ProgramKey } from "src/app/services/studentProgramsApi";
+import type { MentorRosterProgram } from "src/app/services/fullSupportApi";
+import { canUseResearchPrepLive } from "src/lib/researchPrepAccess";
+import {
+  deadlineDay,
+  isTaskOverdue,
+  pendingExtension,
+} from "src/lib/taskDeadline";
+import { hostName } from "src/app/services/api/const";
+import "./StudentWorkspace.scss";
+import MentorReports from "./MentorReports";
+import { rosterHoursLabel } from "../rosterDisplay";
+import { bookingDateLabel } from "../sessionDisplay";
+import { importedSessionInfo } from "../importedSession";
 
 const { Text } = Typography;
 
@@ -94,57 +128,60 @@ export type WorkspaceStudent = {
   allocated: number;
   scheduledHours?: number;
   sessionsCount: number;
-  /** What this mentor is assigned for (Full Support roster students only). */
+  completedSessionsCount?: number;
+  allocationKnown?: boolean;
+  usageKnown?: boolean;
+  /** Programs and roles assigned to this mentor. */
   programs?: MentorRosterProgram[];
+  hasLegacyFullSupport?: boolean;
 };
 
 /** "Admissions · Research" — the eyebrow under which the student's name sits. */
-function assignmentLabel(student: WorkspaceStudent, isFullSupport: boolean): string {
-  if (!isFullSupport) return '1:1 mentoring';
-  const parts = (student.programs ?? []).map((p) => {
-    const program = programNames[p.program as ProgramKey] ?? p.program;
-    const roles = p.roles.map((r) => roleNames[r] ?? r).filter((r) => r !== program);
-    return roles.length ? `${program} · ${roles.join(', ')}` : program;
-  });
-  return parts.length ? parts.join(' / ') : 'Full Support';
+function assignmentLabel(
+  student: WorkspaceStudent,
+  isProgramStudent: boolean,
+): string {
+  return mentorProgramLabel(student, isProgramStudent);
 }
 
-const RG_MC: Record<ResearchSubmission['status'], McPillVariant> = {
-  submitted: 'info',
-  under_review: 'warning',
-  graded: 'success',
-  returned_for_revision: 'warning',
+const RG_MC: Record<ResearchSubmission["status"], McPillVariant> = {
+  submitted: "info",
+  under_review: "warning",
+  graded: "success",
+  returned_for_revision: "warning",
 };
-const RG_LABEL: Record<ResearchSubmission['status'], string> = {
-  submitted: 'Submitted',
-  under_review: 'Under review',
-  graded: 'Graded',
-  returned_for_revision: 'Revision',
+const RG_LABEL: Record<ResearchSubmission["status"], string> = {
+  submitted: "Submitted",
+  under_review: "Under review",
+  graded: "Graded",
+  returned_for_revision: "Revision",
 };
 
-type TaskScope = 'open' | 'awaiting-review' | 'done';
-type MoreView = 'milestones' | 'research' | 'curriculum';
+type TaskScope = "open" | "awaiting-review" | "done";
+type MoreView = "milestones" | "research" | "curriculum";
 
 function taskStatus(t: TaskDto): TaskScope {
-  if (t.status === 'approved') return 'done';
-  if (t.status === 'submitted') return 'awaiting-review';
-  return 'open';
+  if (t.status === "approved") return "done";
+  if (t.status === "submitted") return "awaiting-review";
+  return "open";
 }
 
-function pipelineStatusVariant(status: string): 'success' | 'warning' | 'danger' | 'info' | 'neutral' {
-  const s = (status || '').toLowerCase();
-  if (s === 'accepted' || s === 'admitted') return 'success';
-  if (s === 'rejected' || s === 'denied') return 'danger';
-  if (s === 'waitlist' || s === 'deferred') return 'warning';
-  if (s === 'submitted' || s === 'applied') return 'info';
-  return 'neutral';
+function pipelineStatusVariant(
+  status: string,
+): "success" | "warning" | "danger" | "info" | "neutral" {
+  const s = (status || "").toLowerCase();
+  if (s === "accepted" || s === "admitted") return "success";
+  if (s === "rejected" || s === "denied") return "danger";
+  if (s === "waitlist" || s === "deferred") return "warning";
+  if (s === "submitted" || s === "applied") return "info";
+  return "neutral";
 }
 
 function tabLabel(label: string, count?: number) {
   return (
     <span>
       {label}
-      {typeof count === 'number' && count > 0 ? (
+      {typeof count === "number" && count > 0 ? (
         <span className="mc-ws-tab-count">{count}</span>
       ) : null}
     </span>
@@ -158,7 +195,13 @@ function tabLabel(label: string, count?: number) {
  * thread picker (mirrors the former FullSupportMentorDashboard's
  * `openToGeneralConversation` usage — general conversation, no threadId).
  */
-function StudentMessageTab({ mentorId, studentId }: { mentorId: string; studentId: string }) {
+function StudentMessageTab({
+  mentorId,
+  studentId,
+}: {
+  mentorId: string;
+  studentId: string;
+}) {
   const [findOrCreateConversation] = useFindOrCreateConversationMutation();
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [resolving, setResolving] = useState(false);
@@ -193,7 +236,11 @@ function StudentMessageTab({ mentorId, studentId }: { mentorId: string; studentI
     return (
       <div className="mc-ws-message-tab mc-ws-message-tab--center">
         <Text type="secondary">Couldn&apos;t open the conversation.</Text>
-        <Button size="small" icon={<RotateCcw size={14} />} onClick={resolveConversation}>
+        <Button
+          size="small"
+          icon={<RotateCcw size={14} />}
+          onClick={resolveConversation}
+        >
           Retry
         </Button>
       </div>
@@ -220,115 +267,253 @@ function StudentMessageTab({ mentorId, studentId }: { mentorId: string; studentI
 
 export default function StudentWorkspace({
   student,
-  isFullSupport = true,
+  isProgramStudent = true,
   identityDetails,
 }: {
   student: WorkspaceStudent;
   /** Extra line under the student's name (e.g. their goal and majors). */
   identityDetails?: ReactNode;
-  /** False for a 1:1 platform mentee — hides Full-Support-only sections. */
-  isFullSupport?: boolean;
+  /** Whether this student has an academic program assignment. */
+  isProgramStudent?: boolean;
 }) {
-  const { id: mentorId, hasFullSupport, email, managementRole } = useMentorConsole();
+  const {
+    id: mentorId,
+    email,
+    managementRole,
+  } = useMentorConsole();
   const researchPrepLive = canUseResearchPrepLive(email, managementRole);
   const studentId = student.id;
+  const location = useLocation();
+  const requestedEnrollmentId = new URLSearchParams(location.search).get('enrollment');
+  const [acknowledgedEnrollmentRequest, setAcknowledgedEnrollmentRequest] = useState<string | null>(null);
+  const [selectedEnrollmentId, setSelectedEnrollmentId] = useState(
+    requestedEnrollmentId && student.programs?.some(program => program.enrollmentId === requestedEnrollmentId)
+      ? requestedEnrollmentId : student.programs?.[0]?.enrollmentId ?? LEGACY_ENROLLMENT,
+  );
+  const workspaceScopeRef = useRef(selectedEnrollmentId);
+  workspaceScopeRef.current = selectedEnrollmentId;
+  const selectedProgram = student.programs?.find(program => program.enrollmentId === selectedEnrollmentId);
+  const canUse = (tool: string) => selectedProgram ? programHasTool(selectedProgram, tool) : (!!student.hasLegacyFullSupport || (isProgramStudent && student.hasLegacyFullSupport === undefined && !student.programs?.length));
+  const canUseResearch = canUse('research');
+  const [downloadingReport, setDownloadingReport] = useState(false);
+  const [progressEditorOpen, setProgressEditorOpen] = useState(false);
+  const [progressDraft, setProgressDraft] = useState<ProgramProgressItem[]>([]);
+  const [progressDraftUpdatedAt, setProgressDraftUpdatedAt] = useState<string | null>(null);
+  const [progressConflict, setProgressConflict] = useState(false);
+  const [saveProgramProgress, { isLoading: savingProgramProgress }] = useSetProgramEnrollmentProgressMutation();
+  useEffect(() => {
+    if (selectedEnrollmentId !== LEGACY_ENROLLMENT && !student.programs?.some(program => program.enrollmentId === selectedEnrollmentId)) {
+      setSelectedEnrollmentId(student.programs?.[0]?.enrollmentId ?? LEGACY_ENROLLMENT);
+    }
+  }, [student.id, student.programs, selectedEnrollmentId]);
 
   // Tasks first — the mockup's everyday view. Heavy sections load lazily.
-  const location=useLocation();
-  const [activeTab, setActiveTab] = useState(new URLSearchParams(location.search).get('tab')==='applications'?'essays':'tasks');
-  const [moreView, setMoreView] = useState<MoreView>('milestones');
+  const [activeTab, setActiveTab] = useState("tasks");
+  useEffect(() => {
+    if (requestedEnrollmentId && student.programs?.some(program => program.enrollmentId === requestedEnrollmentId)) {
+      setSelectedEnrollmentId(requestedEnrollmentId);
+      setProgressEditorOpen(false);
+    }
+    const requestedTab = new URLSearchParams(location.search).get('tab');
+    if (requestedTab && ['tasks', 'sessions', 'message', 'reports', 'reviews', 'essays', 'more'].includes(requestedTab)) setActiveTab(requestedTab);
+    // Apply navigation once; roster refreshes must preserve the mentor's selection.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studentId, location.search]);
+  const [moreView, setMoreView] = useState<MoreView>("milestones");
 
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
-  const [quickTaskTitle, setQuickTaskTitle] = useState('');
-  const [quickTaskDescription, setQuickTaskDescription] = useState('');
-  const [quickTaskDeadline, setQuickTaskDeadline] = useState<Dayjs | null>(null);
+  const [quickTaskTitle, setQuickTaskTitle] = useState("");
+  const [quickTaskDescription, setQuickTaskDescription] = useState("");
+  const [quickTaskDeadline, setQuickTaskDeadline] = useState<Dayjs | null>(
+    null,
+  );
   const [feedbackTask, setFeedbackTask] = useState<TaskDto | null>(null);
-  const [feedbackForm] = Form.useForm<{ feedback: string; decision: 'approved' | 'revision_requested'; revisionFileUrls?: string[] }>();
-  const feedbackDecision = Form.useWatch('decision', feedbackForm);
+  const [feedbackForm] = Form.useForm<{
+    feedback: string;
+    decision: "approved" | "revision_requested";
+    revisionFileUrls?: string[];
+  }>();
+  const feedbackDecision = Form.useWatch("decision", feedbackForm);
   // Deadline extension request being answered.
   const [extensionTask, setExtensionTask] = useState<TaskDto | null>(null);
-  const [extensionDeadline, setExtensionDeadline] = useState<Dayjs | null>(null);
-  const [extensionResponse, setExtensionResponse] = useState('');
+  const [extensionDeadline, setExtensionDeadline] = useState<Dayjs | null>(
+    null,
+  );
+  const [extensionResponse, setExtensionResponse] = useState("");
   const [addMilestoneOpen, setAddMilestoneOpen] = useState(false);
   const [milestoneForm] = Form.useForm<{ label: string; date: Dayjs | null }>();
   const [logSessionOpen, setLogSessionOpen] = useState(false);
 
   const [addPipelineOpen, setAddPipelineOpen] = useState(false);
-  const [pipelineForm] = Form.useForm<{ program: string; stage?: string; status?: string; deadline?: Dayjs | null }>();
-  const [researchPick, setResearchPick] = useState<ResearchSubmission | null>(null);
+  const [pipelineForm] = Form.useForm<{
+    program: string;
+    stage?: string;
+    status?: string;
+    deadline?: Dayjs | null;
+  }>();
+  const [researchPick, setResearchPick] = useState<ResearchSubmission | null>(
+    null,
+  );
+  useEffect(() => {
+    setExpandedTaskId(null);
+    setQuickTaskTitle('');
+    setQuickTaskDescription('');
+    setQuickTaskDeadline(null);
+    setFeedbackTask(null);
+    setExtensionTask(null);
+    setExtensionResponse('');
+    setExtensionDeadline(null);
+    setAddMilestoneOpen(false);
+    setLogSessionOpen(false);
+    setAddPipelineOpen(false);
+    setResearchPick(null);
+    setProgressEditorOpen(false);
+    setProgressDraft([]);
+    setProgressDraftUpdatedAt(null);
+    setProgressConflict(false);
+    feedbackForm.resetFields();
+    milestoneForm.resetFields();
+    pipelineForm.resetFields();
+  }, [selectedEnrollmentId, feedbackForm, milestoneForm, pipelineForm]);
 
   // Always loaded — power the stat cards + tab badges.
-  const { bookings, isLoading: loadingBookings, isError:bookingsError } = useMentorBookings(studentId, {
-    includeFullSupport: true,
+  const sharedApplications = useGetSharedMentorApplicationsQuery(studentId || "", { skip: !studentId });
+  const { bookings, isLoading: loadingBookings, isError: bookingsError } = useMentorBookings(
+    studentId,
+    {
+      includeFullSupport: true,
+    },
+  );
+  const { currentData: tasksRes, isLoading: loadingTasks, isError: tasksError, error: taskError, refetch: refetchTasks } = useGetMentorTasksQuery(
+    undefined,
+    {
+      skip: !studentId,
+      pollingInterval: 10000,
+      refetchOnMountOrArgChange: true,
+    },
+  );
+  const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, {
+    skip: !studentId,
   });
-  const { data: tasksRes, isLoading: loadingTasks } = useGetMentorTasksQuery(undefined, {
-    skip: !studentId, pollingInterval: 10000, refetchOnMountOrArgChange: true,
-  });
-  const { data: pipelineRes } = useGetMentorPipelineQuery(undefined, { skip: !studentId });
 
   const essayReviews = useGetMentorEssayReviewsQuery(undefined, {
-    skip: !studentId, pollingInterval: 10000, refetchOnMountOrArgChange: true,
+    skip: !studentId,
+    pollingInterval: 10000,
+    refetchOnMountOrArgChange: true,
   });
-  const sharedEssayCount = new Set((essayReviews.data ?? [])
-    .filter(review => review.studentUserId === studentId && review.status !== 'withdrawn')
-    .map(review => review.essayId)).size;
+  const sharedEssayCount = new Set(
+    (essayReviews.data ?? [])
+      .filter(
+        (review) =>
+          review.studentUserId === studentId && review.status !== "withdrawn",
+      )
+      .map((review) => review.essayId),
+  ).size;
 
-  const { essayCount: pendingEssayCount, documentCount: pendingDocCount } = useReviewCounts(false, studentId);
-  const [updateApplicationRequirements] = useUpdateMentorApplicationRequirementsMutation();
+  const { essayCount: pendingEssayCount, documentCount: pendingDocCount } =
+    useReviewCounts(false, studentId);
+  const [updateApplicationRequirements] =
+    useUpdateMentorApplicationRequirementsMutation();
 
   // Lazy — fetched only when the matching tab (or "More" section) is active.
-  const { data: milestonesRes, isFetching: loadingMilestones } = useGetMentorMilestonesQuery(
+  const { currentData: milestonesRes, isFetching: loadingMilestones, isError: milestonesError, error: milestoneError, refetch: refetchMilestones } =
+    useGetMentorMilestonesQuery({ studentUserId: studentId, enrollmentId: selectedProgram?.enrollmentId }, {
+      skip: activeTab !== "more" || !canUse("milestones"),
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+    });
+  const { currentData: curriculumRes } = useGetMentorCurriculumProgressQuery(
     studentId,
-    { skip: activeTab !== 'more' || moreView !== 'milestones' },
+    {
+      skip: activeTab !== "more" || !canUse("progress") || !!selectedProgram,
+    },
   );
-  const { data: curriculumRes } = useGetMentorCurriculumProgressQuery(studentId, {
-    skip: activeTab !== 'more' || moreView !== 'curriculum',
+  const scopedProgress = useGetProgramEnrollmentProgressQuery(selectedProgram?.enrollmentId ?? '', {
+    skip: !selectedProgram || !canUse('progress') || activeTab !== 'more',
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+    pollingInterval: 30000,
   });
-  const { data: inbox, isFetching: loadingInbox } = useGetGraderInboxQuery(undefined, {
-    skip:
-      activeTab !== 'more' || moreView !== 'research' || !hasFullSupport || !researchPrepLive,
-  });
+  const { data: inbox, isFetching: loadingInbox } = useGetGraderInboxQuery(
+    undefined,
+    {
+      skip:
+        activeTab !== "more" ||
+        !canUseResearch ||
+        !researchPrepLive,
+    },
+  );
 
   const tasks = useMemo<TaskDto[]>(
-    () => (tasksRes?.data ?? []).filter((t) => t.studentUserId === studentId),
-    [tasksRes?.data, studentId],
+    () => (isAccessDenied(taskError) ? [] : tasksRes?.data ?? []).filter((t) => t.studentUserId === studentId && matchesEnrollment(t, selectedEnrollmentId)),
+    [tasksRes?.data, studentId, selectedEnrollmentId, taskError],
   );
   const pipeline = useMemo<PipelineDto[]>(
-    () => (pipelineRes?.data ?? []).filter((p) => p.studentUserId === studentId),
+    () =>
+      (pipelineRes?.data ?? []).filter((p) => p.studentUserId === studentId),
     [pipelineRes?.data, studentId],
   );
-  const milestones = milestonesRes?.data ?? [];
-  const curriculumItems = (curriculumRes?.data ?? []).filter((c) => c.percent >= 0);
+  const milestones = (isAccessDenied(milestoneError) ? [] : milestonesRes?.data ?? []).filter(row => matchesEnrollment(row, selectedEnrollmentId));
+  const curriculumItems: CurriculumWatchlistItemDto[] = (selectedProgram ? (scopedProgress.currentData?.data.items ?? []).map(item => ({ ...item, label: item.key, target: item.target ?? null })) : curriculumRes?.data ?? []).filter(
+    (c) => c.percent >= 0,
+  );
 
   // The Full Support query is already scoped to this student server-side.
   const studentBookings = useMemo(
-    () => bookings.filter((b) => b.source === 'full-support' || b.studentUserId === studentId),
-    [bookings, studentId],
+    () =>
+      bookings.filter(
+        (b) => (b.source === "full-support" || b.studentUserId === studentId) && matchesEnrollment(b.source === "full-support" ? b.raw as { academicEnrollmentId?: string | null } : {}, selectedEnrollmentId),
+      ),
+    [bookings, studentId, selectedEnrollmentId],
   );
-  const grouped = useMemo(() => groupStudentSessions(studentBookings), [studentBookings]);
-  const upcomingSessions = grouped.upcoming;
-  const pastSessions = useMemo(
-    () => studentBookings.filter((b) => b.status !== 'upcoming'),
+  const selectedHours = selectedProgram ? { ...student, ...enrollmentHours(selectedProgram) } : {
+    ...student,
+    sessionsCount: studentBookings.length,
+    used: studentBookings.reduce((sum, booking) => {
+      const raw = booking.raw as { outcome?: string; actualDurationMinutes?: number | null };
+      return sum + (raw.outcome === 'held' ? (raw.actualDurationMinutes ?? 0) / 60 : 0);
+    }, 0),
+    scheduledHours: studentBookings.filter(booking => booking.status === 'upcoming').reduce((sum, booking) => sum + booking.durationMinutes / 60, 0),
+    usageKnown: false,
+    allocationKnown: false,
+  };
+  const grouped = useMemo(
+    () => groupStudentSessions(studentBookings),
     [studentBookings],
   );
-  const canAssignTask = isFullSupport !== false || studentBookings.some(
-    (booking) => booking.source === 'platform' && (booking.status === 'completed' || booking.status === 'report-due'),
+  const upcomingSessions = grouped.upcoming;
+  const pastSessions = useMemo(
+    () => studentBookings.filter((b) => b.status !== "upcoming"),
+    [studentBookings],
   );
+  const canAssignTask = !isAccessDenied(taskError) && (
+    canCreateProgramWork(student, selectedEnrollmentId, "tasks") ||
+    (!isProgramStudent &&
+    studentBookings.some(
+      (booking) =>
+        booking.source === "platform" &&
+        (booking.status === "completed" || booking.status === "report-due"),
+    )));
   const researchForStudent = useMemo(
     () => (inbox ?? []).filter((s) => s.studentId === studentId),
     [inbox, studentId],
   );
 
   const openTasksCount = useMemo(
-    () => tasks.filter((t) => taskStatus(t) !== 'done').length,
+    () => tasks.filter((t) => taskStatus(t) !== "done").length,
     [tasks],
   );
   const awaitingReviewCount = useMemo(
-    () => tasks.filter((t) => taskStatus(t) === 'awaiting-review').length,
+    () => tasks.filter((t) => taskStatus(t) === "awaiting-review").length,
     [tasks],
   );
   const reportsFiled = useMemo(
-    () => studentBookings.filter((b) => b.source === 'platform' ? !!b.report : bookingDisplay(b).label === 'Held').length,
+    () =>
+      studentBookings.filter((b) =>
+        b.source === "platform"
+          ? !!b.report
+          : ["Held", "Reported held"].includes(bookingDisplay(b).label),
+      ).length,
     [studentBookings],
   );
   const reportsDue = useMemo(
@@ -336,43 +521,53 @@ export default function StudentWorkspace({
     [grouped.needsAction],
   );
 
-  const [createTask, { isLoading: creatingTask }] = useCreateMentorTaskMutation();
-  const [updateFeedback, { isLoading: savingFeedback }] = useUpdateMentorTaskFeedbackMutation();
-  const [decideExtension, { isLoading: decidingExtension }] = useDecideTaskExtensionMutation();
+  const [createTask, { isLoading: creatingTask }] =
+    useCreateMentorTaskMutation();
+  const [updateFeedback, { isLoading: savingFeedback }] =
+    useUpdateMentorTaskFeedbackMutation();
+  const [decideExtension, { isLoading: decidingExtension }] =
+    useDecideTaskExtensionMutation();
   const [deleteTask] = useDeleteMentorTaskMutation();
-  const [createMilestone, { isLoading: creatingMs }] = useCreateMentorMilestoneMutation();
+  const [createMilestone, { isLoading: creatingMs }] =
+    useCreateMentorMilestoneMutation();
   const [updateMilestone] = useUpdateMentorMilestoneMutation();
   const [deleteMilestone] = useDeleteMentorMilestoneMutation();
   const sessionActions = useSessionActions();
 
-  const [createPipeline, { isLoading: creatingPl }] = useCreateMentorPipelineRowMutation();
+  const [createPipeline, { isLoading: creatingPl }] =
+    useCreateMentorPipelineRowMutation();
   const [deletePipeline] = useDeleteMentorPipelineRowMutation();
 
   const submitQuickTask = async () => {
-    if (!canAssignTask) { message.warning('You can assign tasks after your first completed 1:1 meeting.'); return; }
+    if (!canAssignTask) {
+      message.warning('Select an active program where task assignment is available.');
+      return;
+    }
     const title = quickTaskTitle.trim();
     if (!title) {
-      message.warning('Give the task a title');
+      message.warning("Give the task a title");
       return;
     }
     if (!quickTaskDeadline) {
-      message.warning('Pick a due date');
+      message.warning("Pick a due date");
       return;
     }
     await createTask({
       studentUserId: studentId,
+      enrollmentId: selectedProgram?.enrollmentId,
       task: title,
       description: quickTaskDescription.trim() || undefined,
       deadline: calendarDateValue(quickTaskDeadline)!,
     })
       .unwrap()
       .then(() => {
-        message.success('Task assigned');
-        setQuickTaskTitle('');
-        setQuickTaskDescription('');
+        if (workspaceScopeRef.current !== selectedEnrollmentId) return;
+        message.success("Task assigned");
+        setQuickTaskTitle("");
+        setQuickTaskDescription("");
         setQuickTaskDeadline(null);
       })
-      .catch(() => message.error('Could not assign task'));
+      .catch(() => message.error("Could not assign task"));
   };
 
   const submitFeedback = async () => {
@@ -383,30 +578,37 @@ export default function StudentWorkspace({
       feedback: values.feedback,
       decision: values.decision,
       feedbackFileUrls: feedbackTask.feedbackFileUrls,
-      revisionFileUrls: values.decision === 'revision_requested' ? values.revisionFileUrls ?? [] : [],
+      revisionFileUrls:
+        values.decision === "revision_requested"
+          ? (values.revisionFileUrls ?? [])
+          : [],
     })
       .unwrap()
       .then(() => {
-        message.success('Feedback saved');
+        if (workspaceScopeRef.current !== selectedEnrollmentId) return;
+        message.success("Feedback saved");
         setFeedbackTask(null);
       })
-      .catch(() => message.error('Could not save'));
+      .catch(() => message.error("Could not save"));
   };
 
   const submitMilestone = async () => {
+    if (!canCreateProgramWork(student, selectedEnrollmentId, 'milestones')) return;
     const values = await milestoneForm.validateFields();
     await createMilestone({
       studentUserId: studentId,
+      enrollmentId: selectedProgram?.enrollmentId,
       label: values.label,
       date: calendarDateValue(values.date),
     })
       .unwrap()
       .then(() => {
-        message.success('Milestone added');
+        if (workspaceScopeRef.current !== selectedEnrollmentId) return;
+        message.success("Milestone added");
         setAddMilestoneOpen(false);
         milestoneForm.resetFields();
       })
-      .catch(() => message.error('Could not add'));
+      .catch(() => message.error("Could not add"));
   };
 
   const submitPipeline = async () => {
@@ -420,43 +622,56 @@ export default function StudentWorkspace({
     })
       .unwrap()
       .then(() => {
-        message.success('Application row added');
+        if (workspaceScopeRef.current !== selectedEnrollmentId) return;
+        message.success("Application row added");
         setAddPipelineOpen(false);
         pipelineForm.resetFields();
       })
-      .catch(() => message.error('Could not add'));
+      .catch(() => message.error("Could not add"));
   };
 
   const openFeedbackModal = (t: TaskDto) => {
     setFeedbackTask(t);
-    feedbackForm.setFieldsValue({ feedback: '', decision: 'approved', revisionFileUrls: [] });
+    feedbackForm.setFieldsValue({
+      feedback: "",
+      decision: "approved",
+      revisionFileUrls: [],
+    });
   };
 
   const openExtensionModal = (t: TaskDto) => {
     const pending = pendingExtension(t);
     setExtensionTask(t);
     setExtensionDeadline(pending ? dayjs(pending.requestedDeadline) : null);
-    setExtensionResponse('');
+    setExtensionResponse("");
   };
 
-  const answerExtension = (decision: 'approved' | 'declined') => {
+  const answerExtension = (decision: "approved" | "declined") => {
     if (!extensionTask) return;
-    if (decision === 'approved' && !extensionDeadline) {
-      message.warning('Pick the new deadline');
+    if (decision === "approved" && !extensionDeadline) {
+      message.warning("Pick the new deadline");
       return;
     }
     decideExtension({
       id: extensionTask.id,
       decision,
       response: extensionResponse.trim() || undefined,
-      deadline: decision === 'approved' ? extensionDeadline?.format('YYYY-MM-DD') : undefined,
+      deadline:
+        decision === "approved"
+          ? extensionDeadline?.format("YYYY-MM-DD")
+          : undefined,
     })
       .unwrap()
       .then(() => {
-        message.success(decision === 'approved' ? 'Deadline extended' : 'Request declined');
+        if (workspaceScopeRef.current !== selectedEnrollmentId) return;
+        message.success(
+          decision === "approved" ? "Deadline extended" : "Request declined",
+        );
         setExtensionTask(null);
       })
-      .catch((error: { data?: { message?: string } }) => message.error(error?.data?.message || 'Could not save'));
+      .catch((error: { data?: { message?: string } }) =>
+        message.error(error?.data?.message || "Could not save"),
+      );
   };
 
   const sectionHead = (
@@ -470,7 +685,12 @@ export default function StudentWorkspace({
         {title}
       </h2>
       {action && (
-        <Button type="primary" size="small" icon={<Plus size={14} />} onClick={action.onClick}>
+        <Button
+          type="primary"
+          size="small"
+          icon={<Plus size={14} />}
+          onClick={action.onClick}
+        >
           {action.label}
         </Button>
       )}
@@ -479,18 +699,32 @@ export default function StudentWorkspace({
 
   const renderTaskRow = (t: TaskDto) => {
     const s = taskStatus(t);
-    const done = s === 'done';
+    const done = s === "done";
     const overdue = isTaskOverdue(t);
     const extension = pendingExtension(t);
     const expanded = expandedTaskId === t.id;
-    const hasDetail = !!(t.description || t.submissionText || t.feedback || t.submissionFileUrls?.length);
+    const hasDetail = !!(
+      t.description ||
+      t.submissionText ||
+      t.feedback ||
+      t.submissionFileUrls?.length
+    );
 
     return (
-      <div key={t.id} className={`mc-ws-task${done ? ' mc-ws-task--done' : ''}`}>
+      <div
+        key={t.id}
+        className={`mc-ws-task${done ? " mc-ws-task--done" : ""}`}
+      >
         <div className="mc-ws-task-row">
           <span
-            className={`mc-ws-task-check${done ? ' mc-ws-task-check--done' : ''}`}
-            title={done ? 'Feedback given' : s === 'awaiting-review' ? 'Awaiting your review' : 'Assigned'}
+            className={`mc-ws-task-check${done ? " mc-ws-task-check--done" : ""}`}
+            title={
+              done
+                ? "Feedback given"
+                : s === "awaiting-review"
+                  ? "Awaiting your review"
+                  : "Assigned"
+            }
           >
             {done ? <CheckCircle2 size={18} /> : <Circle size={18} />}
           </span>
@@ -498,32 +732,51 @@ export default function StudentWorkspace({
           <button
             type="button"
             className="mc-ws-task-main"
-            onClick={() => hasDetail && setExpandedTaskId(expanded ? null : t.id)}
-            style={{ cursor: hasDetail ? 'pointer' : 'default' }}
+            onClick={() =>
+              hasDetail && setExpandedTaskId(expanded ? null : t.id)
+            }
+            style={{ cursor: hasDetail ? "pointer" : "default" }}
           >
             <span className="mc-ws-task-title">{t.task}</span>
-            {s === 'awaiting-review' && <McPill variant="warning">Awaiting review</McPill>}
-            {t.status === 'revision_requested' && <McPill variant="warning">Revision requested</McPill>}
+            {s === "awaiting-review" && (
+              <McPill variant="warning">Awaiting review</McPill>
+            )}
+            {t.status === "revision_requested" && (
+              <McPill variant="warning">Revision requested</McPill>
+            )}
             {overdue && (
               <McPill variant="danger">
-                <AlertCircle size={11} style={{ marginRight: 3, verticalAlign: '-1px' }} />
+                <AlertCircle
+                  size={11}
+                  style={{ marginRight: 3, verticalAlign: "-1px" }}
+                />
                 Overdue
               </McPill>
             )}
             {extension && <McPill variant="info">Extension requested</McPill>}
           </button>
 
-          <span className={`mc-ws-task-due${overdue ? ' mc-ws-task-due--overdue' : ''}`}>
-            {t.deadline ? `Due ${formatDate(t.deadline)}` : ''}
+          <span
+            className={`mc-ws-task-due${overdue ? " mc-ws-task-due--overdue" : ""}`}
+          >
+            {t.deadline ? `Due ${formatDate(t.deadline)}` : ""}
           </span>
 
           {extension ? (
-            <Button size="small" icon={<CalendarClock size={13} />} onClick={() => openExtensionModal(t)}>
+            <Button
+              size="small"
+              icon={<CalendarClock size={13} />}
+              onClick={() => openExtensionModal(t)}
+            >
               Extension
             </Button>
           ) : null}
-          {s === 'awaiting-review' ? (
-            <Button type="primary" size="small" onClick={() => openFeedbackModal(t)}>
+          {s === "awaiting-review" ? (
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => openFeedbackModal(t)}
+            >
               Review
             </Button>
           ) : null}
@@ -533,11 +786,15 @@ export default function StudentWorkspace({
             onConfirm={() =>
               deleteTask(t.id)
                 .unwrap()
-                .then(() => message.success('Task removed'))
-                .catch(() => message.error('Could not delete'))
+                .then(() => message.success("Task removed"))
+                .catch(() => message.error("Could not delete"))
             }
           >
-            <button type="button" className="mc-ws-task-x" aria-label="Delete task">
+            <button
+              type="button"
+              className="mc-ws-task-x"
+              aria-label="Delete task"
+            >
               <X size={15} />
             </button>
           </Popconfirm>
@@ -545,7 +802,11 @@ export default function StudentWorkspace({
 
         {expanded && hasDetail && (
           <div className="mc-ws-task-detail">
-            {t.description && <div className="mc-ws-task-detail-text">Instructions: {t.description}</div>}
+            {t.description && (
+              <div className="mc-ws-task-detail-text">
+                Instructions: {t.description}
+              </div>
+            )}
             {t.submissionText ? (
               <>
                 <Text type="secondary" style={{ fontSize: 12 }}>
@@ -558,19 +819,27 @@ export default function StudentWorkspace({
               <ul className="mc-ws-files">
                 {t.submissionFileUrls.map((file) => (
                   <li key={file.url}>
-                    <a href={`${hostName}${file.url}`} target="_blank" rel="noreferrer">
+                    <a
+                      href={`${hostName}${file.url}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       <FileText size={13} /> {file.fileName}
                     </a>
-                    {t.status === 'revision_requested' && t.revisionFileUrls?.includes(file.url) && (
-                      <McPill variant="warning">Needs revision</McPill>
-                    )}
+                    {t.status === "revision_requested" &&
+                      t.revisionFileUrls?.includes(file.url) && (
+                        <McPill variant="warning">Needs revision</McPill>
+                      )}
                   </li>
                 ))}
               </ul>
             ) : null}
             {t.feedback ? (
               <>
-                <Text strong style={{ color: 'var(--mc-accent)', fontSize: 12 }}>
+                <Text
+                  strong
+                  style={{ color: "var(--mc-accent)", fontSize: 12 }}
+                >
                   Your feedback
                 </Text>
                 <div className="mc-ws-task-detail-text">{t.feedback}</div>
@@ -584,27 +853,60 @@ export default function StudentWorkspace({
 
   const renderBookingRow = (b: (typeof bookings)[number]) => {
     const display = bookingDisplay(b);
-    const isFs = b.source === 'full-support';
-    const report = b.source === 'platform' ? b.report : null;
+    const isFs = b.source === "full-support";
+    const imported =
+      isFs &&
+      importedSessionInfo(
+        b.raw as import("src/app/services/fullSupportApi").SessionLogDto,
+      );
+    const report = b.source === "platform" ? b.report : null;
     return (
       <div key={b.id} className="mc-ws-booking">
         <div>
-          <div style={{ fontWeight: 600, fontSize: 13 }}>{formatDateTime(b.dateTime)}</div>
-          <div style={{ fontSize: 12, color: 'var(--mc-text-muted)', marginTop: 4 }}>
-            {b.durationLabel}
-            {isFs ? ' · Full Support' : ' · 1:1 session'}
-            {b.description ? ` · ${b.description}` : ''}
-            {b.status === 'cancelled' && b.cancelReason ? ` · ${b.cancelReason}` : ''}
+          <div style={{ fontWeight: 600, fontSize: 13 }}>
+            {bookingDateLabel(b)}
           </div>
-          {isFs && b.status !== 'upcoming' && (
+          <div
+            style={{
+              fontSize: 12,
+              color: "var(--mc-text-muted)",
+              marginTop: 4,
+            }}
+          >
+            {b.durationLabel}
+            {imported
+              ? " · Historical report"
+              : isFs
+                ? ` · ${student.programs?.find(program => program.enrollmentId === (b.raw as { academicEnrollmentId?: string }).academicEnrollmentId)?.name || programNames[b.program as ProgramKey] || b.program || "Program unconfirmed"}`
+                : " · 1:1 session"}
+            {!imported && b.description ? ` · ${b.description}` : ""}
+            {b.status === "cancelled" && b.cancelReason
+              ? ` · ${b.cancelReason}`
+              : ""}
+          </div>
+          {imported && b.description && (
+            <details style={{ marginTop: 8 }}>
+              <summary>Session notes</summary>
+              <div style={{ whiteSpace: "pre-wrap", marginTop: 8 }}>
+                {b.description}
+              </div>
+            </details>
+          )}
+          {isFs && b.status !== "upcoming" && (
             <div style={{ fontSize: 12, marginTop: 6 }}>
               Attendance: {display.attendance}
-              {display.actualMinutes !== null ? ` · ${display.actualMinutes} min actual` : ''}
-              {display.notes && <div style={{ whiteSpace: 'pre-wrap', marginTop: 6 }}>{display.notes}</div>}
+              {display.actualMinutes !== null
+                ? ` · ${display.actualMinutes} min actual`
+                : ""}
+              {display.notes && (
+                <div style={{ whiteSpace: "pre-wrap", marginTop: 6 }}>
+                  {display.notes}
+                </div>
+              )}
             </div>
           )}
           {report && (
-            <div style={{ fontSize: 12, marginTop: 6, whiteSpace: 'pre-wrap' }}>
+            <div style={{ fontSize: 12, marginTop: 6, whiteSpace: "pre-wrap" }}>
               <b>Report:</b> {report.topicsCovered}
             </div>
           )}
@@ -619,43 +921,73 @@ export default function StudentWorkspace({
         </div>
         <Space size={8} align="center" wrap>
           <McPill variant={display.variant}>{display.label}</McPill>
-          {b.status === 'upcoming' && b.joinUrl ? (
-            <Button size="small" type="link" href={b.joinUrl} target="_blank" rel="noreferrer">
+          {b.status === "upcoming" && b.joinUrl ? (
+            <Button
+              size="small"
+              type="link"
+              href={b.joinUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
               Join
             </Button>
           ) : null}
+          {!imported && (
+            <SessionRecording source={b.source} sessionId={b.raw.id} />
+          )}
           {sessionActions.renderActions(b)}
         </Space>
       </div>
     );
   };
 
-  const renderSessionGroup = (title: string, rows: typeof bookings, empty?: string) => {
+  const renderSessionGroup = (
+    title: string,
+    rows: typeof bookings,
+    empty?: string,
+  ) => {
     if (rows.length === 0 && !empty) return null;
     return (
       <>
-        {sectionHead(title, <Calendar size={18} color="var(--mc-accent)" aria-hidden />)}
+        {sectionHead(
+          title,
+          <Calendar size={18} color="var(--mc-accent)" aria-hidden />,
+        )}
         <div className="mc-ws-card">
-          {rows.length === 0 ? <div className="mc-ws-empty">{empty}</div> : rows.map(renderBookingRow)}
+          {rows.length === 0 ? (
+            <div className="mc-ws-empty">{empty}</div>
+          ) : (
+            rows.map(renderBookingRow)
+          )}
         </div>
       </>
     );
   };
 
   const milestoneColumns: ColumnsType<MilestoneDto> = [
-    { title: 'Milestone', dataIndex: 'label', key: 'label' },
-    { title: 'Date', dataIndex: 'date', key: 'date', width: 116, render: (v: string | null) => formatDate(v) },
+    { title: "Milestone", dataIndex: "label", key: "label" },
     {
-      title: 'Status',
-      dataIndex: 'done',
-      key: 'done',
-      width: 100,
-      render: (done: boolean) =>
-        done ? <McPill variant="success">Done</McPill> : <McPill variant="neutral">Pending</McPill>,
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
+      width: 116,
+      render: (v: string | null) => formatDate(v),
     },
     {
-      title: '',
-      key: 'toggle',
+      title: "Status",
+      dataIndex: "done",
+      key: "done",
+      width: 100,
+      render: (done: boolean) =>
+        done ? (
+          <McPill variant="success">Done</McPill>
+        ) : (
+          <McPill variant="neutral">Pending</McPill>
+        ),
+    },
+    {
+      title: "",
+      key: "toggle",
       width: 88,
       render: (_, row) => (
         <Switch
@@ -663,14 +995,14 @@ export default function StudentWorkspace({
           onChange={(v) =>
             updateMilestone({ id: row.id, done: v })
               .unwrap()
-              .catch(() => message.error('Update failed'))
+              .catch(() => message.error("Update failed"))
           }
         />
       ),
     },
     {
-      title: '',
-      key: 'del',
+      title: "",
+      key: "del",
       width: 72,
       render: (_, row) => (
         <Popconfirm
@@ -678,8 +1010,8 @@ export default function StudentWorkspace({
           onConfirm={() =>
             deleteMilestone(row.id)
               .unwrap()
-              .then(() => message.success('Removed'))
-              .catch(() => message.error('Failed'))
+              .then(() => message.success("Removed"))
+              .catch(() => message.error("Failed"))
           }
         >
           <Button size="small" danger type="text">
@@ -691,19 +1023,27 @@ export default function StudentWorkspace({
   ];
 
   const pipelineColumns: ColumnsType<PipelineDto> = [
-    { title: 'Program', dataIndex: 'program', key: 'program' },
-    { title: 'Stage', dataIndex: 'stage', key: 'stage', width: 120 },
+    { title: "Program", dataIndex: "program", key: "program" },
+    { title: "Stage", dataIndex: "stage", key: "stage", width: 120 },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
       width: 120,
-      render: (s: string) => <McPill variant={pipelineStatusVariant(s)}>{s || '—'}</McPill>,
+      render: (s: string) => (
+        <McPill variant={pipelineStatusVariant(s)}>{s || "—"}</McPill>
+      ),
     },
-    { title: 'Deadline', dataIndex: 'deadline', key: 'deadline', width: 116, render: (v: string | null) => formatDate(v) },
     {
-      title: '',
-      key: 'del',
+      title: "Deadline",
+      dataIndex: "deadline",
+      key: "deadline",
+      width: 116,
+      render: (v: string | null) => formatDate(v),
+    },
+    {
+      title: "",
+      key: "del",
       width: 72,
       render: (_, row) => (
         <Popconfirm
@@ -711,8 +1051,8 @@ export default function StudentWorkspace({
           onConfirm={() =>
             deletePipeline(row.id)
               .unwrap()
-              .then(() => message.success('Removed'))
-              .catch(() => message.error('Failed'))
+              .then(() => message.success("Removed"))
+              .catch(() => message.error("Failed"))
           }
         >
           <Button size="small" danger type="text">
@@ -724,90 +1064,132 @@ export default function StudentWorkspace({
   ];
 
   const moreOptions = [
-    { label: 'Milestones', value: 'milestones' },
-    ...(hasFullSupport && researchPrepLive ? [{ label: 'Research', value: 'research' }] : []),
-    { label: 'Curriculum', value: 'curriculum' },
+    ...(canUse("milestones") ? [{ label: "Milestones", value: "milestones" }] : []),
+    ...(canUseResearch && researchPrepLive
+      ? [{ label: "Research", value: "research" }]
+      : []),
+    ...(canUse("progress") ? [{ label: selectedProgram ? "Program progress" : "Legacy curriculum", value: "curriculum" }] : []),
   ];
+
+  const currentMoreView = moreOptions.some(option => option.value === moreView) ? moreView : moreOptions[0]?.value;
 
   const items = [
     {
-      key: 'tasks',
-      label: tabLabel('Tasks', openTasksCount),
+      key: "tasks",
+      label: tabLabel("Tasks", openTasksCount),
       children: (
         <>
-          {sectionHead('Tasks', <CheckSquare size={18} color="var(--mc-accent)" aria-hidden />)}
+          {sectionHead(
+            "Tasks",
+            <CheckSquare size={18} color="var(--mc-accent)" aria-hidden />,
+          )}
           <div className="mc-ws-card">
+            {tasksError && <Alert type="error" showIcon message={isAccessDenied(taskError) ? "You no longer have access to these tasks" : "Tasks could not refresh"} description={!isAccessDenied(taskError) && tasks.length ? "Showing the last loaded tasks." : undefined} action={<Button onClick={() => void refetchTasks()}>Retry</Button>} />}
             {loadingTasks ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  padding: 24,
+                }}
+              >
                 <Spin />
               </div>
-            ) : tasks.length === 0 ? (
-              <div className="mc-ws-empty">No tasks yet — assign the first one below.</div>
+            ) : tasksError && tasks.length === 0 ? null : tasks.length === 0 ? (
+              <div className="mc-ws-empty">
+                No tasks yet — assign the first one below.
+              </div>
             ) : (
               <div className="mc-ws-tasklist">{tasks.map(renderTaskRow)}</div>
             )}
-            {!canAssignTask && !loadingBookings && <div className="mc-ws-empty">Task assignment becomes available after your first completed 1:1 meeting with this student.</div>}
-            {canAssignTask && <div className="mc-ws-task-add">
-              <Input
-                placeholder="New task title…"
-                value={quickTaskTitle}
-                onChange={(e) => setQuickTaskTitle(e.target.value)}
-                onPressEnter={submitQuickTask}
-              />
-              <Input
-                placeholder="Instructions for the student (optional)"
-                value={quickTaskDescription}
-                onChange={(e) => setQuickTaskDescription(e.target.value)}
-              />
-              <DatePicker
-                placeholder="Due date"
-                value={quickTaskDeadline}
-                onChange={(v) => setQuickTaskDeadline(v)}
-              />
-              <Button
-                type="primary"
-                icon={<Plus size={14} />}
-                loading={creatingTask}
-                onClick={submitQuickTask}
-              >
-                Add task
-              </Button>
-            </div>}
+            {!canAssignTask && !loadingBookings && (
+              <div className="mc-ws-empty">
+                {isProgramStudent ? "Choose an active program to assign new tasks. Legacy history stays separate." : "Task assignment becomes available after your first completed 1:1 meeting with this student."}
+              </div>
+            )}
+            {canAssignTask && (
+              <div className="mc-ws-task-add">
+                <Input
+                  placeholder="New task title…"
+                  value={quickTaskTitle}
+                  onChange={(e) => setQuickTaskTitle(e.target.value)}
+                  onPressEnter={submitQuickTask}
+                />
+                <Input
+                  placeholder="Instructions for the student (optional)"
+                  value={quickTaskDescription}
+                  onChange={(e) => setQuickTaskDescription(e.target.value)}
+                />
+                <DatePicker
+                  placeholder="Due date"
+                  value={quickTaskDeadline}
+                  onChange={(v) => setQuickTaskDeadline(v)}
+                />
+                <Button
+                  type="primary"
+                  icon={<Plus size={14} />}
+                  loading={creatingTask}
+                  onClick={submitQuickTask}
+                >
+                  Add task
+                </Button>
+              </div>
+            )}
           </div>
         </>
       ),
     },
     {
-      key: 'sessions',
+      key: "sessions",
       // Badge = sessions waiting on the mentor only, so a number always means "act here".
-      label: tabLabel('Sessions', reportsDue),
+      label: tabLabel("Sessions", reportsDue),
       children: (
         <>
-          {isFullSupport && (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
-              <Button type="primary" icon={<Plus size={14} />} onClick={() => setLogSessionOpen(true)}>
+          {canCreateProgramWork(student, selectedEnrollmentId, "lessons") && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginBottom: 8,
+              }}
+            >
+              <Button
+                type="primary"
+                icon={<Plus size={14} />}
+                onClick={() => setLogSessionOpen(true)}
+              >
                 Schedule lessons
               </Button>
             </div>
           )}
           {loadingBookings ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
+            <div
+              style={{ display: "flex", justifyContent: "center", padding: 24 }}
+            >
               <Spin />
             </div>
           ) : (
             <>
-              {renderSessionGroup('Needs action', grouped.needsAction)}
-              {renderSessionGroup('Upcoming', grouped.upcoming, 'No upcoming sessions with this student.')}
-              {renderSessionGroup('Past', grouped.past, 'No past sessions with this student yet.')}
+              {renderSessionGroup("Needs action", grouped.needsAction)}
+              {renderSessionGroup(
+                "Upcoming",
+                grouped.upcoming,
+                "No upcoming sessions with this student.",
+              )}
+              {renderSessionGroup(
+                "Past",
+                grouped.past,
+                "No past sessions with this student yet.",
+              )}
             </>
           )}
         </>
       ),
     },
     {
-      key: 'message',
+      key: "message",
       label: (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
           <MessageSquare size={14} />
           Message
         </span>
@@ -815,44 +1197,104 @@ export default function StudentWorkspace({
       children: <StudentMessageTab mentorId={mentorId} studentId={studentId} />,
     },
     {
-      key: 'reviews',
-      label: tabLabel('Reviews', pendingEssayCount + pendingDocCount),
+      key: "reports",
+      label: "Reports",
+      children: selectedProgram ? <p>Download this enrollment’s program PDF above for attendance, hours, tasks, milestones and shared comments.</p> : <MentorReports studentUserId={studentId} />,
+    },
+    {
+      key: "reviews",
+      label: tabLabel("Reviews", pendingEssayCount + pendingDocCount),
       children: (
         <>
-          {sectionHead('Essays', <FileText size={18} color="var(--mc-accent)" aria-hidden />)}
+          {sectionHead(
+            "Essays",
+            <FileText size={18} color="var(--mc-accent)" aria-hidden />,
+          )}
           <EssayReviewList studentUserId={studentId} embedded />
-          {sectionHead('Documents', <FileText size={18} color="var(--mc-accent)" aria-hidden />)}
+          {sectionHead(
+            "Documents",
+            <FileText size={18} color="var(--mc-accent)" aria-hidden />,
+          )}
           <DocumentReviewList studentUserId={studentId} embedded />
         </>
       ),
     },
-    {key:'essays',label:'Applications',children:<SharedApplications studentId={studentId}/>},
     {
-      key: 'more',
-      label: tabLabel('More'),
+      key: "essays",
+      label: tabLabel(
+        "Applications & plans",
+        (sharedApplications.data?.data.length ?? 0) + pipeline.length,
+      ),
+      children: (
+        <>
+          {sectionHead(
+            "Applications & mentor plans",
+            <FileText size={18} color="var(--mc-accent)" aria-hidden />,
+            {
+              label: "Add row",
+              onClick: () => setAddPipelineOpen(true),
+            },
+          )}
+          {studentId && <SharedApplications studentId={studentId} />}
+          <div className="mc-ws-card">
+            {pipeline.length === 0 ? (
+              <div className="mc-ws-empty">
+                Track schools and essay stages — add a pipeline row to get
+                started.
+              </div>
+            ) : (
+              <Table<PipelineDto>
+                rowKey="id"
+                columns={pipelineColumns}
+                dataSource={pipeline}
+                pagination={false}
+                size="small"
+                scroll={{ x: true }}
+              />
+            )}
+          </div>
+        </>
+      ),
+    },
+    {
+      key: "more",
+      label: tabLabel("More"),
       children: (
         <>
           <div className="mc-ws-more-switch">
             <Segmented
-              value={moreView}
+              value={currentMoreView}
               onChange={(v) => setMoreView(v as MoreView)}
               options={moreOptions}
             />
           </div>
 
-          {moreView === 'milestones' && (
+          {currentMoreView === "milestones" && (
             <>
-              {sectionHead('Milestones', <Flag size={18} color="var(--mc-accent)" aria-hidden />, {
-                label: 'Add milestone',
-                onClick: () => setAddMilestoneOpen(true),
-              })}
+              {sectionHead(
+                "Milestones",
+                <Flag size={18} color="var(--mc-accent)" aria-hidden />,
+                !isAccessDenied(milestoneError) && canCreateProgramWork(student, selectedEnrollmentId, "milestones") ? {
+                  label: "Add milestone",
+                  onClick: () => setAddMilestoneOpen(true),
+                } : undefined,
+              )}
               <div className="mc-ws-card">
+                {milestonesError && <Alert type="error" showIcon message={isAccessDenied(milestoneError) ? "You no longer have access to these milestones" : "Milestones could not refresh"} action={<Button onClick={() => void refetchMilestones()}>Retry</Button>} />}
                 {loadingMilestones ? (
-                  <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      padding: 24,
+                    }}
+                  >
                     <Spin />
                   </div>
-                ) : milestones.length === 0 ? (
-                  <div className="mc-ws-empty">No milestones — add key dates and deliverables here.</div>
+                ) : milestonesError && milestones.length === 0 ? null : milestones.length === 0 ? (
+                  <div className="mc-ws-empty">
+                    No milestones — add key dates and deliverables here.
+                  </div>
                 ) : (
                   <Table<MilestoneDto>
                     rowKey="id"
@@ -867,16 +1309,27 @@ export default function StudentWorkspace({
             </>
           )}
 
-          {moreView === 'research' && hasFullSupport && researchPrepLive && (
+          {currentMoreView === "research" && canUseResearch && researchPrepLive && (
             <>
-              {sectionHead('Research grading', <CheckSquare size={18} color="var(--mc-accent)" aria-hidden />)}
+              {sectionHead(
+                "Research grading",
+                <CheckSquare size={18} color="var(--mc-accent)" aria-hidden />,
+              )}
               <div className="mc-ws-card" style={{ padding: 0 }}>
                 {loadingInbox ? (
-                  <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      padding: 24,
+                    }}
+                  >
                     <Spin />
                   </div>
                 ) : researchForStudent.length === 0 ? (
-                  <div className="mc-ws-empty">No research submissions from this student yet.</div>
+                  <div className="mc-ws-empty">
+                    No research submissions from this student yet.
+                  </div>
                 ) : (
                   researchForStudent.map((s) => (
                     <div
@@ -886,7 +1339,7 @@ export default function StudentWorkspace({
                       tabIndex={0}
                       onClick={() => setResearchPick(s)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
+                        if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
                           setResearchPick(s);
                         }
@@ -897,17 +1350,24 @@ export default function StudentWorkspace({
                           Week {s.weekNumber} — {s.weekTitle}
                         </div>
                         <div className="mc-ws-rg-meta">
-                          Submitted {formatDateTime(s.submittedAt)} · Attempt #{s.attemptNumber}
-                          {s.fileName ? ` · ${s.fileName}` : ''}
+                          Submitted {formatDateTime(s.submittedAt)} · Attempt #
+                          {s.attemptNumber}
+                          {s.fileName ? ` · ${s.fileName}` : ""}
                         </div>
                       </div>
-                      <Space direction="vertical" size={2} style={{ alignItems: 'flex-end' }}>
-                        {s.status === 'graded' && s.score != null ? (
+                      <Space
+                        direction="vertical"
+                        size={2}
+                        style={{ alignItems: "flex-end" }}
+                      >
+                        {s.status === "graded" && s.score != null ? (
                           <Text strong style={{ fontSize: 12 }}>
                             {s.score}/100
                           </Text>
                         ) : null}
-                        <McPill variant={RG_MC[s.status]}>{RG_LABEL[s.status]}</McPill>
+                        <McPill variant={RG_MC[s.status]}>
+                          {RG_LABEL[s.status]}
+                        </McPill>
                       </Space>
                     </div>
                   ))
@@ -916,23 +1376,46 @@ export default function StudentWorkspace({
             </>
           )}
 
-          {moreView === 'curriculum' && (
+          {currentMoreView === "curriculum" && (
             <>
-              {sectionHead('Curriculum progress', <CheckSquare size={18} color="var(--mc-accent)" aria-hidden />)}
+              {sectionHead(
+                selectedProgram ? "Program progress" : "Legacy curriculum progress",
+                <CheckSquare size={18} color="var(--mc-accent)" aria-hidden />,
+                selectedProgram && canCreateProgramWork(student, selectedEnrollmentId, 'progress') && scopedProgress.currentData && !scopedProgress.isError && !scopedProgress.isFetching ? { label: 'Update progress', onClick: () => { setProgressDraft((scopedProgress.currentData?.data.items ?? []).map(item => ({ ...item }))); setProgressDraftUpdatedAt(scopedProgress.currentData?.data.updatedAt ?? null); setProgressConflict(false); setProgressEditorOpen(true); } } : undefined,
+              )}
               <div className="mc-ws-card">
-                {curriculumItems.length === 0 ? (
-                  <div className="mc-ws-empty">No curriculum watchlist items yet.</div>
+                {selectedProgram && scopedProgress.isFetching ? <Spin /> : selectedProgram && scopedProgress.isError ? <div role="alert">Could not load program progress. <Button onClick={() => void scopedProgress.refetch()}>Retry</Button></div> : curriculumItems.length === 0 ? (
+                  <div className="mc-ws-empty">
+                    No progress items yet.
+                  </div>
                 ) : (
-                  <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                  <Space
+                    direction="vertical"
+                    size="middle"
+                    style={{ width: "100%" }}
+                  >
                     {curriculumItems.map((item: CurriculumWatchlistItemDto) => (
                       <div key={item.key}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            fontSize: 13,
+                            marginBottom: 4,
+                          }}
+                        >
                           <span>{item.label}</span>
-                          <span style={{ color: 'var(--mc-text-muted)' }}>
-                            {item.percent}%{item.target ? ` · target ${item.target}` : ''}
+                          <span style={{ color: "var(--mc-text-muted)" }}>
+                            {item.percent}%
+                            {item.target ? ` · target ${item.target}` : ""}
                           </span>
                         </div>
-                        <Progress percent={item.percent} showInfo={false} strokeColor="var(--mc-accent)" size="small" />
+                        <Progress
+                          percent={item.percent}
+                          showInfo={false}
+                          strokeColor="var(--mc-accent)"
+                          size="small"
+                        />
                       </div>
                     ))}
                   </Space>
@@ -948,56 +1431,124 @@ export default function StudentWorkspace({
   // 1:1 mentees only get the tabs backed by data that exists for them —
   // Full-Support-only surfaces (essays, milestones/research/
   // curriculum) are hidden.
-  const visibleItems = isFullSupport
-    ? items
-    : items.filter((it) => ['tasks', 'sessions', 'message', 'reviews'].includes(it.key));
+  const visibleItems = items.filter(item => {
+    if (item.key === 'message') return true;
+    if (selectedEnrollmentId === LEGACY_ENROLLMENT) return ['tasks', 'sessions', 'message', 'reviews', 'reports'].includes(item.key) || (item.key === 'more' && moreOptions.length > 0);
+    if (item.key === 'tasks') return canUse('tasks');
+    if (item.key === 'sessions') return canUse('lessons');
+    if (item.key === 'reports') return canUse('reports');
+    if (item.key === 'more') return moreOptions.length > 0;
+    return canUse(item.key === 'essays' ? 'applications' : 'reviews');
+  });
+  const currentTab = visibleItems.some(item => item.key === activeTab) ? activeTab : visibleItems[0]?.key;
+  if (requestedEnrollmentId && requestedEnrollmentId !== acknowledgedEnrollmentRequest && !student.programs?.some(program => program.enrollmentId === requestedEnrollmentId)) {
+    return <Alert type="warning" showIcon message="The linked program enrollment is no longer available" description="Choose an available program or open legacy history to continue with this student." action={<Select aria-label="Choose an available program enrollment" placeholder="Choose a program" style={{ minWidth: 240 }} options={[
+      ...(student.programs ?? []).map(program => ({ value: program.enrollmentId, label: program.name || programNames[program.program] || program.program })),
+      { value: LEGACY_ENROLLMENT, label: 'Legacy / 1:1 history' },
+    ]} onChange={value => { setSelectedEnrollmentId(value); setAcknowledgedEnrollmentRequest(requestedEnrollmentId); }} />} />;
+  }
 
   return (
     <>
       <div className="mc-ws-focus">
         <div className="mc-ws-hero">
           <div className="mc-ws-who">
-            <div className="mc-avatar mc-ws-who-avatar" style={avatarStyleForId(student.id)} aria-hidden>
+            <div
+              className="mc-avatar mc-ws-who-avatar"
+              style={avatarStyleForId(student.id)}
+              aria-hidden
+            >
               {initialsFromName(student.name)}
             </div>
             <div className="mc-ws-who-text">
-              <span className="mc-ws-eyebrow">{assignmentLabel(student, isFullSupport).toUpperCase()}</span>
+              <span className="mc-ws-eyebrow">
+                {(selectedProgram ? assignmentLabel({ ...student, programs: [selectedProgram], hasLegacyFullSupport: false }, true) : "Legacy / 1:1 history").toUpperCase()}
+              </span>
               <h1>{student.name}</h1>
             </div>
           </div>
           <p className="mc-ws-who-meta">
-            {student.sessionsCount} session{student.sessionsCount === 1 ? '' : 's'} total
-            {isFullSupport ? ` · ${student.used}h completed · ${student.scheduledHours ?? 0}h scheduled` : ''}
+            {selectedHours.sessionsCount} session
+            {selectedHours.sessionsCount === 1 ? "" : "s"} total
+            {selectedProgram
+              ? ` · ${selectedHours.used}h completed · ${selectedHours.scheduledHours ?? 0}h scheduled`
+              : ""}
           </p>
           {identityDetails}
-          <Button onClick={() => setActiveTab('message')} icon={<MessageSquare size={14}/>}>
-            Message {student.name.split(/\s+/)[0] || 'student'}
+          {!!student.programs?.length && <Space wrap style={{ marginBottom: 12 }}>
+            <Select aria-label="Student program enrollment" disabled={creatingTask || savingFeedback || creatingMs || savingProgramProgress || decidingExtension} value={selectedEnrollmentId} onChange={value => { setSelectedEnrollmentId(value); setExpandedTaskId(null); setProgressEditorOpen(false); }} style={{ minWidth: 260 }} options={[
+              ...student.programs.map(program => ({ value: program.enrollmentId, label: `${program.name || programNames[program.program] || program.program} · ${program.roles.map(role => roleNames[role] || role).join(', ')}` })),
+              { value: LEGACY_ENROLLMENT, label: 'Legacy / 1:1 history (program unconfirmed)' },
+            ]} />
+            {selectedProgram && canUse('reports') && <Button loading={downloadingReport} onClick={async () => {
+              setDownloadingReport(true);
+              try { await downloadProgramReport(selectedProgram.enrollmentId, 'mentor', `${student.name} ${selectedProgram.name || selectedProgram.program}`); }
+              catch { message.error('Could not download the program report'); }
+              finally { setDownloadingReport(false); }
+            }}>Download program PDF</Button>}
+          </Space>}
+          {isProgramStudent && selectedEnrollmentId === LEGACY_ENROLLMENT && <p className="mc-ws-who-meta">These records have no confirmed program enrollment. They are preserved separately from program hours and progress.</p>}
+          <Button
+            onClick={() => setActiveTab("message")}
+            icon={<MessageSquare size={14} />}
+          >
+            Message {student.name.split(/\s+/)[0] || "student"}
           </Button>
         </div>
-        <div className="mc-ws-next"><span className="mc-ws-eyebrow">NEXT SESSION · TASHKENT</span>{bookingsError ? <p>Session information could not be loaded.</p> : loadingBookings ? <Spin/> : upcomingSessions[0] ? <><h2>{formatDateTime(upcomingSessions[0].dateTime)}</h2><p>{upcomingSessions[0].description || 'Mentoring session'} · {upcomingSessions[0].durationLabel}</p><Button onClick={() => setActiveTab('sessions')}>View sessions</Button></> : <><h2>No upcoming session</h2><p>Check session history or arrange the next meeting.</p><Button onClick={() => setActiveTab('sessions')}>View sessions</Button></>}</div>
+        <div className="mc-ws-next">
+          <span className="mc-ws-eyebrow">NEXT SESSION · TASHKENT</span>
+          {bookingsError ? (
+            <p>Session information could not be loaded.</p>
+          ) : loadingBookings ? (
+            <Spin />
+          ) : upcomingSessions[0] ? (
+            <>
+              <h2>{formatDateTime(upcomingSessions[0].dateTime)}</h2>
+              <p>
+                {upcomingSessions[0].description || "Mentoring session"} ·{" "}
+                {upcomingSessions[0].durationLabel}
+              </p>
+              <Button onClick={() => setActiveTab("sessions")}>
+                View sessions
+              </Button>
+            </>
+          ) : (
+            <>
+              <h2>No upcoming session</h2>
+              <p>Check session history or arrange the next meeting.</p>
+              <Button onClick={() => setActiveTab("sessions")}>
+                View sessions
+              </Button>
+            </>
+          )}
+        </div>
       </div>
       <div className="mc-stat-grid mc-ws-stats">
         <McStat
           icon={<Calendar size={18} />}
           label="Total sessions"
-          value={student.sessionsCount}
+          value={selectedHours.sessionsCount}
           meta={
-            isFullSupport
-              ? `${student.used}h completed · ${student.scheduledHours ?? 0}h scheduled`
+            isProgramStudent
+              ? rosterHoursLabel(selectedHours)
               : upcomingSessions.length > 0
                 ? `${upcomingSessions.length} upcoming`
-                : 'All past'
+                : "All past"
           }
           tone="info"
         />
         <McStat
           icon={<CalendarCheck size={18} />}
-          label="Reports filed"
+          label="Completed sessions"
           value={reportsFiled}
-          meta={reportsDue > 0 ? `${reportsDue} report${reportsDue === 1 ? '' : 's'} due` : 'All filed'}
-          tone={reportsDue > 0 ? 'alert' : 'good'}
-          cta={reportsDue > 0 ? 'Open sessions' : undefined}
-          onClick={reportsDue > 0 ? () => setActiveTab('sessions') : undefined}
+          meta={
+            reportsDue > 0
+              ? `${reportsDue} report${reportsDue === 1 ? "" : "s"} due`
+              : "No pending session records"
+          }
+          tone={reportsDue > 0 ? "alert" : "good"}
+          cta={reportsDue > 0 ? "Open sessions" : undefined}
+          onClick={reportsDue > 0 ? () => setActiveTab("sessions") : undefined}
         />
         <McStat
           icon={<CheckSquare size={18} />}
@@ -1007,20 +1558,24 @@ export default function StudentWorkspace({
             awaitingReviewCount > 0
               ? `${awaitingReviewCount} awaiting review`
               : openTasksCount > 0
-                ? 'Assigned'
-                : 'All caught up'
+                ? "Assigned"
+                : "All caught up"
           }
-          tone={awaitingReviewCount > 0 ? 'warn' : 'neutral'}
+          tone={awaitingReviewCount > 0 ? "warn" : "neutral"}
         />
-        {isFullSupport ? (
+        {canUse("reviews") ? (
           <McStat
             icon={<FileText size={18} />}
             label="Shared essays"
             value={essayReviews.isError ? "—" : sharedEssayCount}
-            meta={essayReviews.isError ? "Count unavailable" : "Shared with you for review"}
+            meta={
+              essayReviews.isError
+                ? "Count unavailable"
+                : "Shared with you for review"
+            }
             tone="neutral"
             cta="Open reviews"
-            onClick={() => setActiveTab('reviews')}
+            onClick={() => setActiveTab("reviews")}
           />
         ) : (
           <McStat
@@ -1034,12 +1589,30 @@ export default function StudentWorkspace({
       </div>
 
       <Tabs
-        activeKey={activeTab}
+        activeKey={currentTab}
         onChange={setActiveTab}
         items={visibleItems}
         destroyInactiveTabPane
       />
 
+      <Modal title="Program progress" open={progressEditorOpen} onCancel={() => setProgressEditorOpen(false)} confirmLoading={savingProgramProgress} okButtonProps={{ disabled: progressConflict }} onOk={async () => {
+        if (!selectedProgram || progressConflict || !canCreateProgramWork(student, selectedEnrollmentId, 'progress') || scopedProgress.isError) return;
+        const validationError = validateProgramProgress(progressDraft);
+        if (validationError) { message.warning(validationError); return; }
+        try { await saveProgramProgress({ id: selectedProgram.enrollmentId, expectedUpdatedAt: progressDraftUpdatedAt, items: progressDraft.map(item => ({ ...item, key: item.key.trim() })) }).unwrap(); if (workspaceScopeRef.current !== selectedEnrollmentId) return; setProgressEditorOpen(false); message.success('Program progress saved'); }
+        catch (error) { if (workspaceScopeRef.current !== selectedEnrollmentId) return; if (error && typeof error === 'object' && 'status' in error && error.status === 409) { setProgressConflict(true); void scopedProgress.refetch(); } else message.error('Could not save program progress'); }
+      }}>
+        {progressConflict && <Alert type="warning" showIcon message="Program progress changed while you were editing" description="Your draft has not overwritten the newer progress. Close and reopen this editor to load the latest version before making changes." />}
+        <Space direction="vertical" style={{ width: '100%' }}>
+          {progressDraft.map((item,index) => <Space key={index} wrap>
+            <Input aria-label={`Progress item ${index + 1}`} placeholder="Progress item" maxLength={200} value={item.key} onChange={event => setProgressDraft(items => items.map((row,i) => i === index ? { ...row, key: event.target.value } : row))} />
+            <InputNumber aria-label={`Progress percent ${index + 1}`} min={0} max={100} value={item.percent} onChange={value => setProgressDraft(items => items.map((row,i) => i === index ? { ...row, percent: value ?? 0 } : row))} suffix="%" />
+            <Input aria-label={`Progress target ${index + 1}`} placeholder="Target (optional)" maxLength={1000} value={item.target ?? ''} onChange={event => setProgressDraft(items => items.map((row,i) => i === index ? { ...row, target: event.target.value } : row))} />
+            <Button danger onClick={() => setProgressDraft(items => items.filter((_,i) => i !== index))}>Remove</Button>
+          </Space>)}
+          <Button disabled={progressDraft.length >= 100} onClick={() => setProgressDraft(items => [...items, { key: '', percent: 0 }])}>Add progress item</Button>
+        </Space>
+      </Modal>
       <Modal
         title="Review student work"
         open={!!feedbackTask}
@@ -1055,7 +1628,9 @@ export default function StudentWorkspace({
             <Text type="secondary" style={{ fontSize: 12 }}>
               Task
             </Text>
-            <div style={{ fontWeight: 600, marginBottom: 12 }}>{feedbackTask.task}</div>
+            <div style={{ fontWeight: 600, marginBottom: 12 }}>
+              {feedbackTask.task}
+            </div>
             {feedbackTask.submissionText ? (
               <>
                 <Text type="secondary" style={{ fontSize: 12 }}>
@@ -1063,11 +1638,11 @@ export default function StudentWorkspace({
                 </Text>
                 <div
                   style={{
-                    whiteSpace: 'pre-wrap',
+                    whiteSpace: "pre-wrap",
                     marginBottom: 14,
                     padding: 10,
                     borderRadius: 8,
-                    background: 'var(--mc-bg-subtle)',
+                    background: "var(--mc-bg-subtle)",
                     fontSize: 13,
                   }}
                 >
@@ -1079,7 +1654,11 @@ export default function StudentWorkspace({
               <ul className="mc-ws-files" style={{ marginBottom: 14 }}>
                 {feedbackTask.submissionFileUrls.map((file) => (
                   <li key={file.url}>
-                    <a href={`${hostName}${file.url}`} target="_blank" rel="noreferrer">
+                    <a
+                      href={`${hostName}${file.url}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       <FileText size={13} /> {file.fileName}
                     </a>
                   </li>
@@ -1087,26 +1666,43 @@ export default function StudentWorkspace({
               </ul>
             ) : null}
             <Form form={feedbackForm} layout="vertical">
-              <Form.Item name="decision" label="Decision" rules={[{ required: true }]}>
-                <Select options={[{ value: 'approved', label: 'Approve task' }, { value: 'revision_requested', label: 'Request revision' }]} />
+              <Form.Item
+                name="decision"
+                label="Decision"
+                rules={[{ required: true }]}
+              >
+                <Select
+                  options={[
+                    { value: "approved", label: "Approve task" },
+                    { value: "revision_requested", label: "Request revision" },
+                  ]}
+                />
               </Form.Item>
-              {feedbackDecision === 'revision_requested' && (feedbackTask.submissionFileUrls?.length ?? 0) > 0 && (
-                <Form.Item
-                  name="revisionFileUrls"
-                  label="Which files need revision?"
-                  extra="Leave all unticked to ask for the whole submission again. The student only re-uploads the ticked files."
-                >
-                  <Checkbox.Group className="mc-ws-revision-files">
-                    {feedbackTask.submissionFileUrls!.map((file) => (
-                      <Checkbox key={file.url} value={file.url}>
-                        {file.fileName}
-                      </Checkbox>
-                    ))}
-                  </Checkbox.Group>
-                </Form.Item>
-              )}
-              <Form.Item name="feedback" label="Feedback" rules={[{ required: true, message: 'Write your feedback' }]}>
-                <Input.TextArea rows={5} placeholder="What went well, what to improve…" />
+              {feedbackDecision === "revision_requested" &&
+                (feedbackTask.submissionFileUrls?.length ?? 0) > 0 && (
+                  <Form.Item
+                    name="revisionFileUrls"
+                    label="Which files need revision?"
+                    extra="Leave all unticked to ask for the whole submission again. The student only re-uploads the ticked files."
+                  >
+                    <Checkbox.Group className="mc-ws-revision-files">
+                      {feedbackTask.submissionFileUrls!.map((file) => (
+                        <Checkbox key={file.url} value={file.url}>
+                          {file.fileName}
+                        </Checkbox>
+                      ))}
+                    </Checkbox.Group>
+                  </Form.Item>
+                )}
+              <Form.Item
+                name="feedback"
+                label="Feedback"
+                rules={[{ required: true, message: "Write your feedback" }]}
+              >
+                <Input.TextArea
+                  rows={5}
+                  placeholder="What went well, what to improve…"
+                />
               </Form.Item>
             </Form>
           </>
@@ -1120,57 +1716,75 @@ export default function StudentWorkspace({
         destroyOnClose
         width={520}
         footer={[
-          <Button key="decline" danger disabled={decidingExtension} onClick={() => answerExtension('declined')}>
+          <Button
+            key="decline"
+            danger
+            disabled={decidingExtension}
+            onClick={() => answerExtension("declined")}
+          >
             Decline
           </Button>,
-          <Button key="approve" type="primary" loading={decidingExtension} onClick={() => answerExtension('approved')}>
+          <Button
+            key="approve"
+            type="primary"
+            loading={decidingExtension}
+            onClick={() => answerExtension("approved")}
+          >
             Approve new deadline
           </Button>,
         ]}
       >
-        {extensionTask && (() => {
-          const request = pendingExtension(extensionTask);
-          if (!request) return <Text type="secondary">This request was already answered.</Text>;
-          const current = deadlineDay(extensionTask.deadline);
-          return (
-            <div className="mc-ws-extension">
-              <div className="mc-ws-extension-task">{extensionTask.task}</div>
-              <div className="mc-ws-extension-dates">
-                <div>
-                  <span>Current deadline</span>
-                  <strong>{formatDate(extensionTask.deadline)}</strong>
+        {extensionTask &&
+          (() => {
+            const request = pendingExtension(extensionTask);
+            if (!request)
+              return (
+                <Text type="secondary">This request was already answered.</Text>
+              );
+            const current = deadlineDay(extensionTask.deadline);
+            return (
+              <div className="mc-ws-extension">
+                <div className="mc-ws-extension-task">{extensionTask.task}</div>
+                <div className="mc-ws-extension-dates">
+                  <div>
+                    <span>Current deadline</span>
+                    <strong>{formatDate(extensionTask.deadline)}</strong>
+                  </div>
+                  <div>
+                    <span>Requested</span>
+                    <strong>{formatDate(request.requestedDeadline)}</strong>
+                  </div>
                 </div>
-                <div>
-                  <span>Requested</span>
-                  <strong>{formatDate(request.requestedDeadline)}</strong>
+                <div className="mc-ws-extension-reason">
+                  <span>Reason</span>
+                  <p>{request.reason}</p>
                 </div>
+                <label className="mc-ws-extension-field">
+                  <span>New deadline</span>
+                  <DatePicker
+                    value={extensionDeadline}
+                    onChange={setExtensionDeadline}
+                    format="D MMM YYYY"
+                    disabledDate={(date) =>
+                      !!current && !date.isAfter(dayjs(current), "day")
+                    }
+                    style={{ width: "100%" }}
+                  />
+                </label>
+                <label className="mc-ws-extension-field">
+                  <span>Message to the student (optional)</span>
+                  <Input.TextArea
+                    rows={2}
+                    value={extensionResponse}
+                    onChange={(event) =>
+                      setExtensionResponse(event.target.value)
+                    }
+                    placeholder="e.g. Fine — but please send the outline by Friday."
+                  />
+                </label>
               </div>
-              <div className="mc-ws-extension-reason">
-                <span>Reason</span>
-                <p>{request.reason}</p>
-              </div>
-              <label className="mc-ws-extension-field">
-                <span>New deadline</span>
-                <DatePicker
-                  value={extensionDeadline}
-                  onChange={setExtensionDeadline}
-                  format="D MMM YYYY"
-                  disabledDate={(date) => !!current && !date.isAfter(dayjs(current), 'day')}
-                  style={{ width: '100%' }}
-                />
-              </label>
-              <label className="mc-ws-extension-field">
-                <span>Message to the student (optional)</span>
-                <Input.TextArea
-                  rows={2}
-                  value={extensionResponse}
-                  onChange={(event) => setExtensionResponse(event.target.value)}
-                  placeholder="e.g. Fine — but please send the outline by Friday."
-                />
-              </label>
-            </div>
-          );
-        })()}
+            );
+          })()}
       </Modal>
 
       <Modal
@@ -1183,16 +1797,25 @@ export default function StudentWorkspace({
         destroyOnClose
       >
         <Form form={milestoneForm} layout="vertical">
-          <Form.Item name="label" label="Milestone" rules={[{ required: true, message: 'Describe the milestone' }]}>
+          <Form.Item
+            name="label"
+            label="Milestone"
+            rules={[{ required: true, message: "Describe the milestone" }]}
+          >
             <Input placeholder="e.g. Submit RD1 application" />
           </Form.Item>
           <Form.Item name="date" label="Target date (optional)">
-            <DatePicker style={{ width: '100%' }} />
+            <DatePicker style={{ width: "100%" }} />
           </Form.Item>
         </Form>
       </Modal>
 
-      <LessonPlanModal open={logSessionOpen} onClose={() => setLogSessionOpen(false)} studentId={studentId} />
+      <LessonPlanModal
+        open={logSessionOpen}
+        onClose={() => setLogSessionOpen(false)}
+        studentId={studentId}
+        enrollmentId={selectedProgram?.enrollmentId}
+      />
 
       <Modal
         title="Add application / essay row"
@@ -1204,7 +1827,11 @@ export default function StudentWorkspace({
         destroyOnClose
       >
         <Form form={pipelineForm} layout="vertical">
-          <Form.Item name="program" label="Program or school" rules={[{ required: true, message: 'Required' }]}>
+          <Form.Item
+            name="program"
+            label="Program or school"
+            rules={[{ required: true, message: "Required" }]}
+          >
             <Input placeholder="e.g. Oxford PPE" />
           </Form.Item>
           <Form.Item name="stage" label="Stage">
@@ -1215,23 +1842,27 @@ export default function StudentWorkspace({
               allowClear
               placeholder="Select status"
               options={[
-                { value: 'draft', label: 'Draft' },
-                { value: 'in progress', label: 'In progress' },
-                { value: 'submitted', label: 'Submitted' },
-                { value: 'waitlist', label: 'Waitlist' },
-                { value: 'accepted', label: 'Accepted' },
-                { value: 'rejected', label: 'Rejected' },
+                { value: "draft", label: "Draft" },
+                { value: "in progress", label: "In progress" },
+                { value: "submitted", label: "Submitted" },
+                { value: "waitlist", label: "Waitlist" },
+                { value: "accepted", label: "Accepted" },
+                { value: "rejected", label: "Rejected" },
               ]}
             />
           </Form.Item>
           <Form.Item name="deadline" label="Deadline (optional)">
-            <DatePicker style={{ width: '100%' }} />
+            <DatePicker style={{ width: "100%" }} />
           </Form.Item>
         </Form>
       </Modal>
 
       {sessionActions.modals}
-      <SubmissionDrawer open={!!researchPick} submission={researchPick} onClose={() => setResearchPick(null)} />
+      <SubmissionDrawer
+        open={!!researchPick}
+        submission={researchPick}
+        onClose={() => setResearchPick(null)}
+      />
     </>
   );
 }

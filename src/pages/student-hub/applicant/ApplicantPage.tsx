@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Alert, Button, Skeleton } from "antd";
 import { Link } from "react-router-dom";
 import { Building2 } from "lucide-react";
 import { useGetUniversityDetailQuery } from "src/app/services/universities";
@@ -16,14 +15,18 @@ export function ApplicantPage({
   subtitle,
   actions,
   children,
+  className,
 }: {
+  className?: string;
   title?: string;
   subtitle?: string;
   actions?: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <section className="applicant-page">
+    <section
+      className={["applicant-page", className].filter(Boolean).join(" ")}
+    >
       {(title || subtitle || actions) && (
         <header className="applicant-page__heading">
           <div>
@@ -37,35 +40,7 @@ export function ApplicantPage({
     </section>
   );
 }
-export function QueryState({
-  loading,
-  error,
-  retry,
-  children,
-}: {
-  loading?: boolean;
-  error?: boolean;
-  retry: () => unknown;
-  children: ReactNode;
-}) {
-  if (loading)
-    return (
-      <div className="applicant-panel">
-        <Skeleton active paragraph={{ rows: 5 }} />
-      </div>
-    );
-  if (error)
-    return (
-      <Alert
-        type="error"
-        showIcon
-        message="We couldn’t finish that request."
-        description="Your saved information is unchanged. Please try again."
-        action={<Button onClick={retry}>Try again</Button>}
-      />
-    );
-  return <>{children}</>;
-}
+export { QueryState } from "./ApplicationQueryState";
 export function UniversityIdentity({
   id,
   name,
@@ -78,7 +53,11 @@ export function UniversityIdentity({
   preferName?: boolean;
 }) {
   const { data } = useGetUniversityDetailQuery(id ?? "", { skip: !id });
-  const label = (preferName ? name : data && getTranslation(data.name)) || name || (data && getTranslation(data.name)) || "University";
+  const label =
+    (preferName ? name : data && getTranslation(data.name)) ||
+    name ||
+    (data && getTranslation(data.name)) ||
+    "University";
   return (
     <div className="applicant-university">
       <span className="applicant-university__logo">
@@ -95,28 +74,73 @@ export function UniversityIdentity({
     </div>
   );
 }
-export function RelatedApplicationLabel({ application }: { application: CollegeApplication }) {
-  const university = useGetUniversityDetailQuery(application.universityId ?? "", {
-    skip: !application.universityId,
-  });
-  const universityName = application.universityName ||
+export function RelatedApplicationLabel({
+  application,
+}: {
+  application: CollegeApplication;
+}) {
+  const university = useGetUniversityDetailQuery(
+    application.universityId ?? "",
+    {
+      skip: !application.universityId,
+    },
+  );
+  const universityName =
+    application.universityName ||
     (university.data ? getTranslation(university.data.name) : undefined);
   const isGraduate = application.degreeLevel === "master";
-  const name = isGraduate ? application.major || universityName : universityName;
-  const detail = isGraduate && application.major ? universityName : application.major;
-  return <span>{name || "University"}{detail && detail !== name ? ` · ${detail}` : ""}</span>;
+  const name = isGraduate
+    ? application.major || universityName
+    : universityName;
+  const detail =
+    isGraduate && application.major ? universityName : application.major;
+  return (
+    <span>
+      {name || "University"}
+      {detail && detail !== name ? ` · ${detail}` : ""}
+    </span>
+  );
 }
-export type CollegeListView = "applications" | "deadlines" | "scholarships" | "archived";
+export type CollegeListView =
+  | "applications"
+  | "deadlines"
+  | "scholarships"
+  | "archived";
 
 /** One switcher for every College List view, so they read as one place. */
-export function CollegeListTabs({ current, masters = false }: { current: CollegeListView; masters?: boolean }) {
+export function CollegeListTabs({
+  current,
+  masters = false,
+}: {
+  current: CollegeListView;
+  masters?: boolean;
+}) {
   const views: { key: CollegeListView; label: string; to: string }[] = [
-    { key: "applications", label: masters ? "Programs" : "Applications", to: "/student-hub/applications" },
-    { key: "deadlines", label: "Deadlines", to: "/student-hub/applications?tab=timeline" },
-    { key: "scholarships", label: "Scholarships", to: "/student-hub/applications?tab=scholarships" },
-    { key: "archived", label: "Archived", to: "/student-hub/applications?view=archived" },
+    {
+      key: "applications",
+      label: masters ? "Programs" : "Applications",
+      to: "/student-hub/applications",
+    },
+    {
+      key: "deadlines",
+      label: "Deadlines",
+      to: "/student-hub/applications?tab=timeline",
+    },
+    {
+      key: "scholarships",
+      label: "Scholarships",
+      to: "/student-hub/applications?tab=scholarships",
+    },
+    {
+      key: "archived",
+      label: "Archived",
+      to: "/student-hub/applications?view=archived",
+    },
   ];
-  const lens = useSegmentLens<HTMLElement>('[aria-current="page"]', [current, masters]);
+  const lens = useSegmentLens<HTMLElement>('[aria-current="page"]', [
+    current,
+    masters,
+  ]);
   return (
     <nav
       ref={lens.ref}
@@ -126,9 +150,18 @@ export function CollegeListTabs({ current, masters = false }: { current: College
       data-lens={lens.lensStyle.width != null ? "on" : undefined}
       aria-label="College List views"
     >
-      <span className="applicant-view-tabs__lens" style={lens.lensStyle} aria-hidden />
+      <span
+        className="applicant-view-tabs__lens"
+        style={lens.lensStyle}
+        aria-hidden
+      />
       {views.map((view) => (
-        <Link key={view.key} to={view.to} className={view.key === current ? "is-active" : undefined} aria-current={view.key === current ? "page" : undefined}>
+        <Link
+          key={view.key}
+          to={view.to}
+          className={view.key === current ? "is-active" : undefined}
+          aria-current={view.key === current ? "page" : undefined}
+        >
           {view.label}
         </Link>
       ))}

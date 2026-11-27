@@ -1,4 +1,13 @@
 {
+  "studentHub.orgMembership.settingsTitle": "Школа и консультанты",
+  "studentHub.orgMembership.loading": "Загрузка данных школы…",
+  "studentHub.orgMembership.empty": "Вы не подключены к школе или организации.",
+  "applicant.nav.applicationCount_few": "{{count}} заявки",
+  "applicant.nav.applicationCount_many": "{{count}} заявок",
+  "applicant.nav.applicationCount_other": "{{count}} заявок",
+  "applicant.nav.applicationCount_one": "{{count}} заявка",
+  "applicant.nav.applicationsTitle": "Заявки",
+  "applicant.applicationList": "Мои заявки",
   "studentHub.hub.ieltsTestPrep": "Подготовка к IELTS",
   "applicant.ieltsTestPrep": "Подготовка к IELTS",
   "onboarding.info.searchOrEnter": "Найдите или введите свой вариант",

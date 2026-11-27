@@ -1,8 +1,12 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { withReadRecovery } from './readRecovery';
-import { ACCESS_TOKEN } from 'src/constants/storage';
-import { LANGUAGE } from 'src/constants/storage';
-import { apiTagTypes, baseUrl } from './const';
+import { createApi, fetchBaseQuery, retry } from "@reduxjs/toolkit/query/react";
+import {
+  recoverDocumentRead,
+  isRecoverableDocumentRead,
+} from "../student-hub/documentReadRecovery";
+import { withReadRecovery } from "./readRecovery";
+import { ACCESS_TOKEN } from "src/constants/storage";
+import { LANGUAGE } from "src/constants/storage";
+import { apiTagTypes, baseUrl } from "./const";
 
 // Create our baseQuery instance
 const baseQuery = fetchBaseQuery({
@@ -10,13 +14,13 @@ const baseQuery = fetchBaseQuery({
   prepareHeaders: (headers) => {
     // By default, if we have a token in the store, let's use that for authenticated requests
     const token = localStorage.getItem(ACCESS_TOKEN);
-    const language = localStorage.getItem(LANGUAGE) || 'en';
+    const language = localStorage.getItem(LANGUAGE) || "en";
 
     if (token) {
-      headers.set('authorization', `Bearer ${token}`);
+      headers.set("authorization", `Bearer ${token}`);
     }
 
-    headers.set('language', language);
+    headers.set("language", language);
 
     return headers;
   },
@@ -29,7 +33,7 @@ const videoUploadBaseQuery = fetchBaseQuery({
   prepareHeaders: (headers) => {
     const token = localStorage.getItem(ACCESS_TOKEN);
     if (token) {
-      headers.set('authorization', `Bearer ${token}`);
+      headers.set("authorization", `Bearer ${token}`);
     }
     return headers;
   },
@@ -38,7 +42,55 @@ const videoUploadBaseQuery = fetchBaseQuery({
 
 export { baseQuery, videoUploadBaseQuery };
 
-const baseQueryWithReadRecovery = withReadRecovery(baseQuery);
+const baseQueryWithRetry = withReadRecovery(baseQuery);
+// Keep automatic replay limited to these safe GETs; review submissions/uploads
+// must never be duplicated after an uncertain network response.
+const baseQueryWithDocumentRecovery: typeof baseQuery = (
+  args,
+  api,
+  options,
+) => {
+  const url = typeof args === "string" ? args : args.url;
+  const method = typeof args === "string" ? "GET" : (args.method ?? "GET");
+  const documentRead = isRecoverableDocumentRead(url, method);
+  return documentRead
+    ? recoverDocumentRead(async () => {
+        // Keep the deadline active through body reading. RTK's own timer ends
+        // at headers and aborts the whole query, so isolate each attempt here.
+        const controller = new AbortController();
+        const abort = () => controller.abort();
+        api.signal.addEventListener("abort", abort, { once: true });
+        if (api.signal.aborted) abort();
+        let timedOut = false;
+        const deadline = setTimeout(() => {
+          timedOut = true;
+          abort();
+        }, 10000);
+        try {
+          const result = await baseQuery(
+            {
+              ...(typeof args === "string" ? { url: args } : args),
+              timeout: 0,
+            },
+            { ...api, signal: controller.signal, abort },
+            options,
+          );
+          return timedOut
+            ? {
+                error: {
+                  status: "TIMEOUT_ERROR" as const,
+                  error: "Document read attempt timed out",
+                },
+                meta: result.meta,
+              }
+            : result;
+        } finally {
+          clearTimeout(deadline);
+          api.signal.removeEventListener("abort", abort);
+        }
+      }, api.signal)
+    : baseQueryWithRetry(args, api, options);
+};
 
 /**
  * Create a base API to inject endpoints into elsewhere.
@@ -58,7 +110,7 @@ export const RtkApi = createApi({
   /**
    * A bare bones base query would just be `baseQuery: fetchBaseQuery({ baseUrl: '/' })`
    */
-  baseQuery: baseQueryWithReadRecovery,
+  baseQuery: baseQueryWithDocumentRecovery,
   /**
    * Tag types must be defined in the original API definition
    * for any tags that would be provided by injected endpoints
@@ -74,14 +126,14 @@ export const RtkApi = createApi({
 
 export const enhancedApi = RtkApi.enhanceEndpoints({
   endpoints: () => ({
-    getPost: () => 'test',
+    getPost: () => "test",
   }),
 });
 
 export const plansApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
     getPaymentPlans: builder.query<any[], void>({
-      query: () => 'payments/plans',
+      query: () => "payments/plans",
     }),
   }),
 });
@@ -124,7 +176,7 @@ import {
   UpdateStudentEssayRequest,
   PaginatedResponse,
   ApiResponse,
-} from '../student-hub/types';
+} from "../student-hub/types";
 
 // Re-export types for external use
 export type {
@@ -162,95 +214,107 @@ export const studentHubDashboardApi = RtkApi.injectEndpoints({
     // Get dashboard stats
     getDashboardStats: builder.query<DashboardStats, void>({
       query: () => ({
-        url: '/student-hub/dashboard',
-        method: 'GET',
+        url: "/student-hub/dashboard",
+        method: "GET",
       }),
       providesTags: [
-        'StudentProfile',
-        'CollegeApplications',
-        'ApplicationTasks',
-        'ScholarshipApplications',
-        'StudentEssays',
-        'Notifications',
-        'ProgressTracking',
-        'UserPreferences',
+        "StudentProfile",
+        "CollegeApplications",
+        "ApplicationTasks",
+        "ScholarshipApplications",
+        "StudentEssays",
+        "Notifications",
+        "ProgressTracking",
+        "UserPreferences",
       ],
     }),
 
     // Get notifications
-    getNotifications: builder.query<PaginatedResponse<Notification>, { page?: number; limit?: number }>({
+    getNotifications: builder.query<
+      PaginatedResponse<Notification>,
+      { page?: number; limit?: number }
+    >({
       query: ({ page = 1, limit = 10 } = {}) => ({
-        url: '/notifications',
-        method: 'GET',
+        url: "/notifications",
+        method: "GET",
         params: { page, limit },
       }),
-      providesTags: ['Notifications'],
+      providesTags: ["Notifications"],
     }),
 
     // Get unread notification count
     getUnreadNotificationCount: builder.query<{ count: number }, void>({
       query: () => ({
-        url: '/notifications/unread-count',
-        method: 'GET',
+        url: "/notifications/unread-count",
+        method: "GET",
       }),
-      providesTags: ['Notifications'],
+      providesTags: ["Notifications"],
     }),
 
     // Mark notification as read
     markNotificationAsRead: builder.mutation<void, string>({
       query: (notificationId) => ({
         url: `/notifications/${notificationId}/read`,
-        method: 'PATCH',
+        method: "PATCH",
       }),
-      invalidatesTags: ['Notifications'],
+      invalidatesTags: ["Notifications"],
     }),
 
     // Get progress tracking
     getProgressTracking: builder.query<ProgressTracking[], void>({
       query: () => ({
-        url: '/progress-tracking',
-        method: 'GET',
+        url: "/progress-tracking",
+        method: "GET",
       }),
-      providesTags: ['ProgressTracking'],
+      providesTags: ["ProgressTracking"],
     }),
 
     // Create progress tracking
-    createProgressTracking: builder.mutation<ProgressTracking, CreateProgressTrackingRequest>({
+    createProgressTracking: builder.mutation<
+      ProgressTracking,
+      CreateProgressTrackingRequest
+    >({
       query: (data) => ({
-        url: '/progress-tracking',
-        method: 'POST',
+        url: "/progress-tracking",
+        method: "POST",
         body: data,
       }),
-      invalidatesTags: ['ProgressTracking'],
+      invalidatesTags: ["ProgressTracking"],
     }),
 
     // Update progress tracking
-    updateProgressTracking: builder.mutation<ProgressTracking, { id: string; data: UpdateProgressTrackingRequest }>({
+    updateProgressTracking: builder.mutation<
+      ProgressTracking,
+      { id: string; data: UpdateProgressTrackingRequest }
+    >({
       query: ({ id, data }) => ({
         url: `/progress-tracking/${id}`,
-        method: 'PATCH',
+        method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ['ProgressTracking'],
+      invalidatesTags: ["ProgressTracking"],
     }),
 
     // Get user preferences
     getUserPreferences: builder.query<UserPreferences, void>({
       query: () => ({
-        url: '/user-preferences',
-        method: 'GET',
+        url: "/user-preferences",
+        method: "GET",
       }),
-      providesTags: ['UserPreferences'],
+      providesTags: ["UserPreferences"],
     }),
 
     // Update user preferences
-    updateUserPreferences: builder.mutation<UserPreferences, UpdateUserPreferencesRequest>({
+    updateUserPreferences: builder.mutation<
+      UserPreferences,
+      UpdateUserPreferencesRequest
+    >({
       query: (data) => ({
-        url: '/user-preferences',
-        method: 'PATCH',
+        url: "/user-preferences",
+        method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ['UserPreferences'],
+      invalidatesTags: ["UserPreferences"],
     }),
   }),
 });
@@ -261,117 +325,144 @@ export const studentHubDashboardApi = RtkApi.injectEndpoints({
 export const applicationTrackingApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
     // Get college applications
-    getCollegeApplications: builder.query<PaginatedResponse<CollegeApplication>, void>({
+    getCollegeApplications: builder.query<
+      PaginatedResponse<CollegeApplication>,
+      void
+    >({
       query: () => ({
-        url: '/application-tracking/college-applications',
-        method: 'GET',
+        url: "/application-tracking/college-applications",
+        method: "GET",
       }),
-      providesTags: ['CollegeApplications'],
+      providesTags: ["CollegeApplications"],
     }),
 
     // Create college application
-    createCollegeApplication: builder.mutation<CollegeApplication, CreateCollegeApplicationRequest>({
+    createCollegeApplication: builder.mutation<
+      CollegeApplication,
+      CreateCollegeApplicationRequest
+    >({
       query: (data) => ({
-        url: '/application-tracking/college-applications',
-        method: 'POST',
+        url: "/application-tracking/college-applications",
+        method: "POST",
         body: data,
       }),
-      invalidatesTags: ['CollegeApplications'],
+      invalidatesTags: ["CollegeApplications"],
     }),
 
     // Update college application
-    updateCollegeApplication: builder.mutation<CollegeApplication, { id: string; data: UpdateCollegeApplicationRequest }>({
+    updateCollegeApplication: builder.mutation<
+      CollegeApplication,
+      { id: string; data: UpdateCollegeApplicationRequest }
+    >({
       query: ({ id, data }) => ({
         url: `/application-tracking/college-applications/${id}`,
-        method: 'PATCH',
+        method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ['CollegeApplications'],
+      invalidatesTags: ["CollegeApplications"],
     }),
 
     // Delete college application
     deleteCollegeApplication: builder.mutation<void, string>({
       query: (id) => ({
         url: `/application-tracking/college-applications/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
-      invalidatesTags: ['CollegeApplications'],
+      invalidatesTags: ["CollegeApplications"],
     }),
 
     // Get application tasks
-    getApplicationTasks: builder.query<PaginatedResponse<ApplicationTask>, void>({
+    getApplicationTasks: builder.query<
+      PaginatedResponse<ApplicationTask>,
+      void
+    >({
       query: () => ({
-        url: '/application-tracking/tasks',
-        method: 'GET',
+        url: "/application-tracking/tasks",
+        method: "GET",
       }),
-      providesTags: ['ApplicationTasks'],
+      providesTags: ["ApplicationTasks"],
     }),
 
     // Create application task
-    createApplicationTask: builder.mutation<ApplicationTask, CreateApplicationTaskRequest>({
+    createApplicationTask: builder.mutation<
+      ApplicationTask,
+      CreateApplicationTaskRequest
+    >({
       query: (data) => ({
-        url: '/application-tracking/tasks',
-        method: 'POST',
+        url: "/application-tracking/tasks",
+        method: "POST",
         body: data,
       }),
-      invalidatesTags: ['ApplicationTasks'],
+      invalidatesTags: ["ApplicationTasks"],
     }),
 
     // Update application task
-    updateApplicationTask: builder.mutation<ApplicationTask, { id: string; data: UpdateApplicationTaskRequest }>({
+    updateApplicationTask: builder.mutation<
+      ApplicationTask,
+      { id: string; data: UpdateApplicationTaskRequest }
+    >({
       query: ({ id, data }) => ({
         url: `/application-tracking/tasks/${id}`,
-        method: 'PATCH',
+        method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ['ApplicationTasks'],
+      invalidatesTags: ["ApplicationTasks"],
     }),
 
     // Delete application task
     deleteApplicationTask: builder.mutation<void, string>({
       query: (id) => ({
         url: `/application-tracking/tasks/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
-      invalidatesTags: ['ApplicationTasks'],
+      invalidatesTags: ["ApplicationTasks"],
     }),
 
     // Get scholarship applications
-    getScholarshipApplications: builder.query<PaginatedResponse<ScholarshipApplication>, void>({
+    getScholarshipApplications: builder.query<
+      PaginatedResponse<ScholarshipApplication>,
+      void
+    >({
       query: () => ({
-        url: '/application-tracking/scholarship-applications',
-        method: 'GET',
+        url: "/application-tracking/scholarship-applications",
+        method: "GET",
       }),
-      providesTags: ['ScholarshipApplications'],
+      providesTags: ["ScholarshipApplications"],
     }),
 
     // Create scholarship application
-    createScholarshipApplication: builder.mutation<ScholarshipApplication, CreateScholarshipApplicationRequest>({
+    createScholarshipApplication: builder.mutation<
+      ScholarshipApplication,
+      CreateScholarshipApplicationRequest
+    >({
       query: (data) => ({
-        url: '/application-tracking/scholarship-applications',
-        method: 'POST',
+        url: "/application-tracking/scholarship-applications",
+        method: "POST",
         body: data,
       }),
-      invalidatesTags: ['ScholarshipApplications'],
+      invalidatesTags: ["ScholarshipApplications"],
     }),
 
     // Update scholarship application
-    updateScholarshipApplication: builder.mutation<ScholarshipApplication, { id: string; data: UpdateScholarshipApplicationRequest }>({
+    updateScholarshipApplication: builder.mutation<
+      ScholarshipApplication,
+      { id: string; data: UpdateScholarshipApplicationRequest }
+    >({
       query: ({ id, data }) => ({
         url: `/application-tracking/scholarship-applications/${id}`,
-        method: 'PATCH',
+        method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ['ScholarshipApplications'],
+      invalidatesTags: ["ScholarshipApplications"],
     }),
 
     // Delete scholarship application
     deleteScholarshipApplication: builder.mutation<void, string>({
       query: (id) => ({
         url: `/application-tracking/scholarship-applications/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
-      invalidatesTags: ['ScholarshipApplications'],
+      invalidatesTags: ["ScholarshipApplications"],
     }),
   }),
 });
@@ -380,42 +471,51 @@ export const applicationTrackingApi = RtkApi.injectEndpoints({
 export const essayManagementApi = RtkApi.injectEndpoints({
   endpoints: (builder) => ({
     // Get student essays
-    getStudentEssays: builder.query<PaginatedResponse<StudentEssay>, { page?: number; limit?: number }>({
+    getStudentEssays: builder.query<
+      PaginatedResponse<StudentEssay>,
+      { page?: number; limit?: number }
+    >({
       query: ({ page = 1, limit = 10 } = {}) => ({
-        url: '/essay-management/essays',
-        method: 'GET',
+        url: "/essay-management/essays",
+        method: "GET",
         params: { page, limit },
       }),
-      providesTags: ['StudentEssays'],
+      providesTags: ["StudentEssays"],
     }),
 
     // Create student essay
-    createStudentEssay: builder.mutation<StudentEssay, CreateStudentEssayRequest>({
+    createStudentEssay: builder.mutation<
+      StudentEssay,
+      CreateStudentEssayRequest
+    >({
       query: (data) => ({
-        url: '/essay-management/essays',
-        method: 'POST',
+        url: "/essay-management/essays",
+        method: "POST",
         body: data,
       }),
-      invalidatesTags: ['StudentEssays'],
+      invalidatesTags: ["StudentEssays"],
     }),
 
     // Update student essay
-    updateStudentEssay: builder.mutation<StudentEssay, { id: string; data: UpdateStudentEssayRequest }>({
+    updateStudentEssay: builder.mutation<
+      StudentEssay,
+      { id: string; data: UpdateStudentEssayRequest }
+    >({
       query: ({ id, data }) => ({
         url: `/essay-management/essays/${id}`,
-        method: 'PATCH',
+        method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ['StudentEssays'],
+      invalidatesTags: ["StudentEssays"],
     }),
 
     // Delete student essay
     deleteStudentEssay: builder.mutation<void, string>({
       query: (id) => ({
         url: `/essay-management/essays/${id}`,
-        method: 'DELETE',
+        method: "DELETE",
       }),
-      invalidatesTags: ['StudentEssays'],
+      invalidatesTags: ["StudentEssays"],
     }),
   }),
 });
@@ -456,4 +556,3 @@ export const {
   useUpdateStudentEssayMutation,
   useDeleteStudentEssayMutation,
 } = essayManagementApi;
-
