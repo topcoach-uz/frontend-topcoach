@@ -1,4 +1,11 @@
 {
+  "studentHub.orgMembership.settingsTitle": "Мектеп және кеңесшілер",
+  "studentHub.orgMembership.loading": "Мектеп деректері жүктелуде…",
+  "studentHub.orgMembership.empty": "Сіз мектепке немесе ұйымға қосылмағансыз.",
+  "applicant.nav.applicationCount_other": "{{count}} өтінім",
+  "applicant.nav.applicationCount_one": "{{count}} өтінім",
+  "applicant.nav.applicationsTitle": "Өтінімдер",
+  "applicant.applicationList": "Менің өтінімдерім",
   "studentHub.hub.ieltsTestPrep": "IELTS-ке дайындық",
   "applicant.ieltsTestPrep": "IELTS-ке дайындық",
   "onboarding.info.searchOrEnter": "Izleń yamasa ózińiz kiritiń",

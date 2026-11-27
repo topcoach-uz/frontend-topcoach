@@ -13,6 +13,7 @@ import type { ColumnsType } from "antd/es/table";
 
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ReviewsPage from "./ReviewsPage";
+import MentorReports from "../components/MentorReports";
 import { isAccessDenied } from "../programCapabilities";
 import { rosterHoursLabel, rosterProgramLabel } from "../rosterDisplay";
 import { useReviewCounts } from "../components/reviews/reviewCounts";
@@ -58,7 +59,9 @@ const roleLabel = (role: string) => roleNames[role] ?? role;
 export default function MentorConsoleStudentsPage() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const activeTab = params.get("tab") === "reviews" ? "reviews" : "students";
+  const activeTab = ["reviews", "reports"].includes(params.get("tab") ?? "")
+    ? params.get("tab")!
+    : "students";
   const { total: pendingReviews } = useReviewCounts();
   const [q, setQ] = useState("");
 
@@ -311,7 +314,7 @@ export default function MentorConsoleStudentsPage() {
         <h1 className="mc-page-title">Students</h1>
         <p className="mc-page-lead">
           Your assigned students across mentorship programs. Open a workspace to
-          view program sessions, tasks, reports and messages.
+          view sessions, historical reports, tasks and messages.
         </p>
       </div>
 
@@ -319,7 +322,7 @@ export default function MentorConsoleStudentsPage() {
         activeKey={activeTab}
         onChange={(tab) =>
           setParams((current) => {
-            if (tab === "reviews") current.set("tab", tab);
+            if (tab === "reviews" || tab === "reports") current.set("tab", tab);
             else {
               current.delete("tab");
               current.delete("type");
@@ -334,10 +337,13 @@ export default function MentorConsoleStudentsPage() {
             label:
               pendingReviews > 0 ? `Reviews (${pendingReviews})` : "Reviews",
           },
+          { key: "reports", label: "Reports" },
         ]}
       />
       {activeTab === "reviews" ? (
         <ReviewsPage embedded />
+      ) : activeTab === "reports" ? (
+        <MentorReports />
       ) : (
         <Card bordered={false} className="mc-panel">
           <div style={{ marginBottom: 12 }}>

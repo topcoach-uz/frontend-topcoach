@@ -1,6 +1,6 @@
-import { isAccessDenied } from './programCapabilities';
-import { lessonMinutes, lessonOutcome } from './fullSupportLessons';
 import { useMemo } from 'react';
+import { isAccessDenied } from './programCapabilities';
+import { importedSessionInfo } from './importedSession';
 import { SessionTypeEnum, type SessionsSchema } from 'src/app/api/Api';
 import {
   useGetMentorSessionsQuery,
@@ -62,7 +62,10 @@ function durationFromSessionType(type: SessionTypeEnum | string | undefined): {
 }
 
 export function parseFullSupportDuration(raw: string | undefined | null): number {
-  return lessonMinutes(raw);
+  // Full Support stores planned duration in hours (e.g. "1", "1h", "0.5").
+  const text = String(raw ?? '').trim();
+  const hours = Number.parseFloat(text) / (/m$/i.test(text) ? 60 : 1);
+  return Number.isFinite(hours) && hours > 0 ? Math.round(hours * 60) : 60;
 }
 
 export function normalizePlatformBooking(s: SessionsSchema): MentorBooking {
@@ -112,10 +115,13 @@ export function normalizeFullSupportSession(
   studentName: string | null,
 ): MentorBooking {
   const minutes = parseFullSupportDuration(s.duration);
+  const imported = importedSessionInfo(s);
+  const unknownDuration = imported && !Number.isFinite(Number.parseFloat(s.duration));
   const now = Date.now();
 
   let status: MentorBooking['status'];
-  if (s.outcome === 'cancelled' || s.outcome === 'rescheduled') status = 'cancelled';
+  if (imported?.sourceStatus === 'scheduled' || imported?.sourceStatus === 'rescheduled' || imported?.sourceStatus === 'missed_unspecified') status = 'cancelled';
+  else if (s.outcome === 'cancelled' || s.outcome === 'rescheduled') status = 'cancelled';
   else if (s.done || ['held', 'student_no_show', 'mentor_no_show'].includes(s.outcome)) status = 'completed';
   else if (new Date(s.dateTime).getTime() + minutes * 60_000 <= now) status = 'report-due';
   else status = 'upcoming';
@@ -125,9 +131,9 @@ export function normalizeFullSupportSession(
     source: 'full-support',
     program: s.program ?? null,
     dateTime: s.dateTime,
-    durationLabel: `${minutes} min`,
-    durationMinutes: minutes,
-    description: s.description || null,
+    durationLabel: unknownDuration ? 'Duration not recorded' : `${minutes} min`,
+    durationMinutes: unknownDuration ? 0 : minutes,
+    description: imported ? (s.description || '').replace(/^\[Imported source report;[^\]]+\]\s*/, '') : s.description || null,
     studentUserId: s.studentUserId ?? null,
     studentName,
     status,
@@ -225,7 +231,12 @@ export function useMentorBookings(
     error: programReadError,
     isLoading: loadingFs,
     isError: fsError,
-   } = useGetMentorSessionsQuery(studentFilterId ?? null, { skip: !includeFs, refetchOnMountOrArgChange: true, refetchOnFocus: true, pollingInterval: 30000 });
+  } = useGetMentorSessionsQuery(studentFilterId ?? null, {
+    skip: !includeFs,
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+    pollingInterval: 30000,
+  });
   const platformRes = isAccessDenied(platformReadError) ? undefined : platformData;
   const fullSupportRes = !includeFs || isAccessDenied(programReadError) ? undefined : fullSupportData;
 

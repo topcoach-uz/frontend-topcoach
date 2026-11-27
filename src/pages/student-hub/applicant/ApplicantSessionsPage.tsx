@@ -1,3 +1,4 @@
+import { SessionRecording } from "src/components/session-recording/SessionRecording";
 import { useState } from "react";
 import { Button, Input, Modal, Rate, message } from "antd";
 import { ArrowUpRight, MessageCircle, MessageSquare, Star } from "lucide-react";
@@ -150,6 +151,7 @@ function SessionCard({
       <time className="st-scard-when" dateTime={card.start.toISOString()}>
         {fmt(card.start, { weekday: "short" })} · {time(card.start)} – {time(end)} · {card.minutes} min
       </time>
+      <SessionRecording source={card.booking ? "platform" : "full-support"} sessionId={card.booking?.id || card.key.replace(/^lesson-/, "")} />
       <div className="st-scard-meta">
         {card.kind}
         {card.topic ? ` · ${card.topic}` : ""}

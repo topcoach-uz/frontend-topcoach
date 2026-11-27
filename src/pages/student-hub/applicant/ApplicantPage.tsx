@@ -7,7 +7,7 @@ import { displayApplicantDate } from "./applicantDate";
 import { ApplicantMobileTrail } from "./ApplicantTopBarContext";
 import "./applicantPages.scss";
 import { Breadcrumb } from "./Breadcrumb";
-import { ErrorState, SkeletonBlock, ViewTabs } from "src/components/student-hub/ui";
+import { ViewTabs } from "src/components/student-hub/ui";
 
 /**
  * The student page shell: page trail, title row and content.
@@ -27,7 +27,9 @@ export function ApplicantPage({
   titleAddon,
   meta,
   children,
+  className,
 }: {
+  className?: string;
   title?: string;
   subtitle?: ReactNode;
   actions?: ReactNode;
@@ -39,7 +41,9 @@ export function ApplicantPage({
 }) {
   const hasHeading = Boolean(title || subtitle || actions || eyebrow || meta || titleAddon);
   return (
-    <section className="applicant-page">
+    <section
+      className={["applicant-page", className].filter(Boolean).join(" ")}
+    >
       {breadcrumb && <Breadcrumb>{breadcrumb}</Breadcrumb>}
       {hasHeading && (
         <header className="applicant-page__heading">
@@ -63,36 +67,7 @@ export function ApplicantPage({
     </section>
   );
 }
-
-/**
- * Loading, error and empty states around page content, in the student kit's
- * look (skeleton, ErrorState with retry, any empty state you pass).
- */
-export function QueryState({
-  loading,
-  error,
-  retry,
-  empty,
-  emptyState,
-  children,
-}: {
-  loading?: boolean;
-  error?: boolean;
-  retry: () => unknown;
-  empty?: boolean;
-  emptyState?: ReactNode;
-  children: ReactNode;
-}) {
-  if (loading)
-    return (
-      <div className="applicant-panel">
-        <SkeletonBlock variant="panel" lines={5} />
-      </div>
-    );
-  if (error) return <ErrorState onRetry={retry} />;
-  if (empty && emptyState) return <>{emptyState}</>;
-  return <>{children}</>;
-}
+export { QueryState } from "./ApplicationQueryState";
 export function UniversityIdentity({
   id,
   name,
@@ -105,7 +80,11 @@ export function UniversityIdentity({
   preferName?: boolean;
 }) {
   const { data } = useGetUniversityDetailQuery(id ?? "", { skip: !id });
-  const label = (preferName ? name : data && getTranslation(data.name)) || name || (data && getTranslation(data.name)) || "University";
+  const label =
+    (preferName ? name : data && getTranslation(data.name)) ||
+    name ||
+    (data && getTranslation(data.name)) ||
+    "University";
   return (
     <div className="applicant-university">
       <span className="applicant-university__logo">
@@ -122,26 +101,68 @@ export function UniversityIdentity({
     </div>
   );
 }
-export function RelatedApplicationLabel({ application }: { application: CollegeApplication }) {
-  const university = useGetUniversityDetailQuery(application.universityId ?? "", {
-    skip: !application.universityId,
-  });
-  const universityName = application.universityName ||
+export function RelatedApplicationLabel({
+  application,
+}: {
+  application: CollegeApplication;
+}) {
+  const university = useGetUniversityDetailQuery(
+    application.universityId ?? "",
+    {
+      skip: !application.universityId,
+    },
+  );
+  const universityName =
+    application.universityName ||
     (university.data ? getTranslation(university.data.name) : undefined);
   const isGraduate = application.degreeLevel === "master";
-  const name = isGraduate ? application.major || universityName : universityName;
-  const detail = isGraduate && application.major ? universityName : application.major;
-  return <span>{name || "University"}{detail && detail !== name ? ` · ${detail}` : ""}</span>;
+  const name = isGraduate
+    ? application.major || universityName
+    : universityName;
+  const detail =
+    isGraduate && application.major ? universityName : application.major;
+  return (
+    <span>
+      {name || "University"}
+      {detail && detail !== name ? ` · ${detail}` : ""}
+    </span>
+  );
 }
-export type CollegeListView = "applications" | "deadlines" | "scholarships" | "archived";
+export type CollegeListView =
+  | "applications"
+  | "deadlines"
+  | "scholarships"
+  | "archived";
 
 /** One switcher for every College List view, so they read as one place. */
-export function CollegeListTabs({ current, masters = false }: { current: CollegeListView; masters?: boolean }) {
+export function CollegeListTabs({
+  current,
+  masters = false,
+}: {
+  current: CollegeListView;
+  masters?: boolean;
+}) {
   const views: { key: CollegeListView; label: string; to: string }[] = [
-    { key: "applications", label: masters ? "Programs" : "Applications", to: "/student-hub/applications" },
-    { key: "deadlines", label: "Deadlines", to: "/student-hub/applications?tab=timeline" },
-    { key: "scholarships", label: "Scholarships", to: "/student-hub/applications?tab=scholarships" },
-    { key: "archived", label: "Archived", to: "/student-hub/applications?view=archived" },
+    {
+      key: "applications",
+      label: masters ? "Programs" : "Applications",
+      to: "/student-hub/applications",
+    },
+    {
+      key: "deadlines",
+      label: "Deadlines",
+      to: "/student-hub/applications?tab=timeline",
+    },
+    {
+      key: "scholarships",
+      label: "Scholarships",
+      to: "/student-hub/applications?tab=scholarships",
+    },
+    {
+      key: "archived",
+      label: "Archived",
+      to: "/student-hub/applications?view=archived",
+    },
   ];
   return <ViewTabs items={views} value={current} ariaLabel="College List views" />;
 }

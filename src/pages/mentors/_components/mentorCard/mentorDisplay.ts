@@ -7,7 +7,8 @@ export function mentorDisplay(profile: { mentorshipType?: MentorshipType; showPr
   const type = profile.mentorshipType ?? (legacyMaster ? 'master' : 'bachelor');
   return {
     type,
-    showPrice: profile.showPrice ?? !legacyMaster,
+    // Public mentor rates are hidden globally, including saved showPrice overrides.
+    showPrice: false,
     label: type === 'master' ? 'Master’s mentorship' : type === 'both' ? 'Bachelor’s & Master’s mentorship' : 'Bachelor’s mentorship',
   };
 }

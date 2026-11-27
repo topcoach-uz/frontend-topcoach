@@ -1,4 +1,11 @@
 {
+  "studentHub.orgMembership.settingsTitle": "Maktab va maslahatchilar",
+  "studentHub.orgMembership.loading": "Maktab maʼlumotlari yuklanmoqda…",
+  "studentHub.orgMembership.empty": "Siz maktab yoki tashkilotga ulanmagansiz.",
+  "applicant.nav.applicationCount_other": "{{count}} ta ariza",
+  "applicant.nav.applicationCount_one": "{{count}} ta ariza",
+  "applicant.nav.applicationsTitle": "Arizalar",
+  "applicant.applicationList": "Mening arizalarim",
   "studentHub.hub.ieltsTestPrep": "IELTS tayyorgarlik",
   "applicant.ieltsTestPrep": "IELTS tayyorgarlik",
   "onboarding.info.searchOrEnter": "Qidiring yoki o‘zingiz kiriting",

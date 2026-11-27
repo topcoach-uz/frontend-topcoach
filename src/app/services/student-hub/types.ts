@@ -388,7 +388,8 @@ export interface ApplicationActivityEvent {
 }
 
 export interface CollegeApplication {
-  sharedNotes?: string | null;
+  sharedNotes?: string;
+  university?: { name?: Record<string, string> | string };
   canEditRequirements?: boolean;
   mentorName?: string;
   id: string;
@@ -418,7 +419,7 @@ export interface CollegeApplication {
 }
 
 export interface CreateCollegeApplicationRequest {
-  sharedNotes?: string | null;
+  sharedNotes?: string;
   programId?: string;
   undergraduateDegreeId?: string | null;
   universityId?: string;
@@ -493,6 +494,10 @@ export interface UpdateApplicationTaskRequest extends Partial<CreateApplicationT
 // ========================================
 
 export interface ScholarshipApplication {
+  scholarshipType?: string | null;
+  eligibility?: string | null;
+  essayPrompt?: string;
+  essayRequired?: boolean;
   id: string;
   studentProfileId: string;
   scholarshipId: string;
@@ -521,6 +526,8 @@ export interface ScholarshipApplication {
 }
 
 export interface CreateScholarshipApplicationRequest {
+  scholarshipType?: string | null;
+  eligibility?: string | null;
   scholarshipId?: string;
   scholarshipName?: string;
   organization?: string;

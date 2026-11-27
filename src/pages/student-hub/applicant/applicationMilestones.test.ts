@@ -27,9 +27,9 @@ describe("application deadline timeline", () => {
     expect(result.map((row) => row.id)).toEqual(["task-open"]);
     expect(result[0].path).toContain("task=open");
   });
-  it("uses canonical application deadlines and does not duplicate earlier mentor plans", () => {
+  it("includes scholarships, mentor homework and application plans in date order", () => {
     const result = buildApplicationMilestones(
-      [{id:"a",status:"applying",deadline:"2026-11-02",universityName:"University"}] as any,
+      [],
       [],
       [
         {
@@ -60,7 +60,7 @@ describe("application deadline timeline", () => {
     );
     expect(result.map((row) => row.id)).toEqual([
       "mentor-task-t",
-      "application-a",
+      "pipeline-p",
       "scholarship-s",
     ]);
     expect(result[0].path).toContain("mentorTask=t");

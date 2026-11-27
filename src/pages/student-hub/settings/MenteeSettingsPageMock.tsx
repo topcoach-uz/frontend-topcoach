@@ -27,6 +27,7 @@ import { getLatestCreatedImg } from 'src/utils';
 import { baseUrl } from 'src/app/services/api/const';
 import { ACCESS_TOKEN } from 'src/constants/storage';
 import { settingsSection } from 'src/lib/accountNavigation';
+import OrgMembershipSidebar from '../components/OrgMembershipSidebar';
 import SettingsNavigation from './SettingsNavigation';
 import SubscriptionTab from './subscription';
 import ReferralsTab from './ReferralsTab';
@@ -256,6 +257,12 @@ export default function MenteeSettingsPageMock({ embeddedInHub = false }: Mentee
           study buddy preferences) have been removed. Both surfaces are one
           click away in the sidebar, so the notes were permanent signposts
           for a move that is long finished. */}
+
+      {activeTab === 'school' && (
+        <section aria-label={t('studentHub.orgMembership.settingsTitle', 'School & counselors')}>
+          <OrgMembershipSidebar details />
+        </section>
+      )}
 
       {activeTab === 'profile' && (
       <div className={styles.accountLayout}>

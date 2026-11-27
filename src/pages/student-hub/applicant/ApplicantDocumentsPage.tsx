@@ -1,7 +1,8 @@
+import { useSegmentLens } from "src/hooks/useSegmentLens";
 import { useRef, useState } from "react";
 import { Button, Form, Input, Modal, Popconfirm, Select, Upload, message } from "antd";
 import type { UploadFile } from "antd";
-import { Download, FileText, Info, Plus, Trash2, UploadCloud } from "lucide-react";
+import { Download, FileText, Info, Plus, Search, Trash2, UploadCloud } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   DocumentType,
@@ -22,7 +23,6 @@ import {
 import { NextStepCard } from "./NextStepCard";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 
-import SearchButton from 'src/components/common/searchButton';
 const documentLabels: Record<string, string> = {
   transcript: "Transcript",
   test_score: "Test score",
@@ -68,6 +68,7 @@ export default function ApplicantDocumentsPage() {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<"all" | "application" | "drafts">("all");
+  const filterLens = useSegmentLens<HTMLDivElement>(".is-active", [tab]);
   const [upload, uploadState] = useUploadDocumentMutation();
   const [remove] = useDeleteDocumentMutation();
   const [download] = useDownloadDocumentMutation();
@@ -133,6 +134,7 @@ export default function ApplicantDocumentsPage() {
   });
   return (
     <ApplicantPage
+      className="application-documents-page"
       title="Your documents"
       subtitle="Keep reusable application files together."
       actions={
@@ -147,14 +149,20 @@ export default function ApplicantDocumentsPage() {
         <Input
           className="applicant-document-search"
           aria-label="Search documents"
-          placeholder="Search file name or document type"
+          placeholder="Search documents"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          suffix={<SearchButton size={24} />}
+          prefix={<Search size={18} aria-hidden="true" />}
           allowClear
         />
-      </div>
-      <div className="applicant-tabs" role="tablist" aria-label="Document filters">
+      <div
+        ref={filterLens.ref}
+        className="applicant-view-tabs document-view-switcher"
+        data-lens={filterLens.lensStyle.width != null ? "on" : undefined}
+        role="tablist"
+        aria-label="Document filters"
+      >
+        <span className="applicant-view-tabs__lens" style={filterLens.lensStyle} aria-hidden />
         {([
           ["all", "All files"],
           ["application", "Application files"],
@@ -171,6 +179,7 @@ export default function ApplicantDocumentsPage() {
             {label}
           </button>
         ))}
+      </div>
       </div>
       <QueryState
         loading={query.isLoading}

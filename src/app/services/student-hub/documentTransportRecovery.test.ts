@@ -42,7 +42,7 @@ describe('document reads through the real RTK request layer', () => {
     })).mockImplementation(response);
     vi.stubGlobal('fetch', fetch);
     const pending = store.dispatch(documentManagementApi.endpoints.getDocument.initiate(id));
-    await vi.advanceTimersByTimeAsync(33500);
+    await vi.advanceTimersByTimeAsync(32500);
     const result = await pending;
     expect(result.data?.data).toEqual(record);
     expect(result.isError).toBe(false);
@@ -55,7 +55,7 @@ describe('document reads through the real RTK request layer', () => {
     })).mockImplementation(() => new Response(JSON.stringify({ data: [] })));
     vi.stubGlobal('fetch', fetch);
     const pending = store.dispatch(documentManagementApi.endpoints.getSharedDocuments.initiate());
-    await vi.advanceTimersByTimeAsync(16500);
+    await vi.advanceTimersByTimeAsync(12500);
     expect((await pending).data).toEqual({ data: [] });
     expect(fetch).toHaveBeenCalledTimes(2);
   });
@@ -68,7 +68,7 @@ describe('document reads through the real RTK request layer', () => {
     const pending = store.dispatch(documentManagementApi.endpoints.getDocument.initiate(id));
     await vi.advanceTimersByTimeAsync(1);
     pending.abort();
-    await vi.advanceTimersByTimeAsync(33500);
+    await vi.advanceTimersByTimeAsync(32500);
     expect((await pending).error).toMatchObject({ name: 'AbortError' });
     expect(fetch).toHaveBeenCalledTimes(1);
   });
@@ -92,7 +92,7 @@ describe('document reads through the real RTK request layer', () => {
     }), { status: 200, headers: { 'Content-Type': 'application/json' } })).mockImplementation(response);
     vi.stubGlobal('fetch', fetch);
     const pending = store.dispatch(documentManagementApi.endpoints.getDocument.initiate(id));
-    await vi.advanceTimersByTimeAsync(16500);
+    await vi.advanceTimersByTimeAsync(12500);
     expect(fetch).toHaveBeenCalledTimes(2);
     expect((await pending).data?.data).toEqual(record);
   });
