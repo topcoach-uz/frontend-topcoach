@@ -386,10 +386,10 @@ $ease-out: var(--tc-ease); // iOS-style deceleration
   white-space: nowrap;
   text-decoration: none;
   transition:
-    background-color 150ms $ease-out,
-    color 150ms $ease-out,
-    border-color 150ms $ease-out,
-    transform 150ms $ease-out;
+    background-color var(--tc-dur-1) var(--tc-ease-fade),
+    color var(--tc-dur-1) var(--tc-ease-fade),
+    border-color var(--tc-dur-1) var(--tc-ease-fade),
+    transform var(--tc-dur-1) var(--tc-ease);
   &:hover {
     color: $nav-brand;
   }
@@ -412,9 +412,15 @@ $ease-out: var(--tc-ease); // iOS-style deceleration
   .applicant-panel-slot {
     display: none;
   }
+  // The chip row runs edge to edge, so chips scroll out at the screen edge
+  // instead of being clipped mid-word inside the content padding.
   .applicant-section-tabs {
     display: block;
-    margin: 0 0 12px;
+    margin: 0 calc(-1 * var(--applicant-gutter, 24px)) 12px;
+  }
+  .applicant-section-tabs__list {
+    padding-inline: var(--applicant-gutter, 24px);
+    scroll-padding-inline: var(--applicant-gutter, 24px);
   }
   .applicant-org-mobile {
     display: block;
@@ -425,8 +431,17 @@ $ease-out: var(--tc-ease); // iOS-style deceleration
   }
 }
 
+@media (pointer: coarse) {
+  .applicant-section-tabs__link {
+    min-height: 44px;
+  }
+}
+
 // Phone: the rail becomes a floating glass tab bar.
 @media (max-width: 760px) {
+  .applicant-section-tabs {
+    --applicant-gutter: 16px;
+  }
   .applicant-rail {
     position: fixed;
     top: auto;
