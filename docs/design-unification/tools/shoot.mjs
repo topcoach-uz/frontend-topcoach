@@ -100,6 +100,13 @@ try {
   // --eval "<expression>": print a value from the page (e.g. overflow checks).
   const probe = opt('eval');
   if (probe) console.log('eval:', JSON.stringify(await evaluate(probe)));
+  // --hover x,y: move the mouse there (viewport px) so :hover styles show.
+  const hover = opt('hover');
+  if (hover) {
+    const [x, y] = hover.split(',').map(Number);
+    await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y });
+    await sleep(500);
+  }
   let clip;
   if (flag('full')) {
     const h = await evaluate('Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)');

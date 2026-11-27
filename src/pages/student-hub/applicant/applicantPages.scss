@@ -3009,32 +3009,76 @@ form.applicant-glass-search {
   .ant-select-arrow { opacity: 0.5; }
 }
 
-// The College List action: centred under the results, a white glass pill.
+// The College List action: centred under the results, a solid brand pill.
+// Hover turns it into red liquid glass: the fill goes slightly translucent
+// with a backdrop blur, a bright rim catches light along the top edge, a
+// specular sheen sits across the upper half, and a soft red glow lifts it,
+// instead of a plain heavier shadow.
 .applicant-find-open-list {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   align-self: center;
   gap: 10px;
   min-height: 52px;
   margin-top: 4px;
-  padding: 0 26px;
+  padding: 0 28px;
+  border: 1px solid transparent;
   border-radius: var(--tc-radius-pill);
-  @include lg.lg-thin;
-  color: var(--tc-brand) !important;
+  background: var(--tc-brand);
+  color: var(--tc-on-brand) !important;
   font-weight: 600;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 8px 20px -14px rgba(139, 0, 0, 0.55);
   transition:
     background-color var(--tc-dur-2) var(--tc-ease-fade),
+    border-color var(--tc-dur-2) var(--tc-ease-fade),
     box-shadow var(--tc-dur-2) var(--tc-ease-fade),
     transform var(--tc-dur-1) var(--tc-ease);
 
+  // Specular sheen: a soft light band across the top of the glass.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.08) 46%, rgba(255, 255, 255, 0) 52%);
+    opacity: 0;
+    transition: opacity var(--tc-dur-2) var(--tc-ease-fade);
+    pointer-events: none;
+  }
   svg { transition: transform var(--tc-dur-2) var(--tc-ease); }
+
   @media (hover: hover) {
     &:hover {
-      background: rgba(255, 255, 255, 0.82);
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1), 0 12px 26px -16px rgba(139, 0, 0, 0.35);
+      background: rgba(139, 0, 0, 0.84);
+      backdrop-filter: blur(14px) saturate(180%);
+      -webkit-backdrop-filter: blur(14px) saturate(180%);
+      border-color: rgba(255, 255, 255, 0.28);
+      box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.55),
+        inset 0 -8px 14px -10px rgba(60, 0, 0, 0.45),
+        0 14px 30px -16px rgba(139, 0, 0, 0.7),
+        0 2px 6px -2px rgba(139, 0, 0, 0.3);
+
+      &::before { opacity: 1; }
       svg { transform: translateX(3px); }
     }
   }
-  &:active { transform: scale(0.97); }
+  &:active {
+    transform: scale(0.97);
+    background: var(--tc-brand-hover);
+  }
   &:focus-visible { outline: 2px solid var(--tc-brand); outline-offset: 3px; }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .applicant-find-open-list:hover {
+    background: var(--tc-brand-hover);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 @media (max-width: 650px) {
   .applicant-find-filter { min-height: 60px; }
@@ -3044,6 +3088,7 @@ form.applicant-glass-search {
   .applicant-find-filter,
   .applicant-find-filter .ant-select-arrow,
   .applicant-find-open-list,
+  .applicant-find-open-list::before,
   .applicant-find-open-list svg { transition: none; }
 }
 
