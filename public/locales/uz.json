@@ -3839,5 +3839,6 @@
   "studentHub.documents.dropUnsupported": "PDF, Word yoki rasm faylidan foydalaning.",
   "studentHub.feed.upcomingSessionsHeading": "Yaqinlashayotgan sessiyalar",
   "studentHub.feed.noUpcomingSessionsHint": "Mentor bilan 1:1 uchrashuvga yoziling — u shu yerda paydo bo‘ladi.",
-  "studentHub.feed.viewPastSessions": "O‘tgan sessiyalar"
+  "studentHub.feed.viewPastSessions": "O‘tgan sessiyalar",
+  "studentHub.feed.composerAudience": "Hamjamiyatga joylash"
 }

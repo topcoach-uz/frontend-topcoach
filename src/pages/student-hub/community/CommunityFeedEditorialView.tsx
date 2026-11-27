@@ -981,7 +981,9 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
           {/* composer */}
           {!readOnly && currentUser.canPost && viewMode === 'feed' && (
             <div className="cf__composer">
-              <div className="cf__composer-top">
+              {/* 1 · Who is posting. SuperAdmins choose a voice ("Post as");
+                  everyone else sees their own name. */}
+              <div className="cf__composer-identity">
                 {currentUser.avatarUrl ? (
                   <img
                     className="cf__avatar cf__avatar--md cf__avatar-img"
@@ -997,6 +999,40 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
                     {currentUser.initials}
                   </div>
                 )}
+                {currentUser.canPin ? (
+                  <div ref={personaThumb.ref} data-lens={personaThumb.lens} className="cf__composer-persona" role="radiogroup" aria-label="Post as">
+                    <SegmentThumb style={personaThumb.style} />
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={composerPersona === 'SELF'}
+                      className={`cf__persona-chip ${composerPersona === 'SELF' ? 'cf__persona-chip--on' : ''}`}
+                      onClick={() => setComposerPersona('SELF')}
+                      title="Posted under your own face and name."
+                    >
+                      Post as <strong>{currentUser.name.split(' ')[0]}</strong>
+                    </button>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={composerPersona === 'OFFICIAL'}
+                      className={`cf__persona-chip ${composerPersona === 'OFFICIAL' ? 'cf__persona-chip--on' : ''}`}
+                      onClick={() => setComposerPersona('OFFICIAL')}
+                      title="Posted as the Top Coach institutional voice — used for product news, deadlines, official announcements."
+                    >
+                      Post as <strong>Top Coach Official</strong>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="cf__composer-who">
+                    <strong>{currentUser.name}</strong>
+                    <span>{t('studentHub.feed.composerAudience', 'Posting to the community')}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* 2 · The writing well. */}
+              <div className="cf__composer-field">
                 <textarea
                   className="cf__composer-input"
                   placeholder={
@@ -1016,36 +1052,6 @@ const CommunityFeedEditorialView: React.FC<Props> = ({
                   aria-label={composerKind === 'QUESTION' ? 'Ask the community a question' : 'Write a post'}
                 />
               </div>
-
-              {/* Persona toggle — only SuperAdmins can post as the institutional
-                  "Top Coach Official" voice. Admins / Managers post under their
-                  own face. Without two real choices the toggle would be noise,
-                  so we render nothing for non-SuperAdmin posters. */}
-              {currentUser.canPin && (
-                <div ref={personaThumb.ref} data-lens={personaThumb.lens} className="cf__composer-persona" role="radiogroup" aria-label="Post as">
-                  <SegmentThumb style={personaThumb.style} />
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={composerPersona === 'SELF'}
-                    className={`cf__persona-chip ${composerPersona === 'SELF' ? 'cf__persona-chip--on' : ''}`}
-                    onClick={() => setComposerPersona('SELF')}
-                    title="Posted under your own face and name."
-                  >
-                    Post as <strong>{currentUser.name.split(' ')[0]}</strong>
-                  </button>
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={composerPersona === 'OFFICIAL'}
-                    className={`cf__persona-chip ${composerPersona === 'OFFICIAL' ? 'cf__persona-chip--on' : ''}`}
-                    onClick={() => setComposerPersona('OFFICIAL')}
-                    title="Posted as the Top Coach institutional voice — used for product news, deadlines, official announcements."
-                  >
-                    Post as <strong>Top Coach Official</strong>
-                  </button>
-                </div>
-              )}
 
               {/* Inline poll editor — shows when the Poll toggle is on.
                   Backend caps: 2–4 options, 80-char labels, 200-char question. */}

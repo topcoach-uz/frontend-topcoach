@@ -6,22 +6,58 @@
 // pills; the one primary action is the red Post pill. The feed is shared with
 // the mentor console, so everything here stays inside the student shell.
 .applicant-shell .applicant-content {
+  // Three clear areas: who is posting, the writing well, the toolbar.
   .cf__composer {
-    padding: 20px 22px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px 20px 16px;
     margin-bottom: 24px;
-    transition: box-shadow var(--tc-dur-2) var(--tc-ease-fade);
+  }
 
-    &:focus-within {
-      box-shadow: var(--tc-focus-ring), 0 18px 40px -28px rgba(48, 43, 40, 0.35);
+  // 1 · Identity row: avatar + the voice you post with.
+  .cf__composer-identity {
+    gap: 12px;
+    margin: 0;
+  }
+  .cf__composer-identity .cf__avatar--md {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    font-size: var(--tc-text-small);
+  }
+  .cf__composer-who {
+    strong {
+      color: var(--tc-ink);
+      font-size: var(--tc-text-body-sm);
+      font-weight: 600;
+    }
+    span {
+      color: var(--tc-muted);
+      font-size: var(--tc-text-caption);
     }
   }
-  .cf__composer-top {
-    gap: 14px;
-    margin-bottom: 14px;
+
+  // 2 · Writing well: an inset sheet inside the glass card. It, not the whole
+  // card, takes the focus ring, so it's obvious where the text goes.
+  .cf__composer-field {
+    margin: 0;
+    padding: 4px 16px;
+    border-radius: var(--tc-radius-lg);
+    @include lg.lg-inset;
+    transition:
+      box-shadow var(--tc-dur-2) var(--tc-ease-fade),
+      background-color var(--tc-dur-2) var(--tc-ease-fade);
+
+    &:focus-within {
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: var(--tc-focus-ring);
+    }
   }
   .cf__composer-input {
-    min-height: 56px;
-    padding: 10px 2px;
+    width: 100%;
+    min-height: 72px;
+    padding: 12px 0;
     border: 0;
     border-radius: 0;
     background: transparent;
@@ -44,7 +80,7 @@
     position: relative;
     display: inline-flex;
     gap: 0;
-    margin: 0 0 14px 58px;
+    margin: 0;
     padding: 3px;
     border-radius: var(--tc-radius-pill);
     @include lg.lg-segment-track;
@@ -89,10 +125,16 @@
     box-shadow: none;
   }
 
+  // 3 · Toolbar: no rule above it; the well already separates it.
   .cf__composer-toolbar {
     gap: 10px;
-    padding-top: 14px;
-    border-top: 1px solid rgba(48, 43, 40, 0.07);
+    padding-top: 0;
+    border-top: 0;
+  }
+  .cf__composer-previews,
+  .cf__poll-editor {
+    margin: 0;
+    padding-left: 0;
   }
   .cf__composer-tools {
     gap: 6px;
@@ -422,6 +464,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .cf__composer-field,
     .cf__composer,
     .cf__composer-chip,
     .cf__composer-tool-btn,
@@ -435,8 +478,15 @@
     .cf__composer {
       padding: 16px;
     }
+    // The two long "Post as" labels share the row evenly on a phone.
     .cf__composer-persona {
-      margin-left: 0;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    .cf__persona-chip {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 0 10px;
     }
   }
 }

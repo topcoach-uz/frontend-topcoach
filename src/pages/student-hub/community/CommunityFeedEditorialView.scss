@@ -1534,12 +1534,32 @@ body.cf-feed-active {
     }
   }
 
+  /* ── composer structure: who is posting, then the writing field ── */
+  &__composer-identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    min-width: 0;
+  }
+  &__composer-who {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+    strong { color: $cf-ink; font-size: 0.92rem; font-weight: 600; }
+    span { color: $cf-muted-2; font-size: 0.78rem; }
+  }
+  &__composer-field {
+    display: flex;
+    margin-bottom: 12px;
+  }
+
   /* ── persona toggle inside composer ─────────────────────── */
   &__composer-persona {
     display: flex;
     gap: 8px;
-    margin: 0 0 12px 0;
-    padding-left: 52px; /* align with the textarea, past the avatar */
+    margin: 0;
   }
   &__persona-chip {
     appearance: none;
