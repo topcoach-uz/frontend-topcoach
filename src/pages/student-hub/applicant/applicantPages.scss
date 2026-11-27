@@ -2402,6 +2402,64 @@ details.essay-angles__quick {
   .essay-review__find { transition: none; &:active { transform: none; } }
 }
 
+// Next-step suggestion shown at the top of Application pages
+.applicant-next-step {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 14px 18px; margin-bottom: 16px; border: 1px solid #e7e2dc; border-radius: 12px; background: #fff;
+  > div { min-width: 0; display: grid; gap: 2px; }
+  strong { font-size: 15px; font-weight: 500; color: #302b28; }
+  p { margin: 0; font-size: 14px; color: #655c55; }
+}
+.applicant-next-step__eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #8b0000; font-variant-numeric: tabular-nums; }
+// Doubled class beats the workspace-wide link colour (`.applicant-shell .applicant-content a`).
+.applicant-next-step__cta.applicant-next-step__cta {
+  flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px;
+  border-radius: 10px; background: #8b0000; color: #fff; font-size: 14px; font-weight: 500; text-decoration: none;
+  transition: background-color 120ms ease-out, transform 100ms ease-out;
+  &:hover { background: #6d0000; color: #fff; }
+  &:active { transform: scale(0.97); }
+  &:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+}
+@media (max-width: 767px) {
+  .applicant-next-step { flex-direction: column; align-items: stretch; }
+}
+@media (prefers-reduced-motion: reduce) { .applicant-next-step__cta { transition: none; &:active { transform: none; } } }
+
+// "Your matches" chips on Find universities
+.applicant-find-matches {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 16px;
+  > span { font-size: 13px; font-weight: 500; color: #655c55; margin-right: 4px; }
+}
+.applicant-find-match {
+  min-height: 36px; padding: 0 14px; border: 1px solid #e7e2dc; border-radius: 999px; background: #fff;
+  color: #302b28; font: inherit; font-size: 14px; cursor: pointer; transition: background-color 120ms ease-out, border-color 120ms ease-out;
+  &:hover { background: #f6f3ef; }
+  &:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+}
+.applicant-find-match--active { background: #f6e8e7; border-color: #8b0000; color: #8b0000; }
+
+// Link inside the "Added to College List" toast
+.applicant-toast-link { padding: 0; border: 0; background: none; color: #8b0000; font: inherit; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+// University detail: Save stays reachable after scrolling (sticky on phones, closing CTA on desktop)
+.applicant-university-detail__savebar {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 16px 20px; border: 1px solid #e7e2dc; border-radius: 12px; background: #fff;
+  > span { font-size: 15px; color: #302b28; }
+}
+@media (max-width: 767px) {
+  .applicant-university-detail__savebar {
+    position: sticky; bottom: calc(82px + env(safe-area-inset-bottom)); z-index: 5;
+    padding: 10px 12px; box-shadow: 0 -4px 16px rgba(48, 43, 40, 0.08);
+    > span { display: none; }
+    .applicant-university-detail__save { width: 100%; }
+  }
+}
+button.applicant-find-save { background: #fff; font-family: inherit; cursor: pointer; }
+button.applicant-find-save:disabled { cursor: not-allowed; }
+
+.animated-placeholder-input input::placeholder,
+.applicant-find-filter .ant-select-selection-placeholder { color: #a39a92; }
 /* Results pager: round glass arrows around compact page numbers. */
 .applicant-pager {
   display: flex;
@@ -2630,8 +2688,7 @@ details.essay-angles__quick {
   .applicant-writing-card__bar > span { transition: none; }
 }
 
-/* =====================================================================
-   Glass search capsule (apple-design §12 materials, §1 response).
+/* ==============================================================   Glass search capsule (apple-design §12 materials, §1 response).
    One floating capsule holds the field and its action — like Safari's
    address bar — instead of two separate boxes. Light catches the top
    edge; on focus the material thickens and picks up a faint brand tint.
