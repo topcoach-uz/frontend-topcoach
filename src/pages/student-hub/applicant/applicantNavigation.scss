@@ -442,12 +442,15 @@ $ease-out: var(--tc-ease); // iOS-style deceleration
   .applicant-section-tabs {
     --applicant-gutter: 16px;
   }
+  // Phone: the rail becomes a tab bar docked to the bottom edge. A solid
+  // surface (no glass: content behind it tinted the bar) and one clear active
+  // state: a blush pill behind the icon, brand icon and label.
   .applicant-rail {
     position: fixed;
     top: auto;
-    right: 8px;
-    bottom: calc(8px + env(safe-area-inset-bottom));
-    left: 8px;
+    right: 0;
+    bottom: 0;
+    left: 0;
     z-index: 900;
     width: auto;
     height: auto;
@@ -455,10 +458,20 @@ $ease-out: var(--tc-ease); // iOS-style deceleration
     flex-direction: row;
     justify-content: space-around;
     gap: 0;
-    padding: 5px 4px;
-    border-radius: var(--tc-radius-xl);
-    @include lg.lg-thick;
+    padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+    border: 0;
+    border-top: 1px solid var(--tc-line);
+    border-radius: 0;
+    background: var(--tc-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 -6px 20px -14px rgba(34, 29, 26, 0.18);
     overflow: visible;
+  }
+  // The gliding glass lens is the desktop rail's; on the bar the icon pill
+  // carries the active state.
+  .applicant-rail__lens {
+    display: none;
   }
   .applicant-rail__items {
     display: contents;
@@ -467,12 +480,60 @@ $ease-out: var(--tc-ease); // iOS-style deceleration
     flex: 1 1 0;
     width: auto;
     min-width: 0;
-    max-width: 72px;
-    height: 54px;
+    height: 56px;
     gap: 4px;
     padding: 0;
-    border-radius: var(--tc-radius-lg);
-    font-size: 10px;
+    // Six tabs share the width: tight tracking keeps "Community" whole.
+    letter-spacing: -0.01em;
+    border-radius: var(--tc-radius-sm);
+    color: var(--tc-muted);
+    font-size: var(--tc-text-micro);
+    font-weight: 500;
+
+    svg {
+      box-sizing: content-box;
+      width: 22px;
+      height: 22px;
+      padding: 4px 14px;
+      border-radius: var(--tc-radius-pill);
+      transition: background-color var(--tc-dur-2) var(--tc-ease-fade);
+    }
+    &:hover {
+      background: transparent;
+      color: var(--tc-muted);
+
+      svg {
+        transform: none;
+      }
+    }
+    &.is-active {
+      color: var(--tc-brand);
+      font-weight: 600;
+
+      svg {
+        background: var(--tc-blush);
+        transform: none;
+      }
+    }
+    &:focus-visible {
+      outline: 2px solid var(--tc-brand);
+      outline-offset: -2px;
+    }
+  }
+  // Narrow phones: a slimmer pill so six tabs keep their labels.
+  @media (max-width: 374px) {
+    .applicant-rail__item {
+      letter-spacing: -0.025em;
+    }
+    .applicant-rail__item svg {
+      padding: 4px 9px;
+    }
+  }
+  // 320px phones (first-gen SE): one step below the type scale, labels only.
+  @media (max-width: 340px) {
+    .applicant-rail__item {
+      font-size: 10px;
+    }
   }
   .applicant-rail__item.is-phone-hidden {
     display: none;
