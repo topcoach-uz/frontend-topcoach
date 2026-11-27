@@ -3,6 +3,7 @@ import { RtkApi } from './api';
 export type LessonPlanInput = {
   requestId: string;
   studentUserId: string;
+  enrollmentId?: string;
   timezone: string;
   startsOn: string;
   time: string;
@@ -49,7 +50,13 @@ export type LessonPlanPreview = {
 export const lessonPlansApi = RtkApi.injectEndpoints({
   endpoints: (build) => ({
     getFullSupportSchedulingStudents: build.query<
-      { data: Array<{ id: string; name: string }> },
+      {
+        data: Array<{
+          id: string;
+          name: string;
+          programs: Array<{ enrollmentId: string | null; program: string; name?: string; capabilities?: string[] }>;
+        }>;
+      },
       void
     >({
       query: () => '/full-support/mentor/lesson-plans/students',
