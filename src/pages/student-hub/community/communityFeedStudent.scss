@@ -69,9 +69,13 @@
     &::placeholder {
       color: var(--tc-subtle);
     }
-    &:focus {
+    // The well around it draws the focus ring; the feed-wide
+    // `:focus-visible` outline would add a second, square ring inside it.
+    &:focus,
+    &:focus-visible {
       border: 0;
       background: transparent;
+      outline: none;
     }
   }
 
