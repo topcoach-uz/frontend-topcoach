@@ -3182,6 +3182,112 @@ form.applicant-glass-search {
   flex-direction: column;
   min-width: 0;
 }
+// A compact glass search on Documents: 48px instead of the 60px page search.
+.applicant-shell form.applicant-glass-search.applicant-document-search-bar {
+  min-height: 48px;
+  padding: 4px 5px 4px 6px;
+
+  .ant-input-affix-wrapper,
+  .ant-input {
+    min-height: 0;
+    font-size: var(--tc-text-body);
+  }
+}
+
+// ---- Documents drop area ----
+// The list card is a column: the rows, then a dashed drop strip that grows to
+// fill whatever height is left, so the empty part of the card reads as
+// "drop files here" instead of blank space.
+.applicant-shell .applicant-dropzone .applicant-document-list {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 18px;
+}
+.applicant-shell .tc-doc-drop-strip {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 110px;
+  margin-top: 14px;
+  padding: 20px;
+  border: 1.5px dashed rgba(139, 0, 0, 0.32);
+  border-radius: var(--tc-radius-lg);
+  background: rgba(247, 230, 228, 0.25);
+  color: var(--tc-muted);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background-color var(--tc-dur-2) var(--tc-ease-fade),
+    border-color var(--tc-dur-2) var(--tc-ease-fade),
+    transform var(--tc-dur-1) var(--tc-ease);
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: rgba(139, 0, 0, 0.45);
+      background: rgba(247, 230, 228, 0.55);
+      .tc-doc-drop-strip__icon { transform: translateY(-2px); }
+    }
+  }
+  &:active { transform: scale(0.99); }
+  &:focus-visible { outline: 2px solid var(--tc-brand); outline-offset: 2px; }
+}
+.applicant-shell .tc-doc-drop-strip__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--tc-radius-md);
+  @include lg.lg-blush;
+  color: var(--tc-brand);
+  transition: transform var(--tc-dur-2) var(--tc-ease);
+}
+.applicant-shell .tc-doc-drop-strip__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong { color: var(--tc-ink); font-size: var(--tc-text-body-sm); font-weight: 600; }
+  small { color: var(--tc-subtle); font-size: var(--tc-text-caption); }
+}
+// The empty card is the drop area itself: a dashed inner rim says so.
+.applicant-shell .applicant-dropzone .applicant-empty--fill {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 14px;
+    border: 1.5px dashed rgba(139, 0, 0, 0.28);
+    border-radius: calc(var(--tc-radius-xl) - 8px);
+    pointer-events: none;
+    transition: border-color var(--tc-dur-2) var(--tc-ease-fade), background-color var(--tc-dur-2) var(--tc-ease-fade);
+  }
+}
+// A file is being dragged into the window: the drop area lights up and
+// breathes, so it's obvious where the file can go before you reach it.
+.applicant-shell .applicant-dropzone.is-armed {
+  .tc-doc-drop-strip,
+  .applicant-empty--fill::after {
+    border-color: rgba(139, 0, 0, 0.55);
+    background: rgba(247, 230, 228, 0.6);
+    animation: tc-drop-breathe 1.4s var(--tc-ease-fade) infinite alternate;
+  }
+  .tc-doc-drop-strip__icon { transform: translateY(-3px); }
+}
+@keyframes tc-drop-breathe {
+  from { box-shadow: 0 0 0 0 rgba(139, 0, 0, 0); }
+  to { box-shadow: 0 0 0 6px rgba(139, 0, 0, 0.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .applicant-shell .applicant-dropzone.is-armed .tc-doc-drop-strip,
+  .applicant-shell .applicant-dropzone.is-armed .applicant-empty--fill::after { animation: none; }
+  .applicant-shell .tc-doc-drop-strip,
+  .applicant-shell .tc-doc-drop-strip__icon { transition: none; }
+}
 .applicant-shell form.applicant-document-search-bar {
   width: 100%;
 }

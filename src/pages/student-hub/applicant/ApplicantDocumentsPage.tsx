@@ -1,4 +1,4 @@
-import { useRef, useState, type DragEvent } from "react";
+import { useEffect, useRef, useState, type DragEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { EmptyState } from "src/components/student-hub/ui/EmptyState";
 import { useFillViewport } from "src/hooks/useFillViewport";
@@ -89,6 +89,28 @@ export default function ApplicantDocumentsPage() {
   // Drag a file onto the documents area: the Add document dialog opens with it attached.
   const [dragging, setDragging] = useState(false);
   const dragDepth = useRef(0);
+  // A file is being dragged anywhere over the window: light up the drop area
+  // so it's obvious where it can go. Dropping outside the area does nothing
+  // (instead of the browser opening the file).
+  const [fileOver, setFileOver] = useState(false);
+  useEffect(() => {
+    let depth = 0;
+    const isFiles = (e: globalThis.DragEvent) => Array.from(e.dataTransfer?.types ?? []).includes("Files");
+    const enter = (e: globalThis.DragEvent) => { if (!isFiles(e)) return; depth += 1; setFileOver(true); };
+    const leave = (e: globalThis.DragEvent) => { if (!isFiles(e)) return; depth = Math.max(0, depth - 1); if (depth === 0) setFileOver(false); };
+    const over = (e: globalThis.DragEvent) => { if (isFiles(e)) e.preventDefault(); };
+    const drop = (e: globalThis.DragEvent) => { if (!isFiles(e)) return; e.preventDefault(); depth = 0; setFileOver(false); };
+    window.addEventListener("dragenter", enter);
+    window.addEventListener("dragleave", leave);
+    window.addEventListener("dragover", over);
+    window.addEventListener("drop", drop);
+    return () => {
+      window.removeEventListener("dragenter", enter);
+      window.removeEventListener("dragleave", leave);
+      window.removeEventListener("dragover", over);
+      window.removeEventListener("drop", drop);
+    };
+  }, []);
   const open = () => {
     form.setFieldsValue({ documentType: DocumentType.TRANSCRIPT, category: "uploaded" });
     const next = new URLSearchParams(params);
@@ -204,7 +226,7 @@ export default function ApplicantDocumentsPage() {
           onChange={(event) => setSearch(event.target.value)}
           allowClear
         />
-        <SearchButton type="submit" size={48} className="applicant-glass-search__btn" />
+        <SearchButton type="submit" size={38} className="applicant-glass-search__btn" />
       </form>
       <div ref={tabsThumb.ref} data-lens={tabsThumb.lens} className="applicant-tabs" role="tablist" aria-label="Document filters">
         <SegmentThumb style={tabsThumb.style} />
@@ -227,7 +249,7 @@ export default function ApplicantDocumentsPage() {
       </div>
       </div>
       <div
-        className={`applicant-dropzone${dragging ? " is-dragging" : ""}`}
+        className={`applicant-dropzone${dragging ? " is-dragging" : ""}${fileOver ? " is-armed" : ""}`}
         onDragEnter={onDragEnter}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
@@ -317,6 +339,13 @@ export default function ApplicantDocumentsPage() {
                 </Popconfirm>
               </div>
             ))}
+            <button type="button" className="tc-doc-drop-strip" onClick={open}>
+              <span className="tc-doc-drop-strip__icon" aria-hidden><UploadCloud size={20} /></span>
+              <span className="tc-doc-drop-strip__text">
+                <strong>{t("studentHub.documents.dropZoneLabel", "Drag a file here, or click to add one")}</strong>
+                <small>{t("studentHub.documents.dropTypes", "PDF, Word or image files")}</small>
+              </span>
+            </button>
           </div>
           </div>
         )}

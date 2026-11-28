@@ -3849,5 +3849,6 @@
   "studentHub.feed.upcomingSessionsHeading": "Ближайшие сессии",
   "studentHub.feed.noUpcomingSessionsHint": "Запишитесь на встречу 1:1 с ментором — она появится здесь.",
   "studentHub.feed.viewPastSessions": "Прошедшие сессии",
-  "studentHub.feed.composerAudience": "Публикация для сообщества"
+  "studentHub.feed.composerAudience": "Публикация для сообщества",
+  "studentHub.documents.dropZoneLabel": "Перетащите файл сюда или нажмите, чтобы добавить"
 }

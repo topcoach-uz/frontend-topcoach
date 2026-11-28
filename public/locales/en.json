@@ -3847,5 +3847,6 @@
   "studentHub.feed.upcomingSessionsHeading": "Upcoming sessions",
   "studentHub.feed.noUpcomingSessionsHint": "Book a 1:1 with a mentor and it will appear here.",
   "studentHub.feed.viewPastSessions": "See past sessions",
-  "studentHub.feed.composerAudience": "Posting to the community"
+  "studentHub.feed.composerAudience": "Posting to the community",
+  "studentHub.documents.dropZoneLabel": "Drag a file here, or click to add one"
 }

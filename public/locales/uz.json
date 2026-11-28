@@ -3847,5 +3847,6 @@
   "studentHub.feed.upcomingSessionsHeading": "Yaqinlashayotgan sessiyalar",
   "studentHub.feed.noUpcomingSessionsHint": "Mentor bilan 1:1 uchrashuvga yoziling — u shu yerda paydo bo‘ladi.",
   "studentHub.feed.viewPastSessions": "O‘tgan sessiyalar",
-  "studentHub.feed.composerAudience": "Hamjamiyatga joylash"
+  "studentHub.feed.composerAudience": "Hamjamiyatga joylash",
+  "studentHub.documents.dropZoneLabel": "Faylni shu yerga torting yoki qo‘shish uchun bosing"
 }
