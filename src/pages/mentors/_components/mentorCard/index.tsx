@@ -202,7 +202,7 @@ function MentorCard({
           )}
         </div>
 
-        {/* Pricing based on mentor level - hidden for UzCombinator mentors (rate, contact for pricing) */}
+        {/* Public pricing visibility follows the global mentor display policy */}
         <div className={styles.sessionsSection}>
           <CustomText color={colors.colorTextSecondary} fontSize={13} fontWeight={500} mb={8}>{display.label}</CustomText>
           {display.showPrice && level !== 'uzcombinator' && (

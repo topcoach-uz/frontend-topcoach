@@ -17,7 +17,7 @@ describe('settings wayfinding', () => {
     expect(ACCOUNT_SETTINGS_PATH).toContain('tab=profile');
     expect(MEMBERSHIP_BILLING_PATH).toContain('tab=subscription');
   });
-  it.each(['profile', 'referrals'] as const)(
+  it.each(['profile', 'school', 'referrals'] as const)(
     'marks the URL-selected %s section and preserves link navigation',
     (section) => {
       const html = renderToStaticMarkup(

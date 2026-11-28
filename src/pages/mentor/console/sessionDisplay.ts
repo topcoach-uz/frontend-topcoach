@@ -2,6 +2,8 @@ import { lessonMinutes } from './fullSupportLessons';
 import type { SessionLogDto } from 'src/app/services/fullSupportApi';
 import type { MentorBooking } from './sessionSources';
 import type { McPillVariant } from './components/McPill';
+import { importedSessionInfo } from './importedSession';
+import { formatDateTime } from './utils';
 
 export type LessonDisplay = {
   label: string;
@@ -15,6 +17,7 @@ export function fullSupportDisplay(
   lesson: SessionLogDto,
   now = Date.now(),
 ): LessonDisplay {
+  const imported = importedSessionInfo(lesson);
   const details = {
     attendance:
       lesson.attendance && lesson.attendance !== 'unknown'
@@ -22,11 +25,13 @@ export function fullSupportDisplay(
         : 'Not recorded',
     actualMinutes:
       lesson.outcome === 'held' ? (lesson.actualDurationMinutes ?? null) : null,
-    notes: lesson.sharedNotes ?? '',
+    notes: imported ? `Historical source report. ${imported.displayMidnightIsNotBookingTime ? 'Exact time and timezone are not confirmed.' : ''}`.trim() : lesson.sharedNotes ?? '',
   };
+  if (imported?.sourceStatus === 'missed_unspecified') return { ...details, label: 'Missed', variant: 'neutral' };
+  if (imported?.sourceStatus === 'scheduled') return { ...details, label: 'Planned (unconfirmed)', variant: 'neutral' };
   switch (lesson.outcome) {
     case 'held':
-      return { ...details, label: 'Held', variant: 'success' };
+      return { ...details, label: imported ? 'Reported held' : 'Held', variant: 'success' };
     case 'student_no_show':
       return {
         ...details,
@@ -65,6 +70,15 @@ export function fullSupportDisplay(
   };
 }
 
+export function bookingDateLabel(booking: MentorBooking) {
+  const imported = booking.source === 'full-support' ? importedSessionInfo(booking.raw as SessionLogDto) : null;
+  if (imported?.displayMidnightIsNotBookingTime) {
+    const date = new Date(booking.dateTime).toLocaleDateString(undefined, { timeZone: 'Asia/Tashkent', year: 'numeric', month: 'short', day: 'numeric' });
+    return `${date} · time not recorded`;
+  }
+  return formatDateTime(booking.dateTime);
+}
+
 export function bookingDisplay(booking: MentorBooking, now = Date.now()): LessonDisplay {
   if (booking.source === 'course-class') {
     const labels = { 'report-due': 'Awaiting attendance', completed: 'Held', cancelled: 'Cancelled', upcoming: 'Upcoming' } as const;
@@ -92,6 +106,11 @@ export function scheduleScopes<T extends Pick<MentorBooking, 'dateTime' | 'statu
   };
 }
 
+/**
+ * One student's sessions grouped for the workspace: report-due first (newest
+ * first), then upcoming (soonest first), then past = completed/cancelled
+ * (newest first). Every booking lands in exactly one group.
+ */
 export function groupStudentSessions(bookings: MentorBooking[]) {
   const time = (b: MentorBooking) => new Date(b.dateTime).getTime();
   const asc = (a: MentorBooking, b: MentorBooking) => time(a) - time(b);

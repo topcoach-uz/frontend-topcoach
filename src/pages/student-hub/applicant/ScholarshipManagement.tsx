@@ -1,76 +1,276 @@
-import { useState } from 'react';
-import { Button, DatePicker, Form, Input, InputNumber, Modal, Select, message } from 'antd';
-import dayjs from 'dayjs';
-import { Link, useNavigate } from 'react-router-dom';
-import { Award, Plus } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { EmptyState } from 'src/components/student-hub/ui/EmptyState';
-import { useDeleteScholarshipApplicationMutation, useGetScholarshipApplicationsQuery, useUpdateScholarshipApplicationMutation } from 'src/app/services/student-hub/applicationTrackingApi';
-import type { ScholarshipApplication } from 'src/app/services/student-hub/types';
-import { ApplicantPage, Breadcrumb, CollegeListTabs, QueryState, displayDate } from './ApplicantPage';
-
-const statuses = ['researching', 'eligible', 'applying', 'submitted', 'under_review', 'awarded', 'rejected', 'expired'] as const;
-const label = (value: string) => value.replaceAll('_', ' ').replace(/^./, c => c.toUpperCase());
+import { useState } from "react";
+import { Button, Dropdown, Input, Modal, Select, Tag, message } from "antd";
+import dayjs from "dayjs";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  useDeleteScholarshipApplicationMutation,
+  useGetScholarshipApplicationsQuery,
+  useUpdateScholarshipApplicationMutation,
+} from "src/app/services/student-hub/applicationTrackingApi";
+import type { ScholarshipApplication } from "src/app/services/student-hub/types";
+import {
+  ApplicantPage,
+  Breadcrumb,
+  QueryState,
+  displayDate,
+} from "./ApplicantPage";
+import ScholarshipForm, {
+  scholarshipLabel,
+  scholarshipStatuses,
+  scholarshipTypes,
+} from "./ScholarshipForm";
+import { parseApplicantDate } from "./applicantDate";
 
 export default function ScholarshipManagement() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
-  const query = useGetScholarshipApplicationsQuery({ page: 1, limit: 100 }, { pollingInterval: 10000 });
+  const query = useGetScholarshipApplicationsQuery(
+    { page: 1, limit: 100 },
+    { pollingInterval: 10000 },
+  );
   const [editing, setEditing] = useState<ScholarshipApplication>();
-  const [form] = Form.useForm();
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("all");
+  const [sort, setSort] = useState("deadline");
   const [update, updateState] = useUpdateScholarshipApplicationMutation();
   const [remove] = useDeleteScholarshipApplicationMutation();
-  const edit = (scholarship: ScholarshipApplication) => {
-    setEditing(scholarship);
-    form.setFieldsValue({ ...scholarship, amount: scholarship.amount == null ? undefined : Number(scholarship.amount), applicationDeadline: scholarship.applicationDeadline ? dayjs(scholarship.applicationDeadline) : null });
-  };
-  const save = async (values: any) => {
-    if (!editing) return;
-    try {
-      await update({ id: editing.id, data: {
-        scholarshipName: values.scholarshipName.trim(), organization: values.organization.trim(),
-        amount: values.amount ?? null, currency: values.currency.toUpperCase(), status: values.status,
-        applicationDeadline: values.applicationDeadline?.format('YYYY-MM-DD') ?? null,
-        notes: values.notes ?? '',
-      } }).unwrap();
-      setEditing(undefined); message.success('Scholarship updated.');
-    } catch { message.error('Could not save this scholarship. Your changes remain here.'); }
-  };
-  return <ApplicantPage title="Your scholarships" subtitle="Manage funding applications, decisions and deadlines." actions={<Button type="primary" icon={<Plus size={16} />} onClick={() => navigate('/student-hub/applications/scholarships/new')}>Add scholarship</Button>}>
-    <Breadcrumb><Link to="/student-hub/applications">College List</Link><span>/</span>Scholarships</Breadcrumb>
-    <CollegeListTabs current="scholarships" />
-    <QueryState loading={query.isLoading} error={query.isError} retry={query.refetch}>
-      {!query.data?.data.length ? <EmptyState
-        panel
-        fill
-        level={2}
-        icon={Award}
-        title={t('studentHub.scholarships.emptyTitle', 'No scholarships saved yet.')}
-        description={t('studentHub.scholarships.emptyBody', 'Track the funding you apply for, with its deadline and decision, in one place.')}
-        actions={<Button type="primary" icon={<Plus size={16} />} onClick={() => navigate('/student-hub/applications/scholarships/new')}>{t('studentHub.scholarships.add', 'Add scholarship')}</Button>}
-      /> : query.data.data.map(scholarship => <section key={scholarship.id} className="applicant-panel" aria-label={scholarship.scholarshipName}>
-        <h2>{scholarship.scholarshipName || 'Scholarship'}</h2>
-        <p>{scholarship.organization} · {label(scholarship.status)}</p>
-        <p>Deadline: {displayDate(scholarship.applicationDeadline)}</p>
-        {scholarship.amount != null && <p>Amount: {scholarship.amount} {scholarship.currency ?? 'USD'}</p>}
-        {scholarship.notes && <p>{scholarship.notes}</p>}
-        <div className="applicant-actions"><Button onClick={() => edit(scholarship)}>Edit scholarship</Button><Button danger onClick={() => Modal.confirm({
-          title: 'Delete this scholarship?', content: `Remove ${scholarship.scholarshipName || 'this scholarship'} and its deadline from your tracker?`, okText: 'Delete scholarship', okButtonProps: { danger: true },
-          onOk: async () => { try { await remove(scholarship.id).unwrap(); message.success('Scholarship deleted.'); } catch { message.error('Could not delete this scholarship.'); throw new Error('Delete failed'); } },
-        })}>Delete</Button></div>
-      </section>)}
-    </QueryState>
-    <Modal title="Edit scholarship" open={!!editing} footer={null} onCancel={() => setEditing(undefined)} destroyOnClose>
-      <Form form={form} layout="vertical" onFinish={save}>
-        <Form.Item name="scholarshipName" label="Scholarship name" rules={[{ required: true, whitespace: true, max: 255 }]}><Input maxLength={255} /></Form.Item>
-        <Form.Item name="organization" label="Organization" rules={[{ required: true, whitespace: true, max: 255 }]}><Input maxLength={255} /></Form.Item>
-        <Form.Item name="status" label="Status" rules={[{ required: true }]}><Select options={statuses.map(value => ({ value, label: label(value) }))} /></Form.Item>
-        <Form.Item name="applicationDeadline" label="Application deadline"><DatePicker style={{ width: '100%' }} /></Form.Item>
-        <Form.Item name="amount" label="Amount"><InputNumber min={0} max={9999999999.99} precision={2} style={{ width: '100%' }} /></Form.Item>
-        <Form.Item name="currency" label="Currency" rules={[{ required: true, pattern: /^[A-Za-z]{3}$/, message: 'Enter a three-letter currency code.' }]}><Input maxLength={3} /></Form.Item>
-        <Form.Item name="notes" label="Notes"><Input.TextArea maxLength={10000} rows={3} /></Form.Item>
-        <div className="applicant-actions applicant-actions--end"><Button onClick={() => setEditing(undefined)}>Cancel</Button><Button type="primary" htmlType="submit" loading={updateState.isLoading}>Save scholarship</Button></div>
-      </Form>
-    </Modal>
-  </ApplicantPage>;
+  const entries = (query.data?.data ?? [])
+    .filter(
+      (item) =>
+        (status === "all" || item.status === status) &&
+        [item.scholarshipName, item.organization].some((value) =>
+          value?.toLowerCase().includes(search.trim().toLowerCase()),
+        ),
+    )
+    .sort((a, b) =>
+      sort === "name"
+        ? (a.scholarshipName ?? "").localeCompare(b.scholarshipName ?? "")
+        : (a.applicationDeadline
+            ? parseApplicantDate(a.applicationDeadline).getTime()
+            : Infinity) -
+          (b.applicationDeadline
+            ? parseApplicantDate(b.applicationDeadline).getTime()
+            : Infinity),
+    );
+  return (
+    <ApplicantPage
+      title="Your scholarships"
+      subtitle="Manage funding applications, decisions and deadlines."
+      actions={
+        <Button
+          type="primary"
+          onClick={() => navigate("/student-hub/applications/scholarships/new")}
+        >
+          Add scholarship
+        </Button>
+      }
+    >
+      <Breadcrumb>
+        <Link to="/student-hub/applications">Applications</Link>
+        <span>/</span>Scholarships
+      </Breadcrumb>
+      <div
+        className="application-toolbar"
+        role="search"
+        aria-label="Filter scholarships"
+      >
+        <Input.Search
+          aria-label="Search scholarships"
+          placeholder="Search scholarships or organizations"
+          allowClear
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+        <Select
+          aria-label="Scholarship status"
+          value={status}
+          onChange={setStatus}
+          options={[
+            { value: "all", label: "All statuses" },
+            ...scholarshipStatuses.map((value) => ({
+              value,
+              label: scholarshipLabel(value),
+            })),
+          ]}
+        />
+        <Select
+          aria-label="Sort scholarships"
+          value={sort}
+          onChange={setSort}
+          options={[
+            { value: "deadline", label: "Nearest deadline" },
+            { value: "name", label: "Scholarship name" },
+          ]}
+        />
+      </div>
+      <QueryState
+        hasData={query.data !== undefined}
+        loading={query.isLoading}
+        error={query.isError}
+        retry={query.refetch}
+      >
+        {!query.data?.data.length ? (
+          <div className="applicant-panel applicant-empty">
+            <h2>Find funding for your next step</h2>
+            <p>
+              Save a scholarship now, then add its amount, requirements and
+              deadline as you research.
+            </p>
+            <Button
+              type="primary"
+              onClick={() =>
+                navigate("/student-hub/applications/scholarships/new")
+              }
+            >
+              Add your first scholarship
+            </Button>
+          </div>
+        ) : !entries.length ? (
+          <div className="applicant-panel applicant-empty">
+            <h2>No matching scholarships</h2>
+            <Button
+              onClick={() => {
+                setSearch("");
+                setStatus("all");
+              }}
+            >
+              Clear filters
+            </Button>
+          </div>
+        ) : (
+          entries.map((scholarship) => (
+            <section
+              key={scholarship.id}
+              className="applicant-panel"
+              aria-label={scholarship.scholarshipName}
+            >
+              <div className="applicant-page__heading">
+                <div>
+                  <h2>{scholarship.scholarshipName || "Scholarship"}</h2>
+                  <p>{scholarship.organization}</p>
+                </div>
+                <Tag>{scholarshipLabel(scholarship.status)}</Tag>
+              </div>
+              <div className="applicant-actions">
+                <span>
+                  Deadline: {displayDate(scholarship.applicationDeadline)}
+                </span>
+                <span>
+                  {scholarship.amount != null
+                    ? `${new Intl.NumberFormat().format(Number(scholarship.amount))} ${scholarship.currency ?? "USD"}`
+                    : "Amount not confirmed"}
+                </span>
+                {scholarship.scholarshipType && (
+                  <Tag>
+                    {scholarshipTypes.find(
+                      (type) => type.value === scholarship.scholarshipType,
+                    )?.label ?? scholarship.scholarshipType}
+                  </Tag>
+                )}
+              </div>
+              {(scholarship.notes ||
+                scholarship.eligibility ||
+                scholarship.essayPrompt) && (
+                <details className="application-details">
+                  <summary>Requirements & notes</summary>
+                  {scholarship.eligibility && (
+                    <p>
+                      <strong>Eligibility:</strong> {scholarship.eligibility}
+                    </p>
+                  )}
+                  {scholarship.essayPrompt && (
+                    <p>
+                      <strong>Application requirements:</strong>{" "}
+                      {scholarship.essayPrompt}
+                    </p>
+                  )}
+                  {scholarship.notes && <p>{scholarship.notes}</p>}
+                </details>
+              )}
+              <div className="applicant-actions">
+                <Button onClick={() => setEditing(scholarship)}>
+                  Edit scholarship
+                </Button>
+                <Dropdown
+                  trigger={["click"]}
+                  menu={{
+                    items: [
+                      {
+                        key: "delete",
+                        label: "Delete scholarship",
+                        danger: true,
+                      },
+                    ],
+                    onClick: () =>
+                      Modal.confirm({
+                        title: "Delete this scholarship?",
+                        content: `Remove ${scholarship.scholarshipName || "this scholarship"} and its deadline from your tracker?`,
+                        okText: "Delete scholarship",
+                        okButtonProps: { danger: true },
+                        onOk: async () => {
+                          try {
+                            await remove(scholarship.id).unwrap();
+                            message.success("Scholarship deleted.");
+                          } catch {
+                            message.error("Could not delete this scholarship.");
+                            throw new Error("Delete failed");
+                          }
+                        },
+                      }),
+                  }}
+                >
+                  <Button
+                    aria-label={`More actions for ${scholarship.scholarshipName || "scholarship"}`}
+                  >
+                    More
+                  </Button>
+                </Dropdown>
+              </div>
+            </section>
+          ))
+        )}
+      </QueryState>
+      <Modal
+        title="Edit scholarship"
+        open={!!editing}
+        footer={null}
+        closable={false}
+        maskClosable={false}
+        keyboard={false}
+        destroyOnClose
+        width={680}
+        rootClassName="applicant-modal"
+      >
+        {editing && (
+          <div className="applicant-page">
+            <ScholarshipForm
+              key={editing.id}
+              editing
+              saving={updateState.isLoading}
+              onSaved={() => setEditing(undefined)}
+              initialValues={{
+                ...editing,
+                amount:
+                  editing.amount == null ? undefined : Number(editing.amount),
+                applicationDeadline: editing.applicationDeadline
+                  ? dayjs(editing.applicationDeadline)
+                  : null,
+              }}
+              onCancel={() => setEditing(undefined)}
+              onSave={async (data) => {
+                try {
+                  await update({ id: editing.id, data }).unwrap();
+                  message.success("Scholarship updated.");
+                } catch (error) {
+                  message.error(
+                    "Could not save this scholarship. Your changes remain here.",
+                  );
+                  throw error;
+                }
+              }}
+            />
+          </div>
+        )}
+      </Modal>
+    </ApplicantPage>
+  );
 }

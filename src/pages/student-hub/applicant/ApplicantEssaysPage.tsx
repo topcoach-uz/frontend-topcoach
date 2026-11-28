@@ -43,6 +43,7 @@ import {
   RelatedApplicationLabel,
   displayDate,
 } from "./ApplicantPage";
+import { NextStepCard } from "./NextStepCard";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 import {
   useGetEligibleEssayMentorsQuery,
@@ -52,6 +53,8 @@ import {
 } from "src/app/services/student-hub/essayReviewApi";
 import { getMentorFeedbackText } from "./essayFeedbackModel";
 import { EssayPromptBox } from "./EssayPromptBox";
+import { AnimatedPlaceholderInput } from "./AnimatedPlaceholderInput";
+import { essayTitleHint, ESSAY_TITLE_EXAMPLES } from "./essayWriting";
 import { EssayAnglesPanel } from "./EssayAnglesPanel";
 import { EssayAiReview, type StoredReview } from "./EssayAiReview";
 import { findQuoteRange } from "./essayReview";
@@ -184,6 +187,7 @@ export default function ApplicantEssaysPage() {
       ) : undefined}
     >
       <Breadcrumb>Statements & essays</Breadcrumb>
+      <NextStepCard current="essays" />
       <QueryState
         loading={query.isLoading}
         error={query.isError}
@@ -403,6 +407,7 @@ export function ApplicantEssayEditorPage() {
   const isMobile = useIsMobile();
   const [previewVersion, setPreviewVersion] = useState<{ label: string; content: string; date?: string } | null>(null);
   const essay = query.data?.data;
+  const titleHint = essayTitleHint(essay?.prompt);
   const profileId = useTypedSelector((state) => state.auth.profile?.id);
   const localDraftKey = essayId
     ? `topcoach:essay-draft:${profileId || "current"}:${essayId}`
@@ -832,7 +837,9 @@ export function ApplicantEssayEditorPage() {
               {essay.prompt?.trim() && <EssayPromptBox prompt={essay.prompt.trim()} />}
               {pinned && <PinnedAngleStrip angle={pinned} onChange={() => setSidePanel("ideas")} onRemove={removePin} />}
               <label className="applicant-editor__title-label" htmlFor="applicant-essay-title">Draft title</label>
-              <Input
+              <AnimatedPlaceholderInput
+                examples={titleHint ? [] : ESSAY_TITLE_EXAMPLES}
+                staticPlaceholder={titleHint || "Give your draft a title"}
                 id="applicant-essay-title"
                 className="applicant-title-input"
                 value={title}

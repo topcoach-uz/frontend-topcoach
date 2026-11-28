@@ -21,16 +21,14 @@ export default function ApplicationMentor({
   useEffect(() => {
     setSelected(application.mentorId || null);
   }, [application.id, application.mentorId]);
+  const [editing, setEditing] = useState(false);
   const options = mentors.data?.data || [];
   const unavailable =
     application.mentorId && !options.some((m) => m.id === application.mentorId);
   return (
     <section className="applicant-panel" aria-label="Application mentor">
       <h3>Application mentor</h3>
-      <p>
-        Choose a current support mentor to help track this application and
-        update its checklist.
-      </p>
+      <div className="applicant-page__heading"><div><strong>{options.find(mentor => mentor.id === application.mentorId)?.name || (application.mentorId ? 'Assigned mentor' : 'No mentor assigned')}</strong><p>Application checklist support</p></div><Button onClick={() => setEditing(value => !value)}>{editing ? 'Close' : application.mentorId ? 'Change' : 'Choose mentor'}</Button></div>
       {mentors.isError && (
         <Alert
           type="error"
@@ -38,16 +36,16 @@ export default function ApplicationMentor({
           action={<Button onClick={() => void mentors.refetch()}>Retry</Button>}
         />
       )}
-      {unavailable && !mentors.isFetching && (
+      {editing && unavailable && !mentors.isFetching && (
         <Alert
           type="warning"
           message="The previously selected mentor is no longer available. Choose a current mentor or clear the assignment."
         />
       )}
-      {!mentors.isFetching && !mentors.isError && !options.length && (
+      {editing && !mentors.isFetching && !mentors.isError && !options.length && (
         <p>No current application support mentor is available.</p>
       )}
-      <Space direction="vertical" style={{ width: "100%" }}>
+      {editing && <Space direction="vertical" style={{ width: "100%" }}>
         <Select
           aria-label="Select application mentor"
           style={{ width: "100%" }}
@@ -88,6 +86,7 @@ export default function ApplicationMentor({
                 id: application.id,
                 data: { mentorId: selected },
               }).unwrap();
+              setEditing(false);
               message.success(
                 selected
                   ? "Application mentor assigned."
@@ -103,7 +102,7 @@ export default function ApplicationMentor({
         >
           Save mentor
         </Button>
-      </Space>
+      </Space>}
       <p>
         Send essays and share documents from their review screens when you want
         feedback.

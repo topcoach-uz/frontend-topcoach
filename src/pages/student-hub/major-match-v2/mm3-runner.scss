@@ -351,3 +351,6 @@ $mm2-serif: "Iowan Old Style", "Charter", "Georgia", serif;
     margin-top: 8px;
   }
 }
+
+.mm2-runner__bar-fill { transition: width 200ms ease-out; }
+@media (prefers-reduced-motion: reduce) { .mm2-runner__bar-fill { transition: none; } }

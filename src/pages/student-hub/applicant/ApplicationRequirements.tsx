@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { ChevronRight } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   Alert,
   Button,
@@ -21,7 +22,18 @@ export default function ApplicationRequirements({
   requirements = {},
   updatedAt,
   onSave,
+  compact = false,
+  heading,
+  actions,
+  setup,
 }: {
+  compact?: boolean;
+  heading?: string;
+  actions?: ReactNode;
+  setup?: {
+    programName?: string;
+    renderProgramLink: (children: ReactNode) => ReactNode;
+  };
   requirements?: Requirements;
   updatedAt?: string;
   onSave?: (
@@ -39,6 +51,55 @@ export default function ApplicationRequirements({
   const [kind, setKind] = useState("other");
   const rows = requirementRows(requirements);
   const draftRows = requirementRows(draft || {});
+  const unfinishedRows = rows.filter((row) => !row.completed);
+  const completedRows = rows.filter((row) => row.completed);
+  const renderRows = (items: typeof rows) => (
+    <ul
+      className="application-requirements-list"
+      style={{ listStyle: "none", padding: 0 }}
+    >
+      {items.map((row) => (
+        <li key={`${row.section}-${row.id}`} style={{ padding: "4px 0" }}>
+          {onSave ? (
+            <Checkbox
+              checked={row.completed}
+              disabled={saving || draft !== null}
+              onChange={async (event) => {
+                setSaving(true);
+                try {
+                  await onSave(
+                    toggleRequirement(requirements, row, event.target.checked),
+                    updatedAt,
+                  );
+                } catch (error: any) {
+                  message.error(
+                    error?.data?.message ||
+                      "Could not update this requirement. Please retry.",
+                  );
+                } finally {
+                  setSaving(false);
+                }
+              }}
+            >
+              {row.title}
+            </Checkbox>
+          ) : (
+            <>
+              <span aria-label={row.completed ? "Complete" : "Incomplete"}>
+                {row.completed ? "✓" : "○"}
+              </span>{" "}
+              {row.title}
+            </>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+  const openEditor = () => {
+    setDraft(structuredClone(requirements));
+    setDraftUpdatedAt(updatedAt);
+    setTitle("");
+  };
   const add = () => {
     if (!title.trim() || !draft || (draft.custom?.items?.length || 0) >= 100)
       return;
@@ -60,39 +121,128 @@ export default function ApplicationRequirements({
     setTitle("");
   };
   return (
-    <section aria-label="Application requirements checklist">
+    <section
+      className={compact ? "application-requirements--compact" : undefined}
+      aria-label="Application requirements checklist"
+    >
       <Space wrap style={{ marginBottom: 12 }}>
-        <strong>
-          {rows.filter((r) => r.completed).length} of {rows.length} requirements
-          complete
-        </strong>
-        {onSave && (
+        {heading && <h2>{heading}</h2>}
+        {(!compact || unfinishedRows.length > 0) && (
+          <strong
+            className={
+              compact ? "application-requirements-remaining" : undefined
+            }
+            role={compact ? "status" : undefined}
+            aria-label={
+              compact
+                ? `${unfinishedRows.length} requirements remaining`
+                : `${completedRows.length} of ${rows.length} requirements complete`
+            }
+          >
+            {compact
+              ? `${unfinishedRows.length} remaining`
+              : `${rows.filter((r) => r.completed).length} of ${rows.length} requirements complete`}
+          </strong>
+        )}
+        {actions}
+        {onSave && !(setup && !rows.length) && (
           <Button
-            onClick={() => {
-              setDraft(structuredClone(requirements));
-              setDraftUpdatedAt(updatedAt);
-              setTitle("");
-            }}
+            type={compact ? "text" : "default"}
+            aria-label="Edit checklist"
+            disabled={saving}
+            onClick={openEditor}
           >
             Edit checklist
           </Button>
         )}
       </Space>
-      {!rows.length && <p>No requirements added yet.</p>}
-      <ul style={{ listStyle: "none", padding: 0 }}>
-        {rows.map((row) => (
-          <li key={`${row.section}-${row.id}`} style={{ padding: "4px 0" }}>
-            <span aria-label={row.completed ? "Complete" : "Incomplete"}>
-              {row.completed ? "✓" : "○"}
-            </span>{" "}
-            {row.title}
-          </li>
+      {!rows.length &&
+        (setup ? (
+          <div className="application-checklist-setup">
+            <p>Choose your program, then track what it asks you to prepare.</p>
+            <ol>
+              <li>
+                {setup.renderProgramLink(
+                  <>
+                    <span
+                      className="application-checklist-step-number"
+                      aria-hidden="true"
+                    >
+                      1
+                    </span>
+                    <span className="application-checklist-step-body">
+                      <strong>
+                        {setup.programName
+                          ? "Program selected"
+                          : "Choose a program"}
+                      </strong>
+                      <span>
+                        {setup.programName ||
+                          "Add your intended program so your plan stays specific."}
+                      </span>
+                    </span>
+                    <ChevronRight size={17} aria-hidden="true" />
+                  </>,
+                )}
+              </li>
+              <li>
+                <button
+                  className="application-checklist-step"
+                  type="button"
+                  aria-label="Add requirements"
+                  onClick={openEditor}
+                  disabled={!onSave || saving}
+                >
+                  <span
+                    className="application-checklist-step-number"
+                    aria-hidden="true"
+                  >
+                    2
+                  </span>
+                  <span className="application-checklist-step-body">
+                    <strong>Add your requirements</strong>
+                    <span>
+                      Check the university’s official requirements, then add
+                      essays, references, documents and other items.
+                    </span>
+                  </span>
+                  <ChevronRight size={17} aria-hidden="true" />
+                </button>
+              </li>
+            </ol>
+          </div>
+        ) : (
+          <p>No requirements added yet.</p>
         ))}
-      </ul>
+      {compact ? (
+        <>
+          {unfinishedRows.length > 0 && renderRows(unfinishedRows)}
+          {completedRows.length > 0 && (
+            <details className="application-requirements-completed">
+              <summary>
+                {unfinishedRows.length === 0
+                  ? `Checklist complete · ${completedRows.length} ${completedRows.length === 1 ? "item" : "items"}`
+                  : `Completed (${completedRows.length})`}
+              </summary>
+              {renderRows(completedRows)}
+            </details>
+          )}
+        </>
+      ) : (
+        renderRows(rows)
+      )}
       <Modal
         title="Edit application requirements"
         open={draft !== null}
-        onCancel={() => !saving && setDraft(null)}
+        onCancel={() => {
+          if (
+            !saving &&
+            ((!title.trim() &&
+              JSON.stringify(draft) === JSON.stringify(requirements)) ||
+              window.confirm("Discard your unsaved checklist changes?"))
+          )
+            setDraft(null);
+        }}
         destroyOnClose
         okText="Save checklist"
         okButtonProps={{

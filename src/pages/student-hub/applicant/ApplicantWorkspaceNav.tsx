@@ -117,14 +117,14 @@ function useNavSections() {
     ? [
         { key: 'exploreDirection', label: t('applicant.exploreDirection'), to: applicantLinks.studyDirection, Icon: Signpost, active: matches(applicantLinks.studyDirection, true) },
         { key: 'explorePrograms', label: t('applicant.explorePrograms'), to: applicantLinks.universities, Icon: Search, active: matches(applicantLinks.universities, true) },
-        { key: 'shortlist', label: t('applicant.shortlist'), to: applicantLinks.applications, Icon: List, active: matches(applicantLinks.applications, true), meta: count(applications, matches(applicantLinks.applications, true)) },
+        { key: 'shortlist', label: t('applicant.applicationList'), to: applicantLinks.applications, Icon: List, active: matches(applicantLinks.applications, true), meta: count(applications, matches(applicantLinks.applications, true)) },
         { key: 'essays', label: t('applicant.essays'), to: applicantLinks.essays, Icon: PenLine, active: matches(applicantLinks.essays, true) },
         { key: 'documents', label: t('applicant.documents'), to: applicantLinks.documents, Icon: FileText, active: matches(applicantLinks.documents, true) },
       ]
     : [
         { key: 'majorMatch', label: t('applicant.majorMatch'), to: applicantLinks.majorMatch, Icon: Sparkle, active: matches(applicantLinks.majorMatch, true) },
         { key: 'findUniversities', label: t('applicant.findUniversities'), to: applicantLinks.universities, Icon: Search, active: matches(applicantLinks.universities, true) },
-        { key: 'collegeList', label: t('applicant.collegeList'), to: applicantLinks.applications, Icon: List, active: matches(applicantLinks.applications, true), meta: count(applications, matches(applicantLinks.applications, true)) },
+        { key: 'collegeList', label: t('applicant.applicationList'), to: applicantLinks.applications, Icon: List, active: matches(applicantLinks.applications, true), meta: count(applications, matches(applicantLinks.applications, true)) },
         { key: 'essays', label: t('applicant.essays'), to: applicantLinks.essays, Icon: PenLine, active: matches(applicantLinks.essays, true) },
         { key: 'documents', label: t('applicant.documents'), to: applicantLinks.documents, Icon: FileText, active: matches(applicantLinks.documents, true) },
       ];
@@ -167,14 +167,12 @@ function useNavSections() {
     {
       key: 'application',
       phoneLabel: t('applicant.nav.apply', 'Apply'),
-      label: t('applicant.nav.application', 'Application'),
-      railLabel: t('applicant.nav.application', 'Application'),
-      subtitle: applications !== undefined
-        ? t('applicant.nav.savedUniversities', { count: applications, defaultValue_one: '{{count}} saved university', defaultValue_other: '{{count}} saved universities', defaultValue: '{{count}} saved universities' })
-        : t('applicant.nav.applicationSubtitle', 'Universities and applications'),
+      label: t('applicant.nav.applicationsTitle', 'Applications'),
+      railLabel: t('applicant.nav.applicationsTitle', 'Applications'),
+      subtitle: '',
       RailIcon: ClipboardList,
       to: applicationLinks[0].to,
-      groups: [{ key: 'application', label: t('applicant.nav.application', 'Application'), links: applicationLinks }],
+      groups: [{ key: 'application', label: t('applicant.nav.applicationsTitle', 'Applications'), links: applicationLinks }],
     },
     {
       key: 'learning',
@@ -290,7 +288,7 @@ function useNavSections() {
           key: 'account',
           label: t('accountNav.account', 'Account'),
           links: [
-            { key: 'accountSettings', label: t('accountNav.settings', 'Account settings'), to: ACCOUNT_SETTINGS_PATH, Icon: Shield, active: settingsTab === 'profile' || settingsTab === 'referrals' || settingsTab === 'experience' },
+            { key: 'accountSettings', label: t('accountNav.settings', 'Account settings'), to: ACCOUNT_SETTINGS_PATH, Icon: Shield, active: settingsTab === 'profile' || settingsTab === 'school' || settingsTab === 'referrals' || settingsTab === 'experience' },
             { key: 'notifications', label: t('applicant.nav.notifications', 'Notifications'), to: notificationsPath, Icon: Bell, active: settingsTab === 'notifications' },
           ],
         },
@@ -459,7 +457,7 @@ export function ApplicantPanel({ collapsed, onToggle }: { collapsed: boolean; on
       >
         <div className="applicant-section-panel__header">
           <h2>{active.label}</h2>
-          <p>{active.subtitle}</p>
+          {active.subtitle && <p>{active.subtitle}</p>}
         </div>
         <PanelGroups groups={active.groups} />
         <OrgMembershipSidebar />

@@ -105,3 +105,26 @@ describe("graduate subject options", () => {
     expect(filterUniversityRows(rows, { majorName: "finance" }).map((r) => r.id)).toEqual(["a", "b"]);
   });
 });
+
+import { matchSubjectOption } from "./universityFieldOptions";
+import { findUniversitiesLink } from "./findUniversitiesLink";
+
+describe("matchSubjectOption", () => {
+  const options = [
+    { value: "computer science", label: "Computer Science" },
+    { value: "data science", label: "Data Science" },
+    { value: "business administration", label: "Business Administration" },
+  ];
+  it("matches the exact subject key", () => {
+    expect(matchSubjectOption(options, "Computer Science")?.value).toBe("computer science");
+  });
+  it("matches a close related option and ignores unrelated majors", () => {
+    expect(matchSubjectOption(options, "Computer Science & Engineering")?.value).toBe("computer science");
+    expect(matchSubjectOption(options, "Marine Biology")).toBeUndefined();
+  });
+  it("builds a filtered link, or an unfiltered one when nothing matches", () => {
+    expect(findUniversitiesLink("Computer Science", options)).toBe("/student-hub/universities?major=computer%20science");
+    expect(findUniversitiesLink("Marine Biology", options)).toBe("/student-hub/universities");
+    expect(findUniversitiesLink("Computer Science", undefined)).toBe("/student-hub/universities");
+  });
+});

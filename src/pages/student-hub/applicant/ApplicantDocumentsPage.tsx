@@ -1,9 +1,8 @@
-import { useRef, useState, type DragEvent } from "react";
-import { useTranslation } from "react-i18next";
-import { EmptyState } from "src/components/student-hub/ui/EmptyState";
+import { useSegmentLens } from "src/hooks/useSegmentLens";
+import { useRef, useState } from "react";
 import { Button, Form, Input, Modal, Popconfirm, Select, Upload, message } from "antd";
 import type { UploadFile } from "antd";
-import { Download, FileText, Info, Plus, Trash2, UploadCloud } from "lucide-react";
+import { Download, FileText, Info, Plus, Search, Trash2, UploadCloud } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   DocumentType,
@@ -21,10 +20,9 @@ import {
   RelatedApplicationLabel,
   displayDate,
 } from "./ApplicantPage";
+import { NextStepCard } from "./NextStepCard";
 import { useApplicantOverview } from "./ApplicantOverviewContext";
 
-import SearchButton from 'src/components/common/searchButton';
-import { useSegmentThumb, SegmentThumb } from 'src/components/student-hub/ui/SegmentThumb';
 const documentLabels: Record<string, string> = {
   transcript: "Transcript",
   test_score: "Test score",
@@ -59,12 +57,7 @@ const formatSize = (size?: number) =>
       ? `${Math.ceil(size / 1024)} KB`
       : `${(size / 1024 / 1024).toFixed(1)} MB`;
 
-const ACCEPTED_EXTENSIONS = [".pdf", ".doc", ".docx", ".png", ".jpg", ".jpeg", ".webp"];
-const isAccepted = (name: string) => ACCEPTED_EXTENSIONS.some((ext) => name.toLowerCase().endsWith(ext));
-const hasFiles = (event: DragEvent) => Array.from(event.dataTransfer?.types ?? []).includes("Files");
-
 export default function ApplicantDocumentsPage() {
-  const { t } = useTranslation();
   const isMasters = useApplicantOverview().currentData?.profile?.targetDegree === "master";
   const labels = isMasters ? masterDocumentLabels : documentLabels;
   const query = useGetDocumentsQuery({ page: 1, limit: 100 });
@@ -75,54 +68,17 @@ export default function ApplicantDocumentsPage() {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<"all" | "application" | "drafts">("all");
-  const tabsThumb = useSegmentThumb<HTMLDivElement>(tab);
+  const filterLens = useSegmentLens<HTMLDivElement>(".is-active", [tab]);
   const [upload, uploadState] = useUploadDocumentMutation();
   const [remove] = useDeleteDocumentMutation();
   const [download] = useDownloadDocumentMutation();
   const objectUrl = useRef<string>();
   const navigate = useNavigate();
-  // Drag a file onto the documents area: the Add document dialog opens with it attached.
-  const [dragging, setDragging] = useState(false);
-  const dragDepth = useRef(0);
   const open = () => {
     form.setFieldsValue({ documentType: DocumentType.TRANSCRIPT, category: "uploaded" });
     const next = new URLSearchParams(params);
     next.set("action", "upload");
     setParams(next);
-  };
-  const attach = (nextFile: File) => {
-    setFile(nextFile);
-    setFileList([{ uid: `drop-${Date.now()}`, name: nextFile.name, size: nextFile.size, type: nextFile.type, status: "done", originFileObj: nextFile as UploadFile["originFileObj"] }]);
-  };
-  const onDragEnter = (event: DragEvent) => {
-    if (!hasFiles(event)) return;
-    event.preventDefault();
-    dragDepth.current += 1;
-    setDragging(true);
-  };
-  const onDragOver = (event: DragEvent) => {
-    if (!hasFiles(event)) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "copy";
-  };
-  const onDragLeave = (event: DragEvent) => {
-    if (!hasFiles(event)) return;
-    dragDepth.current = Math.max(0, dragDepth.current - 1);
-    if (dragDepth.current === 0) setDragging(false);
-  };
-  const onDrop = (event: DragEvent) => {
-    if (!hasFiles(event)) return;
-    event.preventDefault();
-    dragDepth.current = 0;
-    setDragging(false);
-    const dropped = event.dataTransfer.files?.[0];
-    if (!dropped) return;
-    if (!isAccepted(dropped.name)) {
-      message.error(t("studentHub.documents.dropUnsupported", "Use a PDF, Word or image file."));
-      return;
-    }
-    open();
-    attach(dropped);
   };
   const close = () => {
     const next = new URLSearchParams(params);
@@ -178,6 +134,7 @@ export default function ApplicantDocumentsPage() {
   });
   return (
     <ApplicantPage
+      className="application-documents-page"
       title="Your documents"
       subtitle="Keep reusable application files together."
       actions={
@@ -187,18 +144,25 @@ export default function ApplicantDocumentsPage() {
       }
     >
       <Breadcrumb>Documents</Breadcrumb>
-      <form role="search" className="applicant-glass-search applicant-document-search-bar" onSubmit={(event) => event.preventDefault()}>
+      <NextStepCard current="documents" />
+      <div className="applicant-document-toolbar">
         <Input
+          className="applicant-document-search"
           aria-label="Search documents"
-          placeholder="Search file name or document type"
+          placeholder="Search documents"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
+          prefix={<Search size={18} aria-hidden="true" />}
           allowClear
         />
-        <SearchButton type="submit" size={48} className="applicant-glass-search__btn" />
-      </form>
-      <div ref={tabsThumb.ref} data-lens={tabsThumb.lens} className="applicant-tabs" role="tablist" aria-label="Document filters">
-        <SegmentThumb style={tabsThumb.style} />
+      <div
+        ref={filterLens.ref}
+        className="applicant-view-tabs document-view-switcher"
+        data-lens={filterLens.lensStyle.width != null ? "on" : undefined}
+        role="tablist"
+        aria-label="Document filters"
+      >
+        <span className="applicant-view-tabs__lens" style={filterLens.lensStyle} aria-hidden />
         {([
           ["all", "All files"],
           ["application", "Application files"],
@@ -216,43 +180,23 @@ export default function ApplicantDocumentsPage() {
           </button>
         ))}
       </div>
-      <div
-        className={`applicant-dropzone${dragging ? " is-dragging" : ""}`}
-        onDragEnter={onDragEnter}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
-      >
-      {dragging && (
-        <div className="applicant-dropzone__overlay" aria-hidden>
-          <UploadCloud size={28} />
-          <strong>{t("studentHub.documents.dropTitle", "Drop to add this file")}</strong>
-          <span>{t("studentHub.documents.dropTypes", "PDF, Word or image files")}</span>
-        </div>
-      )}
+      </div>
       <QueryState
         loading={query.isLoading}
         error={query.isError}
         retry={query.refetch}
       >
         {!documents.length ? (
-          <EmptyState
-            panel
-            fill
-            level={2}
-            icon={UploadCloud}
-            title={search || tab !== "all" ? "No matching files." : "Your document library is empty."}
-            description={search || tab !== "all"
-              ? "Try another search or choose All files to see your library."
-              : "Add a transcript, test score, CV or other reusable application file."}
-            actions={
-              <Button type="primary" icon={<Plus size={16} />} onClick={open}>
-                {t("studentHub.documents.add", "Add document")}
-              </Button>
-            }
-          >
-            <p className="applicant-dropzone__hint">{t("studentHub.documents.dropHint", "or drag a file here")}</p>
-          </EmptyState>
+          <div className="applicant-panel applicant-empty">
+            <UploadCloud size={38} />
+            <h2>{search || tab !== "all" ? "No matching files." : "Your document library is empty."}</h2>
+            <p>
+              {search || tab !== "all"
+                ? "Try another search or choose All files to see your library."
+                : "Add a transcript, test score, CV or other reusable application file."}
+            </p>
+            {!search && tab === "all" && <Button type="primary" icon={<Plus size={16} />} onClick={open}>Add document</Button>}
+          </div>
         ) : (
           <div className="applicant-panel applicant-document-list">
             {documents.map((document) => (
@@ -309,7 +253,6 @@ export default function ApplicantDocumentsPage() {
           </div>
         )}
       </QueryState>
-      </div>
       <Modal
         rootClassName="applicant-modal"
         title="Add document"
@@ -343,7 +286,7 @@ export default function ApplicantDocumentsPage() {
                 setFile(undefined);
                 setFileList([]);
               }}
-              accept={ACCEPTED_EXTENSIONS.join(",")}
+              accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp"
             >
               <UploadCloud size={30} />
               <p>Choose a file or drag it here</p>

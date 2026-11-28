@@ -1,0 +1,24 @@
+// Composite AntD controls draw their border and focus ring on the wrapper.
+// Inner editing elements must not acquire another box from page-level styles.
+// The root selector and !important declarations override the legacy global
+// input rules, including styles loaded after navigation to another page.
+:root {
+  .ant-input-affix-wrapper > input.ant-input,
+  .ant-input-number .ant-input-number-input,
+  .ant-picker .ant-picker-input > input,
+  .ant-select .ant-select-selection-search-input {
+    &,
+    &:hover,
+    &:focus,
+    &:focus-visible {
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+
+    min-height: 0 !important;
+    padding: 0 !important;
+  }
+}

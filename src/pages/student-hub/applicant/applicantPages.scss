@@ -2402,6 +2402,64 @@ details.essay-angles__quick {
   .essay-review__find { transition: none; &:active { transform: none; } }
 }
 
+// Next-step suggestion shown at the top of Application pages
+.applicant-next-step {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 14px 18px; margin-bottom: 16px; border: 1px solid #e7e2dc; border-radius: 12px; background: #fff;
+  > div { min-width: 0; display: grid; gap: 2px; }
+  strong { font-size: 15px; font-weight: 500; color: #302b28; }
+  p { margin: 0; font-size: 14px; color: #655c55; }
+}
+.applicant-next-step__eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #8b0000; font-variant-numeric: tabular-nums; }
+// Doubled class beats the workspace-wide link colour (`.applicant-shell .applicant-content a`).
+.applicant-next-step__cta.applicant-next-step__cta {
+  flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px;
+  border-radius: 10px; background: #8b0000; color: #fff; font-size: 14px; font-weight: 500; text-decoration: none;
+  transition: background-color 120ms ease-out, transform 100ms ease-out;
+  &:hover { background: #6d0000; color: #fff; }
+  &:active { transform: scale(0.97); }
+  &:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+}
+@media (max-width: 767px) {
+  .applicant-next-step { flex-direction: column; align-items: stretch; }
+}
+@media (prefers-reduced-motion: reduce) { .applicant-next-step__cta { transition: none; &:active { transform: none; } } }
+
+// "Your matches" chips on Find universities
+.applicant-find-matches {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 16px;
+  > span { font-size: 13px; font-weight: 500; color: #655c55; margin-right: 4px; }
+}
+.applicant-find-match {
+  min-height: 36px; padding: 0 14px; border: 1px solid #e7e2dc; border-radius: 999px; background: #fff;
+  color: #302b28; font: inherit; font-size: 14px; cursor: pointer; transition: background-color 120ms ease-out, border-color 120ms ease-out;
+  &:hover { background: #f6f3ef; }
+  &:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+}
+.applicant-find-match--active { background: #f6e8e7; border-color: #8b0000; color: #8b0000; }
+
+// Link inside the "Added to College List" toast
+.applicant-toast-link { padding: 0; border: 0; background: none; color: #8b0000; font: inherit; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+// University detail: Save stays reachable after scrolling (sticky on phones, closing CTA on desktop)
+.applicant-university-detail__savebar {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 16px 20px; border: 1px solid #e7e2dc; border-radius: 12px; background: #fff;
+  > span { font-size: 15px; color: #302b28; }
+}
+@media (max-width: 767px) {
+  .applicant-university-detail__savebar {
+    position: sticky; bottom: calc(82px + env(safe-area-inset-bottom)); z-index: 5;
+    padding: 10px 12px; box-shadow: 0 -4px 16px rgba(48, 43, 40, 0.08);
+    > span { display: none; }
+    .applicant-university-detail__save { width: 100%; }
+  }
+}
+button.applicant-find-save { background: #fff; font-family: inherit; cursor: pointer; }
+button.applicant-find-save:disabled { cursor: not-allowed; }
+
+.animated-placeholder-input input::placeholder,
+.applicant-find-filter .ant-select-selection-placeholder { color: #a39a92; }
 /* Results pager: round glass arrows around compact page numbers. */
 .applicant-pager {
   display: flex;
@@ -2630,8 +2688,7 @@ details.essay-angles__quick {
   .applicant-writing-card__bar > span { transition: none; }
 }
 
-/* =====================================================================
-   Glass search capsule (apple-design §12 materials, §1 response).
+/* ==============================================================   Glass search capsule (apple-design §12 materials, §1 response).
    One floating capsule holds the field and its action — like Safari's
    address bar — instead of two separate boxes. Light catches the top
    edge; on focus the material thickens and picks up a faint brand tint.
@@ -3149,4 +3206,593 @@ form.applicant-glass-search {
   min-width: 0;
 
   > .applicant-empty--fill { flex: 1 1 auto; }
+}
+
+// Application planning: shared list, workspace, forms and comparison layouts.
+.application-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  > .ant-input-search, > .application-search { flex: 1 1 260px; width: auto; }
+  > .ant-select { flex: 0 1 200px; width: 200px; }
+}
+.application-list-section { display: flex; flex-direction: column; gap: 16px; }
+.application-count { color: #606976; font-size: 14px; font-weight: 400; }
+.application-row-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.application-row-actions > .ant-btn:first-child { flex: 1 1 140px; }
+.application-row-actions .ant-checkbox-wrapper { width: 100%; margin: 0; }
+.application-workspace-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 16px 20px; background: #fff; border: 1px solid #e7e2dc; border-radius: 12px; }
+.application-workspace-summary .ant-tag { margin: 0; }
+.application-writing-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid #e7e2dc; }
+.application-form-section { margin: 8px 0 20px !important; padding-top: 16px; border-top: 1px solid #e7e2dc; }
+.application-form-section:first-child { padding-top: 0; border-top: 0; }
+.application-form-help { margin-bottom: 20px !important; }
+.application-details summary, .application-deadline-group summary { cursor: pointer; font-weight: 500; padding: 8px 0; }
+.application-details p { margin-top: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.application-deadline-list { display: flex; flex-direction: column; }
+.application-deadline-row { display: grid; grid-template-columns: 130px minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid #e7e2dc; }
+.application-deadline-row:last-child { border-bottom: 0; }
+.application-deadline-row small { display: block; margin-top: 6px; }
+.application-deadline-row .ant-tag { margin-bottom: 6px; }
+.application-timeline-filter { max-width: 280px; }
+.application-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--comparison-count), minmax(240px, 1fr));
+  gap: 0 16px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  > .applicant-program-comparison {
+    display: grid;
+    grid-row: span 9;
+    grid-template-rows: subgrid;
+    gap: 0;
+    padding: 20px;
+    > div { padding: 16px 0; border-bottom: 1px solid #e7e2dc; min-width: 0; overflow-wrap: anywhere; }
+    > div:first-child { padding-top: 0; }
+    > div:last-child { border-bottom: 0; padding-bottom: 0; }
+    .application-comparison-field > strong { display: block; margin-bottom: 8px; font-size: 13px; color: #606976; }
+    .applicant-university { align-items: flex-start; }
+  }
+}
+@media (min-width: 1101px) {
+  .application-list .applicant-list__head, .application-list .applicant-list__row { grid-template-columns: minmax(180px, 1.6fr) minmax(125px, .85fr) minmax(140px, 1fr) minmax(195px, 1.1fr); }
+}
+@media (max-width: 1100px) and (min-width: 768px) {
+  .application-row-actions > .ant-btn { flex: 1 1 100%; }
+}
+@media (max-width: 767px) {
+  .application-toolbar > .ant-select { flex: 1 1 150px; width: auto; }
+  .application-row-actions { grid-column: 1 / -1; width: 100%; }
+  .application-deadline-row { grid-template-columns: 1fr; gap: 8px; }
+  .application-workspace-summary { align-items: flex-start; }
+  .application-comparison-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; overflow: visible; }
+  .application-comparison-grid > .applicant-program-comparison { display: flex; grid-row: auto; }
+  .applicant-page__heading { flex-wrap: wrap; }
+}
+.application-shortlist .application-next-task { display: none; }
+.application-shortlist .application-row-actions .ant-checkbox-wrapper { order: -1; padding-bottom: 8px; }
+@media (min-width: 768px) {
+  .application-shortlist .applicant-list__row { grid-template-columns: minmax(180px, 1.5fr) minmax(120px, .8fr) minmax(195px, 1fr); }
+}
+
+.application-dashboard-links { display: flex; gap: 24px; }
+.application-dashboard-links a { color: #655c55; }
+.application-attention { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px 20px; border-radius: 12px; background: #f5eae6; color: #8b0000; }
+.application-attention p { margin-top: 4px; font-size: 13px; }
+.application-attention a { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.application-collections { display: flex; flex-wrap: wrap; gap: 20px; border-bottom: 1px solid #e7e2dc; }
+.application-collections .ant-btn { border-radius: 0; padding: 0 0 12px; border-bottom: 2px solid transparent; color: #655c55; }
+.application-collections .ant-btn[aria-current="page"] { color: #8b0000; border-bottom-color: #8b0000; }
+.application-collections .application-collection-count { margin-left: 6px; font-size: 12px; }
+.application-collection-caption { display: flex; justify-content: space-between; gap: 16px; color: #655c55; font-size: 13px; }
+.application-card-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.application-summary-card { background: #fff; border: 1px solid #e7e2dc; border-radius: 16px; padding: 24px; min-width: 0; display: flex; flex-direction: column; gap: 22px; }
+.application-summary-card .applicant-university { gap: 10px; }
+.application-summary-card .applicant-university__logo { width: 36px; height: 36px; flex: 0 0 36px; border-radius: 8px; }
+.application-summary-card .applicant-university__logo svg { width: 20px; height: 20px; }
+.application-summary-card .applicant-university strong { font-size: 13px; color: #655c55; font-weight: 400; }
+.application-summary-card header h2 { margin-top: 14px; font-size: 20px; }
+.application-summary-card header h2 a { color: #302f2d; text-decoration: none; }
+.application-summary-card header h2 a:hover { color: #8b0000; }
+.application-summary-card__meta { margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #655c55; font-size: 13px; }
+.application-summary-card .ant-tag { border: 0; background: #f5f2ee; color: #655c55; margin: 0; white-space: normal; }
+.application-summary-card--applying .ant-tag { background: #f5eae6; color: #8b0000; }
+.application-summary-card--accepted .ant-tag { background: #edf4ee; color: #34654a; }
+.application-summary-card__facts { display: flex; flex-direction: column; gap: 12px; font-size: 13px; }
+.application-summary-card__facts > div:not(.ant-progress) { display: flex; justify-content: space-between; gap: 14px; }
+.application-summary-card__facts > div > span:first-child { color: #655c55; }
+.application-summary-card__facts .ant-progress { margin-top: -8px; line-height: 1; }
+.application-summary-card__next { border-top: 1px solid #e7e2dc; padding-top: 18px; margin-top: auto; }
+.application-summary-card__next h3 { margin-top: 6px; }
+.application-summary-card__next p { margin-top: 6px; font-size: 13px; }
+.application-summary-card__next .is-overdue { color: #8b0000; }
+.application-summary-card footer { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.application-summary-card__open { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 500; margin-right: auto; }
+.application-summary-card footer .ant-checkbox-wrapper { margin-right: auto; }
+.application-summary-card footer .ant-checkbox-wrapper + .application-summary-card__open { margin-right: 0; }
+.application-summary-card--accepted { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px 32px; }
+.application-summary-card--accepted .application-summary-card__next { border: 0; padding: 0; align-self: center; margin: 0; }
+.application-summary-card--accepted footer { grid-column: 1 / -1; border-top: 1px solid #e7e2dc; padding-top: 12px; }
+@media (max-width: 767px) {
+  .application-card-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .application-summary-card { padding: 20px; }
+  .application-summary-card--accepted { display: flex; }
+  .application-summary-card--accepted .application-summary-card__next { border-top: 1px solid #e7e2dc; padding-top: 18px; align-self: stretch; }
+  .application-attention { flex-wrap: wrap; }
+  .application-collections { gap: 16px; }
+}
+
+// Application audit: compact controls without hiding navigation or draft content.
+.application-dashboard .application-add-short { display: none !important; }
+.application-dashboard .application-filter-toggle,
+.application-dashboard .application-mobile-tools { display: none; }
+.application-dashboard-navigation { display: flex; align-items: flex-start; gap: 12px; }
+.application-dashboard-navigation .application-collections { flex: 1; min-width: 0; }
+.application-filter-fields { display: contents; }
+.application-toolbar .application-filter-fields > .ant-select { flex: 0 1 200px; width: 200px; min-width: 160px; }
+.application-summary-card__deadline { display: flex; flex-direction: column; text-align: right; gap: 3px; }
+.application-deadline-urgency { font-weight: 500; }
+.application-summary-card .application-deadline-urgency--overdue,
+.application-summary-card .application-deadline-urgency--today { color: #8b0000; }
+.application-summary-card .application-deadline-urgency--soon { color: #7a561a; }
+@media (max-width: 767px) {
+  .applicant-shell--application-dashboard .applicant-section-tabs,
+  .applicant-shell--application-dashboard .applicant-mobile-bar { display: none; }
+  .application-dashboard { gap: 16px; }
+  .application-dashboard > .applicant-page__heading { flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 12px; text-align: left; }
+  .application-dashboard > .applicant-page__heading h1 { font-size: 24px; }
+  .application-dashboard > .applicant-page__heading p,
+  .application-dashboard .application-add-full,
+  .application-dashboard .application-dashboard-links { display: none; }
+  .application-dashboard .application-add-short { display: inline !important; }
+  .application-dashboard > .applicant-page__heading .applicant-page__actions { flex: 0 0 auto; width: auto; }
+  .application-dashboard > .applicant-page__heading .ant-btn { width: auto; }
+  .application-dashboard .application-collections { gap: 12px; }
+  .application-dashboard .application-collections .ant-btn { font-size: 13px; }
+  .application-dashboard .application-mobile-tools { display: inline-flex; flex: 0 0 auto; }
+  .application-dashboard .application-toolbar { gap: 10px; }
+  .application-dashboard .application-toolbar > .application-search { flex: 1 1 150px; width: auto; min-width: 0; }
+  .application-dashboard .application-filter-toggle { display: inline-flex; flex: 0 0 auto; }
+  .application-dashboard .application-filter-fields { display: none; }
+  .application-dashboard .application-filter-fields[data-open="true"] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; flex: 1 1 100%; }
+  .application-dashboard .application-filter-fields > .ant-select { width: 100%; min-width: 0; }
+  .application-dashboard .application-collection-caption p { display: none; }
+  .application-dashboard .application-collection-caption span { white-space: nowrap; }
+  .application-dashboard .application-attention { padding: 12px; gap: 10px; flex-wrap: nowrap; }
+  .application-dashboard .application-attention p { display: none; }
+  .application-dashboard .application-attention strong { font-size: 13px; }
+  .application-dashboard .application-attention a { font-size: 12px; }
+  .application-dashboard .application-summary-card { gap: 16px; }
+  .application-dashboard .application-summary-card .applicant-university__logo { width: 30px; height: 30px; flex-basis: 30px; }
+  .application-dashboard .application-summary-card header h2 { margin-top: 10px; }
+  .application-dashboard .application-summary-card__next { padding-top: 14px; }
+}
+@media (max-width: 360px) {
+  .application-dashboard .application-mobile-tools { padding-inline: 8px; }
+  .application-dashboard .application-collections { gap: 6px; flex-wrap: nowrap; }
+  .application-dashboard .application-collections .ant-btn { padding-inline: 0; font-size: 12px; }
+  .application-dashboard .application-collections .application-collection-count { margin-left: 3px; }
+}
+
+.application-dashboard .application-search {
+  min-height: 44px;
+  border-radius: 12px;
+  .ant-input-prefix { margin-right: 10px; color: #737373; }
+}
+
+// Keep dashboard components aligned and usable across mouse, touch and keyboard.
+.application-dashboard {
+  .application-collections .ant-btn { min-height: 44px; height: auto; font-size: 14px; }
+  .application-collections .application-collection-count { font-variant-numeric: tabular-nums; }
+  .application-search input::placeholder { color: #76716b; opacity: 1; }
+  .application-search:focus-within { border-color: #8b0000; box-shadow: 0 0 0 3px rgba(139, 0, 0, .1); }
+  .application-summary-card { gap: 20px; }
+  .application-summary-card header { min-width: 0; }
+  .application-summary-card header h2 { font-size: 20px; line-height: 1.35; overflow-wrap: anywhere; }
+  .application-summary-card__meta .ant-tag { padding: 3px 9px; border-radius: 6px; line-height: 1.4; }
+  .application-summary-card__next { margin-top: 0; }
+  .application-summary-card__next h3 { font-size: 17px; line-height: 1.4; }
+  .application-summary-card__next p { line-height: 1.6; overflow-wrap: anywhere; }
+  .application-summary-card footer { margin-top: auto; }
+  .application-summary-card footer .ant-btn { min-width: 44px; min-height: 44px; border-radius: 8px; }
+  .application-summary-card__facts strong { text-align: right; }
+  .application-summary-card--under_review .ant-tag { background: #edf2f8; color: #355978; }
+  .application-summary-card--waitlisted .ant-tag,
+  .application-summary-card--deferred .ant-tag { background: #fbf2df; color: #765620; }
+  a:focus-visible, button:focus-visible { outline: 2px solid #8b0000; outline-offset: 4px; }
+}
+@media (max-width: 767px) {
+  .application-dashboard .application-collections .ant-btn { font-size: 13px; }
+  .application-dashboard .application-summary-card { gap: 16px; }
+}
+@media (max-width: 360px) {
+  .application-dashboard .application-collections .ant-btn { font-size: 12px; }
+}
+
+// Application introduction and contextual planning reminder.
+.application-dashboard {
+  > .applicant-breadcrumb .applicant-breadcrumb__badge {
+    background: transparent; color: #655c55; padding: 4px 0; font-weight: 400;
+    &:hover { background: transparent; color: #8b0000; text-decoration: underline; }
+  }
+  > .applicant-page__heading { align-items: flex-start; gap: 24px; }
+  > .applicant-page__heading > div:first-child { min-width: 0; }
+  > .applicant-page__heading h1 { line-height: 1.2; letter-spacing: -.025em; }
+  > .applicant-page__heading p { margin-top: 8px; max-width: 640px; line-height: 1.5; }
+  > .applicant-page__heading .applicant-page__actions { flex-direction: column; align-items: flex-end; gap: 8px; padding-top: 0; flex-shrink: 0; }
+  .application-header-shortcuts { display: flex; flex-wrap: wrap; gap: 16px; }
+  .application-header-shortcuts a { display: inline-flex; align-items: center; gap: 7px; min-height: 32px; padding: 0; border-radius: 4px; color: #655c55; font-size: 13px; line-height: 1.4; }
+  .application-header-shortcuts a:hover { color: #8b0000; text-decoration: underline; text-underline-offset: 4px; }
+  .application-attention { gap: 12px; padding: 12px 16px; border: 1px solid #efded9; background: #faf1ee; }
+  .application-attention__icon { display: flex; align-items: center; justify-content: center; flex: 0 0 32px; height: 32px; }
+  .application-attention__content { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+  .application-attention strong { color: #302f2d; font-size: 14px; font-weight: 500; line-height: 1.45; }
+  .application-attention p { margin: 0; color: #655c55; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+  .application-attention__badge { flex-shrink: 0; font-size: 12px; font-weight: 500; color: #8b0000; background: #f4e2de; border-radius: 6px; padding: 4px 8px; line-height: 1.5; }
+  .application-attention > a { min-height: 44px; border-left: 1px solid #e8d4ce; padding: 0 8px 0 16px; margin-left: 4px; font-size: 13px; font-weight: 500; }
+  .application-attention > a:hover { text-decoration: underline; text-underline-offset: 4px; }
+}
+@media (max-width: 767px) {
+  .application-dashboard > .applicant-page__heading { align-items: center; gap: 12px; }
+  .application-dashboard > .applicant-page__heading .applicant-page__actions { gap: 0; }
+  .application-dashboard .application-header-shortcuts { display: none; }
+  .application-dashboard .application-attention { display: grid; grid-template-columns: minmax(0, 1fr) auto; padding: 12px; gap: 8px 12px; }
+  .application-dashboard .application-attention__icon { display: none; }
+  .application-dashboard .application-attention__content { display: block; grid-column: 1 / -1; }
+  .application-dashboard .application-attention p { display: block; font-size: 12px; margin-top: 4px; }
+  .application-dashboard .application-attention__badge { justify-self: start; }
+  .application-dashboard .application-attention > a { border: 0; min-height: 32px; padding: 0; margin: 0; justify-self: end; font-size: 12px; }
+}
+
+// Collections, search and filters form one control surface.
+.application-dashboard {
+  .application-list-controls { background: #fff; border: 1px solid #e7e2dc; border-radius: 14px; padding: 0 16px 16px; min-width: 0; }
+  .application-dashboard-navigation { align-items: center; gap: 20px; border-bottom: 1px solid #eee9e4; margin-bottom: 16px; }
+  .application-dashboard-navigation .application-collections { border: 0; gap: 24px; }
+  .application-collections .ant-btn { padding-top: 14px; padding-bottom: 14px; min-height: 52px; color: #655c55; }
+  .application-collections .ant-btn:hover { background: transparent; color: #8b0000; }
+  .application-collections .ant-btn[aria-current="page"] { color: #8b0000; }
+  .application-collections .application-collection-count { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 20px; margin-left: 6px; padding-inline: 5px; background: #f3f1ed; border-radius: 5px; font-size: 11px; line-height: 1; }
+  .application-collections [aria-current="page"] .application-collection-count { background: #f5e7e3; color: #8b0000; }
+  .application-controls-result { flex-shrink: 0; color: #76716b; font-size: 12px; }
+  .application-toolbar { gap: 12px; }
+  .application-search.ant-input-affix-wrapper { box-shadow: none !important; border: 1px solid #e4dfd9 !important; border-radius: 9px; background: #fff; }
+  .application-search.ant-input-affix-wrapper:focus-within { border-color: #8b0000 !important; box-shadow: 0 0 0 3px rgba(139, 0, 0, .1) !important; }
+  .application-toolbar .ant-select-selector { box-shadow: none !important; border: 1px solid #e4dfd9 !important; border-radius: 9px !important; }
+  .application-toolbar .ant-select-focused .ant-select-selector { border-color: #8b0000 !important; box-shadow: 0 0 0 3px rgba(139, 0, 0, .1) !important; }
+}
+@media (max-width: 767px) {
+  .application-dashboard .application-list-controls { padding: 0 12px 12px; border-radius: 12px; }
+  .application-dashboard .application-dashboard-navigation { flex-wrap: wrap; gap: 0 8px; margin-bottom: 12px; }
+  .application-dashboard .application-dashboard-navigation .application-collections { gap: 12px; }
+  .application-dashboard .application-collections .ant-btn { padding-block: 12px; min-height: 48px; }
+  .application-dashboard .application-collections .application-collection-count { min-width: 16px; height: 18px; margin-left: 3px; padding-inline: 3px; font-size: 10px; }
+  .application-dashboard .application-controls-result { order: 3; flex-basis: 100%; padding: 4px 0 8px; font-size: 12px; }
+  .application-dashboard .application-mobile-tools { padding-inline: 8px; min-height: 36px; font-size: 13px; }
+  .application-dashboard .application-toolbar { gap: 8px; }
+  .application-dashboard .application-toolbar > .application-search { flex-basis: 120px; }
+}
+@media (max-width: 360px) {
+  .application-dashboard .application-dashboard-navigation .application-collections { gap: 6px; }
+  .application-dashboard .application-collections .ant-btn { font-size: 12px; }
+  .application-dashboard .application-filter-fields[data-open="true"] { grid-template-columns: minmax(0, 1fr); }
+  .application-dashboard .application-collections .application-collection-count { min-width: 12px; margin-left: 2px; padding-inline: 2px; }
+  .application-dashboard .application-mobile-tools { font-size: 12px; padding-inline: 6px; }
+}
+
+// The application list is the page's primary content.
+.application-dashboard {
+  > .applicant-page__heading { align-items: center; margin-bottom: 0; }
+  > .applicant-page__heading .applicant-page__actions { flex-direction: row; align-items: center; gap: 8px; }
+  > .applicant-page__heading .applicant-page__actions > .ant-btn-text { min-height: 44px; min-width: 44px; }
+  .application-list-controls { display: grid; grid-template-columns: auto minmax(260px, 1fr); align-items: start; gap: 24px; padding: 0 0 12px; border: 0; border-bottom: 1px solid #e7e2dc; border-radius: 0; background: transparent; }
+  .application-dashboard-navigation { margin: 0; border: 0; gap: 0; }
+  .application-dashboard-navigation .application-collections { flex: 0 1 auto; gap: 20px; }
+  .application-collections .ant-btn { min-height: 44px; padding-block: 10px; }
+  .application-controls-result { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .application-toolbar { justify-content: flex-end; }
+  .application-toolbar > .application-search { flex: 1 1 180px; min-width: 0; }
+  .application-filter-toggle { display: inline-flex; min-height: 44px; }
+  .application-filter-fields { display: none; }
+  .application-filter-fields[data-open="true"] { display: flex; gap: 8px; flex: 1 1 100%; justify-content: flex-end; }
+  .application-filter-fields > .ant-select { width: auto; flex: 1 1 160px; min-width: 0; }
+  .application-summary-card { gap: 16px; padding: 20px; }
+  .application-summary-card header h2 { margin-top: 10px; }
+  .application-summary-card__next { padding-top: 12px; }
+  .application-summary-card__next h3 { font-size: 14px; font-weight: 500; margin-top: 0; }
+  .application-summary-card__next p { margin-top: 0; }
+  .application-summary-card footer { padding-top: 0; }
+}
+@media (max-width: 767px) {
+  .application-dashboard .application-list-controls { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 0 0 12px; }
+  .application-dashboard .application-dashboard-navigation { margin: 0; }
+  .application-dashboard .application-dashboard-navigation .application-collections { gap: 20px; }
+  .application-dashboard .application-collections .ant-btn { font-size: 13px; }
+  .application-dashboard .application-filter-fields[data-open="true"] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .application-dashboard .application-toolbar > .application-search { flex-basis: 150px; }
+}
+@media (max-width: 360px) {
+  .application-dashboard .application-filter-fields[data-open="true"] { grid-template-columns: minmax(0, 1fr); }
+}
+@media (min-width: 768px) {
+  .application-dashboard .application-card-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .application-dashboard .application-summary-card { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; align-items: center; gap: 16px 32px; border-radius: 12px; }
+  .application-dashboard .application-summary-card header { grid-column: 1; grid-row: 1; }
+  .application-dashboard .application-summary-card header h2 { margin-top: 6px; font-size: 18px; }
+  .application-dashboard .application-summary-card__meta { margin-top: 8px; justify-content: flex-start; gap: 12px; }
+  .application-dashboard .application-summary-card__facts { grid-column: 2; grid-row: 1; }
+  .application-dashboard .application-summary-card__next { grid-column: 1 / 3; grid-row: 2; align-self: stretch; margin: 0; border-top: 1px solid #e7e2dc; }
+  .application-dashboard .application-summary-card footer { grid-column: 3; grid-row: 1; margin: 0; padding: 0; border: 0; min-width: 115px; flex-wrap: nowrap; }
+  .application-dashboard .application-summary-card--accepted { grid-column: auto; }
+}
+
+.application-dashboard .application-summary-card header > h2:first-child { margin-top: 0; }
+
+// Compact application rows retain comfortable action targets.
+.application-dashboard {
+  .application-card-grid { gap: 8px; }
+  .application-summary-card { padding: 12px 16px; gap: 10px; }
+  .application-summary-card__title { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
+  .application-summary-card .applicant-university { gap: 8px; }
+  .application-summary-card .applicant-university__logo { width: 24px; height: 24px; flex-basis: 24px; border-radius: 6px; }
+  .application-summary-card .applicant-university__logo svg { width: 16px; height: 16px; }
+  .application-summary-card header h2 { margin: 0; font-size: 16px; line-height: 1.35; }
+  .application-summary-card__title .applicant-university + h2::before { content: "·"; color: #a49a90; margin-right: 8px; font-weight: 400; }
+  .application-summary-card__meta { margin-top: 4px; gap: 8px; font-size: 12px; justify-content: flex-start; }
+  .application-summary-card__meta .ant-tag { padding: 2px 6px; font-size: 11px; }
+  .application-summary-card__facts { gap: 6px; font-size: 12px; }
+  .application-summary-card__deadline { flex-direction: row; flex-wrap: wrap; justify-content: flex-end; align-items: baseline; gap: 3px 8px; }
+  .application-summary-card__next { padding-top: 8px; }
+  .application-summary-card__open { min-height: 44px; font-size: 13px; }
+}
+@media (min-width: 768px) {
+  .application-dashboard .application-summary-card { gap: 8px 24px; }
+  .application-dashboard .application-summary-card__facts { display: grid; grid-template-columns: minmax(0, 1fr) 64px; gap: 6px 12px; }
+  .application-dashboard .application-summary-card__facts > div:first-child { grid-column: 1 / -1; }
+  .application-dashboard .application-summary-card__facts > div:nth-child(2) { grid-column: 1; }
+  .application-dashboard .application-summary-card__facts .ant-progress { grid-column: 2; grid-row: 2; margin: 0; align-self: center; }
+}
+@media (max-width: 767px) {
+  .application-dashboard .application-summary-card { padding: 12px; gap: 8px; }
+  .application-dashboard .application-summary-card footer { justify-content: space-between; }
+  .application-dashboard .application-summary-card__title { gap: 4px 6px; }
+}
+
+// Extend the native title link over the row; secondary controls stay above it.
+.application-summary-card { position: relative; }
+.application-summary-card__title h2 a::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+.application-summary-card footer { position: relative; z-index: 2; pointer-events: none; }
+.application-summary-card footer > * { pointer-events: auto; }
+.application-dashboard .application-summary-card footer { min-width: 44px; }
+.application-dashboard .application-summary-card:hover { border-color: #cfc2b8; background: #fcfaf8; }
+.application-dashboard .application-summary-card:has(.application-summary-card__title a:focus-visible) { outline: 2px solid #8b0000; outline-offset: 3px; }
+.application-dashboard .application-summary-card__title a:focus-visible { outline: none; }
+
+// Application workspace: one header and a focused working surface.
+.applicant-shell .applicant-content .application-workspace {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  gap: 16px;
+  .application-workspace-back { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding-block: 4px; margin-bottom: 0; font-size: 13px; color: #655c55; }
+  .application-workspace-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+  .application-workspace-header h1 { font-size: 28px; line-height: 1.25; letter-spacing: -.025em; }
+  .application-workspace-header p { margin-top: 6px; font-size: 15px; color: #655c55; }
+  .application-workspace-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .application-workspace-actions .ant-btn-icon-only { width: 40px; height: 40px; padding: 0; }
+  .application-workspace-status { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 6px; background: #efede8; color: #655c55; font-size: 12px; font-weight: 500; }
+  .application-workspace-status--accepted { background: #eaf2ec; color: #34654a; }
+  .application-workspace-meta { display: flex; flex-wrap: wrap; gap: 8px 20px; color: #76716b; font-size: 13px; margin-top: -4px; margin-bottom: 8px; }
+  .application-workspace-meta strong { font-weight: 500; color: #4f4943; margin-left: 4px; }
+  .application-workspace-outcome { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 20px; background: #f0f2ef; border: 1px solid #e2e7df; border-radius: 12px; margin-bottom: 8px; }
+  .application-workspace-outcome h2 { font-size: 16px; font-weight: 600; }
+  .application-workspace-outcome p { margin-top: 4px; color: #655c55; font-size: 13px; }
+  .application-workspace-outcome .ant-btn { flex-shrink: 0; min-height: 40px; font-size: 13px; }
+  .application-workspace-tabs { min-width: 0; width: 100%; background: transparent; border: 0; overflow: visible; }
+  .application-workspace-switcher { align-self: flex-start; max-width: 100%; margin-bottom: 16px; }
+  .application-workspace-tabs .ant-tabs-content-holder { padding: 0; }
+  .application-workspace-tabs .ant-tabs-tabpane > .applicant-panel { padding: 20px 24px; border: 1px solid #e8e3dd; border-radius: 12px; background: #fff; box-shadow: none; }
+  h2 { font-size: 16px; line-height: 1.4; font-weight: 600; }
+  h3 { font-size: 14px; line-height: 1.4; }
+  .application-requirements--compact > .ant-space { display: flex; align-items: center; gap: 12px !important; margin-bottom: 12px !important; }
+  .application-requirements--compact > .ant-space > .ant-space-item:first-child { margin-right: 0; }
+  .application-requirements--compact > .ant-space > .ant-space-item:has(> a) { margin-left: auto; }
+  .application-requirements--compact > .ant-space a { font-size: 13px; }
+  .application-requirements--compact strong.application-requirements-remaining { color: #76716b; font-size: 12px; font-weight: 400; }
+  .application-requirements--compact > .ant-space .ant-btn { min-height: 36px; height: auto; padding-inline: 8px; font-size: 13px; color: #655c55; }
+  .application-requirements-list { display: flex; flex-direction: column; gap: 0; margin: 0; }
+  .application-requirements-list li { padding: 0 !important; min-width: 0; border-bottom: 1px solid #f0ece7; }
+  .application-requirements-list li:last-child { border-bottom: 0; }
+  .application-requirements-list .ant-checkbox-wrapper { display: flex; align-items: center; min-height: 48px; width: 100%; padding: 12px 0; margin: 0; font-size: 14px; line-height: 1.5; }
+  .application-requirements-list .ant-checkbox-wrapper:hover { background: #fcfaf8; }
+  .application-requirements-list .ant-checkbox { align-self: center; margin-top: 0; }
+  .application-requirements-completed { margin-top: 8px; border: 0; }
+  .application-requirements-completed > summary { padding: 14px 0; cursor: pointer; color: #655c55; font-size: 13px; }
+  .application-requirements-completed > summary:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+  .application-workspace-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .application-workspace-new-draft { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; flex-shrink: 0; font-size: 13px; }
+  .application-workspace-empty { padding: 20px 0; color: #76716b; font-size: 14px; }
+  .application-workspace-draft { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding-block: 12px; border-bottom: 1px solid #eae5df; }
+  .application-workspace-draft > strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #302f2d; font-size: 14px; font-weight: 500; }
+  .application-workspace-draft-meta { display: flex; align-items: center; flex-shrink: 0; gap: 10px; color: #655c55; font-size: 12px; }
+  .application-workspace-feedback { color: #8b0000; font-weight: 500; }
+  .application-workspace-support { display: block; overflow: visible; }
+  .application-workspace-plan-details { display: flex; flex-wrap: wrap; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid #eae5df; font-size: 13px; }
+  .application-workspace-plan-details > .application-workspace-section-heading { width: 100%; }
+  .application-workspace-plan-details dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; width: 100%; margin: 0; }
+  .application-workspace-plan-details dt { color: #76716b; font-size: 12px; margin-bottom: 4px; }
+  .application-workspace-plan-details dd { margin: 0; color: #302f2d; }
+  .application-workspace-plan-details > a { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; }
+  .application-workspace-plan-details > .ant-alert { width: 100%; }
+  .application-workspace-details { display: block; padding: 0; border-bottom: 1px solid #eae5df; }
+  .application-workspace-details:last-child { border-bottom: 0; }
+  .application-workspace-details > summary { min-height: 48px; padding: 14px 0; cursor: pointer; font-size: 14px; font-weight: 500; }
+  .application-workspace-details[open] { padding-bottom: 20px; }
+  .application-workspace-note { white-space: pre-wrap; overflow-wrap: anywhere; margin-block: 10px 20px; font-size: 14px; line-height: 1.6; }
+  .application-workspace-mentor .applicant-panel { padding: 0; border: 0; background: transparent; box-shadow: none; }
+  .application-workspace-mentor .applicant-panel > h3, .application-workspace-mentor .applicant-panel > p { display: none; }
+  .application-workspace-footnote { color: #8a847d; font-size: 12px; }
+}
+@media (max-width: 767px) {
+  .applicant-shell:has(.application-workspace) .applicant-section-tabs,
+  .applicant-shell:has(.application-workspace) .applicant-mobile-bar { display: none; }
+  .applicant-shell .applicant-content .application-workspace {
+    .application-workspace-header { gap: 12px; }
+    .application-workspace-header h1 { font-size: 23px; }
+    .application-workspace-header p { font-size: 13px; }
+    .application-workspace-actions { gap: 0; }
+    .application-workspace-status { padding: 4px 6px; font-size: 11px; }
+    .application-workspace-outcome { padding: 16px; flex-wrap: wrap; gap: 12px; }
+    .application-workspace-tabs .ant-tabs-tabpane > .applicant-panel { padding: 16px; }
+    .application-requirements--compact > .ant-space { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px !important; }
+    .application-requirements--compact > .ant-space > .ant-space-item:has(> a) { margin-left: 0; grid-column: 1; grid-row: 2; }
+    .application-requirements--compact > .ant-space > .ant-space-item:has(> strong) { justify-self: end; }
+    .application-requirements--compact > .ant-space > .ant-space-item:has(> .ant-btn) { justify-self: end; grid-column: 2; grid-row: 2; }
+    .application-requirements--compact > .ant-space a { display: inline-flex; align-items: center; min-height: 36px; }
+    .application-requirements--compact strong.application-requirements-remaining { font-size: 11px; }
+    .application-workspace-plan-details dl { grid-template-columns: 1fr; gap: 12px; }
+    .application-workspace-draft { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  }
+}
+
+// Applications uses the same segmented control as Tasks.
+.application-dashboard .application-view-switcher {
+  flex: 0 0 auto;
+  width: fit-content;
+  max-width: 100%;
+
+  .application-collection-count {
+    margin-left: 8px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    opacity: .7;
+  }
+}
+
+
+.applicant-shell .applicant-content .application-documents-page {
+  gap: 16px;
+
+  .applicant-document-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .applicant-document-search.ant-input-affix-wrapper {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid #e4dfd9;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: none;
+    .ant-input-prefix { color: #79736c; margin-right: 10px; }
+    > input.ant-input {
+      min-height: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      font-size: 14px;
+      &::placeholder { color: #8a847d; }
+    }
+    &:focus-within { border-color: #8b0000; box-shadow: 0 0 0 2px rgba(139, 0, 0, .08); }
+  }
+
+  .document-view-switcher {
+    flex: 0 0 auto;
+    align-self: center;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  @media (max-width: 900px) {
+    .applicant-document-toolbar { flex-direction: column; align-items: stretch; gap: 12px; }
+    .applicant-document-search.ant-input-affix-wrapper { flex: none; width: 100%; }
+    .document-view-switcher { align-self: flex-start; }
+  }
+}
+
+.applicant-shell .applicant-content .application-workspace--saved {
+  .application-workspace-actions > .ant-btn-primary { height: 40px; padding-inline: 16px; font-size: 13px; }
+  .application-workspace-plan-details dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .application-workspace-saved-notes, .application-workspace-saved-mentor { padding-block: 20px; border-bottom: 1px solid #eae5df; }
+  .application-workspace-saved-notes h3 { margin-top: 16px; color: #76716b; font-size: 12px; font-weight: 500; }
+  .application-workspace-saved-notes .application-workspace-note { margin-bottom: 0; }
+  .application-workspace-saved-notes .application-workspace-empty { padding: 12px 0 0; }
+  .application-workspace-section-heading > a { font-size: 13px; }
+  .application-workspace-saved-mentor .applicant-panel { padding: 12px 0 0; border: 0; background: transparent; box-shadow: none; }
+  .application-workspace-saved-mentor .applicant-panel > h3, .application-workspace-saved-mentor .applicant-panel > p { display: none; }
+  .application-workspace-saved-mentor .applicant-page__heading { margin: 0; gap: 16px; }
+  .application-workspace-saved-mentor .applicant-page__heading strong { font-size: 14px; font-weight: 500; }
+  .application-workspace-saved-mentor .applicant-page__heading p { font-size: 13px; margin-top: 4px; }
+  .application-workspace-saved-mentor .ant-btn { font-size: 13px; min-height: 36px; }
+  @media (max-width: 767px) {
+    .application-workspace-header { flex-wrap: wrap; }
+    .application-workspace-actions { width: 100%; gap: 8px; }
+    .application-workspace-actions > .ant-btn-primary { margin-left: auto; }
+    .application-workspace-plan-details dl { grid-template-columns: 1fr; }
+  }
+}
+
+.applicant-shell .applicant-content .application-workspace .application-checklist-setup {
+  padding-top: 0;
+  > p { color: #76716b; font-size: 13px; line-height: 1.6; margin-top: 0; }
+  ol { list-style: none; margin: 12px 0 0; padding: 0; }
+  li { display: block; padding: 0; border-top: 1px solid #eee9e3; }
+  .application-checklist-step {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) 17px;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 68px;
+    padding: 12px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #302f2d;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    text-decoration: none;
+    &:hover:not(:disabled) { background: #f8f6f2; color: #302f2d; }
+    &:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+    &:disabled { cursor: default; opacity: .6; }
+    > svg { color: #8a847d; }
+  }
+  .application-checklist-step-number { align-self: start; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #f3f1ed; color: #655c55; font-size: 12px; }
+  .application-checklist-step-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .application-checklist-step-body strong { font-size: 14px; font-weight: 500; }
+  .application-checklist-step-body > span { color: #76716b; font-size: 13px; line-height: 1.6; }
+}
+
+@media (max-width: 767px) {
+  .applicant-shell .applicant-content .application-workspace .application-requirements--compact:has(.application-checklist-setup) > .ant-space > .ant-space-item:has(> a) { grid-column: 2; grid-row: 1; justify-self: end; }
+}
+
+.applicant-shell .applicant-content .application-workspace:has(.application-checklist-setup) {
+  gap: 12px;
+  .application-workspace-switcher { margin-bottom: 12px; }
+  .application-workspace-tabs .ant-tabs-tabpane > .application-workspace-checklist { padding: 16px 20px; }
+  .application-requirements--compact > .ant-space { margin-bottom: 4px !important; }
+  .application-checklist-setup > p { margin-top: 0; }
+  @media (max-width: 767px) {
+    .application-workspace-tabs .ant-tabs-tabpane > .application-workspace-checklist { padding: 16px; }
+  }
+}
+
+.applicant-shell .applicant-content .application-workspace .application-workspace-draft {
+  width: 100%;
+  padding: 12px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  &:hover { background: #f8f6f2; }
+  &:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; background: #f8f6f2; }
 }

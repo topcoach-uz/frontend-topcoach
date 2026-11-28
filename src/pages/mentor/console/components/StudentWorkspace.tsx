@@ -2,6 +2,8 @@ import { LEGACY_ENROLLMENT, canCreateProgramWork, enrollmentHours, isAccessDenie
 import { validateProgramProgress } from "../programProgress";
 import { downloadProgramReport } from "src/app/services/programReports";
 import { mentorProgramLabel } from '../mentorProgramLabel';
+import { useGetSharedMentorApplicationsQuery } from "src/app/services/student-hub/sharedApplicationsApi";
+import { SessionRecording } from "src/components/session-recording/SessionRecording";
 import LessonPlanModal from "./LessonPlanModal";
 import { useLocation } from "react-router-dom";
 import SharedApplications from "./SharedApplications";
@@ -111,7 +113,10 @@ import {
 } from "src/lib/taskDeadline";
 import { hostName } from "src/app/services/api/const";
 import "./StudentWorkspace.scss";
+import MentorReports from "./MentorReports";
 import { rosterHoursLabel } from "../rosterDisplay";
+import { bookingDateLabel } from "../sessionDisplay";
+import { importedSessionInfo } from "../importedSession";
 
 const { Text } = Typography;
 
@@ -372,6 +377,7 @@ export default function StudentWorkspace({
   }, [selectedEnrollmentId, feedbackForm, milestoneForm, pipelineForm]);
 
   // Always loaded — power the stat cards + tab badges.
+  const sharedApplications = useGetSharedMentorApplicationsQuery(studentId || "", { skip: !studentId });
   const { bookings, isLoading: loadingBookings, isError: bookingsError } = useMentorBookings(
     studentId,
     {
@@ -506,7 +512,7 @@ export default function StudentWorkspace({
       studentBookings.filter((b) =>
         b.source === "platform"
           ? !!b.report
-          : bookingDisplay(b).label === "Held",
+          : ["Held", "Reported held"].includes(bookingDisplay(b).label),
       ).length,
     [studentBookings],
   );
@@ -847,27 +853,60 @@ export default function StudentWorkspace({
 
   const renderBookingRow = (b: (typeof bookings)[number]) => {
     const display = bookingDisplay(b);
-    const isFs = b.source === 'full-support';
-    const report = b.source === 'platform' ? b.report : null;
+    const isFs = b.source === "full-support";
+    const imported =
+      isFs &&
+      importedSessionInfo(
+        b.raw as import("src/app/services/fullSupportApi").SessionLogDto,
+      );
+    const report = b.source === "platform" ? b.report : null;
     return (
       <div key={b.id} className="mc-ws-booking">
         <div>
-          <div style={{ fontWeight: 600, fontSize: 13 }}>{formatDateTime(b.dateTime)}</div>
-          <div style={{ fontSize: 12, color: 'var(--mc-text-muted)', marginTop: 4 }}>
-            {b.durationLabel}
-            {isFs ? ` · ${student.programs?.find(program => program.enrollmentId === (b.raw as { academicEnrollmentId?: string }).academicEnrollmentId)?.name || programNames[b.program as ProgramKey] || b.program || 'Program unconfirmed'}` : ' · 1:1 session'}
-            {b.description ? ` · ${b.description}` : ''}
-            {b.status === 'cancelled' && b.cancelReason ? ` · ${b.cancelReason}` : ''}
+          <div style={{ fontWeight: 600, fontSize: 13 }}>
+            {bookingDateLabel(b)}
           </div>
-          {isFs && b.status !== 'upcoming' && (
+          <div
+            style={{
+              fontSize: 12,
+              color: "var(--mc-text-muted)",
+              marginTop: 4,
+            }}
+          >
+            {b.durationLabel}
+            {imported
+              ? " · Historical report"
+              : isFs
+                ? ` · ${student.programs?.find(program => program.enrollmentId === (b.raw as { academicEnrollmentId?: string }).academicEnrollmentId)?.name || programNames[b.program as ProgramKey] || b.program || "Program unconfirmed"}`
+                : " · 1:1 session"}
+            {!imported && b.description ? ` · ${b.description}` : ""}
+            {b.status === "cancelled" && b.cancelReason
+              ? ` · ${b.cancelReason}`
+              : ""}
+          </div>
+          {imported && b.description && (
+            <details style={{ marginTop: 8 }}>
+              <summary>Session notes</summary>
+              <div style={{ whiteSpace: "pre-wrap", marginTop: 8 }}>
+                {b.description}
+              </div>
+            </details>
+          )}
+          {isFs && b.status !== "upcoming" && (
             <div style={{ fontSize: 12, marginTop: 6 }}>
               Attendance: {display.attendance}
-              {display.actualMinutes !== null ? ` · ${display.actualMinutes} min actual` : ''}
-              {display.notes && <div style={{ whiteSpace: 'pre-wrap', marginTop: 6 }}>{display.notes}</div>}
+              {display.actualMinutes !== null
+                ? ` · ${display.actualMinutes} min actual`
+                : ""}
+              {display.notes && (
+                <div style={{ whiteSpace: "pre-wrap", marginTop: 6 }}>
+                  {display.notes}
+                </div>
+              )}
             </div>
           )}
           {report && (
-            <div style={{ fontSize: 12, marginTop: 6, whiteSpace: 'pre-wrap' }}>
+            <div style={{ fontSize: 12, marginTop: 6, whiteSpace: "pre-wrap" }}>
               <b>Report:</b> {report.topicsCovered}
             </div>
           )}
@@ -882,11 +921,20 @@ export default function StudentWorkspace({
         </div>
         <Space size={8} align="center" wrap>
           <McPill variant={display.variant}>{display.label}</McPill>
-          {b.status === 'upcoming' && b.joinUrl ? (
-            <Button size="small" type="link" href={b.joinUrl} target="_blank" rel="noreferrer">
+          {b.status === "upcoming" && b.joinUrl ? (
+            <Button
+              size="small"
+              type="link"
+              href={b.joinUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
               Join
             </Button>
           ) : null}
+          {!imported && (
+            <SessionRecording source={b.source} sessionId={b.raw.id} />
+          )}
           {sessionActions.renderActions(b)}
         </Space>
       </div>
@@ -1151,7 +1199,7 @@ export default function StudentWorkspace({
     {
       key: "reports",
       label: "Reports",
-      children: selectedProgram ? <p>Download this enrollment’s program PDF above for attendance, hours, tasks, milestones and shared comments.</p> : <p>Select a linked program to download its enrollment report. Existing unscoped records remain in legacy history.</p>,
+      children: selectedProgram ? <p>Download this enrollment’s program PDF above for attendance, hours, tasks, milestones and shared comments.</p> : <MentorReports studentUserId={studentId} />,
     },
     {
       key: "reviews",
@@ -1171,7 +1219,43 @@ export default function StudentWorkspace({
         </>
       ),
     },
-    {key:'essays',label:'Applications',children:<SharedApplications studentId={studentId}/>},
+    {
+      key: "essays",
+      label: tabLabel(
+        "Applications & plans",
+        (sharedApplications.data?.data.length ?? 0) + pipeline.length,
+      ),
+      children: (
+        <>
+          {sectionHead(
+            "Applications & mentor plans",
+            <FileText size={18} color="var(--mc-accent)" aria-hidden />,
+            {
+              label: "Add row",
+              onClick: () => setAddPipelineOpen(true),
+            },
+          )}
+          {studentId && <SharedApplications studentId={studentId} />}
+          <div className="mc-ws-card">
+            {pipeline.length === 0 ? (
+              <div className="mc-ws-empty">
+                Track schools and essay stages — add a pipeline row to get
+                started.
+              </div>
+            ) : (
+              <Table<PipelineDto>
+                rowKey="id"
+                columns={pipelineColumns}
+                dataSource={pipeline}
+                pagination={false}
+                size="small"
+                scroll={{ x: true }}
+              />
+            )}
+          </div>
+        </>
+      ),
+    },
     {
       key: "more",
       label: tabLabel("More"),

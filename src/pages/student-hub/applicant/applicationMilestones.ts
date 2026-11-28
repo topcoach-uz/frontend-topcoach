@@ -13,6 +13,7 @@ export type ApplicationMilestone = {
   detail: string;
   path: string;
   notes?: string;
+  actionable?: boolean;
 };
 export function buildApplicationMilestones(
   applications: CollegeApplication[],
@@ -31,6 +32,7 @@ export function buildApplicationMilestones(
       .map((app) => ({
         id: `application-${app.id}`,
         date: app.deadline,
+        actionable: !["submitted", "under_review"].includes(app.status),
         title: `${app.major || app.universityName || "Application"} planning date`,
         detail: app.universityName || "University application",
         path: `/student-hub/applications/${encodeURIComponent(app.id)}`,
@@ -49,6 +51,7 @@ export function buildApplicationMilestones(
       .map((s) => ({
         id: `scholarship-${s.id}`,
         date: s.applicationDeadline,
+        actionable: !["submitted", "under_review"].includes(s.status),
         title: s.scholarshipName || "Scholarship",
         detail: `Scholarship · ${s.organization || "Organization not set"}`,
         path: `/student-hub/applications?tab=timeline&milestone=scholarship-${encodeURIComponent(s.id)}`,
@@ -63,7 +66,20 @@ export function buildApplicationMilestones(
         detail: `Assigned task · ${task.mentorName || "Advisor"}`,
         path: `/student-hub/tasks?mentorTask=${encodeURIComponent(task.id)}`,
       })),
-
+    ...pipeline
+      .filter(
+        (row) =>
+          !["completed", "cancelled", "rejected", "accepted"].includes(
+            row.status.toLowerCase(),
+          ),
+      )
+      .map((row) => ({
+        id: `pipeline-${row.id}`,
+        date: row.deadline,
+        title: row.program,
+        detail: `Mentor plan · ${row.stage} · ${row.status}`,
+        path: `/student-hub/applications?tab=timeline&milestone=pipeline-${encodeURIComponent(row.id)}`,
+      })),
   ];
   return entries
     .filter(
