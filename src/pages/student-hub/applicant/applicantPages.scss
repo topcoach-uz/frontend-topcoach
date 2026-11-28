@@ -3927,3 +3927,68 @@ form.applicant-glass-search {
   &:hover { background: #f8f6f2; }
   &:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; background: #f8f6f2; }
 }
+
+// ---------- Application row card: sizing and alignment only ----------
+// Keeps the card's look. The facts column gets a bounded width so each label
+// sits near its value; label/value pairs share one right edge; facts text is
+// one step closer to the 16px title; the menu column no longer reserves
+// empty width.
+@media (min-width: 768px) {
+  .application-dashboard .application-summary-card {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 320px) auto;
+    gap: 12px 40px;
+    padding: 14px 16px 14px 20px;
+  }
+  .application-dashboard .application-summary-card footer {
+    min-width: 0;
+    justify-content: flex-end;
+  }
+}
+.application-dashboard .application-summary-card__facts {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  font-size: var(--tc-text-small);
+  line-height: 1.4;
+}
+.application-dashboard .application-summary-card__facts > div:not(.ant-progress) {
+  align-self: stretch;
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 16px;
+
+  > :last-child {
+    justify-self: end;
+    min-width: 0;
+    text-align: right;
+  }
+}
+.application-dashboard .application-summary-card__deadline {
+  align-items: flex-end;
+}
+.application-dashboard .application-summary-card__title {
+  row-gap: 6px;
+}
+.application-dashboard .application-summary-card__meta {
+  margin-top: 6px;
+}
+// Phones: the card is a single column, so the menu moves to the top-right
+// corner instead of taking a row of its own; the title leaves room for it.
+@media (max-width: 767px) {
+  .application-dashboard .application-summary-card {
+    position: relative;
+  }
+  .application-dashboard .application-summary-card header {
+    padding-right: 44px;
+  }
+  .application-dashboard .application-summary-card footer {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    margin: 0;
+    padding: 0;
+  }
+}
