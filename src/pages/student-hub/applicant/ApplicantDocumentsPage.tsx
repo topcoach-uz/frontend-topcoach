@@ -1,6 +1,7 @@
 import { useRef, useState, type DragEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { EmptyState } from "src/components/student-hub/ui/EmptyState";
+import { useFillViewport } from "src/hooks/useFillViewport";
 import { Button, Form, Input, Modal, Popconfirm, Select, Upload, message } from "antd";
 import type { UploadFile } from "antd";
 import { Download, FileText, Info, Plus, Trash2, UploadCloud } from "lucide-react";
@@ -77,6 +78,9 @@ export default function ApplicantDocumentsPage() {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<"all" | "application" | "drafts">("all");
   const tabsThumb = useSegmentThumb<HTMLDivElement>(tab);
+  // The list card grows to the bottom of the window (no gap, no scrollbar);
+  // a long list keeps its natural height.
+  const listRef = useFillViewport<HTMLDivElement>([query.data, tab, search]);
   const [upload, uploadState] = useUploadDocumentMutation();
   const [remove] = useDeleteDocumentMutation();
   const [download] = useDownloadDocumentMutation();
@@ -190,6 +194,8 @@ export default function ApplicantDocumentsPage() {
     >
       <Breadcrumb>Documents</Breadcrumb>
       <NextStepCard current="documents" />
+      {/* Search and the file filter share one row; the list below grows into the space. */}
+      <div className="tc-doc-toolbar">
       <form role="search" className="applicant-glass-search applicant-document-search-bar" onSubmit={(event) => event.preventDefault()}>
         <Input
           aria-label="Search documents"
@@ -218,6 +224,7 @@ export default function ApplicantDocumentsPage() {
             {label}
           </button>
         ))}
+      </div>
       </div>
       <div
         className={`applicant-dropzone${dragging ? " is-dragging" : ""}`}
@@ -257,7 +264,8 @@ export default function ApplicantDocumentsPage() {
             <p className="applicant-dropzone__hint">{t("studentHub.documents.dropHint", "or drag a file here")}</p>
           </EmptyState>
         ) : (
-          <div className="applicant-panel applicant-document-list">
+          <div className="tc-doc-list-box">
+          <div ref={listRef} className="applicant-panel applicant-document-list">
             {documents.map((document) => (
               <div className="applicant-document" key={document.id}>
                 <span className="applicant-document__icon">
@@ -309,6 +317,7 @@ export default function ApplicantDocumentsPage() {
                 </Popconfirm>
               </div>
             ))}
+          </div>
           </div>
         )}
       </QueryState>
