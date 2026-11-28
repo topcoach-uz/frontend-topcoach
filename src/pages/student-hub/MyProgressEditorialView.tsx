@@ -70,6 +70,7 @@ import {
 import { isAlmostThere, pickMostProgressed, unitsLeftText } from './learningTracks';
 import { applicantLinks } from 'src/lib/applicantWorkspace';
 import './MyProgressEditorialView.scss';
+import { useSegmentThumb, SegmentThumb } from 'src/components/student-hub/ui/SegmentThumb';
 
 interface TrackInfo {
   key: 'admissions' | 'sat' | 'research';
@@ -300,6 +301,7 @@ const MyProgressEditorialView: React.FC = () => {
   // Tab state for the Mentor sessions card. Declared up here so the
   // `visibleSessions` memo below can read it without TDZ errors.
   const [sessionTab, setSessionTab] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
+  const sessionsThumb = useSegmentThumb<HTMLDivElement>(sessionTab);
 
   /* — Withdraw flow state ────────────────────────────────────────
    * The 3-dot menu on each upcoming session card opens a modal that
@@ -829,7 +831,8 @@ const MyProgressEditorialView: React.FC = () => {
               {t('studentHub.myProgress.allSessions', 'All sessions')} <ArrowRight size={13} aria-hidden />
             </button>
           </div>
-          <div className="myprog__sessions-tabs">
+          <div ref={sessionsThumb.ref} data-lens={sessionsThumb.lens} className="myprog__sessions-tabs">
+            <SegmentThumb style={sessionsThumb.style} />
             {(['upcoming', 'past', 'cancelled'] as const).map((tab) => {
               const count =
                 tab === 'upcoming' ? upcomingSessions.length

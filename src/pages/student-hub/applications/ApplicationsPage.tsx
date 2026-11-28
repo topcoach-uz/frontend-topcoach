@@ -27,6 +27,7 @@ import RequirementsChecklist from './components/RequirementsChecklist';
 import MentorAssignment from './components/MentorAssignment';
 import GlobalActivityTimeline from './components/GlobalActivityTimeline';
 import './ApplicationsPage.scss';
+import { useSegmentThumb, SegmentThumb } from 'src/components/student-hub/ui/SegmentThumb';
 
 // Props interface for ApplicationsPage - supports both normal and read-only mode
 export interface ApplicationsPageProps {
@@ -100,6 +101,7 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
   const [typeFilter, setTypeFilter] = useState<string>('all'); // 'all', 'application', 'scholarship'
   const [sortBy, setSortBy] = useState<string>('deadline'); // 'deadline' = soonest, 'deadline-furthest' = furthest
   const [applicationsTab, setApplicationsTab] = useState<'applications' | 'timeline'>('applications');
+  const appsThumb = useSegmentThumb<HTMLElement>(applicationsTab);
   const { dashboard, isLoading, hasError } = useStudentHub();
   
   // Get psychometric data for match scores
@@ -688,7 +690,8 @@ const ApplicationsPage: React.FC<ApplicationsPageProps> = ({ readOnly = false, s
       {/* Same underline strip as the profile section nav, so a tab set
           nested inside a tab set doesn't introduce a second visual idiom. */}
       {!isReadOnly && (
-        <nav className="apps-tabs" role="tablist">
+        <nav ref={appsThumb.ref} data-lens={appsThumb.lens} className="apps-tabs" role="tablist">
+          <SegmentThumb style={appsThumb.style} />
           {([
             { key: 'applications', label: t('studentHub.applications.yourCollegeLists', 'Your college lists') },
             { key: 'timeline', label: t('studentHub.applications.timeline', 'Timeline') },

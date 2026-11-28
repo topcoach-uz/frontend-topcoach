@@ -26,3 +26,4 @@ export type { FilterChipOption, FilterChipsProps } from './FilterChips';
 export { GateCard } from './GateCard';
 export type { GateCardProps } from './GateCard';
 export { ModalShell, DrawerShell } from './ModalShell';
+export { useSegmentThumb, SegmentThumb, SEGMENT_SELECTED } from './SegmentThumb';

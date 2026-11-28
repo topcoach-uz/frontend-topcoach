@@ -2995,6 +2995,350 @@ form.applicant-glass-search {
   }
 }
 
+// ---------- Find universities: glass filters and the College List action ----------
+// Same material as the search bar above them: frosted white glass, a bright
+// top rim, soft depth. A chosen filter tints blush so the active state reads
+// at a glance; the chevron sits in its own small well, like an iOS menu.
+.applicant-find-filters {
+  gap: 10px;
+  margin-top: 0;
+}
+.applicant-find-filter {
+  position: relative;
+  min-height: 62px;
+  padding: 9px 52px 9px 18px;
+  border: 0;
+  border-radius: var(--tc-radius-lg);
+  @include lg.lg-thin;
+  cursor: pointer;
+  transition:
+    background-color var(--tc-dur-2) var(--tc-ease-fade),
+    box-shadow var(--tc-dur-2) var(--tc-ease-fade),
+    transform var(--tc-dur-1) var(--tc-ease);
+
+  > span {
+    color: var(--tc-subtle);
+    font-size: var(--tc-text-micro);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .ant-select { min-height: 24px; }
+  .ant-select-selector { font-size: var(--tc-text-body); font-weight: 500; }
+  .ant-select-selection-item,
+  .ant-select-selection-placeholder { line-height: 24px !important; color: var(--tc-ink); }
+  // Chevron in a round well on the right edge of the field.
+  .ant-select-arrow {
+    position: absolute;
+    top: 50%;
+    right: -38px;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    margin-top: -15px;
+    border-radius: 50%;
+    background: rgba(118, 107, 99, 0.08);
+    color: var(--tc-muted);
+    transition: transform var(--tc-dur-2) var(--tc-ease), background-color var(--tc-dur-2) var(--tc-ease-fade);
+  }
+  .ant-select-open .ant-select-arrow { transform: rotate(180deg); }
+  .ant-select-clear { right: -38px; width: 30px; height: 30px; margin-top: -15px; display: grid; place-items: center; border-radius: 50%; background: var(--tc-surface); }
+
+  @media (hover: hover) {
+    &:hover:not(.applicant-find-filter--disabled) {
+      background: rgba(255, 255, 255, 0.78);
+      .ant-select-arrow { background: rgba(118, 107, 99, 0.14); }
+    }
+  }
+  &:active:not(.applicant-find-filter--disabled) { transform: scale(0.99); }
+  &:focus-within { box-shadow: var(--tc-focus-ring), 0 10px 24px -18px rgba(48, 43, 40, 0.3); }
+}
+.applicant-find-filter--active {
+  background: rgba(247, 230, 228, 0.72);
+  > span { color: var(--tc-brand); }
+  .ant-select-selection-item { color: var(--tc-brand); }
+  .ant-select-arrow { background: rgba(139, 0, 0, 0.1); color: var(--tc-brand); }
+}
+.applicant-find-filter--disabled {
+  cursor: not-allowed;
+  .ant-select-disabled .ant-select-selection-item { color: var(--tc-muted) !important; }
+  .ant-select-arrow { opacity: 0.5; }
+}
+
+// The College List action: centred under the results, a solid brand pill.
+// Hover turns it into red liquid glass: the fill goes slightly translucent
+// with a backdrop blur, a bright rim catches light along the top edge, a
+// specular sheen sits across the upper half, and a soft red glow lifts it,
+// instead of a plain heavier shadow.
+.applicant-find-open-list {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  align-self: center;
+  gap: 10px;
+  min-height: 52px;
+  margin-top: 4px;
+  padding: 0 28px;
+  border: 1px solid transparent;
+  border-radius: var(--tc-radius-pill);
+  background: var(--tc-brand);
+  color: var(--tc-on-brand) !important;
+  font-weight: 600;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 8px 20px -14px rgba(139, 0, 0, 0.55);
+  transition:
+    background-color var(--tc-dur-2) var(--tc-ease-fade),
+    border-color var(--tc-dur-2) var(--tc-ease-fade),
+    box-shadow var(--tc-dur-2) var(--tc-ease-fade),
+    transform var(--tc-dur-1) var(--tc-ease);
+
+  // Specular sheen: a soft light band across the top of the glass.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.08) 46%, rgba(255, 255, 255, 0) 52%);
+    opacity: 0;
+    transition: opacity var(--tc-dur-2) var(--tc-ease-fade);
+    pointer-events: none;
+  }
+  svg { transition: transform var(--tc-dur-2) var(--tc-ease); }
+
+  @media (hover: hover) {
+    &:hover {
+      background: rgba(139, 0, 0, 0.84);
+      backdrop-filter: blur(14px) saturate(180%);
+      -webkit-backdrop-filter: blur(14px) saturate(180%);
+      border-color: rgba(255, 255, 255, 0.28);
+      box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.55),
+        inset 0 -8px 14px -10px rgba(60, 0, 0, 0.45),
+        0 14px 30px -16px rgba(139, 0, 0, 0.7),
+        0 2px 6px -2px rgba(139, 0, 0, 0.3);
+
+      &::before { opacity: 1; }
+      svg { transform: translateX(3px); }
+    }
+  }
+  &:active {
+    transform: scale(0.97);
+    background: var(--tc-brand-hover);
+  }
+  &:focus-visible { outline: 2px solid var(--tc-brand); outline-offset: 3px; }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .applicant-find-open-list:hover {
+    background: var(--tc-brand-hover);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+@media (max-width: 650px) {
+  .applicant-find-filter { min-height: 60px; }
+  .applicant-find-open-list { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .applicant-find-filter,
+  .applicant-find-filter .ant-select-arrow,
+  .applicant-find-open-list,
+  .applicant-find-open-list::before,
+  .applicant-find-open-list svg { transition: none; }
+}
+
+// Empty states that fill the page (EmptyState `fill`): content sits in the
+// optical centre of the card, which grows to the bottom of the window.
+.applicant-shell .applicant-empty--fill {
+  justify-content: center;
+  padding-bottom: 64px;
+}
+
+// ---------- Documents: glass search, drop zone ----------
+// Documents toolbar: the glass search takes the row, the file filter sits at
+// its end, both on one line. On narrower screens they stack.
+.applicant-shell .tc-doc-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+
+  > .applicant-tabs {
+    flex: none;
+    margin: 0;
+  }
+  @media (max-width: 900px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+
+    > .applicant-tabs { align-self: flex-start; max-width: 100%; }
+  }
+}
+.applicant-shell .tc-doc-list-box {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+// A compact glass search on Documents: 48px instead of the 60px page search.
+.applicant-shell form.applicant-glass-search.applicant-document-search-bar {
+  min-height: 48px;
+  padding: 4px 5px 4px 6px;
+
+  .ant-input-affix-wrapper,
+  .ant-input {
+    min-height: 0;
+    font-size: var(--tc-text-body);
+  }
+}
+
+// ---- Documents drop area ----
+// The list card is a column: the rows, then a dashed drop strip that grows to
+// fill whatever height is left, so the empty part of the card reads as
+// "drop files here" instead of blank space.
+.applicant-shell .applicant-dropzone .applicant-document-list {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 18px;
+}
+.applicant-shell .tc-doc-drop-strip {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 110px;
+  margin-top: 14px;
+  padding: 20px;
+  border: 1.5px dashed rgba(139, 0, 0, 0.32);
+  border-radius: var(--tc-radius-lg);
+  background: rgba(247, 230, 228, 0.25);
+  color: var(--tc-muted);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background-color var(--tc-dur-2) var(--tc-ease-fade),
+    border-color var(--tc-dur-2) var(--tc-ease-fade),
+    transform var(--tc-dur-1) var(--tc-ease);
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: rgba(139, 0, 0, 0.45);
+      background: rgba(247, 230, 228, 0.55);
+      .tc-doc-drop-strip__icon { transform: translateY(-2px); }
+    }
+  }
+  &:active { transform: scale(0.99); }
+  &:focus-visible { outline: 2px solid var(--tc-brand); outline-offset: 2px; }
+}
+.applicant-shell .tc-doc-drop-strip__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--tc-radius-md);
+  @include lg.lg-blush;
+  color: var(--tc-brand);
+  transition: transform var(--tc-dur-2) var(--tc-ease);
+}
+.applicant-shell .tc-doc-drop-strip__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  strong { color: var(--tc-ink); font-size: var(--tc-text-body-sm); font-weight: 600; }
+  small { color: var(--tc-subtle); font-size: var(--tc-text-caption); }
+}
+// The empty card is the drop area itself: a dashed inner rim says so.
+.applicant-shell .applicant-dropzone .applicant-empty--fill {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 14px;
+    border: 1.5px dashed rgba(139, 0, 0, 0.28);
+    border-radius: calc(var(--tc-radius-xl) - 8px);
+    pointer-events: none;
+    transition: border-color var(--tc-dur-2) var(--tc-ease-fade), background-color var(--tc-dur-2) var(--tc-ease-fade);
+  }
+}
+// A file is being dragged into the window: the drop area lights up and
+// breathes, so it's obvious where the file can go before you reach it.
+.applicant-shell .applicant-dropzone.is-armed {
+  .tc-doc-drop-strip,
+  .applicant-empty--fill::after {
+    border-color: rgba(139, 0, 0, 0.55);
+    background: rgba(247, 230, 228, 0.6);
+    animation: tc-drop-breathe 1.4s var(--tc-ease-fade) infinite alternate;
+  }
+  .tc-doc-drop-strip__icon { transform: translateY(-3px); }
+}
+@keyframes tc-drop-breathe {
+  from { box-shadow: 0 0 0 0 rgba(139, 0, 0, 0); }
+  to { box-shadow: 0 0 0 6px rgba(139, 0, 0, 0.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .applicant-shell .applicant-dropzone.is-armed .tc-doc-drop-strip,
+  .applicant-shell .applicant-dropzone.is-armed .applicant-empty--fill::after { animation: none; }
+  .applicant-shell .tc-doc-drop-strip,
+  .applicant-shell .tc-doc-drop-strip__icon { transition: none; }
+}
+.applicant-shell form.applicant-document-search-bar {
+  width: 100%;
+}
+// The whole documents area takes a dropped file. While a file is dragged over
+// it, a blush glass sheet with a dashed rim says what will happen.
+.applicant-dropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.applicant-dropzone__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: var(--tc-z-sticky);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 2px dashed rgba(139, 0, 0, 0.35);
+  border-radius: var(--tc-radius-xl);
+  @include lg.lg-blush;
+  color: var(--tc-brand);
+  pointer-events: none;
+  animation: applicant-drop-in var(--tc-dur-2) var(--tc-ease) both;
+
+  > svg { margin-bottom: 4px; }
+  strong { font-size: var(--tc-text-h3); font-weight: 600; }
+  span { color: var(--tc-muted); font-size: var(--tc-text-small); }
+}
+@keyframes applicant-drop-in {
+  from { opacity: 0; transform: scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+.applicant-shell .applicant-empty .applicant-dropzone__hint {
+  margin-top: 12px;
+  color: var(--tc-subtle);
+  font-size: var(--tc-text-small);
+}
+@media (prefers-reduced-motion: reduce) {
+  .applicant-dropzone__overlay { animation: none; }
+}
+.applicant-empty-fill {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  > .applicant-empty--fill { flex: 1 1 auto; }
+}
+
 // Application planning: shared list, workspace, forms and comparison layouts.
 .application-toolbar {
   display: flex;
@@ -3582,4 +3926,69 @@ form.applicant-glass-search {
   cursor: pointer;
   &:hover { background: #f8f6f2; }
   &:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; background: #f8f6f2; }
+}
+
+// ---------- Application row card: sizing and alignment only ----------
+// Keeps the card's look. The facts column gets a bounded width so each label
+// sits near its value; label/value pairs share one right edge; facts text is
+// one step closer to the 16px title; the menu column no longer reserves
+// empty width.
+@media (min-width: 768px) {
+  .application-dashboard .application-summary-card {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 320px) auto;
+    gap: 12px 40px;
+    padding: 14px 16px 14px 20px;
+  }
+  .application-dashboard .application-summary-card footer {
+    min-width: 0;
+    justify-content: flex-end;
+  }
+}
+.application-dashboard .application-summary-card__facts {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  font-size: var(--tc-text-small);
+  line-height: 1.4;
+}
+.application-dashboard .application-summary-card__facts > div:not(.ant-progress) {
+  align-self: stretch;
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 16px;
+
+  > :last-child {
+    justify-self: end;
+    min-width: 0;
+    text-align: right;
+  }
+}
+.application-dashboard .application-summary-card__deadline {
+  align-items: flex-end;
+}
+.application-dashboard .application-summary-card__title {
+  row-gap: 6px;
+}
+.application-dashboard .application-summary-card__meta {
+  margin-top: 6px;
+}
+// Phones: the card is a single column, so the menu moves to the top-right
+// corner instead of taking a row of its own; the title leaves room for it.
+@media (max-width: 767px) {
+  .application-dashboard .application-summary-card {
+    position: relative;
+  }
+  .application-dashboard .application-summary-card header {
+    padding-right: 44px;
+  }
+  .application-dashboard .application-summary-card footer {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    margin: 0;
+    padding: 0;
+  }
 }

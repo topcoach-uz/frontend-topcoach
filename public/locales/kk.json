@@ -3835,5 +3835,18 @@
   "studentUi.error.title": "Sorawdı orınlaw múmkin bolmadı.",
   "studentUi.error.body": "Saqlanǵan maǵlıwmatlarıńız ózgermedi. Qayta urınıp kóriń.",
   "studentUi.error.retry": "Qayta urınıw",
-  "studentUi.loading": "Júklenbekte…"
+  "studentUi.loading": "Júklenbekte…",
+  "studentHub.scholarships.emptyTitle": "Ele saqlanǵan stipendiyalar joq.",
+  "studentHub.scholarships.emptyBody": "Tapsırıp atırǵan stipendiyalarıńızdı múddeti hám sheshimi menen bir orında baqlań.",
+  "studentHub.scholarships.add": "Stipendiya qosıw",
+  "studentHub.documents.add": "Hújjet qosıw",
+  "studentHub.documents.dropHint": "yamasa fayldı usı jerge súyreń",
+  "studentHub.documents.dropTitle": "Fayldı qosıw ushın jiberiń",
+  "studentHub.documents.dropTypes": "PDF, Word yamasa súwret faylları",
+  "studentHub.documents.dropUnsupported": "PDF, Word yamasa súwret faylın paydalanıń.",
+  "studentHub.feed.upcomingSessionsHeading": "Jaqınlap kiyatırǵan sessiyalar",
+  "studentHub.feed.noUpcomingSessionsHint": "Mentor menen 1:1 ushırasıwǵa jazılıń — ol usı jerde payda boladı.",
+  "studentHub.feed.viewPastSessions": "Ótken sessiyalar",
+  "studentHub.feed.composerAudience": "Jámiyetke jariyalaw",
+  "studentHub.documents.dropZoneLabel": "Fayldı usı jerge súyreń yamasa qosıw ushın basıń"
 }

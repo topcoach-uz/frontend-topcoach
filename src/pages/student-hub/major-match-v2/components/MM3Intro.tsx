@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Eye, Lock, ArrowRight, Check } from "lucide-react";
+import { Eye, Lock, ArrowRight, Check, Clock, ListChecks, Sparkles } from "lucide-react";
 
 import { MajorMatchUpsell } from "../../psychometric-assessment/components/MajorMatchUpsell";
 import { MM3MotionVisual } from "./MM3MotionVisual";
@@ -125,6 +125,10 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
           aria-labelledby="mm3-motion-title"
         >
           <div className="mm3-motion-intro__copy">
+            <span className="mm3-motion-intro__eyebrow">
+              <Sparkles size={14} aria-hidden />
+              {t("majorMatch3.intro.eyebrow", "AI MAJOR MATCH")}
+            </span>
             <h1 className="mm3-motion-intro__title" id="mm3-motion-title">
               {t("majorMatch3.intro.title", "Find your best-fit majors.")}
             </h1>
@@ -144,8 +148,8 @@ export const MM3Intro: React.FC<MM3IntroProps> = ({
                 <ArrowRight size={18} aria-hidden />
               </button>
               <p className="mm3-motion-intro__scope">
-                <span>{t("majorMatch3.intro.estimatedTime", "10 minutes")}</span>
-                <span>{t("majorMatch3.intro.questionCount", "{{total}} questions", {
+                <span><Clock size={14} aria-hidden />{t("majorMatch3.intro.estimatedTime", "10 minutes")}</span>
+                <span><ListChecks size={14} aria-hidden />{t("majorMatch3.intro.questionCount", "{{total}} questions", {
                   total: MM3_TOTAL_QUESTIONS,
                 })}</span>
               </p>

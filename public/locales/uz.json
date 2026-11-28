@@ -3835,5 +3835,18 @@
   "studentUi.error.title": "So‘rovni bajarib bo‘lmadi.",
   "studentUi.error.body": "Saqlangan ma’lumotlaringiz o‘zgarmadi. Qayta urinib ko‘ring.",
   "studentUi.error.retry": "Qayta urinish",
-  "studentUi.loading": "Yuklanmoqda…"
+  "studentUi.loading": "Yuklanmoqda…",
+  "studentHub.scholarships.emptyTitle": "Hali saqlangan stipendiyalar yo‘q.",
+  "studentHub.scholarships.emptyBody": "Topshirayotgan stipendiyalaringizni muddati va qarori bilan bir joyda kuzating.",
+  "studentHub.scholarships.add": "Stipendiya qo‘shish",
+  "studentHub.documents.add": "Hujjat qo‘shish",
+  "studentHub.documents.dropHint": "yoki faylni shu yerga torting",
+  "studentHub.documents.dropTitle": "Faylni qo‘shish uchun qo‘yib yuboring",
+  "studentHub.documents.dropTypes": "PDF, Word yoki rasm fayllari",
+  "studentHub.documents.dropUnsupported": "PDF, Word yoki rasm faylidan foydalaning.",
+  "studentHub.feed.upcomingSessionsHeading": "Yaqinlashayotgan sessiyalar",
+  "studentHub.feed.noUpcomingSessionsHint": "Mentor bilan 1:1 uchrashuvga yoziling — u shu yerda paydo bo‘ladi.",
+  "studentHub.feed.viewPastSessions": "O‘tgan sessiyalar",
+  "studentHub.feed.composerAudience": "Hamjamiyatga joylash",
+  "studentHub.documents.dropZoneLabel": "Faylni shu yerga torting yoki qo‘shish uchun bosing"
 }

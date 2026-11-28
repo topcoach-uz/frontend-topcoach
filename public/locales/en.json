@@ -3835,5 +3835,18 @@
   "studentUi.error.title": "We couldn’t finish that request.",
   "studentUi.error.body": "Your saved information is unchanged. Please try again.",
   "studentUi.error.retry": "Try again",
-  "studentUi.loading": "Loading…"
+  "studentUi.loading": "Loading…",
+  "studentHub.scholarships.emptyTitle": "No scholarships saved yet.",
+  "studentHub.scholarships.emptyBody": "Track the funding you apply for, with its deadline and decision, in one place.",
+  "studentHub.scholarships.add": "Add scholarship",
+  "studentHub.documents.add": "Add document",
+  "studentHub.documents.dropHint": "or drag a file here",
+  "studentHub.documents.dropTitle": "Drop to add this file",
+  "studentHub.documents.dropTypes": "PDF, Word or image files",
+  "studentHub.documents.dropUnsupported": "Use a PDF, Word or image file.",
+  "studentHub.feed.upcomingSessionsHeading": "Upcoming sessions",
+  "studentHub.feed.noUpcomingSessionsHint": "Book a 1:1 with a mentor and it will appear here.",
+  "studentHub.feed.viewPastSessions": "See past sessions",
+  "studentHub.feed.composerAudience": "Posting to the community",
+  "studentHub.documents.dropZoneLabel": "Drag a file here, or click to add one"
 }

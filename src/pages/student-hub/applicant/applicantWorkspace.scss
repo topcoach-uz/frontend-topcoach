@@ -41,7 +41,9 @@
   flex: 1 1 auto;
   min-width: 0;
   outline: none;
-  padding: 28px;
+  // Bottom matches the side rail's 12px gap to the window: a page that nearly
+  // fits ends on the rail's line instead of scrolling a few pixels for nothing.
+  padding: 28px 28px 12px;
 }
 // Pages keep a comfortable reading width whether or not the panel is open.
 .applicant-content__inner {

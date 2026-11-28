@@ -20,6 +20,7 @@ import {
 import { ApplicantPage, Breadcrumb, QueryState, displayDate } from "./ApplicantPage";
 import { DocumentReviewDecision } from "./DocumentReviewDecision";
 import { useGetEligibleEssayMentorsQuery } from "src/app/services/student-hub/essayReviewApi";
+import { useSegmentThumb, SegmentThumb } from 'src/components/student-hub/ui/SegmentThumb';
 
 type PreviewKind = "pdf" | "image" | "docx" | "doc" | "none";
 const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "webp", "gif"];
@@ -61,6 +62,7 @@ export default function ApplicantDocumentReviewPage() {
   const { data: eligibleMentors = [], isError: mentorCheckError, refetch: refetchMentors } = useGetEligibleEssayMentorsQuery(undefined, { refetchOnMountOrArgChange: true });
   const hasAssignedMentor = eligibleMentors.some((mentor) => mentor.source === "full_support");
   const [tab, setTab] = useState<"preview" | "feedback" | "versions" | "ai helper">(params.get('helper') === 'ai' ? 'ai helper' : 'preview');
+  const tabsThumb = useSegmentThumb<HTMLDivElement>(tab);
   const [previewUrl, setPreviewUrl] = useState<string>();
   const [previewError, setPreviewError] = useState(false);
   const [pdfPages, setPdfPages] = useState(0);
@@ -196,7 +198,8 @@ export default function ApplicantDocumentReviewPage() {
     <QueryState loading={documentQuery.isLoading} error={documentQuery.isError || (!documentQuery.isLoading && !record)} retry={documentQuery.refetch}>
       {record && <>
         {record.legacyPublic && <Alert type="warning" showIcon message="This older upload uses legacy storage" description="Upload a new private version before sharing it with a mentor. Earlier links may still exist until the legacy file is migrated." />}
-        <div className="applicant-tabs" role="tablist" aria-label="Document review">
+        <div ref={tabsThumb.ref} data-lens={tabsThumb.lens} className="applicant-tabs" role="tablist" aria-label="Document review">
+          <SegmentThumb style={tabsThumb.style} />
           {(["preview", "feedback", "versions", "ai helper"] as const).map((view) => <button key={view} type="button" role="tab" aria-selected={tab === view} className={tab === view ? "is-active" : ""} onClick={() => setTab(view)}>{view[0].toUpperCase() + view.slice(1)}</button>)}
         </div>
         {review && <><p>Current file: version {review.currentVersion}</p><DocumentReviewDecision status={review.status} /></>}

@@ -2742,6 +2742,19 @@
   }
 }
 
+/* Embedded in the student workspace, the content column already pads the
+ * page. The hub's own bottom paddings (48px here, 64px on the shell, 24px on
+ * the body) stacked under the last row and made a short page scroll. */
+.hubEmbedded.admissionsShellOuter {
+  padding: 0 !important;
+}
+.hubEmbedded .admissionsShellHub {
+  padding-bottom: 0;
+}
+.hubEmbedded .centerBody {
+  padding-bottom: 0;
+}
+
 /* Top header strip — breadcrumb + Back button + page title block. */
 .admissionsShellHeader {
   /* Inside the centered wrapper this is just a spacing block; cream
